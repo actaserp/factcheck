@@ -252,7 +252,7 @@
                 <!-- 알람 -->
                 <!-- 사용자 로그인 상태-->
                 <a class="user" title="사용자">
-                    <span id="userName1" th:text="${ sandanList[0].spcompnm }"></span>
+                    <span id="spplannm-display"></span>
                     <span style="padding:0 5px">·</span>
                     <span>관리자</span>
                     <span style="padding:0 5px">·</span>
@@ -321,7 +321,7 @@
                                 <a href="#a" title="점검관리" class="ico-lnb05">
                                     회원 관리
                                 </a>
-                                <ul class="dep2" id="dep2- MembershipManager">
+                                <ul class="dep2" id="dep2-MembershipManager">
 
                                 </ul>
                             </li>
@@ -335,22 +335,11 @@
                             </li>
                         </ul>
                     </nav> <!-- // nav end -->
-                    <!--                        <div class="layout-bookmark sidebar-tabcont" id="bookmark">-->
-                    <!--                            <ul class="bookmark-list" id="bookmark-menu">-->
-
-                    <!--                            </ul>-->
-                    <!--                        </div> &lt;!&ndash; // bookmark end &ndash;&gt;-->
                 </div>
-<!--                    <div class="layout-sidebar-bottom">-->
-<!--                        <img src="/images/logo/logo-kt.svg" alt="kt logo">-->
-<!--                    </div>-->
-                </div>
-            </div><!-- //dashboard-layout-left end-->
-
+            </div>
+        </div><!-- //dashboard-layout-left end-->
             <!-- [대시보드] 오른쪽 컨텐츠 영역 -->
             <!-- //dashboard-layout-right end-->
-
-        </div>
     </div>
 
     <div class="con_area">
@@ -578,7 +567,6 @@
         }
     });
 
-
     $(document).ready(function () {
 
         // 메뉴 매핑(사이드바)
@@ -587,7 +575,7 @@
             2: '#dep2-CategoryManager',
             3: '#dep2-GradeManager',
             4: '#dep2-CustomerManager',
-            5: '#dep2- MembershipManager',
+            5: '#dep2-MembershipManager',
             6: '#dep2-system-settings'
         };
         nthTabs = $('#main-tabs').nthTabs();

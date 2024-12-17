@@ -12,8 +12,9 @@ import org.springframework.stereotype.Service;
 import mes.domain.entity.User;
 import mes.domain.repository.UserRepository;
 import mes.domain.security.Pbkdf2Sha256;
+import org.springframework.transaction.annotation.Transactional;
 
- /*인터페이스 분리는 추후에 고민하자*/
+/*인터페이스 분리는 추후에 고민하자*/
 @Service
 public class AccountService {
 	
@@ -46,20 +47,28 @@ public class AccountService {
 	}
 
 	// 로그인&로그아웃시 login_log 테이블에 이력 저장
+	@Transactional
 	public void saveLoginLog(String type, Authentication auth) throws UnknownHostException {
 
 		User user = (User) auth.getPrincipal();
-		
-        MapSqlParameterSource paramMap = new MapSqlParameterSource();
+
+		MapSqlParameterSource paramMap = new MapSqlParameterSource();
 		paramMap.addValue("type", type);
 		paramMap.addValue("IPAddress", InetAddress.getLocalHost().getHostAddress());
 		paramMap.addValue("UserId", user.getId());
-		
+
 		String sql = """
-				insert into login_log("Type", "IPAddress", _created, "User_id")
-                VALUES (:type, :IPAddress ::inet, now(),:UserId)
-				""";
-		
-	    this.sqlRunner.execute(sql, paramMap);
+            INSERT INTO login_log(Type, IPAddress, _created, User_id)
+            VALUES (:type, :IPAddress, GETDATE(), :UserId);
+            """;
+
+		try {
+			int rowsAffected = this.sqlRunner.execute(sql, paramMap);
+			//System.out.println("Rows affected: " + rowsAffected);
+		} catch (Exception e) {
+			System.err.println("Failed to save login log: " + e.getMessage());
+			e.printStackTrace();
+		}
+
 	}
 }

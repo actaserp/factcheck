@@ -100,7 +100,6 @@ public class AccountController {
 			HttpServletRequest request,
 			HttpServletResponse response,
 			HttpSession session, Authentication auth) {
-
 		ModelAndView mv = new ModelAndView("login");
 
 		Map<String, Object> userInfo = new HashMap<String, Object>();
@@ -136,12 +135,8 @@ public class AccountController {
 			@RequestParam("username") final String username,
 			@RequestParam("password") final String password,
 			final HttpServletRequest request) throws UnknownHostException {
-		// 여기로 들어오지 않음.
 
-		//List<TB_RP940> list = tb_rp940Repository.findAll();
-
-		//System.out.print(list);
-
+		//System.out.println("로그인 데이터: " + username + " / " + password);
 
 		AjaxResult result = new AjaxResult();
 

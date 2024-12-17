@@ -27,103 +27,101 @@ public class SystemService {
     public List<Map<String, Object>> getWebMenuList(User user) {
 
         String sql = """
-        with recursive tree(id, menu_code, pid, name, depth, path, cycle, folder_order, _order, css, data_div, folder_id, FrontFolder_id) as (
-        select 
-            a.id,
-            null as menu_code,
-            a."Parent_id" as pid,
-            a."FolderName" as name, 
-            1 as depth,
-            array[a.id] as path,
-            false as cycle,
-            a._order as folder_order,
-            a._order,
-            a."IconCSS"::text as css,
-            'folder' as data_div,
-            a.id as folder_id,
-            a."FrontFolder_id"
-        from 
-            menu_folder a 
-        where 
-            a."Parent_id" is null
-        
-        union all 
-        
-        select  
-            null as id,
-            mi."MenuCode"::text as menu_code,
-            mi."MenuFolder_id" as pid,
-            mi."MenuName" as name,
-            tree.depth + 1,
-            array_append(tree.path, mi."MenuFolder_id") as path,
-            mi."MenuFolder_id" = any(tree.path) as cycle,
-            tree.folder_order,
-            mi._order,
-            null as css,
-            'menu' as data_div,
-            mi."MenuFolder_id" as folder_id,
-            tree.FrontFolder_id
-        from 
-            menu_item mi 
-        inner join 
-            tree on mi."MenuFolder_id" = tree.id 
-        where 
-            (:super_user = true)
-            or (exists (
-                select 1 
-                from user_group_menu gm 
-                where gm."MenuCode" = mi."MenuCode" 
-                and gm."UserGroup_id" = :group_id
-                and (gm."AuthCode" like '%R%' OR gm."AuthCode" LIKE '%W%')
-            ))
-        and 
-            not cycle
-        ), M as (
-            select 
-                tree.id,
-                tree.menu_code,
-                tree.pid,
-                tree.name,
-                tree.depth,
-                tree.folder_order,
-                tree._order,
-                coalesce(tree.css,'') as css,
-                (bk."MenuCode" is not null) as isbookmark,
-                tree.data_div,
-                count(*) over (partition by tree.folder_id) as sub_count,
-                tree.path,
-                tree.FrontFolder_id
-            from 
-                tree 
-            left join 
-                bookmark bk on bk."MenuCode" = tree.menu_code 
-            and 
-                bk."User_id" = :user_id 
-            where 
-                1 = 1
-        )
-        select 
-            id, 
-            menu_code, 
-            pid, 
-            name, 
-            depth, 
-            folder_order, 
-            _order, 
-            css, 
-            isbookmark,
-            case when depth = 1 then FrontFolder_id else null end as FrontFolder_id
-        from 
-            M
-        where 
-            sub_count > 1
-        and 
-            FrontFolder_id is not null
-        order by 
-            depth, _order;
+                 with recursive_tree(id, menu_code, pid, name, depth, path, cycle, folder_order, _order, css, data_div, folder_id, FrontFolder_id) as (
+                    SELECT
+                        a.id,
+                        CAST(NULL AS NVARCHAR(MAX)) AS menu_code,
+                        a.Parent_id AS pid,
+                        a.FolderName AS name,
+                        1 AS depth,
+                        CAST('/' + CAST(a.id AS NVARCHAR(MAX)) AS NVARCHAR(MAX)) AS path, 
+                        0 AS cycle,
+                        a._order AS folder_order,
+                        a._order AS _order,
+                        a.IconCSS AS css, 
+                        CAST('folder' AS NVARCHAR(10)) AS data_div, 
+                        a.id AS folder_id,
+                        a.FrontFolder_id
+                    FROM
+                        menu_folder a
+                    WHERE
+                        a.Parent_id IS NULL
+                        
+                    UNION ALL
+                        
+                   
+                    SELECT
+                         NULL AS id,
+                         CAST(mi.MenuCode AS NVARCHAR(MAX)) AS menu_code,
+                         mi.MenuFolder_id AS pid,
+                         mi.MenuName AS name,
+                         recursive_tree.depth + 1 AS depth,
+                         recursive_tree.path + '/' + CAST(mi.MenuFolder_id AS NVARCHAR(MAX)) AS path, 
+                         CASE WHEN mi.MenuFolder_id IN (SELECT splitdata FROM dbo.SplitStrings(recursive_tree.path, '/')) THEN 1 ELSE 0 END AS cycle, 
+                         recursive_tree.folder_order AS folder_order,
+                         mi._order AS _order,
+                         NULL AS css,
+                         CAST('menu' AS NVARCHAR(10)) AS data_div,  
+                         mi.MenuFolder_id AS folder_id,
+                         recursive_tree.FrontFolder_id
+                    FROM
+                        menu_item mi
+                    INNER JOIN
+                        recursive_tree ON mi.MenuFolder_id = recursive_tree.id
+                    WHERE
+                        (:super_user = 1)
+                        OR EXISTS (
+                            SELECT 1
+                            FROM user_group_menu gm
+                            WHERE gm.MenuCode = mi.MenuCode
+                            AND gm.UserGroup_id = :group_id
+                            AND (gm.AuthCode LIKE '%R%' OR gm.AuthCode LIKE '%W%')
+                        )
+                        AND cycle = 0
+                ),
+                M AS (
+                    SELECT
+                         recursive_tree.id,
+                         recursive_tree.menu_code,
+                         recursive_tree.pid,
+                         recursive_tree.name,
+                         recursive_tree.depth,
+                         recursive_tree.folder_order,
+                         recursive_tree._order,
+                         ISNULL(recursive_tree.css, '') AS css,
+                         CASE WHEN bk.MenuCode IS NOT NULL THEN 1 ELSE 0 END AS isbookmark,
+                         recursive_tree.data_div,
+                         COUNT(*) OVER (PARTITION BY recursive_tree.folder_id) AS sub_count,
+                         recursive_tree.path,
+                         recursive_tree.FrontFolder_id
+                    FROM
+                        recursive_tree
+                    LEFT JOIN
+                        bookmark bk ON bk.MenuCode = recursive_tree.menu_code
+                        AND bk.User_id = :user_id
+                    WHERE
+                        1 = 1
+                )
+                SELECT
+                    id,
+                    menu_code,
+                    pid,
+                    name,
+                    depth,
+                    folder_order,
+                    _order,
+                    css,
+                    isbookmark,
+                    CASE WHEN depth = 1 THEN FrontFolder_id ELSE NULL END AS FrontFolder_id
+                FROM
+                    M
+                WHERE
+                    sub_count > 1
+                AND
+                    FrontFolder_id IS NOT NULL
+                ORDER BY
+                    depth, _order;
         """;
-
-
 
         UserGroup userGroup = user.getUserProfile().getUserGroup();
 

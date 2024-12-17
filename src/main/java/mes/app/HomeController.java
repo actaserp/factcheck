@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import lombok.extern.slf4j.Slf4j;
 import mes.app.system.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -23,7 +24,7 @@ import mes.domain.entity.SystemOption;
 import mes.domain.entity.User;
 import mes.domain.repository.SystemOptionRepository;
 
-
+@Slf4j
 @Controller
 public class HomeController {
 	
@@ -45,38 +46,29 @@ public class HomeController {
 
 
 	@RequestMapping(value= "/", method=RequestMethod.GET)
-    public ModelAndView pageIndex(HttpServletRequest request, HttpSession session) {	
-		
-        SecurityContext sc = SecurityContextHolder.getContext();
-        Authentication auth = sc.getAuthentication();         
-        User user = (User)auth.getPrincipal();
+	public ModelAndView pageIndex(HttpServletRequest request, HttpSession session) {
+
+		SecurityContext sc = SecurityContextHolder.getContext();
+		Authentication auth = sc.getAuthentication();
+		User user = (User)auth.getPrincipal();
 		String userid = user.getUsername();
-        String username = user.getUserProfile().getName();;
-		List<Map<String, Object>> sandanList = userService.getUserSandanList(userid);
+		String username = user.getUserProfile().getName();;
 
-        SystemOption sysOpt= this.systemOptionRepository.getByCode("LOGO_TITLE");
-        String logoTitle = sysOpt.getValue();
-        
-        //q = this.systemOptionRepository.getByCode("main_menu");        
 
-		// 세션에 데이터 저장
-		session.setAttribute("sandanList", sandanList);
+		SystemOption sysOpt= this.systemOptionRepository.getByCode("LOGO_TITLE");
+		String logoTitle = sysOpt.getValue();
+
+		//q = this.systemOptionRepository.getByCode("main_menu");
+
 
 		ModelAndView mv = new ModelAndView();
 		mv.addObject("userid", userid);
 		mv.addObject("username", username);
 		mv.addObject("userinfo", user);
 		mv.addObject("system_title", logoTitle);
-		mv.addObject("sandanList", sandanList);
 //		mv.addObject("default_menu_code", "wm_dashboard_summary");
 
-		
-		String mqtt_host = settings.getProperty("mqtt_host");
-		String mqtt_web_port = settings.getProperty("mqtt_web_port");
-		String hmi_topic = settings.getProperty("hmi_topic");
-		mv.addObject("mqtt_host", mqtt_host);
-		mv.addObject("mqtt_web_port", mqtt_web_port);
-		mv.addObject("hmi_topic", hmi_topic);
+
 
 		mv.setViewName("index");
 		return mv;
