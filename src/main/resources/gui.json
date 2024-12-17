@@ -1,76 +1,23 @@
 
 {
-  "wm_dashboard_plc":       { "name": "계통도",        "templates": { "default": "dashboard/dashboard_plc_main.html" }},
-  "wm_dashboard_ems":       { "name": "EMS 모니터링",   "templates": { "default": "dashboard/dashboard_ems_main.html" }},
-  "wm_dashboard_cctv":      { "name": "CCTV 모니터링",      "templates": { "default": "dashboard/dashboard_cctv_main.html" }},
-  "wm_dashboard_robot":     { "name": "로봇 모니터링",   "templates": { "default": "dashboard/dashboard_robot_main.html" }},
+  "monitoring" :{ "name": "모니터링", "templates": { "default": "dashboard/dashboard_ems_main.html" } },
+  "CategoryManager" :{ "name": "분류관리", "templates": { "default": "CategoryManager/CategoryManager.html" } },
+  "GradeManager" :{ "name": "등급관리", "templates": { "default": "GradeManager/GradeManager.html" } },
 
-  "wm_equipment_search":     { "name": "장비 이력 조회",   "templates": { "default": "dashboard/equipment_search.html" }},
-  "wm_equipment_alarm":     { "name": "장비 알림 이력",   "templates": { "default": "dashboard/equipment_alarm.html" }},
+  "CustomerManager_FAQ" :{ "name": "FAQ", "templates": { "default": "" } },
+  "CustomerManager_QnA" :{ "name": "1:1문의", "templates": { "default": "" } },
+  "CustomerManager_Announcement" :{ "name": "공지사항", "templates": { "default": "" } },
 
-  "wm_sale_gene":           { "name": "발전량 관리",     "templates": { "default": "sales/gene/sale_gene_main.html" }},
-  "wm_sale_upload":         { "name": "매출 등록",     "templates": { "default": "sales/upload/sale_upload_main.html" }},
-  "wm_sale_graph":          { "name": "매출 조회",       "templates": { "default": "sales/list/sale_graph_main.html" }},
-  "wm_income_report":       { "name": "손익 분석",       "templates": { "default": "sales/analysis/income_report_main.html" }},
+  "MembershipManager_List" :{ "name": "회원관리", "templates": { "default": "system/user.html" } },
+  "MembershipManager_Statistics" :{ "name": "방문통계", "templates": { "default": "" } },
 
-  "wm_cost_graph":          { "name": "비용 관리", "templates": { "default": "cost/list/cost_graph.html" }},
-  "wm_gasbill_list":        { "name": "도시가스 청구서 관리", "templates": { "default": "gas/list/gasbill_list.html" }},
+  "PublicCode" :{ "name": "공통코드관리", "templates": { "default": "system/code.html" } },
+  "wm_user_group":{ "name": "사용자 그룹", "templates": { "default": "system/usergroup.html" }  },
+  "wm_user":{ "name": "사용자 관리", "templates": { "default": "system/user.html" } },
+  "wm_menu_log":{ "name": "로그 현황", "templates": { "default": "system/menu_log.html" } },
+  "wm_auth_list" :{ "name": "사용자 권한 신청 조회", "templates": { "default": "system/auth_list.html" } },
 
-  "wm_gasele_analysis":     { "name": "도시가스 성분 분석", "templates": { "default": "gas/list/gasele_analysis.html" }},
-  "wm_gasamount_list":      { "name": "도시가스 사용량 조회", "templates": { "default": "gas/list/gasamount_list.html" }},
-
-  "wm_ltsa_detail":         { "name": "LTSA 보고서", "templates": { "default": "gas/ltsa/gas_ltsa_detail.html" }},
-  "wm_fuel_management":     { "name": "연료전지 운영 관리", "templates": { "default": "gas/fuel/fuel_management.html" }},
-
-  "wm_power_input":         { "name": "발전소 관리", "templates": { "default": "operate/power/power_main.html" }},
-
-  "wm_ticket_request":      { "name": "티켓 등록", "templates": { "default": "operate/ticket/ticket_request_main.html" }},
-  "wm_ticket_history_list": { "name": "티켓 이력", "templates": { "default": "operate/ticket/ticket_history_list.html" }},
-
-  "wm_control_input":       { "name": "제어이행 등록", "templates": { "default": "operate/control/control_input.html" }},
-
-  "wm_inspec_month_list":   { "name": "순회점검 등록", "templates": { "default": "inspec/list/inspec_month_main.html", "edit": "inspec/list/inspec_month_main_edit.html" }},
-  "wm_hap_input":           { "name": "합동 안전점검", "templates": { "default": "inspec/list/hap_report_main.html" }},
-  "wm_robot_inspec_list":   { "name": "로봇 점검 현황", "templates": { "default": "inspec/rbt/inspec_robot_main.html" }},
-  "wm_robot_analysis":      { "name": "로봇 통계 현황", "templates": { "default": "inspec/rbt/inspec_robot_analysis.html" }},
-
-  "wm_elecsafe_input":      { "name": "전기안전 점검 등록", "templates": { "default": "inspec/upload/inspec_elecsafe_main.html" }},
-  "wm_inspec_field_report": { "name": "FieldService Report", "templates": { "default": "inspec/list/inspec_report_main.html" }},
-  "wm_emergency_plan":      { "name": "비상훈련 계획 등록", "templates": { "default": "inspec/emergency/emergency_plan.html" }},
-
-  "wm_safety_health":       { "name": "안전보건교육 일지", "templates": { "default": "inspec/list/safety_health.html" }},
-
-  "wm_user_group":          { "name": "사용자 그룹", "templates": { "default": "system/usergroup.html" }  },
-  "wm_user":                { "name": "사용자 관리", "templates": { "default": "system/user.html" } },
-
-  "wm_menu_log":            { "name": "로그 현황", "templates": { "default": "system/menu_log.html" } },
-
-  "wm_code":                { "name": "공통코드 등록", "templates": { "default": "system/code.html" } },
-
-  "wm_auth_list" :          { "name": "사용자 권한 신청 조회", "templates": { "default": "system/auth_list.html" } },
-
-
-  "monitoring" :          { "name": "모니터링", "templates": { "default": "dashboard/dashboard_ems_main.html" } },
-
-  "CategoryManager" :          { "name": "분류관리", "templates": { "default": "" } },
-
-  "GradeManager" :          { "name": "등급관리", "templates": { "default": "" } },
-
-  "CustomerManager_FAQ" :          { "name": "FAQ", "templates": { "default": "" } },
-  "CustomerManager_QnA" :          { "name": "1:1문의", "templates": { "default": "" } },
-  "CustomerManager_Announcement" :          { "name": "공지사항", "templates": { "default": "" } },
-
-  "MembershipManager_List" :          { "name": "회원관리", "templates": { "default": "system/user.html" } },
-  "MembershipManager_Statistics" :          { "name": "방문통계", "templates": { "default": "" } },
-
-  "PublicCode" :          { "name": "공통코드관리", "templates": { "default": "system/code.html" } },
-
-
-
-
-
-
-
+  "wm_code":{ "name": "공통코드 등록", "templates": { "default": "system/code.html" } },
 "아래부터 안씀": {},
   "wm_inspec_field_list":   { "name": "FieldService Report 현황", "templates": { "default": "inspec/list/inspec_field_main.html" }},
   "wm_inspec_statistics":   { "name": "순회점검 통계", "templates": { "default": "inspec/list/inspec_statistics_main.html" }},
