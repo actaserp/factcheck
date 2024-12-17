@@ -50,6 +50,22 @@
   "wm_auth_list" :          { "name": "사용자 권한 신청 조회", "templates": { "default": "system/auth_list.html" } },
 
 
+  "monitoring" :          { "name": "모니터링", "templates": { "default": "dashboard/dashboard_ems_main.html" } },
+
+  "CategoryManager" :          { "name": "분류관리", "templates": { "default": "" } },
+
+  "GradeManager" :          { "name": "등급관리", "templates": { "default": "" } },
+
+  "CustomerManager_FAQ" :          { "name": "FAQ", "templates": { "default": "" } },
+  "CustomerManager_QnA" :          { "name": "1:1문의", "templates": { "default": "" } },
+  "CustomerManager_Announcement" :          { "name": "공지사항", "templates": { "default": "" } },
+
+  "MembershipManager_List" :          { "name": "회원관리", "templates": { "default": "system/user.html" } },
+  "MembershipManager_Statistics" :          { "name": "방문통계", "templates": { "default": "" } },
+
+  "PublicCode" :          { "name": "공통코드관리", "templates": { "default": "system/code.html" } },
+
+
 
 
 
