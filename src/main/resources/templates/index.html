@@ -5,8 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1, minimum-scale=1, maximum-scale=1">
-    <link rel="icon" type="image/png" href="/img/favicon.png">
-    <title> [KT FOMS] AI 기반 연료전지 인프라 구축</title>
+    <link rel="icon" type="image/png" href="/images/logo/icon_FACT%20CHECK.png">
+    <title> FACT CHECK</title>
     <link rel="stylesheet" href="/resource/windowContainer/css/jquery.scrollbar.min.css">
     <link rel="stylesheet" href="/resource/windowContainer/css/bootstrap.min.css">
     <link rel="stylesheet" href="/resource/windowContainer/css/nth-icons.css">
@@ -28,8 +28,8 @@
         <header>
             <div class="left">
                 <div class="logo">
-                    <img src="/images/logo/logo-only.svg" alt="로고">
-                    <h1>FOMS</h1>
+                    <img src="/images/logo/icon_logo_FactCheck.png" alt="로고" style="width: 150px; height: 50px;">
+                    <h1>FACT CHECK</h1>
                 </div>
             </div>
             <div class="right">
@@ -282,66 +282,65 @@
             <!-- [대시보드] 왼쪽 컨텐츠 영역 -->
             <div class="dashboard-layout-left menu_wrap">
                 <!-- (레이아웃) 사이드바  -->
-                <div class="dashboard-layout-sidebar tabs" data-tab="tabWrap">
-<!--                    <ul class="layout-sidebar-tab">-->
-<!--                        <li class="active">-->
-<!--                            <a href="#menu" title="전체메뉴">전체 메뉴</a>-->
-<!--                        </li>-->
-<!--                        <li>-->
-<!--                            <a href="#bookmark" title="내메뉴">내 메뉴</a>-->
-<!--                        </li>-->
-<!--                    </ul>-->
-                    <div class="layout-sidebar-tabcont">
-                        <nav class="layout-nav sidebar-tabcont" id="menu">
-                            <ul class="dep1">
-                                <li class="dep1-1">
-                                    <a href="#a" title="모니터링" class="ico-lnb01">
-                                        모니터링
-                                    </a>
-                                    <ul class="dep2" id="dep2-monitoring">
+                <div class="layout-sidebar-tabcont">
+                    <nav class="layout-nav sidebar-tabcont" id="menu">
+                        <ul class="dep1">
+                            <li class="dep1-1">
+                                <a href="#a" title="모니터링" class="ico-lnb01">
+                                    모니터링
+                                </a>
+                                <ul class="dep2" id="dep2-monitoring">
 
-                                    </ul>
-                                </li>
-                                <li class="dep1-1">
-                                    <a href="#a" title="서비스 분석" class="ico-lnb02">
-                                        서비스 분석
-                                    </a>
-                                    <ul class="dep2" id="dep2-service-analysis">
+                                </ul>
+                            </li>
+                            <li class="dep1-1">
+                                <a href="#a" title="서비스 분석" class="ico-lnb02">
+                                    분류 관리
+                                </a>
+                                <ul class="dep2" id="dep2-CategoryManager">
 
-                                    </ul>
-                                </li>
-                                <li class="dep1-1">
-                                    <a href="#a" title="운영관리" class="ico-lnb03">
-                                        운영 관리
-                                    </a>
-                                    <ul class="dep2" id="dep2-operation-management">
+                                </ul>
+                            </li>
+                            <li class="dep1-1">
+                                <a href="#a" title="운영관리" class="ico-lnb03">
+                                    등급 관리
+                                </a>
+                                <ul class="dep2" id="dep2-GradeManager">
 
-                                    </ul>
-                                </li>
-                                <li class="dep1-1">
-                                    <a href="#a" title="점검관리" class="ico-lnb04">
-                                        점검 관리
-                                    </a>
-                                    <ul class="dep2" id="dep2-inspection-management">
+                                </ul>
+                            </li>
+                            <li class="dep1-1">
+                                <a href="#a" title="점검관리" class="ico-lnb04">
+                                    고객 관리
+                                </a>
+                                <ul class="dep2" id="dep2-CustomerManager">
 
-                                    </ul>
-                                </li>
-                                <li class="dep1-1">
-                                    <a href="#a" title="시스템설정" class="ico-lnb05">
-                                        시스템 설정
-                                    </a>
-                                    <ul class="dep2" id="dep2-system-settings">
+                                </ul>
+                            </li>
+                            <li class="dep1-1">
+                                <a href="#a" title="점검관리" class="ico-lnb05">
+                                    회원 관리
+                                </a>
+                                <ul class="dep2" id="dep2- MembershipManager">
 
-                                    </ul>
-                                </li>
-                            </ul>
-                        </nav> <!-- // nav end -->
-<!--                        <div class="layout-bookmark sidebar-tabcont" id="bookmark">-->
-<!--                            <ul class="bookmark-list" id="bookmark-menu">-->
+                                </ul>
+                            </li>
+                            <li class="dep1-1">
+                                <a href="#a" title="시스템설정" class="ico-lnb06">
+                                    시스템 설정
+                                </a>
+                                <ul class="dep2" id="dep2-system-settings">
 
-<!--                            </ul>-->
-<!--                        </div> &lt;!&ndash; // bookmark end &ndash;&gt;-->
-                    </div>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav> <!-- // nav end -->
+                    <!--                        <div class="layout-bookmark sidebar-tabcont" id="bookmark">-->
+                    <!--                            <ul class="bookmark-list" id="bookmark-menu">-->
+
+                    <!--                            </ul>-->
+                    <!--                        </div> &lt;!&ndash; // bookmark end &ndash;&gt;-->
+                </div>
 <!--                    <div class="layout-sidebar-bottom">-->
 <!--                        <img src="/images/logo/logo-kt.svg" alt="kt logo">-->
 <!--                    </div>-->
@@ -582,13 +581,14 @@
 
     $(document).ready(function () {
 
-        // 메뉴 매핑
+        // 메뉴 매핑(사이드바)
         const dep2Mappings = {
             1: '#dep2-monitoring',
-            2: '#dep2-service-analysis',
-            3: '#dep2-operation-management',
-            4: '#dep2-inspection-management',
-            5: '#dep2-system-settings'
+            2: '#dep2-CategoryManager',
+            3: '#dep2-GradeManager',
+            4: '#dep2-CustomerManager',
+            5: '#dep2- MembershipManager',
+            6: '#dep2-system-settings'
         };
         nthTabs = $('#main-tabs').nthTabs();
 
