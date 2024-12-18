@@ -158,13 +158,13 @@
                     <h3>금일 신규 사용자</h3>
                 </div>
                 <div class="">
-                    <div id="theGrid1"></div>
+                    <div id="theGrid1" style="height: 247px"></div>
                 </div>
                 <div class="title-wrap" style="margin-top: 16px">
                     <h3>금일 상위 검색지역</h3>
                 </div>
                 <div class="">
-                    <div id="theGrid2"></div>
+                    <div id="theGrid2" style="height: 247px"></div>
                 </div>
             </section>
             <div class="col wp50">
@@ -218,7 +218,7 @@
                         <h3>1:1미답변 문의글</h3>
                     </div>
                     <div class="">
-                        <div id="theGrid3"></div>
+                        <div id="theGrid3" style="height: 200px"></div>
                     </div>
                 </section>
             </div>
@@ -435,7 +435,7 @@
 
         // 금일 신규 사용자 그리드
         function fetchListData() {
-            let data2 = [{},{},{},{}];
+            let data2 = [{},{},{},{},{}];
 
 
             // $.ajax({
@@ -484,10 +484,6 @@
                         e.cell.style.textAlign = 'center';
                     }
                 });
-                // FlexGrid의 최대 높이를 제한하여 스크롤바를 활성화
-                theGrid1.hostElement.style.maxHeight = '247px'; // 약 4개의 행 높이에 맞게 설정
-                theGrid1.hostElement.style.overflowY = 'auto';
-
                 theGrid1.rowHeaders.columns.splice(0, 1);  //맨 앞에 헤더부분 없애기
                 new FlexGridContextMenu(theGrid1);
                 window.downloadFileName = '주문등록';
@@ -498,7 +494,7 @@
         }
         // 금일 상위 검색지역 그리드
         function fetchListData2() {
-            let data2 = [{},{},{},{}];
+            let data2 = [{},{},{},{},{}];
 
 
             // $.ajax({
@@ -547,9 +543,6 @@
                         e.cell.style.textAlign = 'center';
                     }
                 });
-                // FlexGrid의 최대 높이를 제한하여 스크롤바를 활성화
-                theGrid2.hostElement.style.maxHeight = '247px'; // 약 4개의 행 높이에 맞게 설정
-                theGrid2.hostElement.style.overflowY = 'auto';
 
                 theGrid2.rowHeaders.columns.splice(0, 1);  //맨 앞에 헤더부분 없애기
                 new FlexGridContextMenu(theGrid2);
@@ -561,7 +554,7 @@
         }
         // 1:1미답변 문의글 그리드
         function fetchListData3() {
-            let data2 = [{},{},{}];
+            let data2 = [{},{},{},{}];
 
 
             // $.ajax({
@@ -610,10 +603,6 @@
                         e.cell.style.textAlign = 'center';
                     }
                 });
-                // FlexGrid의 최대 높이를 제한하여 스크롤바를 활성화
-                theGrid3.hostElement.style.maxHeight = '200px'; // 약 4개의 행 높이에 맞게 설정
-                theGrid3.hostElement.style.overflowY = 'auto';
-
                 theGrid3.rowHeaders.columns.splice(0, 1);  //맨 앞에 헤더부분 없애기
                 new FlexGridContextMenu(theGrid3);
                 window.downloadFileName = '주문등록';

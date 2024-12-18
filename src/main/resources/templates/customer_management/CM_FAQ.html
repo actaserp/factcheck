@@ -1,0 +1,245 @@
+<html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
+
+<meta name="_csrf" content="${_csrf.token}">
+<meta name="_csrf_header" content="${_csrf.headerName}">
+
+<head>
+    <style>
+        .wj-header {
+            text-align: center;
+        }
+
+        /* 셀 왼쪽 정렬 */
+        .wj-cell {
+            text-align: left;
+        }
+    </style>
+</head>
+
+<th:block layout:fragment="content">
+
+    <!--- (레이아웃) Contents 영역 -->
+    <div class="layout-contents">
+        <!-- Page Title -->
+        <div class="page-title-wrap">
+            <div class="left">
+                <h2>FAQ</h2>
+                <!--                <a title="북마크" class="bookmark toggle">-->
+                <!--                    내메뉴-->
+                <!--                </a>-->
+            </div>
+            <ul class="page-navi">
+                <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
+                <li>고객관리</li>
+                <li>FAQ</li>
+            </ul>
+        </div>
+        <div class="row row-2">
+            <section class="wp50" style="height: 690px">
+                <div class="wp100">
+                    <div class="container-fluid col">
+                        <p id="selectedItem"></p>
+                        <div id="FAQarea" style="max-height: 740px;">
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Section -->
+            <section class="wp50" id="tab1">
+                <div class="section-top">
+                    <div class="search-wrap">
+                    </div>
+                    <div class="button-wrap" style="border-top:none;">
+                        <ul>
+                            <li>
+                                <a class="btn btn-file2" title="파일 첨부" data-popup="popup1"
+                                   onclick="showPopup(this)">
+                                    파일 첨부<span>(0)</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="btn btn-excell" title="신규등록" onclick="resetFormFields()">
+                                    <img src="/images/icon/ico-plus.svg" alt="등록 아이콘">
+                                    신규등록
+                                </a>
+                            </li>
+                            <li>
+                                <a class="btn btn-delete" title="삭제" id="btnDelete">
+                                    <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
+                                    삭제
+                                </a>
+                            </li>
+                            <li>
+                                <a class="btn btn-edit" id="btnSave" title="저장">
+                                    <img src="/images/icon/ico-save.svg" alt="저장 아이콘">
+                                    저장
+                                </a>
+                            </li>
+                            <!--                                <li>-->
+                            <!--                                    <a class="btn btn-edit" title="수정" id="btnEdit">-->
+                            <!--                                        <img src="/images/icon/ico-edit.svg" alt="엑셀 아이콘">-->
+                            <!--                                        수정-->
+                            <!--                                    </a>-->
+                            <!--                                </li>-->
+                        </ul>
+                    </div>
+                </div> <!--//section-top end -->
+                <div class="row">
+                    <div class="col wp100">
+                        <div class="section">
+                            <form id="codeForm">
+                                <input type="hidden" id="parent_id" name="parent_id" value=""/>
+                                <input class="form-control2" type="text" id="id" name="id" hidden />
+                                <div class="table-wrap">
+                                    <table class="view-table" id="selectedData">
+                                        <caption>FAQ 등록 테이블</caption>
+                                        <colgroup>
+                                            <col class="wp20">
+                                            <col class="wauto">
+                                        </colgroup>
+                                        <tbody>
+                                        <tr>
+                                            <th><label for="">Question</label></th>
+                                            <td colspan="3">
+                                                <input type="text" id="" name="" class="wp100" required>
+                                                <div style="text-align:left; ">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th><label for="">Answer</label></th>
+                                            <td>
+                                                <input type="text" id="" name="name" class="wp100">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th><label for="">순서</label></th>
+                                            <td>
+                                                <input type="text" id="" name="name" class="wp100">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th><label for="">분류</label></th>
+                                            <td>
+                                                <select id="" name="name" class="wp100">
+                                                    <option value="">전체</option>
+                                                    <option value="0">주문의뢰</option>
+                                                    <option value="1">주문확인</option>
+                                                </select>
+
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th><label for="">비고</label></th>
+                                            <td colspan="3">
+                                                <input type="text" id="" name="" class="wp100">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th><label for="">비고</label></th>
+                                            <td colspan="3">
+                                                <textarea id="" name="" class="wp100"></textarea>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+                <!-- Section -->
+        </div>
+    </div> <!--//layout-contents end -->
+
+    <footer style="margin-top: 12px;">
+        <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
+    </footer>
+</th:block>
+
+<th:block layout:fragment="scripts">
+    <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
+
+    <script type="text/javascript">
+
+        var theGrid;
+        var viewdata;
+
+        document.readyState === 'complete' ? init() : window.onload = init;
+
+        function init() {
+            faqHtml();
+        }
+        // FAQ html
+        function faqHtml() {
+            let data2 = [
+                {
+                    "no" : 1,
+                    "faqtext0" : "문의내용1",
+                    "faqtext1" : "답변내용1"
+                },
+                {
+                    "no" : 2,
+                    "faqtext0" : "문의내용2",
+                    "faqtext1" : "답변내용2"
+                },
+                {
+                    "no" : 3,
+                    "faqtext0" : "문의내용3",
+                    "faqtext1" : "답변내용3"
+                },
+                {
+                    "no" : 4,
+                    "faqtext0" : "문의내용4",
+                    "faqtext1" : "답변내용4"
+                },
+                {
+                    "no" : 5,
+                    "faqtext0" : "문의내용5",
+                    "faqtext1" : "답변내용5"
+                }
+            ];
+            // $.ajax({
+            //     url: '/api/mobile_production/read_work',
+            //     type: 'GET',
+            //     data: {
+            //         wono: wono,
+            //     },
+            //     success: function (data) {
+            //         console.log(data.data)
+            //         if(data.data.length > 0) {
+            //             renderActionHistory(data.data);
+            //         }else {
+            //             Alert.alert('', '작업이력이 없습니다.', function () {
+            //                 document.querySelector('.btn-popup-close').click();
+            //             });
+            //         }
+            //     }
+            // });
+
+            const listCardWrap = document.getElementById('FAQarea');
+            listCardWrap.innerHTML = ''; // 기존 내용을 초기화
+            // 색상을 순환적으로 할당하기 위한 인덱스
+            let colorIndex = 0;
+            // 날자 변환
+
+            data2.forEach(item => {
+                const cardHtml = `
+                        <div style="background-color: #D0E1EB; padding: 5px; margin-right: 20px;">
+                            &ensp;${item.no}.&ensp;${item.faqtext0}
+                        </div>
+                        <div style="background-color: #CEFBBE; margin-left: 20px; padding: 5px; margin-top: 3px; margin-bottom: 3px;">
+                            &ensp;▷&ensp;     ${item.faqtext1}
+                        </div>
+                    `;
+                listCardWrap.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+    </script>
+
+</th:block>
+</html>
+
