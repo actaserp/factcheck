@@ -1,0 +1,179 @@
+<html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<style>
+
+</style>
+
+<th:block layout:fragment="content">
+
+
+  <div class="layout-contents">
+    <!-- Page Title -->
+    <div class="page-title-wrap">
+      <div class="left">
+        <h2>통계보고서</h2>
+        <!--                <a title="북마크" class="bookmark toggle">-->
+        <!--                    내메뉴-->
+        <!--                </a>-->
+      </div>
+      <ul class="page-navi">
+        <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
+        <li>회원관리</li>
+        <li>통계보고서</li>
+      </ul>
+    </div>
+    <div class="tab-wrap">
+      <div class="tab-contents">
+        <!-- Section -->
+        <section class="tab-item" id="tab1" style="height: 820px;">
+          <div class="section-top">
+            <form id="searchForm">
+              <div class="search-wrap">
+                <dl>
+                  <dt>
+                    조회일자<span class="eq">*</span>
+                  </dt>
+                  <dd>
+                    <ul class="date-box">
+                      <li>
+                        <input class="tac w150 " type="date" id="date_from" name="date_from"/>
+                        <label for="date_from" class="hide">시작일</label>
+                      </li>
+                      <li>
+                        <input class="tac w150" type="date" id="date_to" name="date_to"/>
+                        <label for="date_to" class="hide">종료일</label>
+                      </li>
+                    </ul>
+                  </dd>
+                </dl>
+
+                <dl>
+                  <dt>
+                    <label for="select1">
+                      그룹<span class="eq"></span>
+                    </label>
+                  </dt>
+                  <dd>
+                    <div class="srch-box">
+                      <select class="form-control2 w250" id="cboMenu" name="cboMenu" style="border-radius: 5px 5px 5px 5px;"></select>
+                    </div>
+                  </dd>
+                </dl>
+
+                <dl>
+                  <dt><span class="eq"></span></dt>
+                  <dd>
+                    <li>
+                      <a class="btn btn-delete" title="검색" id="btnSearch1">
+                        <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                        검색
+                      </a>
+                    </li>
+                  </dd>
+                </dl>
+              </div>
+            </form>
+
+          </div> <!--//section-top end -->
+          <div class="container-fluid">
+            <p id="selectedItem"></p>
+            <div id="theGrid" style="max-height: 700px;"></div>
+          </div>
+
+          <div class="btn-wrap">
+          </div>
+        </section>
+      </div> <!--//tab-contens end-->
+    </div> <!--//tab-wrap end-->
+  </div> <!--//layout-contents end -->
+
+  <footer style="margin-top: 24px;">
+    <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
+  </footer>
+
+</th:block>
+<th:block layout:fragment="scripts">
+  <th:block th:replace="/common/approve_box :: approve_box"></th:block>
+  <th:block th:replace="/common/ax5_uploader :: ax5_uploader"></th:block>
+  <th:block th:replace="/common/upload_one_image_box :: upload_one_image_box"></th:block>
+  <th:block th:replace="/common/popup_select_user_code :: popup_select_user_code"></th:block>
+
+  <script type="text/javascript">
+
+    var theGrid;
+    var viewdata;
+
+    document.readyState === 'complete' ? init() : window.onload = init;
+
+    function init() {
+      fetchListData();
+    }
+    // 공지사항 그리드
+    function fetchListData() {
+      let data2 = [{},{},{},{},{}];
+
+
+      // $.ajax({
+      //     url: '/api/request/request/read',
+      //     type: 'GET',
+      //     data: {
+      //         'reqnum': $('#reqnum').val()
+      //     },
+      //     async: false,
+      //     success: function (data) {
+      //         data2 = data.data;
+      //         data2.forEach(item =>{
+      //             item.hgrb = getHgrb((item.hgrb));
+      //             item.exfmtypedv = getListCgrb2(item.exfmtypedv);
+      //             item.infmtypedv = getListCgrb2(item.infmtypedv);
+      //             item.stframedv = getListCgrb2(item.stframedv);
+      //             item.stexplydv = getListCgrb2(item.stexplydv);
+      //             item.originOrdtext = item.ordtext;
+      //         })
+      //     }
+      // })
+
+      viewdata = new wijmo.collections.CollectionView(data2);
+
+      if (!theGrid) {
+
+        // 데이터 그리드에 바인딩
+        theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+          autoGenerateColumns: false,
+          showMarquee: true,
+          isReadOnly: true,
+          selectionMode: wijmo.grid.SelectionMode.Row,
+          columns: [
+            {binding: 'no', header: '지역', width: 120, minWidth: 120, align: 'center'},
+            {binding: 'createdDate', header: '사용자', width: 120, align: 'right'},
+            {binding: 'usernm', header: '문의', width: '*', align: 'right'},
+            {binding: 'usernm2', header: '답변기간', width: '*', align: 'right'},
+            {binding: 'phone', header: '답변', width: '*', minWidth: 100, align: 'center'},
+            {binding: 'phone2', header: '연락처', width: '*', minWidth: 100, align: 'center'}
+          ],
+          itemsSource: viewdata,
+        });
+        // 추가 헤더 행 생성
+        theGrid.columnHeaders.rows.insert(0, new wijmo.grid.Row()); // 새로운 헤더 행 추가
+        theGrid.columnHeaders.setCellData(0, 0, '지역'); // 첫 번째 컬럼의 헤더 셀에 텍스트 추가
+        theGrid.columnHeaders.setCellData(0, 1, '20대');   // 두 번째 컬럼의 헤더 셀에 텍스트 추가
+        theGrid.columnHeaders.setCellData(0, 2, '30대');   // 세 번째 컬럼의 헤더 셀에 텍스트 추가
+        theGrid.columnHeaders.setCellData(0, 3, '40대');
+        // 헤더를 중앙 정렬하는 이벤트 핸들러
+        theGrid.formatItem.addHandler(function (s, e) {
+          if (e.panel === s.columnHeaders) {
+            e.cell.style.textAlign = 'center';
+          }
+        });
+        theGrid.rowHeaders.columns.splice(0, 1);  //맨 앞에 헤더부분 없애기
+        new FlexGridContextMenu(theGrid);
+        window.downloadFileName = '주문등록';
+      } else {
+        // 이미 FlexGrid이 존재하는 경우, 데이터만 업데이트
+        theGrid.itemsSource = viewdata;
+      }
+    }
+
+  </script>
+</th:block>
+
+</html>

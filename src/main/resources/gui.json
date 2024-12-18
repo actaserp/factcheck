@@ -10,7 +10,7 @@
 
   "MembershipManager_List" :{ "name": "회원관리", "templates": { "default": "system/user.html" } },
   "MembershipManager_Statistics" :{ "name": "방문통계", "templates": { "default": "" } },
-  "UserChart" :{ "name": "통계보고서 및 분석", "templates": { "default": "" } },
+  "UserChart" :{ "name": "통계보고서 및 분석", "templates": { "default": "user_management/UM_userchart.html" } },
 
   "PublicCode" :{ "name": "공통코드관리", "templates": { "default": "system/code.html" } },
   "wm_user_group":{ "name": "사용자 그룹", "templates": { "default": "system/usergroup.html" }  },
