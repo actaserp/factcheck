@@ -5,14 +5,25 @@
 
 <head>
     <style>
+
         .wj-header {
-            text-align: center;
+            text-align: center !important;
         }
 
-        /* 셀 왼쪽 정렬 */
-        .wj-cell {
-            text-align: left;
+        input[type="checkbox"] {
+            margin: 0 auto; /* 마진을 통해 가운데 정렬을 보완 */
+            display: block; /* 블록으로 변경하여 중앙 정렬에 도움 */
+            margin-top: 5px;
+            width: 30px;
+            height: 30px;
         }
+
+        a.disabled {
+            pointer-events: none; /* 클릭 방지 */
+            opacity: 0.5; /* 비활성화된 느낌으로 스타일 변경 */
+            cursor: default; /* 기본 커서로 변경 */
+        }
+
     </style>
 </head>
 
@@ -23,10 +34,9 @@
         <!-- Page Title -->
         <div class="page-title-wrap">
             <div class="left">
-                <h2>공통코드 등록</h2>
-<!--                <a title="북마크" class="bookmark toggle">-->
-<!--                    내메뉴-->
-<!--                </a>-->
+                <h2>공통코드 등록</h2><!--<a id="toggleButton" onclick="toggleSearchWrap()"><img
+                    src="/images/icon/ico-down.png"
+                    alt="알람 아이콘"></a>-->
             </div>
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
@@ -34,44 +44,26 @@
                 <li>공통코드 등록</li>
             </ul>
         </div>
-
-
         <!-- Select -->
-        <div class="search-wrap">
-<!--            <ul>-->
-<!--                <li>-->
-<!--                    <select title="지역" id="spworkcd" name="spworkcd" onchange="updateSelect('spworkcd', 'spworknm')">-->
-<!--                        <option value="001">대구</option>-->
-<!--                        <input type="hidden" id="spworknm" name="spworknm">-->
-<!--                    </select>-->
-<!--                </li>-->
-<!--                <li>-->
-<!--                    <select title="구" id="spcompcd" name="spcompcd" onchange="updateSelect('spcompcd', 'spcompnm')">-->
-<!--                        <option value="001">성서산단</option>-->
-<!--                        <input type="hidden" id="spcompnm" name="spcompnm">-->
-<!--                    </select>-->
-<!--                </li>-->
-<!--                <li>-->
-<!--                    <select title="시설" id="spplancd" name="spplancd" onchange="updateSelect('spplancd', 'spplannm')">-->
-<!--                        <option value="001">대구물류센터</option>-->
-<!--                        <input type="hidden" id="spplannm" name="spplannm">-->
-<!--                    </select>-->
-<!--                </li>-->
-<!--            </ul>-->
+        <div class="search-wrap" id="searchWrap" style="display: none; padding-top:10px">
+            <ul>
+                <li>
+                    <select title="사업장" id="search_spjangcd" name="search_sjangcd"
+                            onchange="init()">
+                        <option value="" hidden selected disabled>선택</option>
+                        <option value="ZZ">성우에스피(주)</option>
+                        <option value="PP">성우피앤비(주)</option>
+                        <!-- 지역 옵션을 JavaScript에서 동적으로 채움 -->
+                    </select>
+                </li>
+            </ul>
         </div>
-
+        <div class="search-wrap">
+        </div>
         <div class="tab-wrap">
-<!--            <ul class="tab-links">-->
-<!--                <li>-->
-<!--                    <a href="#tab1" title="목록">목록</a>-->
-<!--                </li>-->
-<!--                 <li>-->
-<!--                  <a href="#tab2" title="등록">등록</a>-->
-<!--                </li>-->
-<!--            </ul>-->
             <div class="tab-contents">
                 <!-- Section -->
-                <section class="tab-item" id="tab1">
+                <section class="tab-item" style="display: block; height: 850px;" id="tab1">
                     <div class="section-top">
                         <div class="search-wrap">
                             <dl>
@@ -82,12 +74,18 @@
                                 </dt>
                                 <dd>
                                     <div class="srch-box">
-                                        <input type="text" id="txtCode" name="txtCode" class="input-srch">
-                                        <a class="btn-srch" id="btnSearch" title="검색"></a>
+                                        <input type="text" id="txtCode" name="txtCode" class="input-srch"
+                                               style="border-radius: 5px 5px 5px 5px;">
+                                        <!-- <a class="btn-srch" id="btnSearch" title="검색"></a>-->
+                                        <a class="btn btn-delete" title="검색" id="btnSearch" style="margin-left: 5px;">
+                                            <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                                            검색
+                                        </a>
                                     </div>
                                 </dd>
                             </dl>
                         </div>
+
                         <div class="button-wrap" style="border-top:none;">
                             <ul>
                                 <li>
@@ -115,35 +113,29 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="btn btn-delete" title="삭제" id="btnDelete">
+                                    <a class="btn btn-delete " title="삭제" id="btnDelete"><!--삭제버튼 disabled 쓸려면 class에 disabled 추가하기-->
                                         <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
                                         삭제
                                     </a>
                                 </li>
-<!--                                <li>-->
-<!--                                    <a class="btn btn-edit" title="수정" id="btnEdit">-->
-<!--                                        <img src="/images/icon/ico-edit.svg" alt="엑셀 아이콘">-->
-<!--                                        수정-->
-<!--                                    </a>-->
-<!--                                </li>-->
                             </ul>
                         </div>
                     </div> <!--//section-top end -->
                     <div class="row">
-                        <div class="wp60 mg-r20">
+                        <div class="wp70 mg-r20">
                             <div class="container-fluid col">
                                 <p id="selectedItem"></p>
                                 <div id="theGrid" style="max-height: 740px;"></div>
                             </div>
                         </div>
-                        <div class="col wp40">
+                        <div class="col wp30">
                             <div class="section">
                                 <form id="codeForm">
-                                    <input type="hidden" id="parent_id" name="parent_id" value=""/>
-                                    <input class="form-control2" type="text" id="id" name="id" hidden />
+                                    <input type="hidden" id="parent_id" name="parent_id"/>
+                                    <input class="form-control2" type="text" id="id" name="id" hidden/>
                                     <div class="table-wrap">
                                         <table class="view-table" id="selectedData">
-                                            <caption>보고분기 상세 테이블</caption>
+                                            <caption>코드등록 테이블</caption>
                                             <colgroup>
                                                 <col class="wp20">
                                                 <col class="wauto">
@@ -152,7 +144,8 @@
                                             <tr>
                                                 <th><label for="parent_name">상위코드</label></th>
                                                 <td>
-                                                    <input type="text" id="parent_name" name="parent_name" class="wp100" readonly  >
+                                                    <input type="text" id="parent_name" name="parent_name" class="wp100"
+                                                           readonly>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -160,7 +153,8 @@
                                                 <td>
                                                     <input type="text" id="code" name="code" class="wp100" required>
                                                     <div style="text-align:left; ">
-                                                        <span id="code-check-message" style="color: red; display: none; ">중복된 코드입니다.</span>
+                                                        <span id="code-check-message"
+                                                              style="color: red; display: none; ">중복된 코드입니다.</span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -173,9 +167,18 @@
                                             <tr>
                                                 <th><label for="description">설명</label></th>
                                                 <td>
-                                                    <input type="text" id="description" name="description" class="wp100">
+                                                    <input type="text" id="description" name="description"
+                                                           class="wp100">
                                                 </td>
                                             </tr>
+
+                                            <tr>
+                                                <th><label for="status">사용여부</label></th>
+                                                <td style="text-align: center; vertical-align: middle;">
+                                                    <input type="checkbox" id="status" naem="status" checked>
+                                                </td>
+                                            </tr>
+
                                             </tbody>
                                         </table>
                                     </div>
@@ -196,7 +199,7 @@
     <div class="modal2">
         <div class="modal_popup">
             <h3 style="text-align: center; margin-bottom: 20px">화면 설명서(목록탭)</h3>
-            <img src="/images/공통코드등록.png" style="margin-bottom: 10px" />
+            <img src="/images/공통코드등록.png" style="margin-bottom: 10px"/>
             <p style="margin-bottom: 8px"></p>
             <p style="margin-bottom: 8px">1. 상위분류명을 통해 검색하여 조회할 수 있습니다.</p>
             <p style="margin-bottom: 8px">2. 신규로 상위코드 등록 할 경우 코드, 코드명, 설명을 입력하고 저장 버튼을 누릅니다.</p>
@@ -204,7 +207,9 @@
             <p style="margin-bottom: 8px">3-1. 하위코드 생성 시 증위분류명을 클릭 후 하위추가 버튼을 누르고 입력값 입력 후 저장 버튼을 누릅니다.</p>
             <p style="margin-bottom: 8px">4. 상위분류명, 중분류명, 하위분류명 중 삭제 대상을 클릭 후 삭제 버튼을 누릅니다.</p>
             <p style="margin-bottom: 8px"> ※ 상위분류명 선택 후 삭제 시 해당 전체 데이터가 삭제 됩니다.</p>
-            <button style="border: 1px solid #03428E !important; font-size: 15px !important; position: absolute; top: 10px; right: 10px" class="close_btn">닫기</button>
+            <button style="border: 1px solid #03428E !important; font-size: 15px !important; position: absolute; top: 10px; right: 10px"
+                    class="close_btn">닫기
+            </button>
         </div>
     </div>
 
@@ -227,12 +232,12 @@
         const modalClose = document.querySelector('.close_btn');
 
         //열기 버튼을 눌렀을 때 모달팝업이 열림
-        modalOpen.addEventListener('click',function(){
+        modalOpen.addEventListener('click', function () {
             //display 속성을 block로 변경
             modal2.style.display = 'block';
         });
         //닫기 버튼을 눌렀을 때 모달팝업이 닫힘
-        modalClose.addEventListener('click',function(){
+        modalClose.addEventListener('click', function () {
             //display 속성을 none으로 변경
             modal2.style.display = 'none';
         });
@@ -240,38 +245,55 @@
 
         // wijmo grid에서 hidden 사용할려면 visible 사용해야함
         var columns = [
-            { binding: 'aid', header: 'AID', align: 'center', width: 100, visible: false },
-            { binding: 'agropcd', header: '상위코드', align: 'center', width: 100, isReadOnly: true },
-            { binding: 'agroupnm', header: '상위분류명', align: 'center', width: 150 },
-
-            { binding: 'bid', header: 'BID', align: 'center', width: 100, visible: false },
-            { binding: 'bgropcd', header: '중위코드', align: 'center', width: 100, isReadOnly: true  },
-            { binding: 'bgroupnm', header: '중분류명', align: 'center', width: 150 },
-
-            { binding: 'cid', header: 'CID', align: 'center', width: 100, visible: false },
-            { binding: 'cgropcd', header: '하위코드', align: 'center', width: 100, isReadOnly: true  },
-            { binding: 'cgroupnm', header: '하위분류명', align: 'center', width: 150 },
-
-            { binding: 'Description', header: '설명', align: 'center', width: '*' }
+            { binding: 'aid', header: 'AID', align: 'left', width: "*", visible: false},
+            { binding: 'agropcd', header: '상위코드', align: 'left', width: "*", isReadOnly: true },
+            { binding: 'agroupnm', header: '상위분류명', align: 'left', width: "*" },
+            { binding: 'Astatus', header: 'A 사용여부', align: 'left', width: "*", visible: false },
+            /*   { binding: 'ADescription', header: 'A설명', align: 'left', width: 100, visible: false },*/
+            { binding: 'bid', header: 'BID', align: 'left', width: "*", visible: false, isReadOnly: true },
+            { binding: 'bgropcd', header: '중위코드', align: 'left', width: "*", isReadOnly: true  },
+            { binding: 'bgroupnm', header: '중분류명', align: 'left', width: "*" },
+            { binding: 'Bstatus', header: 'B 사용여부', align: 'left', width: "*", visible: false },
+            { binding: 'bdescription', header: '중분류 설명', align: 'left', width: 185},
+            { binding: 'cid', header: 'CID', align: 'left', width: "*", visible: false, isReadOnly: true },
+            { binding: 'cgropcd', header: '하위코드', align: 'left', width: "*", isReadOnly: true  },
+            { binding: 'cgroupnm', header: '하위분류명', align: 'left', width: "*" },
+            { binding: 'Cstatus', header: 'C 사용여부', align: 'left', width: "*", visible: false },
+            { binding: 'cdescription', header: '하위분류 설명', align: 'left', width: "*" },
+            /*   { binding: 'adescription', header: '설명', align: 'left', width: '*' }*/
         ];
-
-
 
 
         document.readyState === 'complete' ? init() : window.onload = init;
 
         <!-- 초반 페이지 진입시 그리드 바인딩 끝-->
 
+        let selectedRowIndex = null;  // 선택된 행 인덱스 저장
+        let selectedColumnIndex = null;  // 선택된 열 인덱스 저장
+        document.addEventListener('DOMContentLoaded', function () {
+            // 특정 조건에 따라 활성화 상태를 설정
+            let isActive = true; // 조건을 기반으로 값을 설정
+            document.getElementById('status').checked = isActive;
+        });
+        let isBindSpjangcdCalled = false;
 
         function init() {
+
+            if (!isBindSpjangcdCalled) {
+                bindSpjangcd();
+                isBindSpjangcdCalled = true; // 플래그 업데이트
+            }
+
             let data2 = [];
             let txtCode = $('#txtCode').val();
+            let spjangcd = $('#search_spjangcd').val();
 
             $.ajax({
                 url: '/api/system/code/read',
                 type: 'GET',
                 data: {
                     'txtCode': txtCode,
+                    spjangcd,
                 },
                 async: false,
                 success: function (data) {
@@ -280,7 +302,7 @@
                 }
             })
 
-           menuGroupName = new wijmo.collections.PropertyGroupDescription('코드명', function (item, proName) {
+            menuGroupName = new wijmo.collections.PropertyGroupDescription('코드명', function (item, proName) {
                 return item.agroupnm;
             });
 
@@ -309,45 +331,49 @@
                 isReadOnly: true,
             });
 
-            // 헤더 스타일 추가
-            document.querySelectorAll('.wj-header').forEach(header => {
-                header.style.textAlign = 'center';
-            });
-
-            // 셀 스타일 추가
-            document.querySelectorAll('.wj-cell').forEach(cell => {
-                cell.style.textAlign = 'left';
-            });
-
             theGrid.selectionChanged.addHandler(function (s, e) {
-                var selectedRow = s.selection.row;
-                var selectedItem = s.rows[selectedRow]?.dataItem;
+                selectedRowIndex = s.selection.row; // 선택된 행 인덱스
+                selectedColumnIndex = s.selection.col; // 선택된 열 인덱스
 
-                console.log('Selected Item:', selectedItem); // 선택된 항목을 확인
+                // 선택된 행 인덱스가 유효한지 확인
+                if (selectedRowIndex < 0 || selectedRowIndex >= s.rows.length) {
+                    return; // 선택된 행이 유효하지 않은 경우 함수를 종료
+                }
+
+                let selectedItem = s.rows[selectedRowIndex]?.dataItem; // 선택된 행의 데이터
+
+                console.log(JSON.stringify(selectedItem, null, 2) + " 선택된 셀 정보확인");
 
                 // 선택된 항목과 선택된 셀의 바인딩을 확인
                 if (selectedItem) {
-                    var binding = theGrid.columns[s.selection.col].binding;
+
+                    var binding = theGrid.columns[selectedColumnIndex].binding;
 
                     // 바인딩에 따라 값을 필드에 설정
                     if (binding === 'agroupnm') {
                         $('#id').val(selectedItem.aid || '');
                         $('#code').val(selectedItem.agropcd || '');
                         $('#name').val(selectedItem.agroupnm || '');
-                        $('#description').val(selectedItem.Description || '');
+                        $('#description').val(selectedItem.adescription || '');
                         $('#parent_name').val(''); // 상위코드는 비웁니다
+                        // A 그룹 체크박스 상태 반영
+                        $('#status').prop('checked', selectedItem.astatus === 'y');
                     } else if (binding === 'bgroupnm') {
                         $('#id').val(selectedItem.bid || '');
                         $('#parent_name').val(selectedItem.agropcd || '');
                         $('#code').val(selectedItem.bgropcd || '');
                         $('#name').val(selectedItem.bgroupnm || '');
-                        $('#description').val(selectedItem.Description || '');
+                        $('#description').val(selectedItem.bdescription || '');
+                        // B 그룹 체크박스 상태 반영
+                        $('#status').prop('checked', selectedItem.bstatus === 'y');
                     } else if (binding === 'cgroupnm') {
                         $('#id').val(selectedItem.cid || '');
                         $('#parent_name').val(selectedItem.bgropcd || '');
                         $('#code').val(selectedItem.cgropcd || '');
                         $('#name').val(selectedItem.cgroupnm || '');
-                        $('#description').val(selectedItem.Description || '');
+                        $('#description').val(selectedItem.cdescription || '');
+                        // C 그룹 체크박스 상태 반영
+                        $('#status').prop('checked', selectedItem.cstatus === 'y');
                     } else {
                         // 해당 바인딩에 값이 없으면 필드 초기화
                         $('#id').val('');
@@ -355,18 +381,12 @@
                         $('#name').val('');
                         $('#description').val('');
                         $('#parent_name').val('');
+                        $('#status').prop('checked', true); // A 그룹 체크박스 초기화
                     }
 
                     // 선택한 셀의 정보 출력
-                    console.log('Selected Cell Binding:', binding);
-                    console.log('Selected Cell Value:', selectedItem[binding]);
-                } else {
-                    // 선택된 항목이 없는 경우 필드 초기화
-                    $('#id').val('');
-                    $('#code').val('');
-                    $('#name').val('');
-                    $('#description').val('');
-                    $('#parent_name').val('');
+                    /*    console.log('Selected Cell Binding:', binding);
+                        console.log('Selected Cell Value:', selectedItem[binding]);*/
                 }
             });
 
@@ -376,7 +396,7 @@
             theGrid.rowHeaders.columns.splice(0, 1);  //맨 앞에 헤더부분 없애기
 
             // 신규등록 버튼 클릭 이벤트 핸들러 등록
-            $('#Newbtn').click(function() {
+            $('#Newbtn').click(function () {
                 // 상위코드 입력 필드를 비활성화
                 $('#parent_name').prop('disabled', true);
 
@@ -411,15 +431,19 @@
             $('#code').val('');
             $('#name').val('');
             $('#description').val('');
+            $('#status').prop('checked', true);
         }
 
         function saveCode() {
-
             let url = '/api/system/code/save';
-
-            //let data = $('#codeForm').serialize();
             let data = FormUtil.extractForm($('#codeForm'));
 
+            // 체크박스 상태에 따라 값을 설정
+            data.status = $('#status').is(':checked') ? 'y' : 'n';
+
+            data.parent_id = $('#parent_id').val(); // hidden input에서 parent_id 값 가져오기
+
+            // 필수 항목 확인
             if (!data.code || !data.name) {
                 Alert.alert('', '필수항목을 입력해주세요');
                 return;
@@ -427,7 +451,7 @@
 
             let fnSuccess = function (res) {
                 if (res.success) {
-                    Alert.alert('','저장되었습니다.');
+                    Alert.alert('', '저장되었습니다.');
                     searchDataBind();
 
                     // 입력 필드 초기화
@@ -437,16 +461,19 @@
                     theGrid.collectionView.moveCurrentToPosition(-1);
                     theGrid.selection = new wijmo.grid.CellRange(-1, -1, -1, -1); // 모든 셀의 선택을 해제
                 } else {
-                    Alert.alert('', res.message)
+                    Alert.alert('', res.message);
                 }
             };
+
+            // 데이터 전송
             AjaxUtil.postAsyncData(url, data, fnSuccess);
         }
+
 
         function searchDataBind() {
             console.log("searchDataBind called");
 
-            let data = { 'txtCode': $('#txtCode').val() };
+            let data = {'txtCode': $('#txtCode').val()};
 
             console.log("Data to send:", data);
 
@@ -469,23 +496,27 @@
         }
 
         function grid_binding(data) {
-            console.log("Data to bind to grid:", data);
+            console.log("Binding data to grid:", data);
 
             let formattedData = data.map(item => ({
                 aid: item.aid,
                 agropcd: item.agropcd,
                 agroupnm: item.agroupnm,
+                astatus: item.astatus,
+                adescription:item.adescription,
                 bid: item.bid,
                 bgropcd: item.bgropcd,
                 bgroupnm: item.bgroupnm,
+                bstatus: item.bstatus,
+                bdescription:item.bdescription,
                 cid: item.cid,
                 cgropcd: item.cgropcd,
                 cgroupnm: item.cgroupnm,
-                Description: item.Description
+                cstatus: item.cstatus,
+                cdescription:item.cdescription
             }));
 
             console.log("Formatted data:", formattedData);
-
 
             // Clear existing columns
             theGrid.columns.clear();
@@ -511,7 +542,16 @@
             // Bind CollectionView to grid
             theGrid.itemsSource = viewdata;
             theGrid.refresh();
+
+            // 체크박스 상태 업데이트
+            if (formattedData.length > 0) {
+                // 첫 번째 항목의 상태를 체크박스에 반영
+                $('#status').prop('checked', formattedData[0].a_status === 'y');
+                $('#b_status').prop('checked', formattedData[0].b_status === 'y');
+                $('#c_status').prop('checked', formattedData[0].c_status === 'y');
+            }
         }
+
 
 
         function deleteCode() {
@@ -594,7 +634,7 @@
                 url: url,
                 type: 'POST',
                 data: data,
-                success: function(res) {
+                success: function (res) {
                     // 삭제 성공 시 사용자에게 알림 표시 후 그리드 갱신
                     if (res.success) {
                         alert('삭제되었습니다.');
@@ -611,7 +651,7 @@
                         alert(res.message);  // 오류 발생 시 사용자에게 알림 표시
                     }
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+                error: function (jqXHR, textStatus, errorThrown) {
                     console.error('Error:', textStatus, errorThrown);
                 }
             });
@@ -622,31 +662,38 @@
             let inputs = document.querySelectorAll('#codeForm input[type="text"], #codeForm input[type="number"], #codeForm textarea');
 
             // 각 입력 필드의 값을 빈 문자열로 설정하여 초기화합니다.
-            inputs.forEach(function(input) {
+            inputs.forEach(function (input) {
                 input.value = '';
             });
+
+            // 체크박스를 선택하고 체크 해제 상태로 설정합니다.
+            let checkboxes = document.querySelectorAll('#codeForm input[type="checkbox"]');
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = false;
+            });
+
         }
 
         function checkCodeDuplicate(code) {
             $.ajax({
                 url: '/api/system/code/checkDuplicate',
                 type: 'GET',
-                data: { code: code },
-                success: function(response) {
+                data: {code: code},
+                success: function (response) {
                     if (response.exists) {
                         $('#code-check-message').text('중복된 코드입니다.').show();
                     } else {
                         $('#code-check-message').hide();
                     }
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+                error: function (jqXHR, textStatus, errorThrown) {
                     console.error('중복 체크 오류:', textStatus, errorThrown);
                 }
             });
         }
 
-        $(document).ready(function() {
-            $('#code').on('input', function() {
+        $(document).ready(function () {
+            $('#code').on('input', function () {
                 let code = $(this).val();
                 if (code) {
                     checkCodeDuplicate(code);
@@ -656,8 +703,22 @@
             });
         });
 
+        function bindSpjangcd() {
+            $.ajax({
+                url: '/api/dashboard2/bindSpjangcd',
+                type: 'GET',
+                async: false,
+                success: function (data) {
+                    data2 = data.data;
+                    const selectElement = document.getElementById('search_spjangcd');
+                    if (selectElement) {
+                        selectElement.value = data2; // value 속성으로 선택
+                    }
+                }
+            })
+        }
+
     </script>
 
 </th:block>
 </html>
-

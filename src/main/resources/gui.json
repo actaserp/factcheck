@@ -8,7 +8,7 @@
   "CustomerManager_QnA" :{ "name": "1:1문의", "templates": { "default": "customer_management/CM_QnA.html" } },
   "CustomerManager_Announcement" :{ "name": "공지사항", "templates": { "default": "customer_management/CM_announcement.html" } },
 
-  "MembershipManager_List" :{ "name": "회원관리", "templates": { "default": "system/user.html" } },
+  "MembershipManager_List" :{ "name": "회원관리", "templates": { "default": "user_management/ClientRegistry.html" } },
   "MembershipManager_Statistics" :{ "name": "방문통계", "templates": { "default": "" } },
   "UserChart" :{ "name": "통계보고서 및 분석", "templates": { "default": "user_management/UM_userchart.html" } },
 

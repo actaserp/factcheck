@@ -28,7 +28,6 @@ public interface UserCodeRepository extends JpaRepository<UserCode, Integer>{
 	@Query("SELECT COUNT(c) > 0 FROM UserCode c WHERE LOWER(c.code) = LOWER(:code)")
 	boolean existsByCode(@Param("code") String code);
 
-
-
-
+	@Query("SELECT COUNT(c) FROM UserCode c WHERE LOWER(c.code) = LOWER(:code)")
+	int countByCode(@Param("code") String code);
 }

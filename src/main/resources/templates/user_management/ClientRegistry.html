@@ -1,0 +1,179 @@
+<html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<style>
+  .container-fluid {
+    padding: 20px;
+  }
+
+  .chartModal {
+    display: none; /* 기본적으로 숨겨짐 */
+    position: fixed;
+    z-index: 10000; /* z-index 값을 높게 설정하여 다른 요소보다 위에 오도록 함 */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 배경을 반투명하게 설정 */
+    overflow: auto;
+  }
+
+  .modal-content {
+    position: absolute; /* absolute로 설정하여 화면 중앙에 배치 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* 화면 중앙 정렬 */
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 8px;
+  }
+
+  .chart-container {
+    position: relative; /* 부모 요소에 위치 고정 */
+    width: 100%; /* 원하는 너비 */
+    height: 250px; /* 고정된 높이 */
+    overflow-y: auto; /* 세로 스크롤 활성화 */
+    overflow-x: hidden; /* 가로 스크롤 비활성화 */
+    border: 1px solid #ccc; /* 테두리 추가 (선택 사항) */
+    padding: 10px; /* 여백 추가 (선택 사항) */
+  }
+
+</style>
+<th:block layout:fragment="content">
+  <div class="layout-contents">
+    <!-- Page Title -->
+    <div class="page-title-wrap">
+      <div class="left">
+        <h2>회원 관리</h2>
+        <!--<a title="북마크" class="bookmark toggle">
+            내메뉴
+        </a>-->
+      </div>
+      <ul class="page-navi">
+        <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
+        <li>회원 목록</li>
+      </ul>
+    </div>
+    <!-- Select -->
+    <div class="tab-contents">
+      <section class="tab-item" id="tab2" style="height: 900px; overflow: hidden;">
+        <div class="section-top">
+          <div class="search-wrap">
+            <dl>
+              <dt>
+                <label for="searchUserNm">
+                  날짜<span class="eq">*</span>
+                </label>
+              </dt>
+              <dd>
+                <ul class="date-box">
+                  <li>
+                    <input type="date" id="startDate" name="startDate">
+                    <label for="startDate" class="hide">시작일</label>
+                  </li>
+                  <li>
+                    <input type="date" id="endDate" name="endDate">
+                    <label for="endDate" class="hide">종료일</label>
+                  </li>
+                </ul>
+              </dd>
+            </dl>
+            <dl>
+              <dt>
+                <label for="searchUserNm">
+                  회원명<span class="eq">*</span>
+                </label>
+              </dt>
+              <dd>
+                <div class="srch-box">
+                  <input type="text" id="searchUserNm" name="searchCltnm" class="input-srch"
+                         placeholder="회원명" style="border-radius: 5px;">
+                </div>
+              </dd>
+            </dl>
+            <dl>
+              <dt>&nbsp;</dt>
+              <dd>
+                <li>
+                  <a class="btn btn-delete" title="검색" id="searchButton1" onclick="searchData()">
+                    <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
+                    <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                    검색
+                  </a>
+                </li>
+              </dd>
+            </dl>
+          </div>
+        </div>
+        <div class="container-fluid">
+          <p id="selectedItem"></p>
+          <div id="theGrid" style="max-height: 800px"></div>
+        </div>
+      </section>
+    </div> <!--//tab-wrap end-->
+  </div> <!--//layout-contents end -->
+  <footer>
+    <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
+  </footer>
+</th:block>
+<th:block layout:fragment="scripts">
+  <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="text/javascript">
+
+    $(document).ready(function() {
+      // 현재 날짜 가져오기
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth(); // 0부터 시작하는 월(0 = 1월)
+
+      // 시작일: 올해 1월 1일
+      const startOfYear = new Date(year, 0, 1);
+      const startYearFormatted = startOfYear.getFullYear() + '-' + String(startOfYear.getMonth() + 1).padStart(2, '0') + '-' + String(startOfYear.getDate()).padStart(2, '0');
+      $('#startDate').val(startYearFormatted);
+
+      // 종료일: 현재 월의 마지막 날
+      const endOfMonth = new Date(year, month + 1, 0); // 다음 달 0일은 현재 달의 마지막 날
+      const endMonthFormatted = endOfMonth.getFullYear() + '-' + String(endOfMonth.getMonth() + 1).padStart(2, '0') + '-' + String(endOfMonth.getDate()).padStart(2, '0');
+      $('#endDate').val(endMonthFormatted);
+    });
+
+    // 하드코딩된 데이터
+    var data = [
+      { grid: 'S', grscore: "100~90", grflag: "안심", grmood: '맑음', gricon: "방패,금고" },
+      { grid: 'D', grscore: "59~50", grflag: "불안", grmood: '폭우', gricon: "안절부절" },
+      { grid: 'C', grscore: "69~60", grflag: "경계", grmood: '비', gricon: "큰 눈" },
+      { grid: 'A', grscore: "89~80", grflag: "관심", grmood: '약간 흐림', gricon: "돋보기" }
+    ];
+
+    // 컬럼 정의
+    var columns = [
+      {binding: 'rownum', header: '순번', width: 70, align: 'center'},
+      {binding: 'userNm', header: '사용자명', width: '*', minWidth: 100, align: 'center'},
+      {binding: '', header: '등록일자', width: '*', minWidth: 150, align: 'center'},
+      {binding: 'sexYN', header: '성별', width: '*', minWidth: 100, align: 'center'},
+      {binding: 'userAddr', header: '주소', width: '*', minWidth: 200, align: 'center'},
+      {binding: 'userHP', header: '연락처', width: '*', minWidth: 150, align: 'center'},
+      {binding: 'userEmail', header: '이메일', width: '*', minWidth: 100, align: 'center'},
+      {binding: '', header: '조회건수', width: 80, align: 'center', minWidth: 100,},
+      {binding: 'remark', header: '비고', width: 80, align: 'center',minWidth: 100,}
+    ];
+
+    // 초기화 함수
+    function init() {
+      // FlexGrid 생성
+      var theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+        autoGenerateColumns: false,
+        columns: columns,
+        isReadOnly: true,
+        itemsSource: data // 하드코딩된 데이터 연결
+      });
+      theGrid.rowHeaders.columns.splice(0, 1);
+    }
+
+    // 초기화 실행
+    init();
+  </script>
+</th:block>
+</html>

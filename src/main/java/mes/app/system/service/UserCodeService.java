@@ -36,54 +36,61 @@ public class UserCodeService {
 	@Autowired
 	private TB_RP980Repository tbRp980Repository;
 
-	public List<Map<String, Object>> getCodeList(String txtCode){
+	public List<Map<String, Object>> getCodeList(String txtCode) {
 
 		MapSqlParameterSource dicParam = new MapSqlParameterSource();
 		dicParam.addValue("txtCode", txtCode);
 
 		String sql = """
-				with AGroupTB AS(
-					select *
-					from user_code A
-					where A."Parent_id" is null
-				),
-				
-				BGroupTB AS(
-					select A.*
-					from user_code A
-					join AGroupTB B on A."Parent_id" = B.id
-				),
-				
-				CGroupTB AS(
-					select A.*
-					from user_code A
-					join BGroupTB B on A."Parent_id" = B.id
-				)
-				
-				select A.id AS AID,
-					A."Code" as Agropcd,
-					A."Value" as Agroupnm,
-					B.id  AS BID,
-					B."Code" as Bgropcd,
-					B."Value" as Bgroupnm,
-					C.id as CID,
-					C."Code" as Cgropcd,
-					C."Value" as Cgroupnm,
-					A."Description"
-					FROM AGroupTB A
-					LEFT Join BGroupTB B on A.id = B."Parent_id"
-					LEFT Join CGroupTB C on B.id = C."Parent_id"
-					where A."Value" ilike concat('%', :txtCode, '%')
-					ORDER BY A.id, A."Code", B."Code", C."Code"
-				""";
+        WITH AGroupTB AS (
+            SELECT *
+            FROM user_code A
+            WHERE A.[Parent_id] IS NULL
+        ),
+        BGroupTB AS (
+            SELECT A.*
+            FROM user_code A
+            JOIN AGroupTB B ON A.[Parent_id] = B.id
+        ),
+        CGroupTB AS (
+            SELECT A.*
+            FROM user_code A
+            JOIN BGroupTB B ON A.[Parent_id] = B.id
+        )
+
+        SELECT A.id AS aid,
+               A.[Code] AS agropcd,
+               A.[Value] AS agroupnm,
+               A.[_status] AS astatus,
+               A.[Description] AS adescription,
+               B.id AS bid,
+               B.[Code] AS bgropcd,
+               B.[Value] AS bgroupnm,
+               B.[_status] AS bstatus,
+               B.[Description] AS bdescription,
+               C.id AS cid,
+               C.[Code] AS cgropcd,
+               C.[Value] AS cgroupnm,
+               C.[_status] AS cstatus,
+               C.[Description] AS cdescription
+        FROM AGroupTB A
+        LEFT JOIN BGroupTB B ON A.id = B.[Parent_id]
+        LEFT JOIN CGroupTB C ON B.id = C.[Parent_id]
+        WHERE (:txtCode IS NULL OR LOWER(A.[Value]) LIKE '%' + LOWER(:txtCode) + '%')
+        ORDER BY A.id, A.[Code], B.[Code], C.[Code];
+        """;
+
 		List<Map<String, Object>> items = this.sqlRunner.getRows(sql, dicParam);
 		return items;
 	}
 
-	public boolean existsByCode(String code) {
+	public boolean existsByCode2(String code) {
 		return codeRepository.existsByCode(code);
 	}
 
+	public boolean existsByCode(String code) {
+		return codeRepository.countByCode(code) > 0;
+	}
 
 	public Map<String, Object> getCode(int id) {
 		String sql = """
@@ -163,9 +170,9 @@ public class UserCodeService {
 
 		sql += " order by c.\"Type\", c._order ";
 
-        List<Map<String, Object>> items = this.sqlRunner.getRows(sql, paramMap);
+		List<Map<String, Object>> items = this.sqlRunner.getRows(sql, paramMap);
 
-        return items;
+		return items;
 	}
 
 	public Map<String, Object> userCodeDetail(Integer id) {
@@ -187,9 +194,9 @@ public class UserCodeService {
 		            where C.id = :id
 				""";
 
-        Map<String, Object> items = this.sqlRunner.getRow(sql, paramMap);
+		Map<String, Object> items = this.sqlRunner.getRow(sql, paramMap);
 
-        return items;
+		return items;
 	}
 
 	public List<Map<String, Object>> relationDataList(String tableName2, String relationName, String baseId) {
@@ -229,9 +236,9 @@ public class UserCodeService {
 	            order by rd._order, rd.id 
 			     """;
 
-        List<Map<String, Object>> items = this.sqlRunner.getRows(sql, paramMap);
+		List<Map<String, Object>> items = this.sqlRunner.getRows(sql, paramMap);
 
-        return items;
+		return items;
 	}
 
 	// 비상연락망 지역, 산단 목록 반환
@@ -289,8 +296,5 @@ public class UserCodeService {
 
 		return regionsWithDistricts;
 	}
-
-
-
 
 }

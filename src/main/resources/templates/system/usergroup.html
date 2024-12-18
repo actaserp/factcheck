@@ -689,6 +689,7 @@
                     if (result.success) {
                         Alert.alert('', '저장되었습니다');
                         searchData2(); // 저장 후 데이터 갱신
+                        clearForm2();
                     } else {
                         console.error('저장 실패:', result.message);
                     }
