@@ -28,74 +28,96 @@ public class UserGroupMenuController {
 	SystemService systemService;
 	
 	@Autowired
-	SqlRunner sqlRunner;	
-	
-	
+	SqlRunner sqlRunner;
+
+
 	@GetMapping("/read")
 	public AjaxResult getUserGroupMenuList(
 			@RequestParam(value="group_id", required = false) Integer groupId,
 			@RequestParam(value="folder_id", required = false) Integer folderId
-			) {
-		
+	) {
+
 		AjaxResult result = new AjaxResult();
 		result.data = this.systemService.getUserGroupMenuList(groupId, folderId);
-		return result;		
+		return result;
 	}
-	
+
 	@PostMapping("/save")
 	@Transactional
-    public AjaxResult saveUserGroupMenus(
-    		@RequestParam(value="group_id") Integer groupId,
-    		@RequestParam(value="Q") String strUserGroupMenuList,
-    		Authentication auth
-    		) {
+	public AjaxResult saveUserGroupMenus(
+			@RequestParam(value = "group_id") Integer groupId,
+			@RequestParam(value = "Q") String strUserGroupMenuList,
+			Authentication auth
+	) {
+		//System.out.println("Received User Group Menu List: " + strUserGroupMenuList);
 		AjaxResult result = new AjaxResult();
-		User user = (User)auth.getPrincipal();
-		
-		List<Map<String, Object>> userGroupMenuList = CommonUtil.loadJsonListMap(strUserGroupMenuList);
-		
-	
-		userGroupMenuList.forEach(map->{
-			String menuCode =(String)map.get("menu_code");
-			Integer ugm_id =(Integer)map.get("ugm_id");
-			
-			boolean r = Boolean.parseBoolean(map.get("r").toString());
-			boolean w = Boolean.parseBoolean(map.get("w").toString());
-			
-			String authCode = "";
-			if(r) {
-				authCode="R";
-			}
-			if(w) {
-				authCode+="W";
-			}
-			
-			MapSqlParameterSource dicParam = new MapSqlParameterSource();			
-			dicParam.addValue("auth_code", authCode);
-			dicParam.addValue("menu_code", menuCode);
-			dicParam.addValue("group_id", groupId);
-			dicParam.addValue("user_id", user.getId());
-			
-			if(ugm_id==null) {
-				//insert
-				String sql = """
-				insert into user_group_menu("UserGroup_id", "MenuCode", "AuthCode", _creater_id, _created)
-				values(:group_id, :menu_code, :auth_code, :user_id, now())
-				""";
-				this.sqlRunner.execute(sql, dicParam);				
-			}
-			else {
-				//update
-				dicParam.addValue("id", ugm_id);
-				String sql = """
-				update user_group_menu set "UserGroup_id"=:group_id, "MenuCode"=:menu_code, "AuthCode" = :auth_code, _modifier_id=:user_id, _modified=now()
-				where id=:id								
-				""";
-				this.sqlRunner.execute(sql, dicParam);
-			}			
-		});	
-		
-		return result;		
-	}	
+		User user = (User) auth.getPrincipal();
+
+		try {
+			// JSON 데이터 파싱
+			List<Map<String, Object>> userGroupMenuList = CommonUtil.loadJsonListMap(strUserGroupMenuList);
+
+			userGroupMenuList.forEach(map -> {
+				String menuCode = (String) map.get("menu_code");
+				Integer ugm_id = (Integer) map.get("ugm_id");
+
+				boolean r = Boolean.parseBoolean(map.get("r").toString());
+				boolean w = Boolean.parseBoolean(map.get("w").toString());
+
+				// 권한 코드 생성
+				String authCode = "";
+				if(r) {
+					authCode="R";
+				}
+				if(w) {
+					authCode+="W";
+				}
+
+				// SQL 매개변수 설정
+				MapSqlParameterSource dicParam = new MapSqlParameterSource();
+				dicParam.addValue("auth_code", authCode);
+				dicParam.addValue("menu_code", menuCode);
+				dicParam.addValue("group_id", groupId);
+				dicParam.addValue("user_id", user.getId());
+
+				String sql;
+
+				if (ugm_id == null) {
+					// INSERT 구문
+					sql = """
+                INSERT INTO user_group_menu (UserGroup_id, MenuCode, AuthCode, _creater_id, _created)
+                VALUES (:group_id, :menu_code, :auth_code, :user_id, GETDATE())
+                """;
+				} else {
+					// UPDATE 구문
+					dicParam.addValue("id", ugm_id);
+					sql = """
+                UPDATE user_group_menu
+                SET AuthCode = :auth_code,
+                    UserGroup_id = :group_id,
+                    MenuCode = :menu_code,
+                    _modifier_id = :user_id,
+                    _modified = GETDATE()
+                WHERE id = :id
+                """;
+				}
+
+				try {
+					this.sqlRunner.execute(sql, dicParam);
+				} catch (Exception e) {
+					throw new RuntimeException("SQL 실행 중 오류 발생: menu_code=" + menuCode, e);
+				}
+			});
+
+			// 성공 메시지 반환
+			result.success = true;
+			result.message = "저장이 완료되었습니다.";
+		} catch (Exception e) {
+			System.err.println("Error during saveUserGroupMenus: " + e.getMessage());
+			result.success = false;
+			result.message = "저장 중 오류가 발생했습니다. 관리자에게 문의하세요.";
+		}
+		return result;
+	}
 }
 

@@ -15,4 +15,6 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Integer> {
 	MenuItem findByMenuCode(String MenuCode);
 
 	MenuItem findByMenuFolderIdAndMenuCode(Integer folder_id, String menuCode);
+
+    List<MenuItem> findByMenuFolderIdIn(List<Integer> folderIds);
 }

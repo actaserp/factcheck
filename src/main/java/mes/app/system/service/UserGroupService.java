@@ -17,17 +17,17 @@ public class UserGroupService {
 
 	public List<Map<String,Object>> getUserGroupList(Boolean super_user) {
 		String sql = """
-			select id, "Code" as code 
-            , "Name" as name 
-            , "Description" as description 
-            , "Disabled" as disabled
-            , "gmenu" as gmenu 
-            , mi."MenuName" as gmenuname
-            , to_char(ug."_created" ,'yyyy-mm-dd hh24:mi:ss') as created
-            from user_group ug 
-            left join menu_item mi
-			on mi."MenuCode" = ug.gmenu
-            where 1 = 1
+				SELECT ug.id,\s
+				       ug.Code AS code,
+				       ug.Name AS name,
+				       ug.Description AS description,
+				       ug.Disabled AS disabled,
+				       ug.gmenu AS gmenu,
+				       mi.MenuName AS gmenuname,
+				       FORMAT(ug._created, 'yyyy-MM-dd HH:mm:ss') AS created
+				FROM user_group AS ug
+				LEFT JOIN menu_item AS mi ON mi.MenuCode = ug.gmenu
+				WHERE 1 = 1
 			""";
 
 
@@ -41,20 +41,21 @@ public class UserGroupService {
 		return items;
 
 	}
-	
+
 	public Map<String, Object> getUserGroup(int id) {
 		String sql = """
-			select id, "Code" as code 
-            ,"Name" as name 
-            ,"Description" as description 
-            ,"Disabled" as disabled 
-            ,to_char("_created" ,'yyyy-mm-dd hh24:mi:ss') as created
-            from user_group 
-            where id = :group_id
+				SELECT id,\s
+				       [Code] AS code,
+				       [Name] AS name,
+				       [Description] AS description,
+				       [Disabled] AS disabled,
+				       CONVERT(VARCHAR, [_created], 120) AS created
+				FROM user_group;
+				WHERE id = :group_id;
 				""";
 		MapSqlParameterSource dicParam = new MapSqlParameterSource();
 		dicParam.addValue("group_id", id);
-		
+
 		Map<String , Object> item = this.sqlRunner.getRow(sql, dicParam);
 		return item;
 	}
@@ -73,6 +74,5 @@ public class UserGroupService {
 		Map<String, Object> item = this.sqlRunner.getRow(sql, dicParam);
 		return item;
 	}
-	
-	
+
 }

@@ -1,5 +1,6 @@
 package mes.app.system;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -138,8 +139,9 @@ public class UserGroupController{
 	}
 
 	@GetMapping("/defaultMenu")
-	public List<MenuItem> getMenuItem(){
-		List<MenuItem> defaultList = menuItemRepository.findByMenuFolderId(1);
+	public List<MenuItem> getMenuItem() {
+		List<Integer> folderIds = Arrays.asList(54);
+		List<MenuItem> defaultList = menuItemRepository.findByMenuFolderIdIn(folderIds);
 		return defaultList;
 	}
 	

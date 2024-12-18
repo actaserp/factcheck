@@ -130,6 +130,7 @@ footer {display: flex; justify-content: center; align-items: center; width: 100%
 .layout-nav .dep1 > li .ico-lnb03::before {background: url('../images/icon/ico-lnb03-w.svg')no-repeat center;}
 .layout-nav .dep1 > li .ico-lnb04::before {background: url('../images/icon/replus점검관리icon_gray.png'); background-size: 20px 20px;}
 .layout-nav .dep1 > li .ico-lnb05::before {background: url('../images/icon/replus시스템설정icon_gray.png'); background-size: 20px 20px;}
+.layout-nav .dep1 > li .ico-lnb06::before {background: url('../images/icon/replus시스템설정icon_gray.png'); background-size: 20px 20px;}
 .layout-nav .dep1 > li.on > a,
 .layout-nav .dep1 > li.active > a {background:url('../images/icon/ico-up.svg') no-repeat 98% 50%; color:#fff;opacity: 100%; font-weight: 700;}
 .layout-nav .dep1 > li.on .dep2 {display: block;}
@@ -138,11 +139,13 @@ footer {display: flex; justify-content: center; align-items: center; width: 100%
 .layout-nav .dep1 > li.on .ico-lnb03::before {background: url('../images/icon/ico-lnb03-nn.png')no-repeat center;}
 .layout-nav .dep1 > li.on .ico-lnb04::before {background: url('../images/icon/replus_S점검관리icon.png'); background-size: 20px 20px;}
 .layout-nav .dep1 > li.on .ico-lnb05::before {background: url('../images/icon/replus_S시스템설정icon.png'); background-size: 20px 20px;}
+.layout-nav .dep1 > li.on .ico-lnb06::before {background: url('../images/icon/replus_S시스템설정icon.png'); background-size: 20px 20px;}
 .layout-nav .dep1 > li.active .ico-lnb01::before {background: url('../images/icon/replus_S모니터링icon.png'); background-size: 20px 20px;}
 .layout-nav .dep1 > li.active .ico-lnb02::before {background: url('../images/icon/replus_S통계분석아이콘.png'); background-size: 20px 20px;}
 .layout-nav .dep1 > li.active .ico-lnb03::before {background: url('../images/icon/ico-lnb03-nn.png')no-repeat center;}
 .layout-nav .dep1 > li.active .ico-lnb04::before {background: url('../images/icon/replus_S점검관리icon.png'); background-size: 20px 20px;}
 .layout-nav .dep1 > li.active .ico-lnb05::before {background: url('../images/icon/replus_S시스템설정icon.png'); background-size: 20px 20px;}
+.layout-nav .dep1 > li.active .ico-lnb06::before {background: url('../images/icon/replus_S시스템설정icon.png'); background-size: 20px 20px;}
 .layout-nav .dep2 {display: none; padding: 20px 0 0 15px;}
 .layout-nav .dep2 > li {position: relative; padding-left: 16px;}
 .layout-nav .dep2 > li.on,

@@ -1,7 +1,11 @@
 <html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
-<style>
-
-</style>
+<head>
+    <style>
+        .wj-header {
+            text-align: center !important;
+        }
+    </style>
+</head>
 
 <th:block layout:fragment="content">
 
@@ -11,9 +15,9 @@
         <div class="page-title-wrap">
             <div class="left">
                 <h2>사용자그룹</h2>
-<!--                <a title="북마크" class="bookmark toggle">-->
-<!--                    내메뉴-->
-<!--                </a>-->
+                <!--                <a title="북마크" class="bookmark toggle">-->
+                <!--                    내메뉴-->
+                <!--                </a>-->
             </div>
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
@@ -39,7 +43,11 @@
 
                     <div class="section-top">
                         <div class="title-wrap">
-                            <h3>사용자그룹 등록</h3>
+                            <h3>사용자그룹 등록
+                                <!--<img src="/images/icon/exclamation/exclamation-circle.svg"
+                                     class="zoom-img" style="margin-left: 5px"
+                                     onclick="openPopup('https://foms.atlassian.net/wiki/external/ZTE1OTQzOGI5MDBmNDJlN2I0YTA5MDBkYWRmNDc5ODE')" alt="도움말">-->
+                            </h3>
                         </div>
                         <div class="button-wrap">
                             <ul>
@@ -114,12 +122,12 @@
                     <div class="section-top" style="float: right; margin-top: 24px;">
                         <div class="button-wrap">
                             <ul>
-                                <li>
+                                <!--<li>
                                     <a  class="btn btn-edit" title="수정" onclick="modifyData()">
                                         <img src="/images/icon/ico-edit.svg" alt="엑셀 아이콘">
                                         수정
                                     </a>
-                                </li>
+                                </li>-->
                                 <li>
                                     <a  class="btn btn-delete" title="삭제" id="btnDelete">
                                         <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
@@ -135,83 +143,8 @@
                     </div>
                 </section>
                 <!-- Section -->
-               <!-- <section class="tab-item" id="tab2">
-                    <div class="section-top">
-                        <div class="title-wrap">
-                            <h3>사용자 등록</h3>
-                        </div>
-                        <div class="button-wrap">
-                            <ul>
-                                <li>
-                                    <a class="btn btn-excell" title="엑셀다운로드" onclick="clearForm()">
-                                        <img src="/images/icon/ico-plus.svg" alt="등록 아이콘">
-                                        신규등록
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="btn btn-edit" id="btnSave" title="저장">
-                                        <img src="/images/icon/ico-save.svg" alt="저장 아이콘">
-                                        저장
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="table-wrap">
-                        <table class="write-table">
-                            <caption>점검등록 테이블</caption>
-                            <colgroup>
-                                <col class="wp12">
-                                <col class="wp40">
-                                <col class="wp12">
-                                <col class="wp40">
-                            </colgroup>
-                            <tbody>
-                            <tr>
-                                <th>
-                                    <label for="code">
-                                        코드
-                                    </label>
-                                </th>
-                                <td>
-                                    <input type="text" id="code" name="code" class="wp100" maxlength="30" placeholder="코드">
-                                    <input type="hidden" id="id" name="id" class="wp100" maxlength="30" placeholder="id">
-                                </td>
-                                <th>
-                                    <label for="name">
-                                        그룹명
-                                    </label>
-                                </th>
-                                <td>
-                                    <input type="text" id="name" name="name" class="wp100" maxlength="50" placeholder="그룹명">
-                                </td>
 
-                            </tr>
-                            <tr>
-                                <th>
-                                    설명
-                                </th>
-                                <td>
-                                    <input type="text" id="description" name="description" maxlength="100" class="wp100" placeholder="설명">
-                                </td>
-                                <th>
-                                    <label for="name">
-                                        기본화면
-                                    </label>
-                                </th>
-                                <td>
-                                    <select class="mg-r5" id="gmenu" name="gmenu" style="width: 100%">
-                                        <option></option>
-                                    </select>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>-->
-
-                <!--section 3-->
-
+                <!--section 2-->
                 <section class="tab-item" id="tab2">
                     <div class="section-top">
                         <form id="searchForm" autocomplete="off">
@@ -220,6 +153,9 @@
                                     <dt>
                                         <label for="cboUserGroup2">
                                             사용자그룹<span class="eq"></span>
+                                            <!--<img src="/images/icon/exclamation/exclamation-circle.svg"
+                                                 class="zoom-img" style="margin-left: 5px"
+                                                 onclick="openPopup('https://foms.atlassian.net/wiki/external/MTgyZTkzMDljNzNjNGZmYmJjYTFkNjM4YzQ2OGFlYzg')" alt="도움말">-->
                                         </label>
                                     </dt>
                                     <dd>
@@ -314,32 +250,38 @@
             { binding: 'description', header: '설명', width: '*', align: 'center' },
             { binding: 'gmenu', header: 'Dashboard', width: '*', align: 'center', visible: false },
             { binding: 'gmenuname', header: 'Dashboard', width: '*', align: 'center' },
-
+            { binding: 'flag', header: 'flag', width: '*', align: 'center', visible: false },
         ]
-
         <!-- 초반 페이지 진입시 그리드 바인딩 끝-->
         function init() {
             let data2 = [];
-
-
             $.ajax({
                 url: '/api/system/usergroup/read',
                 type: 'GET',
-                data: {
-
-                },
+                data: {},
                 async: false,
-                success: function(data){
+                success: function (data) {
                     let DataLength = 10 - data.data.length;
 
-                    if(data.data.length < 10){
-                        for(let i=0; i < DataLength; i++){
-                            data.data.push('empty');
+                    if (data.data.length < 10) {
+                        for (let i = 0; i < DataLength; i++) {
+                            data.data.push({
+                                id: '',
+                                code: '',
+                                name: '',
+                                description: '',
+                                gmenu: '',
+                                gmenuname: '',
+                                flag: '',
+                            });
                         }
                     }
                     data2 = data.data;
-                }
-            })
+                },
+                error: function () {
+                    console.error('데이터를 가져오는 중 오류가 발생했습니다.');
+                },
+            });
 
             viewdata = new wijmo.collections.CollectionView(data2);
             // 데이터 그리드에 바인딩
@@ -358,14 +300,15 @@
                 }
             })
 
+
             // 더블클릭 이벤트 추가
-            theGrid.hostElement.addEventListener('dblclick', function(e) {
+            theGrid.hostElement.addEventListener('dblclick', function (e) {
                 let hitTest = theGrid.hitTest(e);
                 if (hitTest.cellType === wijmo.grid.CellType.Cell) {
                     let row = hitTest.row;
                     let item = theGrid.rows[row].dataItem;
 
-                    if(item === 'empty'){
+                    if (item === 'empty') {
                         return;
                     }
                     console.log('Row double-clicked:', item);
@@ -377,14 +320,14 @@
                     document.getElementById('description').value = item.description;
                     document.getElementById('gmenu').value = item.gmenu;
 
-                  /*  updateTabLink('id');
+                    /*  updateTabLink('id');
 
-                    let tabIds = '#tab2';
-                    $(".tab-item").hide();
-                    $(tabIds).show();
+                      let tabIds = '#tab2';
+                      $(".tab-item").hide();
+                      $(tabIds).show();
 
-                    $("#listTabLink").parent().removeClass("active");
-                    $("#inputTabLink").parent().addClass("active");*/
+                      $("#listTabLink").parent().removeClass("active");
+                      $("#inputTabLink").parent().addClass("active");*/
                 }
             });
 
@@ -404,6 +347,9 @@
                 success: function (data) {
                     console.log('wijmo', data.data);
                     data3 = data.data;
+
+                    // 중분류 메뉴를 제외한 데이터 필터링
+                    data3 = data.data.filter(item => item.r !== null || item.w !== null);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.error('Error fetching log_list data:', textStatus, errorThrown);
@@ -463,7 +409,6 @@
                 }
             });
 
-
             theGrid2.rowHeaders.columns.splice(0, 1);
 
             // "읽기" 체크박스 클릭 이벤트 핸들러
@@ -482,64 +427,68 @@
                 }
             });
 
-            // $('#btnSearch').click(searchData2);
             $('#btnSave2').click(saveUserGroupMenu);
             new FlexGridContextMenu(theGrid2);
-
         }
+
         <!-- 초반 페이지 진입시 그리드 바인딩 끝-->
 
 
-        function searchData(){
+        function searchData() {
 
-            let result =  AjaxUtil.getSyncData('/api/system/usergroup/read', {});
+            let result = AjaxUtil.getSyncData('/api/system/usergroup/read', {});
 
-            if(result.success){
+            if (result.success) {
                 console.log(result.data);
 
-                let DataLength = 10 - result.data.length;
-
-                if(result.data.length < 10){
-                    for(let i=0; i < DataLength; i++){
-                        result.data.push('empty');
-                    }
-                }
                 grid_binding(result.data);
             }
         }
 
-        function grid_binding(data){
-            var inspecDto = data;
-            var inspecData = [];
-            var cnt = 1;
-            for (let i = 0; i < inspecDto.length; i++) {
-                inspecData.push({
-                    id: inspecDto[i]["id"],
-                    code: inspecDto[i]["code"],
-                    name: inspecDto[i]["name"],
-                    description: inspecDto[i]["description"],
-                    gmenu: inspecDto[i]["gmenu"]
-                });
-                cnt++;
+        function grid_binding(data) {
+
+            const minimumRows = 10;
+            if (data.length < minimumRows) {
+                const DataLength = minimumRows - data.length;
+                for (let i = 0; i < DataLength; i++) {
+                    data.push({
+                        id: '',
+                        code: '',
+                        name: '',
+                        description: '',
+                        gmenu: '',
+                        gmenuname: '',
+                        flag: '',
+                    });
+                }
             }
+            const inspecData = data.map((item) => ({
+                id: item["id"],
+                code: item["code"],
+                name: item["name"],
+                description: item["description"],
+                gmenu: item["gmenu"],
+                gmenuname: item["gmenuname"] || '', // gmenu의 이름을 추가
+                flag: item["flag"],
+            }));
 
-            theGrid.columns.clear();
-            theGrid.autoGenerateColumns = false;
-            viewdata.sourceCollection = inspecData;
+            viewdata.sourceCollection = inspecData; // 새로운 데이터를 바인딩
+            viewdata.refresh(); // 데이터를 새로고침
 
+            theGrid.columns.clear(); // 기존 컬럼을 초기화
+            columns.forEach((colDef) => {
+                theGrid.columns.push(new wijmo.grid.Column(colDef)); // 새로운 컬럼 정의 추가
+            });
 
-            for (let i = 0; i < columns.length; i++) {
-                let col = new wijmo.grid.Column(columns[i]);
-                theGrid.columns.push(col);
-            }
-            SelectItem = undefined;
+            theGrid.refresh(); // 그리드를 새로고침
+            SelectItem = undefined; // 선택 항목 초기화
         }
 
-        function checkAndAlert(){
+        function checkAndAlert() {
             for (let i = 0; i < SelectItem.length; i++) {
                 const data = SelectItem[i]._data;
 
-                if(data.id === null || data.id === undefined){
+                if (data.id === null || data.id === undefined) {
                     Alert.alert('', '빈 값이 존재합니다.');
                     return false;
                 }
@@ -547,20 +496,21 @@
             return true;
         }
 
-        function clearForm(){
+        function clearForm() {
             ['id', 'code', 'name', 'description', 'gmenu'].forEach(id => {
                 document.getElementById(id).value = '';
             });
 
-            updateTabLink('id');
+            /*updateTabLink('id');
+            */
         }
 
         //수정
-        function modifyData(){
-            if(SelectItem === undefined || SelectItem.length === 0){
+        function modifyData() {
+            if (SelectItem === undefined || SelectItem.length === 0) {
                 Alert.alert('', '수정할 항목을 선택하세요.');
                 return;
-            }else if(SelectItem.length > 1){
+            } else if (SelectItem.length > 1) {
                 Alert.alert('', '하나의 항목만 선택해주세요');
                 return;
             }
@@ -569,7 +519,7 @@
             let id = selectedItem._data.id;
 
 
-            if(!selectedItem._data.id){
+            if (!selectedItem._data.id) {
                 Alert.alert('', '수정할 게시물이 없습니다.',);
                 return false;
             }
@@ -588,10 +538,9 @@
             document.getElementById('description').value = selectedItem._data.description;
             document.getElementById('gmenu').value = selectedItem._data.gmenu;
 
-        /*    updateTabLink('id');*/
+            /*    updateTabLink('id');*/
 
         }
-
 
         // 초기 콤보박스 채우기
         AjaxUtil.fillSelectOptions($('#cboUserGroup2'), 'user_group', '', '');
@@ -600,7 +549,7 @@
         function searchData2() {
             let group_id = $('#cboUserGroup2').val();
             let folder_id = $('#cboMenuFolder').val();
-            console.log(group_id+" 선택된 값들 "+folder_id);
+            console.log(group_id + " 선택된 값들 " + folder_id);
 
             $.ajax({
                 url: '/api/system/usergroupmenu/read',
@@ -613,10 +562,10 @@
                 success: function (data) {
                     console.log("서버 응답 데이터:", data); //서버에서 반환된 데이터 로그 출력
 
-                    if(data && data.success&& Array.isArray(data.data) && data.data.length > 0){
+                    if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
                         let filteredData = filterDataByFolder(data.data, data.folder_id);
                         grid_binding2(filteredData);    // 서버에서 반환된 데이터
-                    } else{
+                    } else {
                         console.warn('서버에서 반환된 데이터가 없습니다.');
                         console.log("응답 데이터 형식 확인:", data);
 
@@ -632,41 +581,71 @@
         function filterDataByFolder(data, folderId) {
             // folderId에 해당하는 데이터만 필터링
             return data.filter(item => item.folder_id === folderId);
+
         }
 
         let menuGroupName = new wijmo.collections.PropertyGroupDescription('메뉴명', function (item) {
             return item.gpname;
         })
-        function grid_binding2(data){
-            console.log("바인딩 데이터:",data);
 
-            let UserMenuData = data.map(item=>({
-                name: item.name,
-                r: item.r,
-                w: item.w,
-                gpname: item.gpname,  // 그룹화를 위한 속성 추가
-                menu_code: item.menu_code, // 추가: menu_code 필드 포함
-                ugm_id: item.ugm_id // 추가: ugm_id 필드 포함
-            }));
 
-            console.log("UserMenuData:",UserMenuData);
+        function grid_binding2(data) {
+
+            console.log("바인딩 데이터:", data);
+            // 중분류 메뉴가 아닌 데이터만 필터링
+            let UserMenuData = data
+                .filter(item => item.r !== null || item.w !== null) // 읽기(r) 또는 쓰기(w)가 null이 아닌 항목만 선택
+                .map(item => ({
+                    name: item.name,
+                    r: item.r,
+                    w: item.w,
+                    gpname: item.gpname,  // 그룹화를 위한 속성 추가
+                    menu_code: item.menu_code, // 추가: menu_code 필드 포함
+                    ugm_id: item.ugm_id // 추가: ugm_id 필드 포함
+                }));
+
+
+            console.log("UserMenuData:", UserMenuData);
             console.log("바인딩 이후 데이터");
-
 
             theGrid2.columns.clear();
             theGrid2.autoGenerateColumns = false;
 
             var columns = [
-                {binding: 'name',header: '코드명',width: 250,align: 'center',},
-                {binding: 'r',header: '읽기',width: 200,align: 'center',dataType: wijmo.DataType.Boolean,isReadOnly: false,},
-                {binding: 'w',header: '쓰기',width: 200,align: 'center',dataType: wijmo.DataType.Boolean,isReadOnly: false,},
+                {binding: 'name', header: '코드명', width: 250, align: 'left'},
+                {
+                    binding: 'r',
+                    header: '읽기',
+                    width: 200,
+                    align: 'center',
+                    dataType: wijmo.DataType.Boolean,
+                    isReadOnly: false
+                },
+                {
+                    binding: 'w',
+                    header: '쓰기',
+                    width: 200,
+                    align: 'center',
+                    dataType: wijmo.DataType.Boolean,
+                    isReadOnly: false
+                },
                 {binding: '', header: '', width: "*", align: 'center'},
             ];
-
 
             columns.forEach(colDef => {
                 let col = new wijmo.grid.Column(colDef);
                 theGrid2.columns.push(col);
+            });
+
+            // **클릭 이벤트 처리**
+            theGrid2.cellEditEnded.addHandler((s, e) => {
+                let item = s.itemsSource[e.row];
+                let column = theGrid2.columns[e.col];
+
+                if (column.binding === 'r' || column.binding === 'w') {
+                    item[column.binding] = !item[column.binding]; // 상태 토글
+                    console.log(`Updated ${column.binding} for ${item.menu_code}: ${item[column.binding]}`);
+                }
             });
 
 
@@ -678,80 +657,72 @@
 
             // 그리드에 바인딩
             theGrid2.itemsSource = viewdata2;
-
         }
 
-
         function saveUserGroupMenu() {
-
             let group_id = $('#cboUserGroup2').val();
             let folder_id = $('#cboMenuFolder').val();
 
             let url = '/api/system/usergroupmenu/save';
-            let data = {group_id: group_id, Q : ''};
+            let data = {group_id: group_id, Q: ''};
             let items = [];
-
 
             // itemsSource의 sourceCollection을 사용하여 데이터 순회
             let sourceCollection = theGrid2.itemsSource.sourceCollection || [];
             console.log("Source Collection Length:", sourceCollection.length);
-            console.log("Source Collection:", JSON.stringify(sourceCollection, null, 2));
-
-
 
             sourceCollection.forEach(item => {
-                let menu_code = item.menu_code;
-                let ugm_id = item.ugm_id; // 추가
-                if (menu_code) {
-                    items.push({
-                        menu_code: menu_code,
-                        r: item.r === true ? true : false,  // Boolean 값으로 변환
-                        w: item.w === true ? true : false,  // Boolean 값으로 변환
-                        ugm_id: ugm_id, // 추가
-                    });
-                }
+                items.push({
+                    menu_code: item.menu_code,
+                    ugm_id: item.ugm_id,
+                    r: !!item.r, // 읽기 상태
+                    w: !!item.w, // 쓰기 상태
+                });
             });
 
-
-            // 데이터 확인을 위한 콘솔 출력
-            console.log("Items to be sent:", JSON.stringify(items, null, 2)); // 전송할 데이터 출력
-
-
+            console.log("Items to be sent:", JSON.stringify(items, null, 2));
             data.Q = JSON.stringify(items);
-            console.log("Final data object:", JSON.stringify(data, null, 2)); // 최종 데이터 객체 출력
-            //데이터입력체크루틴 누락
-            //_this.grid.sel
 
             Alert.confirm('', '저장하시겠습니까?', function () {
                 let fnSuccess = function (result) {
-                    if(result.success){
-                        Alert.alert('','저장되었습니다');
-                        searchData2(); // 저장 후 새 데이터로 그리드 갱신
-                    }else {
-                        console.error('저장 실패:', result.message);  // 실패 시 에러 로그
+                    console.log("Server response:", JSON.stringify(result, null, 2));
+                    if (result.success) {
+                        Alert.alert('', '저장되었습니다');
+                        searchData2(); // 저장 후 데이터 갱신
+                    } else {
+                        console.error('저장 실패:', result.message);
                     }
                 };
                 AjaxUtil.postAsyncData(url, data, fnSuccess);
-            }, function () { });
-
+            });
         }
 
 
-        $('#cboUserGroup2, #cboMenuFolder').change(function() {
+        $('#cboUserGroup2, #cboMenuFolder').change(function () {
             // 값이 변경되었을 때 searchData 함수를 호출
             searchData2();
         });
 
-
-
+        // 체크박스 초기화
+        function clearForm2() {
+            ['AllcheckRead', 'AllcheckWrite'].forEach(id => {
+                document.getElementById(id).checked = false;
+            });
+        }
 
         $(document).ready(function (e) {
 
-            initializeSelect({ url: '/api/system/usergroup/defaultMenu', params: {}, elementId: 'gmenu', valueField: "menuCode", textField: "menuName" });
+            initializeSelect({
+                url: '/api/system/usergroup/defaultMenu',
+                params: {},
+                elementId: 'gmenu',
+                valueField: "menuCode",
+                textField: "menuName"
+            });
 
-            $('#btnSave').click(function(){
+            $('#btnSave').click(function () {
 
-                Alert.confirm('', '저장하시겠습니까?', function(){
+                Alert.confirm('', '저장하시겠습니까?', function () {
 
                     const id = $('#id').val().trim();
                     const code = $('#code').val().trim();
@@ -759,45 +730,53 @@
                     const description = $('#description').val().trim();
                     const gmenu = $('#gmenu').val();
 
-                    if(!code){
+                    if (!code) {
                         Alert.alert('', '코드를 입력해주세요.');
                         $('#code').focus();
                         return;
                     }
-                    if(!name){
+                    if (!name) {
                         Alert.alert('', '그룹명을 입력해주세요.');
                         $('#name').focus();
                         return;
                     }
-                    if(!gmenu){
+                    if (!gmenu) {
                         Alert.alert('', '기본화면 설정을 해주세요.');
                         $('#gmenu').focus();
                         return;
                     }
-                    const data = { code: code, name: name, description: description, id: id, gmenu: gmenu };
+                    const data = {code: code, name: name, description: description, id: id, gmenu: gmenu};
                     const fnSuccess = function (res) {
                         Alert.alert('', res.message);
-                        $('#listTabLink').click();
+                        AjaxUtil.fillSelectOptions($('#cboUserGroup2'), 'user_group', '', '');
                         searchData();
                         clearForm();
                     };
-                    AjaxUtil.postAsyncData("/api/system/usergroup/save", data, fnSuccess, function(){
+                    AjaxUtil.postAsyncData("/api/system/usergroup/save", data, fnSuccess, function () {
                         Alert.alert('', '서버통신실패');
                     })
                 })
             })
 
             //삭제
-            $('#btnDelete').click(function(){
+            $('#btnDelete').click(function () {
 
-                if(SelectItem === undefined || SelectItem.length === 0){
+
+                if (SelectItem === undefined || SelectItem.length === 0) {
                     Alert.alert('', '삭제할 항목을 선택하세요.');
                     return;
                 }
 
+                for (let i = 0; i < SelectItem.length; i++) {
+                    if (SelectItem[i]._data.flag === 'Y') {
+                        Alert.alert('', '사용자가 존재하는 그룹은 삭제불가능합니다.');
+                        return;
+                    }
+                }
+
                 console.log('asd: ', SelectItem);
 
-                if(!checkAndAlert()){
+                if (!checkAndAlert()) {
                     return;
                 }
 
@@ -811,54 +790,27 @@
                     }
                     let fnSuccess = function (res) {
                         if (res.success) {
-                            Alert.alert('', '삭제되었습니다.');
+                            Alert.alert('', res.message);
                             searchData();
+                            AjaxUtil.fillSelectOptions($('#cboUserGroup2'), 'user_group', '', '');
+                        } else {
+                            Alert.alert('', res.message);
+
                         }
                     }
-                    AjaxUtil.postAsyncData('/api/system/usergroup/delete', data, fnSuccess);
+                    AjaxUtil.postAsyncData('/api/system/usergroup/delete', data, fnSuccess,
+                        function () {
+                            Alert.alert('', '에러가 발생하였습니다.');
+                        });
                 })
             })
-
-            $('#inputTabLink').click(function(){
-
-                if(!checkAndAlert()){
-                    $('#listTabLink').click();
-                    return;
-                }
-
-                /*if(SelectItem === undefined){
-                    Alert.alert('', '항목을 선택해주세요', function(){
-                        $('#listTabLink').click();
-                    });
-                    return false;
-                }*/
-                if(SelectItem.length > 1){
-
-                    Alert.alert('', '하나의 항목만 선택해주세요', function(){
-                        $('#listTabLink').click();
-                    });
-
-                    return false;
-                }
-                let selectedItem = SelectItem[0];
-
-                if(selectedItem === undefined){
-                    clearForm();
-                    return false;
-                }
-                let bindingList = ['id', 'code', 'name', 'description', 'gmenu'];
-                let valueList = [ selectedItem._data.id ,selectedItem._data.code, selectedItem._data.name, selectedItem._data.description, selectedItem._data.gmenu ];
-
-                for(let i=0; i < bindingList.length; i++){
-                    console.log(bindingList[i], valueList[i]);
-                    ElementBinding(bindingList[i], valueList[i]);
-                }
-
-                updateTabLink('id');
-
-            })
-
         });
+
+        function openPopup(url) {
+            // 새 창 열기
+            window.open(url, '_blank',
+                'width=1040,height=1000,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes');
+        }
     </script>
 </th:block>
 </html>

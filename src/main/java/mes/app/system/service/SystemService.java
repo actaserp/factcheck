@@ -139,78 +139,89 @@ public class SystemService {
 
     }
 
-    /**
-     * 시스템-메뉴권한 : 사용자그룹별 메뉴조회
-     *
-     * @param userGroupId
-     * @param folderId
-     * @return
-     */
     public List<Map<String, Object>> getUserGroupMenuList(Integer userGroupId, Integer folderId) {
-
+        System.out.println("Folder ID: " + folderId);
+        System.out.println("User ID: " + userGroupId);
         String sql = """
-                with recursive tree as (  
-                        select a.id
-                            , a."Parent_id" as pid
-                            , '' as menu_code
-                            , a."FolderName" as gpname
-                            , a."FolderName" as name
-                            , 1 as depth
-                            , array[a.id] as path
-                            , false as cycle
-                            , a."_order" as ord
-                            ,'folder' as data_div
-                            , a.id as folder_id
-                            , true as is_folder
-                            from menu_folder a   
-                            where a."Parent_id" is null
-                             and a."FrontFolder_id" is not null
-                """;
-        if (folderId != null) {
-            sql += " and a.id = :folder_id";
-        }
+        WITH tree AS (
+            SELECT
+                a.id,
+                a.Parent_id AS pid,
+                CAST('' AS NVARCHAR(MAX)) AS menu_code,
+                a.FolderName AS gpname,
+                a.FolderName AS name,
+                1 AS depth,
+                CAST(a.id AS NVARCHAR(MAX)) AS path,
+                0 AS cycle,
+                a._order AS ord,
+                CAST('folder' AS NVARCHAR(10)) AS data_div,
+                a.id AS folder_id,
+                1 AS is_folder
+            FROM menu_folder a
+            WHERE a.Parent_id IS NULL
+              AND (a.FrontFolder_id IS NOT NULL OR a.FrontFolder_id IS NULL)
+        """;
 
+        // Optional folder ID filtering
+        if (folderId != null) {
+            sql += " AND a.id = :folder_id";
+        }
         sql += """
-                      union all
-                              select null as id
-                                    , mi."MenuFolder_id" as pid
-                                    , mi."MenuCode"::text as menu_code
-                                    , tree."gpname" as gpname
-                                    , mi."MenuName"  as name
-                                    , tree.depth+1
-                                    , array_append(tree.path, mi."MenuFolder_id") as path
-                                    , mi."MenuFolder_id" = any(tree.path) as cycle
-                                    , mi._order as ord
-                                    ,'menu' as data_div
-                                    , mi."MenuFolder_id" as folder_id
-                                    , false as is_folder
-                              from menu_item mi
-                              inner join tree on mi."MenuFolder_id" = tree.id
-                              where mi."MenuCode" not in ('wm_user_group', 'wm_user', 'wm_user_group_menu')
-                        )
-                        select tree.pid
-                            , tree.id
-                            , tree.menu_code
-                            , tree.gpname
-                            , tree.name
-                            , tree.depth
-                            , tree.ord
-                            , ugm."UserGroup_id"
-                            , ugm."AuthCode"
-                            , case when tree.is_folder then null else coalesce(ugm."AuthCode" like '%%R%%', false) end  as r
-                            , case when tree.is_folder then null else coalesce(ugm."AuthCode" like '%%W%%', false) end  as w
-                            , case when tree.is_folder then null else coalesce(ugm."AuthCode" like '%%X%%', false) end  as x
-                            , tree.is_folder
-                            , ugm.id as ugm_id
-                        from tree 
-                        left join user_group_menu ugm on ugm."MenuCode" = tree.menu_code 
-                        and ugm."UserGroup_id" = :group_id
-                        order by path, tree.ord						
-                """;
+        UNION ALL
+        SELECT
+            NULL AS id,
+            mi.MenuFolder_id AS pid,
+            CAST(mi.MenuCode AS NVARCHAR(MAX)) AS menu_code,
+            tree.gpname AS gpname,
+            mi.MenuName AS name,
+            tree.depth + 1,
+            tree.path + '/' + CAST(mi.MenuFolder_id AS NVARCHAR(MAX)) AS path,
+            CASE WHEN CHARINDEX(CAST(mi.MenuFolder_id AS NVARCHAR(MAX)), tree.path) > 0 THEN 1 ELSE 0 END AS cycle,
+            mi._order AS ord,
+            CAST('menu' AS NVARCHAR(10)) AS data_div,
+            mi.MenuFolder_id AS folder_id,
+            0 AS is_folder
+        FROM menu_item mi
+        INNER JOIN tree ON mi.MenuFolder_id = tree.id
+        WHERE mi.MenuCode NOT IN ('wm_user_group_menu')
+    )
+    SELECT
+        tree.pid,
+        tree.id,
+        tree.menu_code,
+        tree.gpname,
+        tree.name,
+        tree.depth,
+        tree.ord,
+        ugm.UserGroup_id,
+        ugm.AuthCode,
+        CASE
+            WHEN tree.is_folder = 1 THEN NULL
+            ELSE IIF(ugm.AuthCode IS NULL, 0, IIF(CHARINDEX('R', ugm.AuthCode) > 0, 1, 0))
+        END AS r,
+        CASE
+            WHEN tree.is_folder = 1 THEN NULL
+            ELSE IIF(ugm.AuthCode IS NULL, 0, IIF(CHARINDEX('W', ugm.AuthCode) > 0, 1, 0))
+        END AS w,
+        CASE
+            WHEN tree.is_folder = 1 THEN NULL
+            ELSE IIF(ugm.AuthCode IS NULL, 0, IIF(CHARINDEX('X', ugm.AuthCode) > 0, 1, 0))
+        END AS x,
+        tree.is_folder,
+        ugm.id AS ugm_id
+    FROM tree
+    LEFT JOIN user_group_menu ugm
+        ON ugm.MenuCode = tree.menu_code
+        AND ugm.UserGroup_id = :group_id
+    ORDER BY tree.path, tree.ord
+    """;
 
         MapSqlParameterSource dicParam = new MapSqlParameterSource();
         dicParam.addValue("folder_id", folderId);
         dicParam.addValue("group_id", userGroupId);
+        System.out.println("Executing SQL: " + sql + " with folder_id=" + folderId);
+
+        System.out.println("Executing SQL: " + sql);
         return this.sqlRunner.getRows(sql, dicParam);
     }
 
