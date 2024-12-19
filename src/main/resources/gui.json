@@ -9,7 +9,7 @@
   "CustomerManager_Announcement" :{ "name": "공지사항", "templates": { "default": "customer_management/CM_announcement.html" } },
 
   "MembershipManager_List" :{ "name": "회원관리", "templates": { "default": "user_management/ClientRegistry.html" } },
-  "MembershipManager_Statistics" :{ "name": "방문통계", "templates": { "default": "" } },
+  "MembershipManager_Statistics" :{ "name": "방문통계", "templates": { "default": "user_management/MembershipVisitData.html" } },
   "UserChart" :{ "name": "통계보고서 및 분석", "templates": { "default": "user_management/UM_userchart.html" } },
 
   "PublicCode" :{ "name": "공통코드관리", "templates": { "default": "system/code.html" } },
@@ -17,6 +17,8 @@
   "wm_user":{ "name": "사용자 관리", "templates": { "default": "system/user.html" } },
   "wm_menu_log":{ "name": "로그 현황", "templates": { "default": "system/menu_log.html" } },
   "wm_auth_list" :{ "name": "사용자 권한 신청 조회", "templates": { "default": "system/auth_list.html" } },
+  "login_log" : {"name":"사용자 로그인 현황", "templates": { "default": "system/login_log.html"}},
+  "Marketing" : {"name":"마케팅관리", "templates": { "default": "system/Marketing.html"}},
 
   "wm_code":{ "name": "공통코드 등록", "templates": { "default": "system/code.html" } },
 "아래부터 안씀": {},
