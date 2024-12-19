@@ -107,72 +107,81 @@
     function init() {
       fetchListData();
     }
-    // 공지사항 그리드
+    // 통계보고서 그리드
     function fetchListData() {
-      let data2 = [{},{},{},{},{}];
-
-
-      // $.ajax({
-      //     url: '/api/request/request/read',
-      //     type: 'GET',
-      //     data: {
-      //         'reqnum': $('#reqnum').val()
-      //     },
-      //     async: false,
-      //     success: function (data) {
-      //         data2 = data.data;
-      //         data2.forEach(item =>{
-      //             item.hgrb = getHgrb((item.hgrb));
-      //             item.exfmtypedv = getListCgrb2(item.exfmtypedv);
-      //             item.infmtypedv = getListCgrb2(item.infmtypedv);
-      //             item.stframedv = getListCgrb2(item.stframedv);
-      //             item.stexplydv = getListCgrb2(item.stexplydv);
-      //             item.originOrdtext = item.ordtext;
-      //         })
-      //     }
-      // })
+      let data2 = [
+        { },
+        { },
+        { },
+        { },
+        { }
+      ];
 
       viewdata = new wijmo.collections.CollectionView(data2);
 
       if (!theGrid) {
-
-        // 데이터 그리드에 바인딩
+        // FlexGrid 생성
         theGrid = new wijmo.grid.FlexGrid('#theGrid', {
-          autoGenerateColumns: false,
-          showMarquee: true,
-          isReadOnly: true,
-          selectionMode: wijmo.grid.SelectionMode.Row,
+          allowMerging: 'ColumnHeaders', // 열 헤더 병합 활성화
+          autoGenerateColumns: false,    // 자동 열 생성 비활성화
           columns: [
-            {binding: 'no', header: '지역', width: 120, minWidth: 120, align: 'center'},
-            {binding: 'createdDate', header: '사용자', width: 120, align: 'right'},
-            {binding: 'usernm', header: '문의', width: '*', align: 'right'},
-            {binding: 'usernm2', header: '답변기간', width: '*', align: 'right'},
-            {binding: 'phone', header: '답변', width: '*', minWidth: 100, align: 'center'},
-            {binding: 'phone2', header: '연락처', width: '*', minWidth: 100, align: 'center'}
+            { binding: 'district', header: '구군', width: 100, allowMerging: true }, // 구군 열 추가
+            { binding: 'gangnam', header: '강남', width: '*', minWidth: 100, align: 'center' },
+            { binding: 'songpa', header: '송파', width: '*', minWidth: 100, align: 'center' },
+            { binding: 'suwon', header: '수원', width: '*', minWidth: 100, align: 'center' },
+            { binding: 'seongnam', header: '성남', width: '*', minWidth: 100, align: 'center' },
+            { binding: 'gumjung', header: '금정', width: '*', minWidth: 100, align: 'center' },
+            { binding: 'sooyeong', header: '수영', width: '*', minWidth: 100, align: 'center' },
+            { binding: 'gyeyang', header: '계양', width: '*', minWidth: 100, align: 'center' },
+            { binding: 'yeonsoo', header: '연수', width: '*', minWidth: 100, align: 'center' }
           ],
-          itemsSource: viewdata,
+          itemsSource: viewdata // 데이터 소스 바인딩
         });
-        // 추가 헤더 행 생성
-        theGrid.columnHeaders.rows.insert(0, new wijmo.grid.Row()); // 새로운 헤더 행 추가
-        theGrid.columnHeaders.setCellData(0, 0, '지역'); // 첫 번째 컬럼의 헤더 셀에 텍스트 추가
-        theGrid.columnHeaders.setCellData(0, 1, '20대');   // 두 번째 컬럼의 헤더 셀에 텍스트 추가
-        theGrid.columnHeaders.setCellData(0, 2, '30대');   // 세 번째 컬럼의 헤더 셀에 텍스트 추가
-        theGrid.columnHeaders.setCellData(0, 3, '40대');
-        // 헤더를 중앙 정렬하는 이벤트 핸들러
+
+        // 상위 헤더 행 추가
+        const extraRow = new wijmo.grid.Row();
+        extraRow.allowMerging = true; // 병합 활성화
+        theGrid.columnHeaders.rows.splice(0, 0, extraRow); // 첫 번째 행에 추가
+
+        // 상위 헤더 데이터 설정
+        const panel = theGrid.columnHeaders;
+        panel.setCellData(0, 0, '지역');   // 상위 헤더에 "지역" 추가
+        panel.setCellData(0, 1, '서울'); // '서울' 병합 헤더
+        panel.setCellData(0, 2, '서울'); // '서울' 병합 헤더
+        panel.setCellData(0, 3, '경기'); // '경기' 병합 헤더
+        panel.setCellData(0, 4, '경기'); // '경기' 병합 헤더
+        panel.setCellData(0, 5, '부산'); // '부산' 병합 헤더
+        panel.setCellData(0, 6, '부산'); // '부산' 병합 헤더
+        panel.setCellData(0, 7, '인천'); // '인천' 병합 헤더
+        panel.setCellData(0, 8, '인천'); // '인천' 병합 헤더
+
+        // 셀 중앙 정렬 및 병합 처리
         theGrid.formatItem.addHandler(function (s, e) {
-          if (e.panel === s.columnHeaders) {
+          if (e.panel === s.columnHeaders && e.range.rowSpan > 1) {
+            const html = e.cell.innerHTML;
+            e.cell.innerHTML = '<div class="v-center">' + html + '</div>';
             e.cell.style.textAlign = 'center';
+            e.cell.style.verticalAlign = 'middle';
+            e.cell.style.backgroundColor = '#d0e1eb'; // 병합된 셀 스타일
           }
         });
-        theGrid.rowHeaders.columns.splice(0, 1);  //맨 앞에 헤더부분 없애기
+
+        // Row Headers 설정
+        theGrid.rowHeaders.setCellData(0, 0, '20대 이하');
+        theGrid.rowHeaders.setCellData(1, 0, '30대');
+        theGrid.rowHeaders.setCellData(2, 0, '40대');
+        theGrid.rowHeaders.setCellData(3, 0, '50대');
+        theGrid.rowHeaders.setCellData(4, 0, '60대 이상');
+
+        // Row Header 크기 조정
+        theGrid.rowHeaders.columns[0].width = 100;
+
         new FlexGridContextMenu(theGrid);
-        window.downloadFileName = '주문등록';
       } else {
-        // 이미 FlexGrid이 존재하는 경우, 데이터만 업데이트
+        // 이미 FlexGrid가 존재하는 경우 데이터 업데이트
         theGrid.itemsSource = viewdata;
       }
     }
-
   </script>
 </th:block>
 
