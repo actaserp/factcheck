@@ -72,7 +72,7 @@
             <div class="button-wrap" style="border-top:none;">
               <ul>
                 <li>
-                  <a class="btn btn-excell" title="신규등록" id="Newbtn">
+                  <a class="btn btn-excell" title="신규등록" id="Newbtn" onclick="clearForm()">
                     <img src="/images/icon/ico-plus.svg" alt="등록 아이콘">
                     신규등록
                   </a>
@@ -120,13 +120,13 @@
                           <label for="regnm">등기 명칭</label>
                         </th>
                         <td colspan="3">
-                          <input type="text" id="regnm" name="regnm" class="wp100" placeholder="등기 명칭" />
+                          <input type="text" id="regnm" name="regnm" class="wp100" placeholder="근저당권" />
                         </td>
                       </tr>
                       <tr>
                         <th><label for="reggroup">상위그룹</label></th>
                         <td colspan="3">
-                          <input type="text" id="reggroup" name="reggroup" class="wp100" style="width: 300px;" placeholder="상위그룹"/>
+                          <input type="text" id="reggroup" name="reggroup" class="wp100" style="width: 300px;" placeholder="근저당"/>
                         </td>
                       </tr>
                       <tr>
@@ -134,7 +134,9 @@
                         <td colspan="3">
                           <select id="regstand" name="regstand" class="wp100"  style="width: 300px;!important" >
                             <option value="">선택하세요</option>
-                            <option value="기준1">기준1</option>
+                            <option value="A1">금액기준</option>
+                            <option value="A2">점수기준</option>
+                            <option value="A3">복합기준</option>
                           </select>
                         </td>
                       </tr>
@@ -143,7 +145,7 @@
                         <td><input type="text" id="regmaxnum" name="regmaxnum" class="wp100" placeholder=" 최대위험 점수" /></td>
 
                         <th><label for="regyul">발생비율</label></th>
-                        <td><input type="text" id="regyul" name="regyul" class="wp100" placeholder="발생비율"/></td>
+                        <td><input type="text" id="regyul" name="regyul" class="wp100" placeholder="발생비율" oninput="addPercentageSign(this)"/></td>
                       </tr>
                       <tr>
                         <th><label for="regstamt">기준금액</label></th>
@@ -153,7 +155,9 @@
                         <td>
                           <select id="riskclass" name="riskclass" class="wp100">
                             <option value="">선택하세요</option>
-                            <option value="기준1">기준1</option>
+                            <option value="기준1">최고 위험</option>
+                            <option value="기준1">높은 위험</option>
+                            <option value="기준1">위험</option>
                           </select>
                         </td>
                       </tr>
@@ -181,7 +185,7 @@
                       <tr>
                         <th><label for="description">설명</label></th>
                         <td colspan="3">
-                          <input type="text" id="description" name="description" class="wp100" placeholder="설명" />
+                          <input type="text" id="description" name="description" class="wp100" placeholder="부동산을 담보로 은행권에서 대출" />
                         </td>
                       </tr>
                       <tr>
@@ -213,24 +217,8 @@
   <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
 
   <script type="text/javascript">
-    // 하드코딩된 데이터
-    var data = [
-      { regnm: '등기명칭1', reggroup: '상위그룹1', regmaxnum: 100, exflag: '0', regstamt: 5000 },
-      { regnm: '등기명칭2', reggroup: '상위그룹2', regmaxnum: 200, exflag: '1', regstamt: 10000 },
-      { regnm: '등기명칭3', reggroup: '상위그룹3', regmaxnum: 150, exflag: '0', regstamt: 7500 }
-    ];
 
-    // 컬럼 정의
-    var columns = [
-      { binding: 'regnm', header: '등기명칭', align: 'center', width: 150 },
-      { binding: 'reggroup', header: '상위그룹', align: 'center', width: 150 },
-      { binding: 'regmaxnum', header: '최대위험점수', align: 'center', width: 150 },
-      { binding: 'exflag', header: '판정기준', align: 'center', width: 150 },
-      { binding: 'regstamt', header: '기준금액', align: 'center', width: "*" }
-    ];
-
-    // 초기화 함수
-    // 초기화 함수
+    /*// 초기화 함수
     function init() {
       // FlexGrid 생성
       var theGrid = new wijmo.grid.FlexGrid('#theGrid', {
@@ -240,7 +228,7 @@
         itemsSource: data // 하드코딩된 데이터 연결
       });
       theGrid.rowHeaders.columns.splice(0, 1);
-
+      theGrid.selection = new wijmo.grid.CellRange(-1, -1);
       // 헤더 스타일 및 셀 렌더링
       theGrid.formatItem.addHandler(function (s, e) {
         if (e.panel === s.cells) { // 셀이 렌더링될 때만 처리
@@ -268,10 +256,144 @@
           }
         }
       });
+    }*/
+
+    let theGrid;
+
+    function init() {
+      fetchListData();
+    }
+
+    function fetchListData() {
+      let data2 = [
+        {rownum: 1,  regnm: '근저당권', reggroup: '상위그룹1', regmaxnum: 49, exflag: '0', regstamt: 5000 },
+        {rownum: 2,  regnm: '압류', reggroup: '상위그룹2', regmaxnum: 40, exflag: '1', regstamt: 10000 },
+        {rownum: 3,  regnm: '지상권', reggroup: '상위그룹3', regmaxnum: 20, exflag: '0', regstamt: 7500 }
+      ];
+      // 서버에서 데이터 가져오기
+      /*$.ajax({
+        url: '/api/ProgressStatus/read',
+        type: 'GET',
+        data: queryParams,
+        async: false,
+        success: function (response) {
+          // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
+          if (response && Array.isArray(response.data)) {
+            data2 = response.data.map((item, index) => ({
+              rownum: index + 1
+            }));
+          }
+        },
+        error: function () {
+          console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+        }
+      });*/
+
+      while (data2.length < 10) {
+        data2.push({
+          rownum: data2.length + 1,
+          regnm: '',
+          reggroup: '',
+          regmaxnum: '',
+          exflag: '',
+          regstamt: '',
+        });
+      }
+
+      const viewdata = new wijmo.collections.CollectionView(data2);
+
+      if (!theGrid) {
+        theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+          autoGenerateColumns: false,
+          showMarquee: true,
+          isReadOnly: true,
+          columns: [
+            { binding: 'rownum', header: 'NO', align: 'center', width: 70 },
+            { binding: 'regnm', header: '등기명칭', align: 'center', width: 150 },
+            { binding: 'reggroup', header: '상위그룹', align: 'center', width: 150 },
+            { binding: 'regmaxnum', header: '최대위험점수', align: 'center', width: 150 },
+            { binding: 'exflag', header: '판정기준', align: 'center', width: 150 },
+            { binding: 'regstamt', header: '기준금액(만원)', align: 'center', width: "*" }
+          ],
+          itemsSource: viewdata
+        });
+
+        theGrid.rowHeaders.columns.splice(0, 1);
+      } else {
+        theGrid.itemsSource = viewdata;
+      }
+      theGrid.formatItem.addHandler(function (s, e) {
+        if (e.panel === s.cells) { // 셀이 렌더링될 때만 처리
+          const col = s.columns[e.col];
+          const item = s.rows[e.row].dataItem[col.binding];
+
+          // 특정 컬럼이 'exflag'일 때 처리
+          if (col.binding === 'exflag') {
+            e.cell.innerHTML = ''; // 기존 내용을 비움
+
+            // 데이터가 있는 경우 체크박스 생성
+            if (item) {
+              const input = document.createElement('input');
+              input.type = 'checkbox';
+              input.checked = item === '1'; // '1'일 때 체크
+              input.disabled = true; // 읽기 전용
+              input.style.margin = '0 auto'; // 체크박스 수평 정렬
+              input.style.display = 'block'; // 블록 레벨로 설정하여 수직 정렬
+
+              e.cell.appendChild(input);
+
+              // 셀 스타일 설정 (중앙 정렬)
+              e.cell.style.display = 'flex';
+              e.cell.style.justifyContent = 'center';
+              e.cell.style.alignItems = 'center';
+            } else {
+              // 데이터가 없는 경우, 셀을 비워둠
+              e.cell.style.display = '';
+            }
+          }
+        }
+      });
+    }
+
+
+    // 발생비율(기호)
+    function addPercentageSign(input) {
+      // 숫자만 추출
+      let value = input.value.replace(/[^0-9.]/g, '');
+      // 입력 값이 비어 있지 않을 때만 % 추가
+      if (value) {
+        input.value = value + '%';
+      } else {
+        input.value = ''; // 빈 값 처리
+      }
     }
 
     // 초기화 실행
     init();
+
+    //초기화
+    function clearForm() {
+      const form = document.getElementById('codeForm');
+
+      Array.from(form.elements).forEach(element => {
+        switch (element.type) {
+          case 'text':
+          case 'hidden':
+            element.value = '';
+            break;
+          case 'checkbox':
+            element.checked = false;
+            break;
+          case 'select-one':
+            element.selectedIndex = 0;
+            break;
+          default:
+            break;
+        }
+      });
+    }
+
+
   </script>
 </th:block>
 </html>

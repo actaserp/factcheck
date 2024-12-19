@@ -1,60 +1,33 @@
+
 <html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <style>
 
 </style>
 
 <th:block layout:fragment="content">
-
-
     <div class="layout-contents">
         <!-- Page Title -->
         <div class="page-title-wrap">
             <div class="left">
-                <h2>로그인로그</h2>
-                <a title="북마크" class="bookmark toggle">
-                    내메뉴
-                </a>
+                <h2>사용자 로그인 현황</h2>
+                <!--                <a title="북마크" class="bookmark toggle">-->
+                <!--                    내메뉴-->
+                <!--                </a>-->
             </div>
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
-                <li>시스템설정</li>
-                <li>로그인로그</li>
+                <li>회원관리</li>
+                <li>사용자 로그인 현황</li>
             </ul>
         </div>
         <!-- Select -->
-        <div class="search-wrap">
-            <ul>
-                <li>
-                    <select title="지역">
-                        <option>대구</option>
-                    </select>
-                </li>
-                <li>
-                    <select title="구">
-                        <option>성서산단</option>
-                    </select>
-                </li>
-                <li>
-                    <select title="동">
-                        <option>성서</option>
-                    </select>
-                </li>
-            </ul>
-        </div>
+
         <div class="tab-wrap">
-            <ul class="tab-links">
-                <li>
-                    <a href="#tab1" title="목록">목록</a>
-                </li>
-                <!--                <li>-->
-                <!--                    <a href="#tab2" title="등록">등록</a>-->
-                <!--                </li>-->
-            </ul>
             <div class="tab-contents">
                 <!-- Section -->
-                <section class="tab-item" id="tab1">
+                <section class="tab-item" id="tab3" style="height: 820px;">
                     <div class="section-top">
-                        <form id="searchForm" autocomplete="off">
+                        <form id="searchForm3" autocomplete="off">
                             <div class="search-wrap">
                                 <dl>
                                     <dt>
@@ -63,12 +36,13 @@
                                     <dd>
                                         <ul class="date-box">
                                             <li>
-                                                <input class="tac w150 " type="text" id="srchStartDt"
-                                                       name="srchStartDt"/>
+                                                <input class="tac w150 date_from" type="text" id="srchStartDt"
+                                                       name="srchStartDt" readonly/>
                                                 <label for="srchStartDt" class="hide">시작일</label>
                                             </li>
                                             <li>
-                                                <input class="tac w150 " type="text" id="srchEndDt" name="srchEndDt"/>
+                                                <input class="tac w150 date_to" type="text" id="srchEndDt"
+                                                       name="srchEndDt" readonly/>
                                                 <label for="srchEndDt" class="hide">종료일</label>
                                             </li>
                                         </ul>
@@ -76,37 +50,36 @@
                                 </dl>
                                 <dl>
                                     <dt>
-                                        <label for="text1">
+                                        <label for="keyword">
                                             이름<span class="eq">*</span>
                                         </label>
                                     </dt>
                                     <dd>
                                         <div class="srch-box">
-                                            <input class="form-control2" id="keyword" name="keyword"/>
-                                            <a class="btn-srch" id="btnSearch" title="검색"></a>
+                                            <input id="keyword" name="keyword" class="form-control2" placeholder="회원명"/>
                                         </div>
+                                    </dd>
+                                </dl>
+
+                                <dl>
+                                    <dt><span class="eq"></span></dt>
+                                    <dd>
+                                        <li>
+                                            <a class="btn btn-delete" title="검색" id="btnSearch3">
+                                                <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                                                검색
+                                            </a>
+                                        </li>
                                     </dd>
                                 </dl>
 
                             </div>
                         </form>
-<!--                        <div class="button-wrap">-->
-<!--                            <ul>-->
-<!--                                <li>-->
-<!--                                    <a class="btn btn-excell" title="엑셀다운로드">-->
-<!--                                        <img src="/images/icon/ico-excell.svg" alt="엑셀 아이콘">-->
-<!--                                        엑셀다운로드-->
-<!--                                    </a>-->
-<!--                                </li>-->
-<!--                            </ul>-->
-<!--                        </div>-->
-                    </div> <!--//section-top end -->
-                    <div class="container-fluid" id="theGridContainer">
-                        <p id="selectedItem"></p>
-                        <div id="theGrid"></div>
 
-                        <!--                        <div id="emptyMessage" class="empty-message " style="display:none; height: 400px; border: 1px solid rgba(0,0,0, .2);-->
-                        <!--                         text-align: center; line-height: 400px; border-collapse: collapse; border-radius:4px; color: black; font-weight: bold;">조회된 데이터가 없습니다</div>-->
+                    </div> <!--//section-top end -->
+                    <div class="container-fluid">
+                        <p id="selectedItem"></p>
+                        <div id="theGrid" style="max-height: 700px;"></div>
                     </div>
 
                     <div class="btn-wrap">
@@ -127,197 +100,99 @@
 
     <script type="text/javascript">
 
-        var theGrid;
-        var viewdata;
+        let theGrid;
+
+        $(document).ready(function() {
+            // 현재 날짜 설정
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+
+            // 시작일
+            const startOfYear = new Date(year, 0, 1);
+            const startYearFormatted = `${startOfYear.getFullYear()}-${String(startOfYear.getMonth() + 1).padStart(2, '0')}-${String(startOfYear.getDate()).padStart(2, '0')}`;
+            $('#srchStartDt').val(startYearFormatted);
+
+            // 종료일
+            const endOfMonth = new Date(year, month + 1, 0);
+            const endMonthFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
+            $('#srchEndDt').val(endMonthFormatted);
+
+        });
 
         document.readyState === 'complete' ? init() : window.onload = init;
 
-        var columns = [
-            {binding: 'row_number', header: 'No', width: 150, align: 'center'},
-            {binding: 'type', header: '구분', width: 160, align: 'center'},
-            {binding: 'addr', header: 'IP Address', width: 200, align: 'center'},
-            {binding: 'login_id', header: '사번', width: 160, align: 'center'},
-            {binding: 'name', header: '이름', width: 160, align: 'center'},
-            {binding: 'created', header: '일시', width: 260, align: 'center'},
-            {binding: '', header: '', width: "*", align: 'center'},
-
-        ];
-
-        <!-- 초반 페이지 진입시 그리드 바인딩 끝-->
         function init() {
-            let data2 = [];
-            let param = $('#searchForm').serialize();
-            let srchStartDt = $('#srchStartDt').val();
-            let srchEndDt = $('#srchEndDt').val();
-            let keyword = $('#keyword').val();
-
-
-
-
-            $.ajax({
-                url: '/api/system/loginlog/read',
-                type: 'GET',
-                data: {
-                    'param': param,
-                    'srchStartDt': srchStartDt,
-                    'srchEndDt': srchEndDt,
-                    'keyword': keyword,
-                },
-                async: false,
-                success: function (data) {
-                    console.log('wijmo', data);
-
-
-                    data2 = data.data;
-
-                    // `addr` 필드를 변형하여 `value`만 추출
-                    data2.forEach(item => {
-                        if (item.addr && item.addr.value) {
-                            item.addr = item.addr.value;
-                        }
-                    });
-
-                    console.log('First item:', data2[0]);
-                    console.log('Second item:', data2[1]);
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.error('Error fetching log_list data:', textStatus, errorThrown);
-                }
-            });
-
-
-            // 데이터 배열이 비어있을 경우 여러 개의 빈 객체 추가
-            if (data2.length === 0) {
-                let emptyRowsCount = 8;  // 원하는 빈 행의 수
-                for (let i = 0; i < emptyRowsCount; i++) {
-                    data2.push({});
-                }
-                console.log('Grid initialized with empty data.');
-            }
-
-            viewdata = new wijmo.collections.CollectionView(data2);
-            // 데이터 그리드에 바인딩
-            theGrid = new wijmo.grid.FlexGrid('#theGrid', {
-                autoGenerateColumns: false,
-                showMarquee: true,
-                columns: columns,
-                isReadOnly: true,
-                itemsSource: viewdata
-            });
-
-            let selector = new wijmo.grid.selector.Selector(theGrid, {
-                itemChecked: () => {
-
-                }
-            })
-            // 선택이 변경될 때, 현재 항목 업데이트
-
-            theGrid.rowHeaders.columns.splice(0, 1);  //맨 앞에 헤더부분 없애기
-
-            theGrid.refresh();
-
-
-            new FlexGridContextMenu(theGrid);
-            window.downloadFileName = '로그인로그';
-
-            // 검색
-            $('#btnSearch').click(searchDataBind);
-
+            fetchListData();
         }
 
-        <!-- 초반 페이지 진입시 그리드 바인딩 끝-->
-
-        function searchDataBind() {
-            console.log("searchDataBind called");
-
-            let data = {
-                'keyword' : $('#keyword').val(),
-                'srchStartDt': $('#srchStartDt').val(),
-                'srchEndDt': $('#srchEndDt').val()
-            }
-
-            console.log("Data to send:", data);
-
-            $.ajax({
-                url: '/api/system/loginlog/read',
-                type: 'GET',
-                data: data,
-                success: function (result) {
-                    if (result.success) {
-                        console.log("Result data:", result.data);
-                        grid_binding(result.data);
-                    } else {
-                        console.log("Error occurred");
-                    }
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.error('Error fetching log_list data:', textStatus, errorThrown);
+        function fetchListData() {
+            let data2 = [
+                {rownum: 1,name: '홍길동',state: 'login',login_time: '2024-12-19 09:00:00',logout_time: '2024-12-19 18:00:00',useTime: '9시간 0분',email: 'hong@example.com',number: 2,remark: ''},
+                {rownum: 2,name: '김철수',state: 'logout',login_time: '2024-12-18 08:50:00',logout_time: '2024-12-18 17:40:00',useTime: '8시간 50분',email: 'kim@example.com',number: 3,remark: ''},
+                {rownum: 3,name: '박영희',state: 'logout',login_time: '',logout_time: '',useTime: '0시간 0분',email: 'park@example.com',number: 1,remark: ''},
+                {rownum: 4,name: '최수진',state: 'login',login_time: '2024-12-19 08:45:00',logout_time: '2024-12-19 18:10:00',useTime: '9시간 25분',email: 'choi@example.com',number: 4,remark: ''},
+                {rownum: 5,name: '이민호',state: 'logout',login_time: '2024-12-18 09:10:00',logout_time: '2024-12-18 18:05:00',useTime: '8시간 55분',email: 'lee@example.com',number: 5,remark: ''}
+            ];
+            // 서버에서 데이터 가져오기
+            /*$.ajax({
+              url: '/api/ProgressStatus/read',
+              type: 'GET',
+              data: queryParams,
+              async: false,
+              success: function (response) {
+                // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
+                if (response && Array.isArray(response.data)) {
+                  data2 = response.data.map((item, index) => ({
+                    rownum: index + 1
+                  }));
                 }
-            });
-        }
-        //     검색 함수
+              },
+              error: function () {
+                console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+              }
+            });*/
 
-        function grid_binding(data) {
-            var loginlogDto = data;
-            var loginlogData = [];
-            var cnt = 1;
-            for (let i = 0; i < loginlogDto.length; i++) {
-                loginlogData.push({
-                    row_number: loginlogDto[i]["row_number"],
-                    type: loginlogDto[i]["type"],
-                    addr: loginlogDto[i]["addr"],
-                    login_id: loginlogDto[i]["login_id"],
-                    name: loginlogDto[i]["name"],
-                    created: loginlogDto[i]["created"],
-
+            while (data2.length < 10) {
+                data2.push({
+                    rownum: data2.length + 1,
+                    name: '',
+                    state: '',
+                    login_time: '',
+                    logout_time: '',
+                    useTime: '',
+                    email: '',
+                    number: '',
+                    remark: '',
                 });
-                cnt++;
             }
 
-            theGrid.columns.clear();
-            theGrid.autoGenerateColumns = false;
-            viewdata.sourceCollection = loginlogData;
+            const viewdata = new wijmo.collections.CollectionView(data2);
 
+            if (!theGrid) {
+                theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+                    autoGenerateColumns: false,
+                    showMarquee: true,
+                    isReadOnly: true,
+                    columns: [
+                        {binding: 'rownum', header: 'No', width: 80, align: 'center'},
+                        {binding: 'name', header: '사용자명', width: 160, align: 'center'},
+                        {binding: 'state', header: '상태', width: 150, align: 'center'},
+                        {binding: 'login_time', header: '로그인 시간', width: 200, align: 'center'},
+                        {binding: 'logout_time', header: '로그아웃 시간', width: 200, align: 'center'},
+                        {binding: 'useTime', header: '이용 시간', width: 160, align: 'center'},
+                        {binding: 'email', header: '이메일', width: 200, align: 'center'},
+                        {binding: 'number', header: '조회건수', width: 90, align: 'center'},
+                        {binding: 'remark', header: '비고', width: "*", align: 'center'},
+                    ],
+                    itemsSource: viewdata
+                });
 
-            for (var i = 0; i < columns.length; i++) {
-                var col = new wijmo.grid.Column(columns[i]);
-                theGrid.columns.push(col);
+                theGrid.rowHeaders.columns.splice(0, 1);
+            } else {
+                theGrid.itemsSource = viewdata;
             }
-
-            theGrid.refresh();
         }
-
-        let filelist = [];
-
-
-        let page = null;
-
-
-        // $('#srchStartDt').val(CommonUtil.getYYYYMMDD());
-        // $('#srchEndDt').val(CommonUtil.getYYYYMMDD());
-
-
-
-        // 현재 연도를 가져옴
-        const currentYear = new Date().getFullYear();
-        // 1월 1일 날짜 문자열 생성
-        const defaultDate = `${currentYear}-01-01`;
-        // input 요소에 기본값 설정
-        document.getElementById('srchStartDt').value = defaultDate;
-
-        // 현재 연도를 가져옴
-        const currentYear2 = new Date().getFullYear();
-        // 1월 1일 날짜 문자열 생성
-        const defaultDate2 = `${currentYear2}-12-31`;
-        // input 요소에 기본값 설정
-        document.getElementById('srchEndDt').value = defaultDate2;
-
-
-
-        $(document).ready(function (e) {
-
-
-        });
     </script>
 </th:block>
 
