@@ -125,31 +125,41 @@
                 </div>
 
                 <div class="container-fluid" style="display: flex; align-items: center; justify-content: space-between;">
+                    <section class="col wp50" style="flex: 1; margin-right: 10px; height:650px; position: relative;">
                     <!-- 첫 번째 차트 -->
-                    <div class="col wp50" style="flex: 1; margin-right: 10px; position: relative;">
-                        <canvas id="chart1" style="width: 100%; height:230px;"></canvas>
-                        <!-- 통계와 현황 버튼 -->
-                        <div style="position: absolute;top:-3px; right: 10px;">
-                            <button onclick="loadStatsData1()">통계</button>
-                            <button onclick="loadTrendData1()">현황</button>
-                        </div>
-
-                        <!-- 아이콘을 오른쪽 상단으로 이동 -->
+                    <div>
+                        <canvas id="chart1" style="width: 100%; height:250px;"></canvas>
+                        <ul class="tab-links-sub" style="position: absolute; top:10px; right: 10px;">
+                            <li>
+                                <a href="#tab1-chart1" title="통계" onclick="loadStatsData1()">통계</a>
+                            </li>
+                            <li>
+                                <a href="#tab2-chart1" title="현황" onclick="loadTrendData1()">현황</a>
+                            </li>
+                        </ul>
                         <span class="material-symbols-outlined"
-                              style="position: absolute;top:50px; /* 상단 위치 */right: 10px; /* 오른쪽 위치 */cursor: pointer;z-index: 10;color: rgb(179, 179, 179);" onclick="openModal('UserCountChart')">zoom_out_map</span>
+                              style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
+                              onclick="openModal('Chart1Modal')">zoom_out_map</span>
                     </div>
-
+                    </section>
+                    <section class="col wp50" style="flex: 1; margin-right: 10px; height:650px; position: relative;">
                     <!-- 두 번째 차트 -->
-                    <div class="col wp50" style="flex: 1; position: relative;">
-                        <canvas id="chart2" style="width: 100%; height:230px;"></canvas>
-                        <div style="position: absolute; top: -3px; right: 10px;">
-                            <button onclick="loadStatsData2()">통계</button>
-                            <button onclick="loadTrendData2()">현황</button>
-                        </div>
-                        <span class="material-symbols-outlined" style="position: absolute;top:50px; /* 상단 위치 */right: 10px; /* 오른쪽 위치 */cursor: pointer;z-index: 10;color: rgb(179, 179, 179);" onclick="openModal('UserCountChart')">zoom_out_map</span>
+                    <div>
+                        <canvas id="chart2" style="width: 100%; height:250px;"></canvas>
+                        <ul class="tab-links-sub" style="position: absolute; top:10px; right: 10px;">
+                            <li>
+                                <a href="#tab1-chart2" title="통계" onclick="loadStatsData2()">통계</a>
+                            </li>
+                            <li>
+                                <a href="#tab2-chart2" title="현황" onclick="loadTrendData2()">현황</a>
+                            </li>
+                        </ul>
+                        <span class="material-symbols-outlined"
+                              style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
+                              onclick="openModal('Chart2Modal')">zoom_out_map</span>
                     </div>
+                    </section>
                 </div>
-
             </section>
         </div> <!--//tab-wrap end-->
     </div> <!--//layout-contents end -->
@@ -165,7 +175,7 @@
 </th:block>
 <th:block layout:fragment="scripts">
     <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
     <script type="text/javascript">
 
         $(document).ready(function() {
