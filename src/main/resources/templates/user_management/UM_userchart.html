@@ -124,6 +124,9 @@
         theGrid = new wijmo.grid.FlexGrid('#theGrid', {
           allowMerging: 'ColumnHeaders', // 열 헤더 병합 활성화
           autoGenerateColumns: false,    // 자동 열 생성 비활성화
+          showMarquee: true,
+          isReadOnly: true,
+          selectionMode: wijmo.grid.SelectionMode.Row,
           columns: [
             { binding: 'district', header: '구군', width: 100, allowMerging: true }, // 구군 열 추가
             { binding: 'gangnam', header: '강남', width: '*', minWidth: 100, align: 'center' },

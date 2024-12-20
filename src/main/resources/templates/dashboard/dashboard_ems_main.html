@@ -190,7 +190,8 @@
                         <!-- tab1 -->
                         <div class="tab-item-sub h280" id="tab1">
                             <div class="chart-wrap">
-                                <img src="/images/sample/sample-chart.svg" alt="">
+                                <canvas id="revenueChart" width="740" height="185" style="width: 740px; height: 185px;"></canvas>
+                                <span class="material-symbols-outlined" style="position: absolute; top: 17px; right: 3px; cursor: pointer; z-index: 10; color: rgb(179, 179, 179);" onclick="openModal('revenueChart')">zoom_out_map</span>
                             </div>
                         </div>
                         <!-- tab1 -->
@@ -408,12 +409,24 @@
         var theGrid3;
         var viewdata3;
 
+        // 차트 데이터 설정
+        const revenueData = {
+            labels: ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
+            datasets: [{
+                data: [12, 15, 18, 21, 24, 27, 15, 16, 16, 19, 22, 25],
+                backgroundColor: 'rgba(98, 178, 253, 0.5)',
+                borderColor: 'rgba(98, 178, 253, 1)',
+                borderWidth: 1
+            }]
+        };
+
         document.readyState === 'complete' ? init() : window.onload = init;
 
         function init() {
             fetchListData();
             fetchListData2();
             fetchListData3();
+            createCharts();
         }
 
         var swiper = new Swiper(".card-swiper", {
@@ -611,7 +624,31 @@
                 theGrid3.itemsSource = viewdata3;
             }
         }
+        // 차트 생성 함수
+        function createCharts() {
+            const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
 
+            // 기존 차트 인스턴스가 있으면 제거
+            if ($('#revenueChart').data('chart')) {
+                $('#revenueChart').data('chart').destroy();
+            }
+
+            // 차트 생성 후 인스턴스를 data 속성에 저장
+            $('#revenueChart').data('chart', new Chart(ctxRevenue, {
+                type: 'bar',
+                data: revenueData,
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false // 범례 비활성화
+                        }
+                    },
+                    scales: {
+                        y: {beginAtZero: true}
+                    }
+                }
+            }));
+        }
     </script>
     <!--</body>-->
 </th:block>
