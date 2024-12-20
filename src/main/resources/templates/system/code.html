@@ -34,9 +34,7 @@
         <!-- Page Title -->
         <div class="page-title-wrap">
             <div class="left">
-                <h2>공통코드 등록</h2><!--<a id="toggleButton" onclick="toggleSearchWrap()"><img
-                    src="/images/icon/ico-down.png"
-                    alt="알람 아이콘"></a>-->
+                <h2>공통코드 등록</h2>
             </div>
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
@@ -45,19 +43,7 @@
             </ul>
         </div>
         <!-- Select -->
-        <div class="search-wrap" id="searchWrap" style="display: none; padding-top:10px">
-            <ul>
-                <li>
-                    <select title="사업장" id="search_spjangcd" name="search_sjangcd"
-                            onchange="init()">
-                        <option value="" hidden selected disabled>선택</option>
-                        <option value="ZZ">성우에스피(주)</option>
-                        <option value="PP">성우피앤비(주)</option>
-                        <!-- 지역 옵션을 JavaScript에서 동적으로 채움 -->
-                    </select>
-                </li>
-            </ul>
-        </div>
+
         <div class="search-wrap">
         </div>
         <div class="tab-wrap">
@@ -125,7 +111,7 @@
                         <div class="wp70 mg-r20">
                             <div class="container-fluid col">
                                 <p id="selectedItem"></p>
-                                <div id="theGrid" style="max-height: 740px;"></div>
+                                <div id="theGrid" style="max-height: 700px;"></div>
                             </div>
                         </div>
                         <div class="col wp30">
@@ -275,20 +261,17 @@
             let isActive = true; // 조건을 기반으로 값을 설정
             document.getElementById('status').checked = isActive;
         });
-        let isBindSpjangcdCalled = false;
 
         function init() {
 
             let data2 = [];
             let txtCode = $('#txtCode').val();
-            let spjangcd = $('#search_spjangcd').val();
 
             $.ajax({
                 url: '/api/system/code/read',
                 type: 'GET',
                 data: {
                     'txtCode': txtCode,
-                    spjangcd,
                 },
                 async: false,
                 success: function (data) {

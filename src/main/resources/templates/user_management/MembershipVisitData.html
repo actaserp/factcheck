@@ -355,18 +355,14 @@
        // 두 번째 차트 업데이트
         function loadStatsData2() {
             chart2.config.type = 'bar'; // 유형 설정
-            const newData = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100)); // 데이터 생성
-            chart2.data.datasets[0].data = newData; // 데이터 업데이트
-            chart2.options.scales.y.max = Math.max(...newData) + 10; // Y축 최대값 동적으로 설정
+            chart2.data.datasets[0].data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100));// 데이터 업데이트
             chart2.update(); // 차트 갱신
         }
 
         function loadTrendData2() {
             chart2.config.type = 'line'; // 유형 설정
-            const newData = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100)); // 데이터 생성
-            chart2.data.datasets[0].data = newData; // 데이터 업데이트
-            chart2.options.scales.y.max = Math.max(...newData) + 10; // Y축 최대값 동적으로 설정
-            chart2.update(); // 차트 갱신
+            chart2.data.datasets[0].data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100)); // 데이터 업데이트
+            chart2.update();
         }
 
 
