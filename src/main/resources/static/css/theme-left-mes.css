@@ -1,6 +1,6 @@
 /* 좌단 메뉴 영역 */
 .menu_area {
-  background-color: #343446 !important;
+  background-color:#031B4B !important; /*#343446*/
 }
 .menu_wrap .tab_links li.on button {border-color: #4f95ff}
 .menu_wrap .tab_links li.on button > span {background-color: #4f95ff}
