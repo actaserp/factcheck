@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1, minimum-scale=1, maximum-scale=1">
-    <link rel="icon" type="image/png" href="/images/logo/icon_FACT%20CHECK.png">
+    <link rel="icon" type="image/png" href="/images/logo/icon_FACT%20CHECK.png" >
     <title> FACT CHECK</title>
     <link rel="stylesheet" href="/resource/windowContainer/css/jquery.scrollbar.min.css">
     <link rel="stylesheet" href="/resource/windowContainer/css/bootstrap.min.css">
@@ -72,7 +72,7 @@
                         </ul>
                     </div>
                 </div>-->
-                <div class="weather">
+                <!--<div class="weather">
                     <div class="wt-main">
                         <p class="area">대구 성서산단</p>
                         <div class="wt-graphic">
@@ -99,7 +99,7 @@
                         </ul>
                     </div>
                 </div>
-                <!-- 알람 -->
+                &lt;!&ndash; 알람 &ndash;&gt;
                 <a href="#" class="alarm" title="알람">
                     <img src="/images/icon/ico-bell.svg" alt="알람 아이콘">
                     <span>
@@ -119,7 +119,7 @@
                             <a href="#alarm-tab3" title="로봇알람">로봇알람(3)</a>
                         </li>
                     </ul>
-                    <!-- tab1 -->
+                    &lt;!&ndash; tab1 &ndash;&gt;
                     <div class="alarm-tab-contents">
                         <div class="alarm-tab-item" id="alarm-tab1">
                             <div class="table-wrap">
@@ -248,7 +248,7 @@
                         </div>
                     </div>
                     <a href="#" title="확인" class="btn-gray">확인</a>
-                </div>
+                </div>-->
                 <!-- 알람 -->
                 <!-- 사용자 로그인 상태-->
                 <a class="user" title="사용자">
@@ -362,9 +362,6 @@
     <div class="popup-overlay" id="popup1"></div>
     <div class="popup-wrapper" id="wrapper1">
         <div class="popup-title">
-            <a class="btn" title="새로고침" style="position: absolute; left: 30px; margin-bottom: -40px;">
-                새로고침
-            </a>
             <h3>사용자 정보</h3>
             <a onclick="UserInfoClose()" title="팝업닫기" class="btn-popup-close">
                 <img src="/images/icon/btn-popup-close.svg" alt="닫기">
@@ -398,44 +395,39 @@
                         </tr>
                         <tr>
                             <th>
-                                <label for="">
-                                    소속사
+                                <label for="PasswordChange"><!--비밀번호 찾기 부분에서 코드 가져오기-->
+                                    변경 비밀번호:
                                 </label>
                             </th>
                             <td>
-                                <div class="input-clear">
-                                    <!--<select class="mg-r5" id="agency" name="agency" style="width: 100%">
-                                        <option value='CO_ID'>에너지발전소관련업체</option>
-                                        <option value='C001'>블룸에너지</option>
-                                        <option value='C002'>ESG Corp</option>
-                                    </select>-->
-                                    <select class="mg-r5" id="agency" name="agency" style="width: 100%">
-                                        <option></option>
-                                    </select>
-                                </div>
+                                <input type="password" id="PasswordChange" name="PasswordChange" placeholder="비밀번호">
                             </td>
                             <th>
-                                <label for="">
-                                    소속부서
+                                <label for="PasswordChangeChk">
+                                    비밀번호 확인
                                 </label>
                             </th>
                             <td>
-                                <div class="input-clear">
-                                    <input type="text" id="agencyDepartment" name="agencyDepartment">
-                                </div>
+                                <input type="password" id="PasswordChangeChk" name="PasswordChangeChk" placeholder="비밀번호 확인">
                             </td>
                         </tr>
                         <tr>
                             <th>
                                 <label for="">
-                                    직급
+                                    성별
                                 </label>
                             </th>
                             <td>
                                 <div class="input-clear">
-                                    <input type="text" id="level" name="level">
+                                    <select class="wp95" id="sexyn" name="sexyn" style="width: 100%">
+                                        <option value="">선택하세요</option>
+                                        <option value="F">여자</option>
+                                        <option value="M">남자</option>
+                                    </select>
                                 </div>
                             </td>
+                        </tr>
+                        <tr>
                             <th>
                                 <label for="">
                                     성명
@@ -444,6 +436,16 @@
                             <td>
                                 <div class="input-clear">
                                     <input type="text" class="form-control2" id="name" name="name" title="" required/>
+                                </div>
+                            </td>
+                            <th>
+                                <label for="">
+                                    생년월일
+                                </label>
+                            </th>
+                            <td>
+                                <div class="input-clear">
+                                    <input class="wp95" type="date" id="birthyear" name="birthyear" >
                                 </div>
                             </td>
                         </tr>
@@ -455,7 +457,7 @@
                             </th>
                             <td>
                                 <div class="input-clear">
-                                    <input type="text" id="tel" name="tel">
+                                    <input type="text" id="tel" name="tel" placeholder="핸드폰번호">
                                 </div>
                             </td>
                             <th>
@@ -465,32 +467,22 @@
                             </th>
                             <td>
                                 <div class="input-clear">
-                                    <input type="text" id="email" name="email">
+                                    <input type="text" id="email" name="email" placeholder="이메일">
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <th>
                                 <label for="">
-                                    발전시설
+                                    주소
                                 </label>
                             </th>
                             <td colspan="3">
                                 <div class="fl-ac">
-                                    <select class="wp25 mg-r5" id="firstSelect" name="spworkcd"
-                                            onchange="updateNextSelect(this)">
-                                        <option></option>
-                                    </select>
-                                    <select class="wp25 mg-r5" id="secondSelect" name="spcompcd"
-                                            onchange="updateNextSelect(this)">
-                                        <option></option>
-                                    </select>
-                                    <select class="wp25 mg-r5" id="thirdSelect" name="spplancd">
-                                        <option></option>
-                                    </select>
-                                    <button type="button" onclick="addselectField(this)" class="btn" id="z"
-                                            style="width: 145px">발전시설 추가
-                                    </button>
+                                    <input type="text" id="postno" name="postno" placeholder="우편번호" style="width: 85px; margin-bottom: 3px; display: inline-block;"onclick="sample4_execDaumPostcode()">
+                                    <input type="text" id="address1" name="address1" placeholder="도로명주소" style="width: 300px; display: inline-block; margin-left: 5px;" readonly>
+                                    <input type="text" id="address2" name="address2" placeholder="상세주소"   style="width: 250px; display: inline-block; margin-left: 7px;">
+                                    <span id="guide" style="color:#999;display:none"></span>
                                 </div>
                             </td>
                         </tr>
@@ -502,6 +494,7 @@
         <div class="popup-button">
             <button class="btn-popup-close" onclick="UserInfoClose()">취소</button>
             <button class="btn-navy" id="btnSaveAuth">수정</button>
+            <button class="btn-navy" id="btnDelAuth" onclick="UserDelete()">탈퇴</button>
         </div>
     </div>
 </div> <!-- //dashboard-layout-popup end -->
@@ -1184,13 +1177,33 @@
         wrapper.style.display = 'block';
     }
 
-    function UserInfoClose() {
+    /*function UserInfoClose() {
         let popup = document.getElementById('popup1');
         let wrapper = document.getElementById('wrapper1');
 
         popup.style.display = 'none';
         wrapper.style.display = 'none';
+    }*/
+    function UserInfoClose() {
+        // 팝업 닫기
+        let popup = document.getElementById('popup1');
+        let wrapper = document.getElementById('wrapper1');
+
+        popup.style.display = 'none';
+        wrapper.style.display = 'none';
+
+        // 입력 폼 초기화
+        const form = document.getElementById('userForm');
+        form.reset(); // 폼 전체 초기화
+
+        // 수동으로 초기화가 필요한 필드 (readonly 또는 기본값이 필요한 경우)
+        document.getElementById('login_id').value = ''; // readonly 필드 초기화
+        document.getElementById('postno').value = ''; // 우편번호 초기화
+        document.getElementById('address1').value = ''; // 도로명주소 초기화
+        document.getElementById('address2').value = ''; // 상세주소 초기화
+        document.getElementById('guide').style.display = 'none'; // 가이드 메시지 숨기기
     }
+
 
 
     function initializeSelect({

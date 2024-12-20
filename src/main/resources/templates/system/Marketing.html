@@ -1,0 +1,215 @@
+<html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<style>
+    #theGrid {
+        width: 100%;
+        height: 400px;
+        overflow: auto; /* 스크롤 활성화 */
+    }
+    .wj-flexgrid .wj-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        overflow: auto;
+    }
+
+</style>
+<th:block layout:fragment="content">
+    <div class="layout-contents">
+        <!-- Page Title -->
+        <div class="page-title-wrap">
+            <div class="left">
+                <h2>마케팅관리</h2>
+                <!--<a title="북마크" class="bookmark toggle">
+                    내메뉴
+                </a>-->
+            </div>
+            <ul class="page-navi">
+                <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
+                <li>시스템 설정</li>
+                <li>마케팅 관리</li>
+            </ul>
+        </div>
+        <!-- Select -->
+        <div class="tab-contents">
+            <section class="tab-item" id="tab2" style="height: 850px; overflow: hidden;">
+                <div class="section-top">
+                    <div class="search-wrap">
+                        <dl>
+                            <dt>
+                                <label for="searchUserNm">
+                                    날짜<span class="eq">*</span>
+                                </label>
+                            </dt>
+                            <dd>
+                                <ul class="date-box">
+                                    <li>
+                                        <input type="date" id="startDate" name="startDate">
+                                        <label for="startDate" class="hide">시작일</label>
+                                    </li>
+                                    <li>
+                                        <input type="date" id="endDate" name="endDate">
+                                        <label for="endDate" class="hide">종료일</label>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                <label for="searchUserNm">
+                                    회원명<span class="eq">*</span>
+                                </label>
+                            </dt>
+                            <dd>
+                                <div class="srch-box">
+                                    <input type="text" id="searchUserNm" name="searchCltnm" class="input-srch"
+                                           placeholder="회원명" style="border-radius: 5px;">
+                                </div>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>&nbsp;</dt>
+                            <dd>
+                                <li>
+                                    <a class="btn btn-delete" title="검색" id="searchButton1" onclick="searchData()">
+                                        <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
+                                        <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                                        검색
+                                    </a>
+                                </li>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="button-wrap" style="border-top:none;">
+                        <ul>
+                            <!--<li>
+                                <a class="btn btn-excell" title="신규등록" id="Newbtn" onclick="clearForm()">
+                                    <img src="/images/icon/ico-plus.svg" alt="등록 아이콘">
+                                    신규등록
+                                </a>
+                            </li>-->
+                            <li>
+                                <a class="btn btn-edit" id="btnSave" title="저장">
+                                    <img src="/images/icon/ico-save.svg" alt="저장 아이콘">
+                                    수정
+                                </a>
+                            </li>
+                            <li>
+                                <a class="btn btn-delete" title="삭제" id="btnDelete">
+                                    <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
+                                    삭제
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="container-fluid">
+                    <p id="selectedItem"></p>
+                    <div id="theGrid" style="max-height: 800px"></div>
+                </div>
+            </section>
+        </div> <!--//tab-wrap end-->
+    </div> <!--//layout-contents end -->
+    <footer>
+        <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
+    </footer>
+</th:block>
+<th:block layout:fragment="scripts">
+    <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript">
+        let theGrid;
+
+        $(document).ready(function() {
+            // 현재 날짜 설정
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+
+            // 시작일
+            const startOfYear = new Date(year, 0, 1);
+            const startYearFormatted = `${startOfYear.getFullYear()}-${String(startOfYear.getMonth() + 1).padStart(2, '0')}-${String(startOfYear.getDate()).padStart(2, '0')}`;
+            $('#startDate').val(startYearFormatted);
+
+            // 종료일
+            const endOfMonth = new Date(year, month + 1, 0);
+            const endMonthFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
+            $('#endDate').val(endMonthFormatted);
+            init();
+        });
+
+        function init() {
+            fetchListData();
+        }
+
+        function fetchListData() {
+            let data2 = [
+                { rownum: 1, indatem: '2024-12-01', orgName: '서울시청', title: '서울 행사', extConditions: '15%', appConditions: '20%', userNm: '김철수', requestDate: '2024-11-15', filenm: '행사계획서.pdf' },
+                { rownum: 2, indatem: '2024-12-05', orgName: '부산시청', title: '부산 관광', extConditions: '12%', appConditions: '25%', userNm: '박영희', requestDate: '2024-11-20', filenm: '관광안내.pdf' },
+                { rownum: 3, indatem: '2024-12-10', orgName: '대구시청', title: '대구 축제', extConditions: '18%', appConditions: '30%', userNm: '이민호', requestDate: '2024-11-25', filenm: '축제개요.pdf' },
+                { rownum: 4, indatem: '2024-12-15', orgName: '광주시청', title: '광주 전시', extConditions: '20%', appConditions: '35%', userNm: '최수진', requestDate: '2024-12-01', filenm: '전시소개.pdf' },
+                { rownum: 5, indatem: '2024-12-20', orgName: '제주특별자치도', title: '제주 축제', extConditions: '25%', appConditions: '40%', userNm: '정우성', requestDate: '2024-12-10', filenm: '축제일정.pdf' }
+            ];
+            // 서버에서 데이터 가져오기
+            /*$.ajax({
+              url: '/api/ProgressStatus/read',
+              type: 'GET',
+              data: queryParams,
+              async: false,
+              success: function (response) {
+                // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
+                if (response && Array.isArray(response.data)) {
+                  data2 = response.data.map((item, index) => ({
+                    rownum: index + 1
+                  }));
+                }
+              },
+              error: function () {
+                console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+              }
+            });*/
+
+            while (data2.length < 10) {
+                data2.push({
+                    rownum: data2.length + 1,
+                    indatem: '',
+                    orgName: '',
+                    title: '',
+                    extConditions: '',
+                    appConditions: '',
+                    userNm: '',
+                    requestDate: '',
+                    filenm: '',
+                });
+            }
+
+            const viewdata = new wijmo.collections.CollectionView(data2);
+
+            if (!theGrid) {
+                theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+                    autoGenerateColumns: false,
+                    showMarquee: true,
+                    isReadOnly: true,
+                    columns: [
+                        { binding: 'rownum', header: '순번', width: 70, align: 'center' },
+                        { binding: 'indatem', header: '등록일자', width: '*', minWidth: 100, align: 'center' },
+                        { binding: 'orgName', header: '기관명', width: '*', minWidth: 100, align: 'center' },
+                        { binding: 'title', header: '제목', width: '*', minWidth: 70, align: 'center' },
+                        { binding: 'extConditions', header: '추출조건', width: '*', minWidth: 250, align: 'center' },
+                        { binding: 'appConditions', header: '활용수치', width: '*', minWidth: 150, align: 'center' },
+                        { binding: 'userNm', header: '등록자', width: '*', minWidth: 100, align: 'center' },
+                        { binding: 'requestDate', header: '의뢰일자', width: '*', align: 'center', minWidth: 100 },
+                        { binding: 'filenm', header: '첨부파일', width: '*', align: 'center', minWidth: 150 }
+                    ],
+                    itemsSource: viewdata
+                });
+
+                theGrid.rowHeaders.columns.splice(0, 1);
+            } else {
+                theGrid.itemsSource = viewdata;
+            }
+        }
+
+    </script>
+</th:block>
+</html>

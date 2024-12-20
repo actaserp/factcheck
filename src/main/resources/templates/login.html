@@ -182,7 +182,7 @@
                                 <input type="text" id="loginId" name="username" required autofocus title="아이디 입력" placeholder="아이디를 입력해주세요">
                             </dd>
                             <!-- 에러메시지 출력 -->
-                            <dd class="hint-red" id="hint-red" style="display: none">
+                            <dd class="hint-red" id="hint-red" style="display: none; color:red; margin-top:5px; ">
                                 <img src="/images/icon/ico-info-red.svg" alt="힌트메세지">
                                 계정이 맞지 않습니다.
                             </dd>
@@ -200,7 +200,7 @@
                         <button type="submit" class="btn-login" id="login">로그인</button>
                         <ul class="btn-login-etc">
                             <li>
-                                <a class="btn btn-popup-open" data-popup="popup1" title="사용자신청" onclick="RegisterUser()">사용자신청</a>
+                                <a class="btn btn-popup-open" data-popup="popup1" title="사용자 등록" onclick="RegisterUser()">사용자 등록</a>
                             </li>
                             <li>
                                 <a href="#" class="btn btn-popup-open" data-popup="popup2" title="아이디 찾기" onclick="openModal()">아이디 찾기</a>
@@ -218,9 +218,9 @@
     <!-- [사용자권한] 팝업  -->
     <div class="dashboard-layout-popup">
         <div class="popup-overlay"  id="popup1"></div>
-        <div class="popup-wrapper" id="wrapper1" style="width: 1000px">
+        <div class="popup-wrapper" id="wrapper1" style="width: 1080px">
             <div class="popup-title">
-                <h3>사용자권한신청</h3>
+                <h3>사용자 등록</h3>
                 <a onclick="RegisterUserClose()" title="팝업닫기" class="btn-popup-close">
                     <img src="/images/icon/btn-popup-close.svg" alt="닫기">
                 </a>
@@ -230,7 +230,7 @@
                 <form id="bomForm">
                     <div class="table-wrap">
                         <table class="write-table">
-                            <caption>사용자권한신청 테이블</caption>
+                            <caption>사용자등록 테이블</caption>
                             <colgroup>
                                 <col class="wp20">
                                 <col class="wp30">
@@ -240,59 +240,81 @@
                             <tbody>
                             <tr>
                                 <th>
-                                    <label for="">
-                                        소속사
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <select class="mg-r5" id="agency" name="agency" style="width: 100%">
-                                            <option></option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <th>
-                                    <label for="">
-                                        소속부서
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <input type="text" id="agencyDepartment" name="agencyDepartment">
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label for="">
-                                        직급
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <input type="text" id="level" name="level">
-                                    </div>
-                                </td>
-                                <th>
-                                    <label for="">
-                                        성명
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <input type="text" id="name" name="name">
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label for="">
-                                        핸드폰
+                                    <label for="id">
+                                       아이디
                                     </label>
                                 </th>
                                 <td colspan="3">
                                     <div class="input-clear">
-                                        <input type="text" id="tel" name="tel">
+                                        <input type="text" id="id" name="id" class="wp50"
+                                               style="width: 360px !important;" placeholder="아이디">
+                                    </div>
+                                    <a href="#" class="btn" id="btnDuplicate" style="margin:5px; ">중복확인</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="password">
+                                        비밀번호
+                                    </label>
+                                </th>
+                                <td>
+                                    <input type="password" id="password" name="password" placeholder="비밀번호">
+                                </td>
+                                <th>
+                                    <label for="passwordchk">
+                                        비밀번호 확인
+                                    </label>
+                                </th>
+                                <td>
+                                    <input type="password" id="passwordchk" name="passwordchk" placeholder="비밀번호 확인">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="saveName">
+                                        이&nbsp;&nbsp;름
+                                    </label>
+                                </th>
+                                <td>
+                                    <div class="input-clear">
+                                        <input type="text" id="saveName" name="saveName" placeholder="이름">
+                                    </div>
+                                </td>
+                                <th>
+                                    <label for="sexyn">
+                                        성&nbsp;&nbsp;별
+                                    </label>
+                                </th>
+                                <td>
+                                    <div class="input-clear">
+                                        <select id="sexyn" name="sexyn" class="wp100">
+                                            <option value="">선택하세요</option>
+                                            <option value="F">여자</option>
+                                            <option value="M">남자</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="birthyear">
+                                        생년월일
+                                    </label>
+                                </th>
+                                <td>
+                                    <div class="input-clear">
+                                        <input type="date"  id="birthyear" name="birthyear" placeholder="생년월일">
+                                    </div>
+                                </td>
+                                <th>
+                                    <label for="userHP">
+                                        핸드폰
+                                    </label>
+                                </th>
+                                <td>
+                                    <div class="input-clear">
+                                        <input type="text" id="userHP" name="userHP" placeholder="핸드폰 번호">
                                     </div>
                                 </td>
                             </tr>
@@ -304,11 +326,19 @@
                                 </th>
                                 <td colspan="3">
                                     <div class="input-clear">
-                                        <input type="text" id="email" name="email">
-                                        <button type="button" style="margin: 0 0 0 5px;width: 14.5%;background: white;color: #03428E;border: 1px solid #03428E;" id="BtnAuthenticationRegister">코드발급</button>
-                                        <label style="width: 9%; margin-top: 10px">인증코드: </label>
-                                        <input type="text" id="AuthenticationCodeRegister" name="AuthenticationCodeRegister" required="" maxlength="38" autocomplete="off" style="width: 30%;border: none;border-bottom: 1px solid;
-                       border-radius: 0px;">
+                                        <input type="text" id="email" name="email" placeholder="이메일">
+                                        <button type="button"
+                                                style="margin: 0 0 0 5px;width: 14.5%;background: white;color: #03428E;border: 1px solid #03428E;"
+                                                id="BtnAuthenticationRegister2">코드발급
+                                        </button>
+                                        <label style="width: 7%; margin-top: 10px; margin-left: 15px">인증코드:</label>
+                                        <input type="text" id="AuthenticationCodeRegister"
+                                               name="AuthenticationCodeRegister" required="" maxlength="38"
+                                               autocomplete="off" style="width: 18%;border: none;border-bottom: 1px solid;border-radius: 0px;">
+                                        <button type="button" id="Authentication"
+                                                style="margin: 0 0 0 5px;width: 14.5%;background: white;color: #03428E;border: 1px solid #03428E;">
+                                            코드인증
+                                        </button>
                                     </div>
                                     <div style="margin-top: 5px; text-align: center;">
                                         <span id="timer2" style="width: 10%; text-align: right; color: red;"></span>
@@ -317,79 +347,21 @@
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="">
-                                        ID
+                                    <label for="postno">
+                                        주&nbsp;&nbsp;소
                                     </label>
                                 </th>
                                 <td colspan="3">
                                     <div class="input-clear">
-                                        <input type="text" id="id" name="id" class="wp50" style="width: 360px !important;">
-                                    </div>
-                                    <a href="#" class="btn" id="btnDuplicate">중복확인</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label for="password">
-                                        비밀번호
-                                    </label>
-                                </th>
-                                <td>
-                                    <input type="password" id="password" name="password">
-                                </td>
-                                <th>
-                                    <label for="passwordchk">
-                                        비밀번호확인
-                                    </label>
-                                </th>
-                                <td>
-                                    <input type="password" id="passwordchk" name="passwordchk">
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label for="">
-                                        권한그룹
-                                    </label>
-                                </th>
-                                <td colspan="3">
-                                    <div class="input-clear">
-                                        <select class="wp25 mg-r5" id="authType" name="authType" >
-                                            <option></option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label>
-                                        발전시설
-                                    </label>
-                                </th>
-                                <td colspan="3">
-                                    <div class="fl-ac">
-                                        <select class="wp25 mg-r5" id="firstSelect" name="spworkcd" onchange="updateNextSelect(this)">
-                                            <option></option>
-                                        </select>
-                                        <select class="wp25 mg-r5" id="secondSelect" name="spcompcd" onchange="updateNextSelect(this)">
-                                            <option></option>
-                                        </select>
-                                        <select class="wp25 mg-r5" id="thirdSelect" name="spplancd">
-                                            <option></option>
-                                        </select>
-                                        <button type="button" onclick="addselectField(this)" class="btn" id="z" style="width: 145px">발전시설 추가</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label for="">
-                                        신청사유
-                                    </label>
-                                </th>
-                                <td colspan="3">
-                                    <div class="input-clear">
-                                        <input type="text" id="reason" name="reason" class="wp100">
+                                        <input type="text" id="postno" name="postno" placeholder="우편번호"
+                                               onclick="sample4_execDaumPostcode()"
+                                               style="width: 85px; margin-bottom: 3px; display: inline-block;">
+                                        <input type="text" id="address1" name="address1" placeholder="도로명주소"
+                                               style="width: 380px; display: inline-block; margin-left: 5px;"
+                                               readonly>
+                                        <input type="text" id="address2" name="address2" placeholder="상세주소"
+                                               style="width: 390px; display: inline-block; margin-left: 7px;">
+                                        <span id="guide" style="color:#999;display:none"></span>
                                     </div>
                                 </td>
                             </tr>
@@ -401,7 +373,7 @@
             </div>
             <div class="popup-button">
                 <button class="btn-popup-close" onclick="RegisterUserClose()">취소</button>
-                <button class="btn-navy" id="btnSaveAuth">권한신청</button>
+                <button class="btn-navy" id="btnSaveAuth">사용자등록</button>
             </div>
         </div>
     </div> <!-- //dashboard-layout-popup end -->
@@ -433,7 +405,7 @@
         </div>
     </div>
     <!--#############################################################################################  비밀번호-->
-    <div id="pwFindModal" class="modal">
+    <div id="pwFindModal" class="modal" >
         <div class="modal-content">
             <h2 style="text-align: center;">비밀번호 변경</h2>
             <form id="pwFindForm">
@@ -497,8 +469,52 @@
 
 
 <script type="text/javascript" src="/js/ax5commUtil.js?v=1050"></script>
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+    var popupWindow;
 
+    function sample4_execDaumPostcode() {
+        popupWindow = window.open('', 'postcodePopup', 'width=530,height=530');
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 검색 결과 선택 시 실행할 코드
+                var roadAddr = data.roadAddress;
+                var extraRoadAddr = '';
 
+                if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                    extraRoadAddr += data.bname;
+                }
+                if (data.buildingName !== '' && data.apartment === 'Y') {
+                    extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                if (extraRoadAddr !== '') {
+                    extraRoadAddr = ' (' + extraRoadAddr + ')';
+                }
+
+                document.getElementById('postno').value = data.zonecode;
+                document.getElementById('address1').value = roadAddr;
+
+                var guideTextBox = document.getElementById("guide");
+                if (data.autoRoadAddress) {
+                    var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
+                    guideTextBox.innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
+                    guideTextBox.style.display = 'block';
+                } else if (data.autoJibunAddress) {
+                    var expJibunAddr = data.autoJibunAddress;
+                    guideTextBox.innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
+                    guideTextBox.style.display = 'block';
+                } else {
+                    guideTextBox.innerHTML = '';
+                    guideTextBox.style.display = 'none';
+                }
+
+                // 검색 완료 후 팝업 닫기
+                popupWindow.close();
+            }
+        }).embed(popupWindow.document.body);
+    }
+
+</script>
 
 
 <script type="text/javascript">
@@ -640,16 +656,13 @@
 
 
     const requiredFields = [
-        { id: 'agency', name: '소속사' },
-        { id: 'agencyDepartment', name: '소속부서' },
-        { id: 'name', name: '성명' },
         { id: 'id', name: 'ID' },
         { id: 'password', name: '비밀번호' },
         { id: 'passwordchk', name: '비밀번호확인' },
-        { id: 'authType', name: '권한그룹' },
-        { id: 'firstSelect', name: '관할지역' },
-        { id: 'secondSelect', name: '발전산단' },
-        { id: 'thirdSelect', name: '발전소' }
+        { id: 'saveName', name: '이름' },
+        { id: 'sexyn', name: '성별' },
+        { id: 'birthyear', name: '생년월일' },
+        { id: 'userHP', name: '핸드폰' },
     ];
 
     // 필드명과 name값으로 유효성 검사할 필드 배열
@@ -659,19 +672,12 @@
         { name: 'spplancd', displayName: '발전소' }
     ];
 
-    const clearFieldList = ['agency', 'agencyDepartment', 'name', 'id', 'password', 'passwordchk', 'authType', 'firstSelect', 'secondSelect', 'thirdSelect', 'tel', 'level', 'email',
-        'reason', 'AuthenticationCodeRegister']
+    const clearFieldList = ['id', 'password', 'passwordchk', 'saveName', 'sexyn', 'birthyear', 'userHP']
 
     // 유효성 검사
     function validateFields() {
         for (let field of requiredFields) {
             if (!validateFieldById(field.id, field.name)) {
-                return false;
-            }
-        }
-
-        for (let field of nameBasedFields) {
-            if (!validateFieldsByName(field.name, field.displayName)) {
                 return false;
             }
         }
@@ -720,13 +726,19 @@
         wrapper.style.display = 'block';
     }
 
-    function RegisterUserClose(){
+    function RegisterUserClose() {
+        // 팝업 닫기
         let popup = document.getElementById('popup1');
         let wrapper = document.getElementById('wrapper1');
 
         popup.style.display = 'none';
         wrapper.style.display = 'none';
+
+        // 입력폼 초기화
+        const form = document.getElementById('bomForm');
+        form.reset(); // form 태그의 모든 입력 필드 초기화
     }
+
 
 
     function initializeSelect({

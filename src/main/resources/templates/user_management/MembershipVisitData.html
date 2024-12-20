@@ -1,0 +1,375 @@
+<html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<style>
+    .container-fluid {
+        padding: 20px;
+    }
+
+    .chartModal {
+        display: none; /* 기본적으로 숨겨짐 */
+        position: fixed;
+        z-index: 10000; /* z-index 값을 높게 설정하여 다른 요소보다 위에 오도록 함 */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* 배경을 반투명하게 설정 */
+        overflow: auto;
+    }
+
+    .modal-content {
+        position: absolute; /* absolute로 설정하여 화면 중앙에 배치 */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* 화면 중앙 정렬 */
+        background-color: #fff;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 600px;
+        border-radius: 8px;
+    }
+
+    .chart-container {
+        position: relative; /* 부모 요소에 위치 고정 */
+        width: 100%; /* 원하는 너비 */
+        height: 250px; /* 고정된 높이 */
+        overflow-y: auto; /* 세로 스크롤 활성화 */
+        overflow-x: hidden; /* 가로 스크롤 비활성화 */
+        border: 1px solid #ccc; /* 테두리 추가 (선택 사항) */
+        padding: 10px; /* 여백 추가 (선택 사항) */
+    }
+
+    #chartControls {
+        display: flex;
+        gap: 5px; /* 버튼 간격 */
+    }
+
+    #chartControls button {
+        padding: 5px 10px;
+        font-size: 12px;
+        border: 1px solid #ccc;
+        background-color: #f5f5f5;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+
+    #chartControls button:hover {
+        background-color: #ddd;
+    }
+
+</style>
+<th:block layout:fragment="content">
+    <div class="layout-contents">
+        <!-- Page Title -->
+        <div class="page-title-wrap">
+            <div class="left">
+                <h2>회원방문통계</h2>
+                <!--<a title="북마크" class="bookmark toggle">
+                    내메뉴
+                </a>-->
+            </div>
+            <ul class="page-navi">
+                <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
+                <li>회원관리</li>
+                <li>회원방문통계</li>
+            </ul>
+        </div>
+        <!-- Select -->
+        <div class="tab-contents">
+            <section class="tab-item" style="height: 800px;  overflow: auto; ">
+                <div class="section-top">
+                    <div class="search-wrap">
+                        <dl>
+                            <dt>
+                                조회기간<span class="eq">*</span>
+                            </dt>
+                            <dd>
+                                <ul class="date-box">
+                                    <li>
+                                        <input type="date" id="startDate" name="startDate">
+                                        <label for="startDate" class="hide">시작일</label>
+                                    </li>
+                                    <li>
+                                        <input type="date" id="endDate" name="endDate">
+                                        <label for="endDate" class="hide">종료일</label>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </dl>
+                        <!--<dl>
+                            <dt>
+                                <label for="searchTitle">
+                                    회원명<span class="eq">*</span>
+                                </label>
+                            </dt>
+                            <dd>
+                                <div class="srch-box">
+                                    <input type="text" id="searchTitle" name="searchTitle" class="input-srch"
+                                           placeholder="회원명" style="border-radius: 5px;">
+                                </div>
+                            </dd>
+                        </dl>-->
+                        <dl>
+                            <dt>&nbsp;</dt>
+                            <dd>
+                                <li>
+                                    <a class="btn btn-delete" title="검색" id="searchButton" onclick="searchButton()">
+                                        <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
+                                        <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                                        검색
+                                    </a>
+                                </li>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="container-fluid" style="display: flex; align-items: center; justify-content: space-between;">
+                    <!-- 첫 번째 차트 -->
+                    <div class="col wp50" style="flex: 1; margin-right: 10px; position: relative;">
+                        <canvas id="chart1" style="width: 100%; height:230px;"></canvas>
+                        <!-- 통계와 현황 버튼 -->
+                        <div style="position: absolute;top:-3px; right: 10px;">
+                            <button onclick="loadStatsData1()">통계</button>
+                            <button onclick="loadTrendData1()">현황</button>
+                        </div>
+
+                        <!-- 아이콘을 오른쪽 상단으로 이동 -->
+                        <span class="material-symbols-outlined"
+                              style="position: absolute;top:50px; /* 상단 위치 */right: 10px; /* 오른쪽 위치 */cursor: pointer;z-index: 10;color: rgb(179, 179, 179);" onclick="openModal('UserCountChart')">zoom_out_map</span>
+                    </div>
+
+                    <!-- 두 번째 차트 -->
+                    <div class="col wp50" style="flex: 1; position: relative;">
+                        <canvas id="chart2" style="width: 100%; height:230px;"></canvas>
+                        <div style="position: absolute; top: -3px; right: 10px;">
+                            <button onclick="loadStatsData2()">통계</button>
+                            <button onclick="loadTrendData2()">현황</button>
+                        </div>
+                        <span class="material-symbols-outlined" style="position: absolute;top:50px; /* 상단 위치 */right: 10px; /* 오른쪽 위치 */cursor: pointer;z-index: 10;color: rgb(179, 179, 179);" onclick="openModal('UserCountChart')">zoom_out_map</span>
+                    </div>
+                </div>
+
+            </section>
+        </div> <!--//tab-wrap end-->
+    </div> <!--//layout-contents end -->
+    <footer>
+        <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
+    </footer>
+    <div id="chartModal" class="modal" style="opacity:100">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <canvas id="modalChartHolder" style="width: 1292px; height: 474px; box-sizing: border-box; display: block;" width="1292" height="474"></canvas>
+        </div>
+    </div>
+</th:block>
+<th:block layout:fragment="scripts">
+    <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+            // 현재 날짜 설정
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+
+            // 시작일
+            const startOfYear = new Date(year, 0, 1);
+            const startYearFormatted = `${startOfYear.getFullYear()}-${String(startOfYear.getMonth() + 1).padStart(2, '0')}-${String(startOfYear.getDate()).padStart(2, '0')}`;
+            $('#startDate').val(startYearFormatted);
+
+            // 종료일
+            const endOfMonth = new Date(year, month + 1, 0);
+            const endMonthFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
+            $('#endDate').val(endMonthFormatted);
+
+
+        });
+
+        // 모달 열기 함수
+        function openModal(chartId) {
+            const modal = document.getElementById('chartModal'); // 모달 가져오기
+            const modalCanvas = document.getElementById('modalChartHolder'); // 모달 내부 캔버스
+            const chartElement = document.getElementById(chartId);
+            const chart = chartElement?.getContext('2d').chart; // 기존 차트 인스턴스 가져오기
+
+            if (!chart) {
+                console.error("해당 차트를 찾을 수 없습니다.");
+                return;
+            }
+
+            // 모달 보이기
+            modal.style.display = 'block';
+
+            // 기존 모달 차트가 있다면 제거
+            if (window.modalChartInstance) {
+                window.modalChartInstance.destroy();
+            }
+
+            // 모달 차트 생성
+            const modalChartHolder = modalCanvas.getContext('2d');
+            window.modalChartInstance = new Chart(modalChartHolder, {
+                type: chart.config.type, // 기존 차트 타입 유지
+                data: chart.config.data, // 기존 차트 데이터 복사
+                options: {
+                    ...chart.config.options,
+                    responsive: true,
+                    maintainAspectRatio: false, // 모달 크기에 맞추기
+                },
+            });
+        }
+
+        // 모달 닫기 함수
+        function closeModal() {
+            const modal = document.getElementById('chartModal');
+            modal.style.display = 'none';
+
+            // 모달 차트 제거
+            if (window.modalChartInstance) {
+                window.modalChartInstance.destroy();
+                window.modalChartInstance = null; // 인스턴스 초기화
+            }
+        }
+
+        // 모달 외부 클릭으로 닫기 이벤트
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('chartModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // 닫기 버튼 클릭 이벤트
+        document.querySelector('.close').addEventListener('click', closeModal);
+
+        const ctx1 = document.getElementById('chart1').getContext('2d');
+        const ctx2 = document.getElementById('chart2').getContext('2d');
+
+        // 첫 번째 차트 생성
+        let chart1 = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: Array.from({ length: 12 }, (_, i) => `${i + 1}월`),
+                datasets: [{
+                    label: '통계 데이터',
+                    data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 200)), // 0 ~ 200 사이의 데이터 생성
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false, // 범례 숨기기
+                    },
+                    title: {
+                        display: true,
+                        text: '회원 등록',
+                        font: {
+                            size: 24, // 글씨 크기 (기본값: 12)
+                        },
+                        align: 'start', //글씨 위치
+                    },
+                },
+                responsive: true,
+                scales: {
+                    y: {
+                        min: 0, // Y축 최소값
+                        max: 200, // Y축 최대값
+                        ticks: {
+                            stepSize: 10, // 10 단위로 눈금 표시
+                        },
+                    },
+                },
+            },
+        });
+
+
+        // 두 번째 차트 생성
+        let chart2 = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: Array.from({ length: 12 }, (_, i) => `${i + 1}월`),
+                datasets: [{
+                    label: '통계 데이터',
+                    data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 100)), // 0 ~ 100 사이의 데이터 생성
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false, // 범례 숨기기
+                    },
+                    title: {
+                        display: true,
+                        text: '조회 건수',
+                        font: {
+                            size: 24, // 글씨 크기 (기본값: 12)
+                        },
+                        align: 'start', //글씨 위치
+                    },
+                },
+                responsive: true,
+                scales: {
+                    y: {
+                        min: 0, // Y축 최소값
+                        max: 100, // Y축 최대값
+                        ticks: {
+                            stepSize: 10, // 10 단위로 눈금 표시
+                        },
+                    },
+                },
+            },
+        });
+
+        // 첫 번째 차트 업데이트
+        function loadStatsData1() {
+            chart1.config.type = 'bar'; // 유형 설정
+            chart1.data.datasets[0].data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 200));// 데이터 업데이트
+            chart1.update(); // 차트 갱신
+        }
+
+        /*서버에서 데이터 가져올때
+        function loadStatsData1() {
+            fetch('/api/chart1/stats') // API 엔드포인트 호출
+                .then(response => response.json()) // JSON 데이터로 변환
+                .then(data => {
+                    chart1.data.datasets[0].data = data.values; // 서버에서 받은 데이터로 업데이트
+                    chart1.update(); // 차트 갱신
+                })
+                .catch(error => console.error('데이터 로드 실패:', error));
+        }*/
+
+
+        function loadTrendData1() {
+            chart1.config.type = 'line'; // 유형 설정
+            chart1.data.datasets[0].data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 200)); // 데이터 업데이트
+            chart1.update(); // 차트 갱신
+        }
+
+       // 두 번째 차트 업데이트
+        function loadStatsData2() {
+            chart2.config.type = 'bar'; // 유형 설정
+            const newData = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100)); // 데이터 생성
+            chart2.data.datasets[0].data = newData; // 데이터 업데이트
+            chart2.options.scales.y.max = Math.max(...newData) + 10; // Y축 최대값 동적으로 설정
+            chart2.update(); // 차트 갱신
+        }
+
+        function loadTrendData2() {
+            chart2.config.type = 'line'; // 유형 설정
+            const newData = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100)); // 데이터 생성
+            chart2.data.datasets[0].data = newData; // 데이터 업데이트
+            chart2.options.scales.y.max = Math.max(...newData) + 10; // Y축 최대값 동적으로 설정
+            chart2.update(); // 차트 갱신
+        }
+
+
+    </script>
+</th:block>
+</html>

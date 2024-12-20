@@ -13,6 +13,22 @@
     .wj-cell {
       text-align: left;
     }
+    .button-wrap {
+      text-align: right; /* 오른쪽 정렬 */
+    }
+
+    .button-list {
+      display: inline-block; /* 가로로 나열 */
+      list-style: none; /* 기본 리스트 스타일 제거 */
+      margin: 0; /* 여백 초기화 */
+      padding: 0; /* 여백 초기화 */
+    }
+
+    .button-list li {
+      display: inline; /* 인라인 요소로 설정 */
+      margin-left: 10px; /* 버튼 간 간격 */
+    }
+
     table td {
       border-bottom: 1px solid #EBEBEB;
       height: 48px;
@@ -38,8 +54,7 @@
       </div>
       <ul class="page-navi">
         <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
-        <li></li>
-        <li>등급관리 등록</li>
+        <li>등급관리</li>
       </ul>
     </div>
     <div class="tab-wrap">
@@ -70,10 +85,10 @@
                 </dd>
               </dl>
             </div>
-            <div class="button-wrap" style="border-top:none;">
+            <div class="button-wrap" style="border-top:none; text-align: right; !important;">
               <ul>
                 <li>
-                  <a class="btn btn-excell" title="신규등록" id="Newbtn">
+                  <a class="btn btn-excell" title="신규등록" id="Newbtn" onclick="clearForm()">
                     <img src="/images/icon/ico-plus.svg" alt="등록 아이콘">
                     신규등록
                   </a>
@@ -109,8 +124,8 @@
 
                   <!-- Table Wrap -->
                   <div class="table-wrap">
-                    <table class="view-table" id="selectedData" style="max-height: 740px;">
-                      <caption>보고분기 상세 테이블</caption>
+                    <table class="view-table" id="selectedData" style="max-height: 800px;">
+                      <caption>급등관리 상세 테이블</caption>
                       <colgroup>
                         <col class="wp20">
                         <col class="wauto">
@@ -252,65 +267,110 @@
   <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
 
   <script type="text/javascript">
-    // 하드코딩된 데이터
-    var data = [
-      { grid: 'S', grscore: "100~90", grflag: "안심", grmood: '맑음', gricon: "방패,금고" },
-      { grid: 'D', grscore: "59~50", grflag: "불안", grmood: '폭우', gricon: "안절부절" },
-      { grid: 'C', grscore: "69~60", grflag: "경계", grmood: '비', gricon: "큰 눈" },
-      { grid: 'A', grscore: "89~80", grflag: "관심", grmood: '약간 흐림', gricon: "돋보기" }
-    ];
 
-    // 컬럼 정의
-    var columns = [
-      { binding: 'grid', header: '등급', align: 'center', width: 150 },
-      { binding: 'grscore', header: '점수', align: 'center', width: 150 },
-      { binding: 'grflag', header: '명칭', align: 'center', width: 150 },
-      { binding: 'grmood', header: '날씨', align: 'center', width: 150 },
-      { binding: 'gricon', header: '아이콘', align: 'center', width: "*" }
-    ];
+    document.readyState === 'complete' ? init() : window.onload = init;
 
-    // 초기화 함수
+    document.addEventListener('DOMContentLoaded', function () {
+      init();
+    });
+
+    let theGrid;
     function init() {
-      // FlexGrid 생성
-      var theGrid = new wijmo.grid.FlexGrid('#theGrid', {
-        autoGenerateColumns: false,
-        columns: columns,
-        isReadOnly: true,
-        itemsSource: data // 하드코딩된 데이터 연결
-      });
-      theGrid.rowHeaders.columns.splice(0, 1);
+      fetchListData();
+    }
 
-      // 헤더 스타일 및 셀 렌더링
-      theGrid.formatItem.addHandler(function (s, e) {
-        if (e.panel === s.cells) { // 셀이 렌더링될 때만 처리
-          const col = s.columns[e.col];
-          const item = s.rows[e.row].dataItem[col.binding];
-
-          // 특정 컬럼이 'exflag'일 때 처리
-          if (col.binding === 'exflag') {
-            e.cell.innerHTML = ''; // 기존 내용을 비움
-
-            // 체크박스 생성 및 렌더링
-            const input = document.createElement('input');
-            input.type = 'checkbox';
-            input.checked = item === '1'; // '1'일 때 체크
-            input.disabled = true; // 읽기 전용
-            input.style.margin = '0 auto'; // 체크박스 수평 정렬
-            input.style.display = 'block'; // 블록 레벨로 설정하여 수직 정렬
-
-            e.cell.appendChild(input);
-
-            // 셀 스타일 설정 (중앙 정렬)
-            e.cell.style.display = 'flex';
-            e.cell.style.justifyContent = 'center';
-            e.cell.style.alignItems = 'center';
+    function fetchListData() {
+      let data2 = [
+        { rownum:'1', grid: 'S', grscore: "100~90", grflag: "안심", grmood: '맑음', gricon: "방패,금고" },
+        { rownum:'2', grid: 'D', grscore: "59~50", grflag: "불안", grmood: '폭우', gricon: "안절부절" },
+        { rownum:'3', grid: 'C', grscore: "69~60", grflag: "경계", grmood: '비', gricon: "큰 눈" },
+        { rownum:'4', grid: 'A', grscore: "89~80", grflag: "관심", grmood: '약간 흐림', gricon: "돋보기" }
+      ];
+      // 서버에서 데이터 가져오기
+      /*$.ajax({
+        url: '/api/ProgressStatus/read',
+        type: 'GET',
+        data: queryParams,
+        async: false,
+        success: function (response) {
+          // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
+          if (response && Array.isArray(response.data)) {
+            data2 = response.data.map((item, index) => ({
+              rownum: index + 1
+            }));
           }
+        },
+        error: function () {
+          console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+        }
+      });*/
+
+      while (data2.length < 10) {
+        data2.push({
+          rownum: data2.length + 1,
+          grid: '',
+          grscore: '',
+          grflag: '',
+          grmood: '',
+          gricon: '',
+        });
+      }
+
+      const viewdata = new wijmo.collections.CollectionView(data2);
+
+      if (!theGrid) {
+        theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+          autoGenerateColumns: false,
+          showMarquee: true,
+          isReadOnly: true,
+          columns: [
+            { binding: 'rownum', header: 'NO', align: 'center', width: 70 },
+            { binding: 'grid', header: '등급', align: 'center', width: 100 },
+            { binding: 'grscore', header: '점수', align: 'center', width: 150 },
+            { binding: 'grflag', header: '명칭', align: 'center', width: 150 },
+            { binding: 'grmood', header: '날씨', align: 'center', width: 150 },
+            { binding: 'gricon', header: '아이콘', align: 'center', width: '*' }
+          ],
+          itemsSource: viewdata
+        });
+
+        theGrid.rowHeaders.columns.splice(0, 1);
+      } else {
+        theGrid.itemsSource = viewdata;
+      }
+    }
+
+    //초기화
+    function clearForm() {
+      const form = document.getElementById('codeForm');
+
+      Array.from(form.elements).forEach(element => {
+        // 비활성화된 요소는 건너뛰기
+        if (element.disabled) {
+          return;
+        }
+        switch (element.type) {
+          case 'text':
+          case 'hidden':
+            element.value = '';
+            break;
+          case 'checkbox':
+            element.checked = false;
+            break;
+          case 'select-one':
+            element.selectedIndex = 0;
+            break;
+          case 'select-multiple': // 다중 선택 초기화
+            Array.from(element.options).forEach(option => {
+              option.selected = false;
+            });
+            break;
+          default:
+            break;
         }
       });
     }
 
-    // 초기화 실행
-    init();
   </script>
 </th:block>
 </html>
