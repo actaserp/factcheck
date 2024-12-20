@@ -110,11 +110,11 @@
     // 통계보고서 그리드
     function fetchListData() {
       let data2 = [
-        { },
-        { },
-        { },
-        { },
-        { }
+        {"district" : "20대 이하" },
+        {"district" : "30대" },
+        {"district" : "40대" },
+        {"district" : "50대" },
+        {"district" : "60대 이상" },
       ];
 
       viewdata = new wijmo.collections.CollectionView(data2);
@@ -164,18 +164,16 @@
             e.cell.style.verticalAlign = 'middle';
             e.cell.style.backgroundColor = '#d0e1eb'; // 병합된 셀 스타일
           }
+          if (e.panel === s.cells) {
+            const col = s.columns[e.col];
+            if (col.binding === 'district') {
+              e.cell.style.fontWeight = 'bold'; // 글씨 굵게
+              e.cell.style.backgroundColor = '#EDEFF5'; // 원하는 배경색
+              e.cell.style.color = '#000'; // 텍스트 색상 (선택 사항)
+            }
+          }
         });
-
-        // Row Headers 설정
-        theGrid.rowHeaders.setCellData(0, 0, '20대 이하');
-        theGrid.rowHeaders.setCellData(1, 0, '30대');
-        theGrid.rowHeaders.setCellData(2, 0, '40대');
-        theGrid.rowHeaders.setCellData(3, 0, '50대');
-        theGrid.rowHeaders.setCellData(4, 0, '60대 이상');
-
-        // Row Header 크기 조정
-        theGrid.rowHeaders.columns[0].width = 100;
-
+        theGrid.rowHeaders.columns.splice(0, 1);  //맨 앞에 헤더부분 없애기
         new FlexGridContextMenu(theGrid);
       } else {
         // 이미 FlexGrid가 존재하는 경우 데이터 업데이트
