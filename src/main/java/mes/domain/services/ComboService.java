@@ -420,13 +420,17 @@ public class ComboService {
 		dicParam.addValue("cond3", cond3);
 		return this.sqlRunner.getRows(sql, dicParam);
 	};
-	
+
 	ComboDataFunction menu_item=(String cond1, String cond2, String cond3)-> {
 		String sql = """
-			select mi."MenuCode" as value, 
-			format('%s(%s)',mi."MenuName", mf."FolderName") as text 
-			from menu_item mi inner join menu_folder mf on mf.id = mi."MenuFolder_id"  
-			""";
+		SELECT
+			mi."MenuCode" AS value,
+			mi."MenuName" + '(' + mf."FolderName" + ')' AS text
+		FROM 
+			menu_item mi 
+		INNER JOIN 
+			menu_folder mf ON mf.id = mi."MenuFolder_id"
+		""";
 		MapSqlParameterSource dicParam = new MapSqlParameterSource();
 		dicParam.addValue("cond1", cond1);
 		dicParam.addValue("cond2", cond2);

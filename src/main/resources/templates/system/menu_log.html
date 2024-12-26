@@ -1,7 +1,11 @@
 <html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
-<style>
-
-</style>
+<head>
+    <style>
+        .wj-header {
+            text-align: center !important;
+        }
+    </style>
+</head>
 
 <th:block layout:fragment="content">
 
@@ -23,31 +27,6 @@
             </ul>
         </div>
         <!-- Select -->
-        <div class="search-wrap" id="searchWrap" style="display: none">
-            <ul>
-                <li>
-                    <select title="지역" id="spworkcd" name="spworkcd"
-                            onchange="updateCompcdOptions(); saveSelectedSandanData(); ">
-                        <!-- 지역 옵션을 JavaScript에서 동적으로 채움 -->
-                    </select>
-                    <input type="hidden" id="spworknm" name="spworknm">
-                </li>
-                <li>
-                    <select title="산단" id="spcompcd" name="spcompcd"
-                            onchange="updatePlancdOptions(); saveSelectedSandanData();">
-                        <!-- 산단 옵션을 JavaScript에서 동적으로 채움 -->
-                    </select>
-                    <input type="hidden" id="spcompnm" name="spcompnm">
-                </li>
-                <li>
-                    <select title="시설" id="spplancd" name="spplancd"
-                            onchange="updatePlannm(); saveSelectedSandanData()">
-                        <!-- 시설 옵션을 JavaScript에서 동적으로 채움 -->
-                    </select>
-                    <input type="hidden" id="spplannm" name="spplannm">
-                </li>
-            </ul>
-        </div>
         <div class="tab-wrap">
             <ul class="tab-links">
                 <li>
@@ -76,12 +55,12 @@
                                     <dd>
                                         <ul class="date-box">
                                             <li>
-                                                <input class="tac w150 " type="text" id="date_from" name="date_from"/>
-                                                <label for="searchfrdate" class="hide">시작일</label>
+                                                <input class="tac w150 date_from " type="text" id="date_from" name="date_from" readonly/>
+                                                <label for="date_from" class="hide">시작일</label>
                                             </li>
                                             <li>
-                                                <input class="tac w150" type="text" id="date_to" name="date_to"/>
-                                                <label for="searchtodate" class="hide">종료일</label>
+                                                <input class="tac w150 date_to" type="text" id="date_to" name="date_to" readonly/>
+                                                <label for="date_to" class="hide">종료일</label>
                                             </li>
                                         </ul>
                                     </dd>
@@ -95,7 +74,7 @@
                                     </dt>
                                     <dd>
                                         <div class="srch-box">
-                                            <select class="form-control2 w250" id="cboMenu" name="cboMenu" style="border-radius: 5px 5px 5px 5px;"></select>
+                                            <select class="form-control2" id="cboMenu" name="cboMenu" style="border-radius: 5px 5px 5px 5px; width: 250px;"></select>
                                         </div>
                                     </dd>
                                 </dl>
@@ -153,11 +132,11 @@
                                 <dd>
                                     <ul class="date-box">
                                         <li>
-                                            <input type="date" id="date_from2" name="date_from">
-                                            <label for="date_from " class="hide">시작일</label>
+                                            <input type="date" id="date_from2" name="date_from" class="date_from">
+                                            <label for="date_from2" class="hide">시작일</label>
                                         </li>
                                         <li>
-                                            <input type="date" id="date_to2" name="date_to">
+                                            <input type="date" id="date_to2" name="date_to" class="date_to">
                                             <label for="date_to" class="hide">종료일</label>
                                         </li>
                                     </ul>
@@ -175,7 +154,7 @@
                                 </dd>
                             </dl>
 
-                            <dl>
+                            <!--<dl>
                                 <dt>
                                     <label for="text1">
                                         사용자<span class="eq"></span>
@@ -186,9 +165,7 @@
                                         <select class="form-control2 w250" id="cboUser2" name="cboUser" style="border-radius: 5px 5px 5px 5px;"></select>
                                     </div>
                                 </dd>
-                            </dl>
-
-
+                            </dl>-->
 
                             <dl>
                                 <dt><span class="eq"></span></dt>
@@ -230,18 +207,36 @@
                                     <dd>
                                         <ul class="date-box">
                                             <li>
-                                                <input class="tac w150 logfrdate" type="text" id="srchStartDt3"
-                                                       name="srchStartDt"/>
+                                                <input class="tac w150 date_from" type="text" id="srchStartDt3"
+                                                       name="srchStartDt" readonly/>
                                                 <label for="srchStartDt3" class="hide">시작일</label>
                                             </li>
                                             <li>
-                                                <input class="tac w150 logtodate" type="text" id="srchEndDt3"
-                                                       name="srchEndDt"/>
+                                                <input class="tac w150 date_to" type="text" id="srchEndDt3"
+                                                       name="srchEndDt" readonly/>
                                                 <label for="srchEndDt3" class="hide">종료일</label>
                                             </li>
                                         </ul>
                                     </dd>
                                 </dl>
+
+                                <dl>
+                                    <dt>
+                                        <label for="text1">
+                                            구분<span class="eq">*</span>
+                                        </label>
+                                    </dt>
+                                    <dd>
+                                        <div class="srch-box" >
+                                            <select id="type" name="type" style="border-radius: 5px 5px 5px 5px; width: 150px;">
+                                                <option value="">전체</option>
+                                                <option value="login">login</option>
+                                                <option value="logout">logout</option>
+                                            </select>
+                                        </div>
+                                    </dd>
+                                </dl>
+
                                 <dl>
                                     <dt>
                                         <label for="text1">
@@ -291,13 +286,13 @@
                                 <dd>
                                     <ul class="date-box">
                                         <li>
-                                            <input class="tac w150 logfrdate" type="text" id="srchStartDt4"
-                                                   name="srchStartDt4"/>
+                                            <input class="tac w150 date_from" type="text" id="srchStartDt4"
+                                                   name="srchStartDt4" readonly/>
                                             <label for="srchStartDt4" class="hide">시작일</label>
                                         </li>
                                         <li>
-                                            <input class="tac w150 logtodate" type="text" id="srchEndDt4"
-                                                   name="srchEndDt4"/>
+                                            <input class="tac w150 date_to" type="text" id="srchEndDt4"
+                                                   name="srchEndDt4" readonly/>
                                             <label for="srchEndDt4" class="hide">종료일</label>
                                         </li>
                                     </ul>
@@ -342,16 +337,16 @@
                             </dl>
 
                         </div>
-                       <!-- <div class="button-wrap">
-                            <ul>
-                                <li>
-                                    <a class="btn btn-edit" id="detail" title="상세정보보기">
-                                        <img src="/images/icon/ico-edit.svg" alt="엑셀 아이콘">
-                                        상세정보보기
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>-->
+                        <!-- <div class="button-wrap">
+                             <ul>
+                                 <li>
+                                     <a class="btn btn-edit" id="detail" title="상세정보보기">
+                                         <img src="/images/icon/ico-edit.svg" alt="엑셀 아이콘">
+                                         상세정보보기
+                                     </a>
+                                 </li>
+                             </ul>
+                         </div>-->
                     </div> <!--//section-top end -->
                     <div class="container-fluid">
                         <p id="selectedItem"></p>
@@ -401,16 +396,16 @@
 
         /*메뉴로그 컬럼들*/
         var columns = [
-            {binding: 'folder_name', header: '메뉴폴더', width: 200, align: 'center'},
-            {binding: 'menu_name', header: '메뉴', width: 200, align: 'center'},
-            {binding: 'use_count', header: '사용횟수', width: 200, align: 'center'},
+            {binding: 'folder_name', header: '메뉴폴더', width: 200, align: 'left'},
+            {binding: 'menu_name', header: '메뉴', width: 200, align: 'left'},
+            {binding: 'use_count', header: '사용횟수', width: 200, align: 'right'},
             {binding: '', header: '', width: "*"},
         ];
 
         var columns2 = [
             {binding: 'row_number', header: 'No', width: 160, align: 'center'},
-            {binding: 'folder_name', header: '메뉴폴더', width: 160, align: 'center'},
-            {binding: 'menu_name', header: '메뉴', width: 260, align: 'center'},
+            {binding: 'folder_name', header: '메뉴폴더', width: 160, align: 'left'},
+            {binding: 'menu_name', header: '메뉴', width: 260, align: 'left'},
             {binding: 'username', header: '아이디', width: 160, align: 'center'},
             {binding: 'user_name', header: '이름', width: 160, align: 'center'},
             {binding: 'click_date', header: '일시', width: 260, align: 'center'},
@@ -420,13 +415,13 @@
         /*로그인로그 컬럼*/
         var columns3 = [
             {binding: 'row_number', header: 'No', width: 150, align: 'center'},
-            {binding: 'type', header: '구분', width: 160, align: 'center'},
-            {binding: 'addr', header: 'IP Address', width: 200, align: 'center'},
-            {binding: 'login_id', header: '사번', width: 160, align: 'center'},
             {binding: 'name', header: '이름', width: 160, align: 'center'},
             {binding: 'created', header: '일시', width: 260, align: 'center'},
+            {binding: 'type', header: '구분', width: 160, align: 'center'},
+            {binding: 'login_id', header: '사번', width: 160, align: 'center'},
+            {binding: 'addr', header: 'IP Address', width: 200, align: 'center'},
             {binding: '', header: '', width: "*", align: 'center'},
-            ];
+        ];
 
         /*시스템로그 컬럼*/
         let columns4 = [
@@ -560,6 +555,7 @@
             let srchStartDt = $('#srchStartDt3').val();
             let srchEndDt = $('#srchEndDt3').val();
             let keyword = $('#keyword').val();
+            let type = $('#type').val();
 
 
             $.ajax({
@@ -570,6 +566,7 @@
                     'srchStartDt': srchStartDt,
                     'srchEndDt': srchEndDt,
                     'keyword': keyword,
+
                 },
                 async: false,
                 success: function (data) {
@@ -631,7 +628,8 @@
             let data = {
                 'keyword' : $('#keyword').val(),
                 'srchStartDt': $('#srchStartDt3').val(),
-                'srchEndDt': $('#srchEndDt3').val()
+                'srchEndDt': $('#srchEndDt3').val(),
+                'type' : $('#type').val(),
             }
 
             console.log("Data to send:", data);
@@ -641,6 +639,7 @@
                 type: 'GET',
                 data: data,
                 success: function (result) {
+
                     if (result.success) {
                         console.log("Result data:", result.data);
                         grid_binding3(result.data);
@@ -751,7 +750,7 @@
 
             theGrid4.rowHeaders.columns.splice(0,1);  //맨 앞에 헤더부분 없애기
 
-            new FlexGridContextMenu(theGrid);
+            new FlexGridContextMenu(theGrid4);
 
             $('#btnSearch4').click(searchData4);
 
@@ -1016,39 +1015,10 @@
 
         $(document).ready(function (e) {
 
-            // tab1 시작일과 종료일을 지정
-            $('#date_from').val(CommonUtil.getYYYYMMDD(-7));
-            $('#date_to').val(CommonUtil.getYYYYMMDD());
-
-            // 현재 연도를 가져옴
-            const currentYear = new Date().getFullYear();
-            // 1월 1일 날짜 문자열 생성
-            const defaultDate = `${currentYear}-01-01`;
-            // input 요소에 기본값 설정
-            document.getElementById('date_from').value = defaultDate;
-
-            // 현재 연도를 가져옴
-            const currentYear2 = new Date().getFullYear();
-            // 1월 1일 날짜 문자열 생성
-            const defaultDate2 = `${currentYear2}-12-31`;
-            // input 요소에 기본값 설정
-            document.getElementById('date_to').value = defaultDate2;
-
-
-            // 현재 연도를 가져옴
-            const currentYear3 = new Date().getFullYear();
-            const startDate = `${currentYear3}-01-01`;
-            const endDate = `${currentYear3}-12-31`;
-
-            // logfrdate 클래스를 가진 모든 input 요소에 1월 1일 값 설정
-            document.querySelectorAll('.logfrdate').forEach(input => {
-                input.value = startDate;
-            });
-            // logtodate 클래스를 가진 모든 input 요소에 12월 31일 값 설정
-            document.querySelectorAll('.logtodate').forEach(input => {
-                input.value = endDate;
-            });
-
+            $('.date_to').val(CommonUtil.getYYYYMMDD());
+            const currentDate = new Date();
+            const startDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
+            $('.date_from').val(startDate);
 
             // tab1과 tab2의 그룹 select에 값을 부여
             AjaxUtil.fillSelectOptions($('#cboMenu'), 'menu_item', 'all');

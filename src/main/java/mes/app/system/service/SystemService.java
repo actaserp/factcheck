@@ -139,36 +139,43 @@ public class SystemService {
 
     }
 
-    public List<Map<String, Object>> getUserGroupMenuList(Integer userGroupId, Integer folderId) {
+    /**
+     * 시스템-메뉴권한 : 사용자그룹별 메뉴조회
+     *
+     * @param userGroupId
+     * @param folderId
+     * @return
+     */
+    public List<Map<String, Object>> getUserGroupMenuList1(Integer userGroupId, Integer folderId) {
         System.out.println("Folder ID: " + folderId);
         System.out.println("User ID: " + userGroupId);
         String sql = """
-        WITH tree AS (
-            SELECT
-                a.id,
-                a.Parent_id AS pid,
-                CAST('' AS NVARCHAR(MAX)) AS menu_code,
-                a.FolderName AS gpname,
-                a.FolderName AS name,
-                1 AS depth,
-                CAST(a.id AS NVARCHAR(MAX)) AS path,
-                0 AS cycle,
-                a._order AS ord,
-                CAST('folder' AS NVARCHAR(10)) AS data_div,
-                a.id AS folder_id,
-                1 AS is_folder
-            FROM menu_folder a
-            WHERE a.Parent_id IS NULL
-              AND (a.FrontFolder_id IS NOT NULL OR a.FrontFolder_id IS NULL)
-        """;
+    WITH tree AS (
+        SELECT 
+            a.id,
+            a.Parent_id AS pid,
+            CAST('' AS NVARCHAR(MAX)) AS menu_code,
+            a.FolderName AS gpname,
+            a.FolderName AS name,
+            1 AS depth,
+            CAST(a.id AS NVARCHAR(MAX)) AS path,
+            0 AS cycle,
+            a._order AS ord,
+            CAST('folder' AS NVARCHAR(10)) AS data_div,
+            a.id AS folder_id,
+            1 AS is_folder
+        FROM menu_folder a
+        WHERE a.Parent_id IS NULL
+          AND a.FrontFolder_id IS NOT NULL
+    """;
 
-        // Optional folder ID filtering
         if (folderId != null) {
-            sql += " AND a.id = :folder_id";
+            sql += " and a.id = :folder_id";
         }
+
         sql += """
         UNION ALL
-        SELECT
+        SELECT 
             NULL AS id,
             mi.MenuFolder_id AS pid,
             CAST(mi.MenuCode AS NVARCHAR(MAX)) AS menu_code,
@@ -185,7 +192,7 @@ public class SystemService {
         INNER JOIN tree ON mi.MenuFolder_id = tree.id
         WHERE mi.MenuCode NOT IN ('wm_user_group_menu')
     )
-    SELECT
+    SELECT 
         tree.pid,
         tree.id,
         tree.menu_code,
@@ -195,23 +202,14 @@ public class SystemService {
         tree.ord,
         ugm.UserGroup_id,
         ugm.AuthCode,
-        CASE
-            WHEN tree.is_folder = 1 THEN NULL
-            ELSE IIF(ugm.AuthCode IS NULL, 0, IIF(CHARINDEX('R', ugm.AuthCode) > 0, 1, 0))
-        END AS r,
-        CASE
-            WHEN tree.is_folder = 1 THEN NULL
-            ELSE IIF(ugm.AuthCode IS NULL, 0, IIF(CHARINDEX('W', ugm.AuthCode) > 0, 1, 0))
-        END AS w,
-        CASE
-            WHEN tree.is_folder = 1 THEN NULL
-            ELSE IIF(ugm.AuthCode IS NULL, 0, IIF(CHARINDEX('X', ugm.AuthCode) > 0, 1, 0))
-        END AS x,
+        CASE WHEN tree.is_folder = 1 THEN NULL ELSE IIF(CHARINDEX('R', ugm.AuthCode) > 0, 1, 0) END AS r,
+        CASE WHEN tree.is_folder = 1 THEN NULL ELSE IIF(CHARINDEX('W', ugm.AuthCode) > 0, 1, 0) END AS w,
+        CASE WHEN tree.is_folder = 1 THEN NULL ELSE IIF(CHARINDEX('X', ugm.AuthCode) > 0, 1, 0) END AS x,
         tree.is_folder,
         ugm.id AS ugm_id
-    FROM tree
-    LEFT JOIN user_group_menu ugm
-        ON ugm.MenuCode = tree.menu_code
+    FROM tree 
+    LEFT JOIN user_group_menu ugm 
+        ON ugm.MenuCode = tree.menu_code 
         AND ugm.UserGroup_id = :group_id
     ORDER BY tree.path, tree.ord
     """;
@@ -219,24 +217,112 @@ public class SystemService {
         MapSqlParameterSource dicParam = new MapSqlParameterSource();
         dicParam.addValue("folder_id", folderId);
         dicParam.addValue("group_id", userGroupId);
-        System.out.println("Executing SQL: " + sql + " with folder_id=" + folderId);
 
-        System.out.println("Executing SQL: " + sql);
+        //System.out.println("Executing SQL: " + sql);
+        return this.sqlRunner.getRows(sql, dicParam);
+    }
+
+    public List<Map<String, Object>> getUserGroupMenuList(Integer userGroupId, Integer folderId) {
+        System.out.println("Folder ID: " + folderId);
+        System.out.println("User ID: " + userGroupId);
+        String sql = """
+    WITH tree AS (
+        -- 루트 폴더 데이터
+        SELECT 
+            a.id,
+            a.Parent_id AS pid,
+            CAST('' AS NVARCHAR(MAX)) AS menu_code,
+            a.FolderName AS gpname,
+            a.FolderName AS name,
+            1 AS depth,
+            CAST(a.id AS NVARCHAR(MAX)) AS path,
+            0 AS cycle,
+            a._order AS ord,
+            CAST('folder' AS NVARCHAR(10)) AS data_div,
+            a.id AS folder_id,
+            1 AS is_folder
+        FROM menu_folder a
+        WHERE a.Parent_id IS NULL
+          AND (a.FrontFolder_id IS NOT NULL OR a.FrontFolder_id IS NULL)
+    """;
+
+        // Optional folder ID filtering
+        if (folderId != null) {
+            sql += " AND a.id = :folder_id";
+        }
+
+        sql += """
+        UNION ALL
+        -- 하위 메뉴 데이터
+        SELECT 
+            NULL AS id,
+            mi.MenuFolder_id AS pid,
+            CAST(mi.MenuCode AS NVARCHAR(MAX)) AS menu_code,
+            tree.gpname AS gpname,
+            mi.MenuName AS name,
+            tree.depth + 1,
+            tree.path + '/' + CAST(mi.MenuFolder_id AS NVARCHAR(MAX)) AS path,
+            CASE WHEN CHARINDEX(CAST(mi.MenuFolder_id AS NVARCHAR(MAX)), tree.path) > 0 THEN 1 ELSE 0 END AS cycle,
+            mi._order AS ord,
+            CAST('menu' AS NVARCHAR(10)) AS data_div,
+            mi.MenuFolder_id AS folder_id,
+            0 AS is_folder
+        FROM menu_item mi
+        INNER JOIN tree ON mi.MenuFolder_id = tree.id
+        WHERE mi.MenuCode NOT IN ('wm_user_group_menu')
+    )
+    SELECT 
+        tree.pid,
+        tree.id,
+        tree.menu_code,
+        tree.gpname,
+        tree.name,
+        tree.depth,
+        tree.ord,
+        ugm.UserGroup_id,
+        ugm.AuthCode,
+        CASE 
+            WHEN tree.is_folder = 1 THEN NULL
+            ELSE IIF(ugm.AuthCode IS NULL, 0, IIF(CHARINDEX('R', ugm.AuthCode) > 0, 1, 0))
+        END AS r,
+        CASE 
+            WHEN tree.is_folder = 1 THEN NULL
+            ELSE IIF(ugm.AuthCode IS NULL, 0, IIF(CHARINDEX('W', ugm.AuthCode) > 0, 1, 0))
+        END AS w,
+        CASE 
+            WHEN tree.is_folder = 1 THEN NULL
+            ELSE IIF(ugm.AuthCode IS NULL, 0, IIF(CHARINDEX('X', ugm.AuthCode) > 0, 1, 0))
+        END AS x,
+        tree.is_folder,
+        ugm.id AS ugm_id
+    FROM tree 
+    LEFT JOIN user_group_menu ugm 
+        ON ugm.MenuCode = tree.menu_code 
+        AND ugm.UserGroup_id = :group_id
+    ORDER BY tree.path, tree.ord
+    """;
+
+        MapSqlParameterSource dicParam = new MapSqlParameterSource();
+        dicParam.addValue("folder_id", folderId);
+        dicParam.addValue("group_id", userGroupId);
+//        System.out.println("Executing SQL: " + sql + " with folder_id=" + folderId);
+
+//        System.out.println("Executing SQL: " + sql);
         return this.sqlRunner.getRows(sql, dicParam);
     }
 
     public List<Map<String, Object>> getBookmarkList(int userId) {
 
         String sql = """
-                      select mi."MenuName" as name 
-                      , mi."MenuCode" as code 
-                      , mi."Url" as url
+                      select mi.MenuName as name 
+                      , mi.MenuCode as code 
+                      , mi.Url as url
                       --, false as ismanual
                       -- , 0 as ismanual
-                      , bm."_created" as created
+                      , bm._created as created
                       from bookmark bm 
-                      inner join menu_item mi on bm."MenuCode" = mi."MenuCode" 
-                      where bm."User_id" = :user_id
+                      inner join menu_item mi on bm.MenuCode = mi.MenuCode 
+                      where bm.User_id = :user_id
                       order by created
                 """;
 
@@ -275,22 +361,22 @@ public class SystemService {
 
         String sql = """
                 select
-                lc."ModuleName" as gui_code
-                , lc."TemplateKey" as template_key
-                , lc."LabelCode" as label_code
-                , lc."Description" as descr
-                , lcl."DispText" as text
+                lc.ModuleName as gui_code
+                , lc.TemplateKey as template_key
+                , lc.LabelCode as label_code
+                , lc.Description as descr
+                , lcl.DispText as text
                 from label_code lc 
-                left join label_code_lang lcl on lc.id = lcl."LabelCode_id" 
-                where lcl."LangCode" = :lang_code 
+                left join label_code_lang lcl on lc.id = lcl.LabelCode_id 
+                where lcl.LangCode = :lang_code 
                 """;
         if (StringUtils.hasText(gui_code)) {
             sql += """	            		
-                    and lc."ModuleName" = :gui_code and lc."TemplateKey"=:template_key 
+                    and lc.ModuleName = :gui_code and lc.TemplateKey=:template_key 
                     """;
         }
         sql += """ 
-                        order by lc."ModuleName", lc."TemplateKey" 
+                        order by lc.ModuleName, lc.TemplateKey 
                 """;
 
         MapSqlParameterSource dicParam = new MapSqlParameterSource();
@@ -306,19 +392,19 @@ public class SystemService {
     public List<Map<String, Object>> getGridColumnList(String moduleName, String templateName, String gridName, String langCode) {
 
         String sql = """
-                          select gc."Index" as index2, gc."Key" as "key"
-                          , gc."Label" as src_label
-                          , gc."Width" as width
-                          , case when gc."Hidden" = 'Y' then 'true' else 'false' end as hidden
-                       , coalesce(cl."DispText", gc."Label") as label
-                       , cl."DispText" as text
+                          select gc.Index as index2, gc.Key as key
+                          , gc.Label as src_label
+                          , gc.Width as width
+                          , case when gc.Hidden = 'Y' then 'true' else 'false' end as hidden
+                       , coalesce(cl.DispText, gc.Label) as label
+                       , cl.DispText as text
                        from grid_col gc 
-                       left join grid_col_lang cl on cl."GridColumn_id" = gc.id
-                       and cl."LangCode" = :lang_code
-                       where gc."ModuleName" = :module_name
-                       and gc."TemplateKey" = :template_name
-                       and gc."GridName" = :grid_name
-                       order by gc."Index"
+                       left join grid_col_lang cl on cl.GridColumn_id = gc.id
+                       and cl.LangCode = :lang_code
+                       where gc.ModuleName = :module_name
+                       and gc.TemplateKey = :template_name
+                       and gc.GridName = :grid_name
+                       order by gc.Index
                 """;
 
         MapSqlParameterSource dicParam = new MapSqlParameterSource();
@@ -333,38 +419,30 @@ public class SystemService {
 
     public List<Map<String, Object>> getSystemLogList(Timestamp start, Timestamp end, String type, String source) {
         String sql = """
-                   select 
-                       ROW_NUMBER() OVER (ORDER BY _created DESC) as row_num,
-                       id,
-                       "Type" as type,
-                       "Source" as source,
-                       "Message" as message,
-                       to_char("_created", 'yyyy-mm-dd hh24:mi:ss') as created
-                   from sys_log sl
-                   where _created between :start and :end
-            """;
+           SELECT 
+               ROW_NUMBER() OVER (ORDER BY _created DESC) AS row_num,
+               id,
+               Type AS type,
+               Source AS source,
+               Message AS message,
+               FORMAT(_created, 'yyyy-MM-dd HH:mm:ss') AS created
+           FROM sys_log sl
+           WHERE _created BETWEEN :start AND :end
+        """;
 
         if (StringUtils.hasText(type)) {
             sql += """
-                and "Type" ilike concat('%',:type,'%')
-                """;
+            AND Type LIKE '%' + :type + '%'
+            """;
         }
 
         if (StringUtils.hasText(source)) {
             sql += """
-                and "Source" ilike concat('%', :source, '%')		
-                """;
-        }
-        sql += """
-            order by _created desc		
+            AND Source LIKE '%' + :source + '%'		
             """;
+        }
 
-        //Map<String, Object> dicParam = new HashMap<String, Object>();
-        //dicParam.put("start", start);
-        //dicParam.put("end", start);
-        //dicParam.put("type", type);
-        //dicParam.put("source", source);
-        //return this.sqlRunner.getRows(sql, dicParam);
+        sql += " ORDER BY _created DESC";
 
         MapSqlParameterSource namedParameters = new MapSqlParameterSource();
         namedParameters.addValue("start", start, java.sql.Types.TIMESTAMP);
@@ -375,10 +453,11 @@ public class SystemService {
         return this.jdbcTemplate.queryForList(sql, namedParameters);
     }
 
+
     public Map<String, Object> getSystemLogDetail(Long id) {
         String sql = """
-                       select id, "Type" as type, "Source" as source,"Message" as message
-                       , to_char("_created" ,'yyyy-mm-dd hh24:mi:ss') as created
+                       select id, Type as type, Source as source,Message as message
+                       , to_char(_created ,'yyyy-mm-dd hh24:mi:ss') as created
                        from sys_log sl
                        where id = :log_id    			
                 """;
@@ -388,22 +467,22 @@ public class SystemService {
         return this.jdbcTemplate.queryForMap(sql, namedParameters);
     }
 
-//    @Cacheable(value="grid_column",key="{#moduleName, #templateName, #gridName, #key}")    
+//    @Cacheable(value="grid_column",key="{#moduleName, #templateName, #gridName, #key}")
 //    public Map<String, Object> getGridColums(String moduleName, String templateName, String gridName, String key){
-//    	
-//    	String sql = """    			
+//
+//    	String sql = """
 //        select  id, "ModuleName", "TemplateKey", "GridName", "Key", "Index", "Label", "Width", "Hidden"
 //        , _status, _created, _modified, _creater_id, _modifier_id
 //        from public.grid_col
 //    	where  "ModuleName" = :moduleName and "TemplateKey" = :templateName and "GridName" = :gridName and "Key" = :key
 //    	""";
-//    	
+//
 //    	MapSqlParameterSource namedParameters = new MapSqlParameterSource();
 //    	namedParameters.addValue("moduleName", moduleName);
 //    	namedParameters.addValue("templateName", templateName);
 //    	namedParameters.addValue("gridName", gridName);
 //    	namedParameters.addValue("key", key);
-//    	
+//
 //    	Map<String, Object> items = this.sqlRunner.getRow(sql, namedParameters);
 //    	//return this.jdbcTemplate.queryForObject(sql, namedParameters, GridColumn.class);
 //    	return items;
@@ -411,7 +490,7 @@ public class SystemService {
 
 //    @CachePut(value = "grid_column",key="{#gridColumn.moduleName, #gridColumn.templateName, #gridColumn.gridName, #key}")
 //    public GridColumn saveGridColumn(GridColumn gridColumn) {
-//    	
+//
 //    	MapSqlParameterSource namedParameters = new MapSqlParameterSource();
 //    	namedParameters.addValue("id", gridColumn.getId());
 //		namedParameters.addValue("ModuleName", gridColumn.getModuleName());
@@ -422,15 +501,15 @@ public class SystemService {
 //		namedParameters.addValue("Label", gridColumn.getLabel());
 //		namedParameters.addValue("Width", gridColumn.getWidth());
 //		namedParameters.addValue(":Hidden", gridColumn.getHidden());
-//		
+//
 //		namedParameters.addValue(":_status", gridColumn.get_status());
 //		namedParameters.addValue(":_created", gridColumn.get_created());
 //		namedParameters.addValue(":_modified", gridColumn.get_modified());
 //		namedParameters.addValue(":_creater_id", gridColumn.get_creater_id());
-//		namedParameters.addValue(":_modifier_id", gridColumn.get_modifier_id());		
-//    	
+//		namedParameters.addValue(":_modifier_id", gridColumn.get_modifier_id());
+//
 //    	if(gridColumn.getId()==null) {
-//    		
+//
 //    		String sql = """
 //            INSERT INTO grid_col("ModuleName", "TemplateKey", "GridName", "Key", "Index", "Label", "Width", "Hidden", "_status", "_created", "_modified", "_creater_id", "_modifier_id",)
 //            VALUES(
@@ -449,12 +528,12 @@ public class SystemService {
 //            , :_modifier_id
 //            )
 //            """;
-//    		
+//
 //    		KeyHolder keyHolder = new GeneratedKeyHolder();
-//        	this.jdbcTemplate.update(sql, namedParameters, keyHolder, new String[] {"id"});    	
+//        	this.jdbcTemplate.update(sql, namedParameters, keyHolder, new String[] {"id"});
 //        	Integer id = keyHolder.getKey().intValue();
 //        	gridColumn.setId(id);
-//    		
+//
 //    	}else {
 //    		String sql = """
 //            UPDATE grid_col SET
@@ -471,28 +550,28 @@ public class SystemService {
 //            , "Label"=:Label
 //            , "Width"=:Width
 //            , "Hidden"=:Hidden
-//            WHERE id=:id 			
+//            WHERE id=:id
 //    		""";
-//    		
+//
 //    		this.jdbcTemplate.update(sql, namedParameters);
-//    	}    	
+//    	}
 //    	return gridColumn;
 //    }
 
 //    @CacheEvict(value = "grid_column", key="{#moduleName, #templateName, #gridName}")
 //    public int deleteGridColumns(String moduleName, String templateName, String gridName) {
 //    	int iRowEffected = 0;
-//    	
+//
 //    	String sql = """
 //    	delete from grid_col where "ModuleName"=:ModuleName and "TemplateKey"=:TemplateKey and "GridName"=:GridName
 //    	""";
-//    	
-//    	MapSqlParameterSource namedParameters = new MapSqlParameterSource();    	
+//
+//    	MapSqlParameterSource namedParameters = new MapSqlParameterSource();
 //    	namedParameters.addValue("ModuleName", moduleName);
 //    	namedParameters.addValue("TemplateKey", templateName);
 //    	namedParameters.addValue("GridName", gridName);
-//    	
-//    	iRowEffected = this.jdbcTemplate.update(sql, namedParameters);    	
+//
+//    	iRowEffected = this.jdbcTemplate.update(sql, namedParameters);
 //    	return iRowEffected;
 //    }
 
@@ -508,20 +587,20 @@ public class SystemService {
         String sql = """
                 select lc.id as lable_code_id
                             , lcl.id as label_lang_id
-                            , lc."ModuleName"
-                            , coalesce ((select "MenuName" from menu_item where "MenuCode"=lc."ModuleName" limit 1), 'Common') as menu_name
-                            , lc."TemplateKey"
-                            , lc."LabelCode"
-                            , lc."Description"
-                            , lcl."LangCode"
-                            , lcl."DispText"
-                            , to_char(lcl."_created" ,'yyyy-mm-dd hh24:mi:ss') as disp_created
+                            , lc.ModuleName
+                            , coalesce ((select MenuName from menu_item where MenuCode=lc.ModuleName limit 1), 'Common') as menu_name
+                            , lc.TemplateKey
+                            , lc.LabelCode
+                            , lc.Description
+                            , lcl.LangCode
+                            , lcl.DispText
+                            , to_char(lcl._created ,'yyyy-mm-dd hh24:mi:ss') as disp_created
                             from label_code_lang lcl
-                            inner join label_code lc on lcl."LabelCode_id" = lc.id
-                            where lcl."LangCode" = :langCode
-                            and lc."ModuleName" = :guiCode
-                            and lc."TemplateKey" = :templateKey
-                            and lc."LabelCode" = :labelCode
+                            inner join label_code lc on lcl.LabelCode_id = lc.id
+                            where lcl.LangCode = :langCode
+                            and lc.ModuleName = :guiCode
+                            and lc.TemplateKey = :templateKey
+                            and lc.LabelCode = :labelCode
                 """;
 
         Map<String, Object> item = this.sqlRunner.getRow(sql, paramMap);
@@ -531,21 +610,21 @@ public class SystemService {
     public List<Map<String, Object>> storyBoard() {
         String sql = """
                 select si.id
-                        , case when si."BoardType" ='menu' 
-                            then concat(mi."MenuName",'(', mf."FolderName",')')
-                           else df."FormName" end as name
-                          , si."BoardType"
-                          , fn_code_name('story_board_type', si."BoardType" ) as "BoardTypeName"
-                          , si."Duration"
-                          , si."Url"
-                          , up."Name" as writer
-                          , to_char(si."_created" ,'yyyy-mm-dd hh24:mi:ss') as created
-                          , si."ParameterData"
+                        , case when si.BoardType ='menu' 
+                            then concat(mi.MenuName,'(', mf.FolderName,')')
+                           else df.FormName end as name
+                          , si.BoardType
+                          , fn_code_name('story_board_type', si.BoardType ) as BoardTypeName
+                          , si.Duration
+                          , si.Url
+                          , up.Name as writer
+                          , to_char(si._created ,'yyyy-mm-dd hh24:mi:ss') as created
+                          , si.ParameterData
                          from storyboard_item si 
-                         left join menu_item mi on mi."MenuCode" = si."MenuCode" 
-                         left join menu_folder mf on mf.id = mi."MenuFolder_id" 
-                         left join doc_form df on df.id = si."ParameterData"::int
-                         left join user_profile up on up."User_id" = si."_creater_id"   
+                         left join menu_item mi on mi.MenuCode = si.MenuCode 
+                         left join menu_folder mf on mf.id = mi.MenuFolder_id 
+                         left join doc_form df on df.id = si.ParameterData::int
+                         left join user_profile up on up.User_id = si._creater_id   
                          order by id  
                 """;
 

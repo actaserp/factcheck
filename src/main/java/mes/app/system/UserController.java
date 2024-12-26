@@ -1,16 +1,14 @@
 package mes.app.system;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
+import lombok.extern.slf4j.Slf4j;
 import mes.app.UtilClass;
 import mes.app.account.service.TB_RP945_Service;
 import mes.domain.DTO.TB_RP945Dto;
@@ -38,6 +36,7 @@ import mes.domain.security.Pbkdf2Sha256;
 import mes.domain.services.CommonUtil;
 import mes.domain.services.SqlRunner;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/system/user")
 public class UserController {
@@ -66,18 +65,14 @@ public class UserController {
 
 	// 사용자 리스트 조회
 	@GetMapping("/read")
-	public AjaxResult getUserList(
-			@RequestParam(value="group", required=false) Integer group,
-			@RequestParam(value="keyword", required=false) String keyword,
-			@RequestParam(value="depart_id", required=false) Integer departId,
-			@RequestParam(value="username", required=false) String username,
-			@RequestParam(value="divinm", required=false) String divinm,
-
-			HttpServletRequest request,
-			Authentication auth) {
-
+	public AjaxResult getUserList(@RequestParam(value = "cltnm", required = false) String cltnm, // 업체명
+								  @RequestParam(value = "prenm", required = false) String prenm, // 대표자
+								  @RequestParam(value = "biztypenm", required = false) String biztypenm, // 업태
+								  @RequestParam(value = "bizitemnm", required = false) String bizitemnm, // 종목
+								  @RequestParam(value = "email", required = false) String email,
+								  @RequestParam(value = "spjangcd", required = false) String spjangcd,
+								  Authentication auth){
 		AjaxResult result = new AjaxResult();
-
 		User user = (User)auth.getPrincipal();
 		boolean superUser = user.getSuperUser();
 
@@ -85,14 +80,60 @@ public class UserController {
 			superUser = user.getUserProfile().getUserGroup().getCode().equals("dev");
 		}
 
-		List<Map<String, Object>> items = this.userService.getUserList(superUser, group, keyword, username, departId, divinm);
+		List<Map<String, Object>> items = this.userService.getUserList(superUser, cltnm, prenm, biztypenm, bizitemnm, email, spjangcd);
 
 		result.data = items;
+
 		return result;
 	}
 
 	// 사용자 상세정보 조회
 	@GetMapping("/detail")
+	public AjaxResult getUserDetail(@RequestParam(value = "id", required = false) String id) {
+		AjaxResult result = new AjaxResult();
+		log.info("id: {}", id);
+
+		try {
+			if (id != null && !id.isEmpty()) {
+				// ID로 특정 사용자 정보 조회
+				Map<String, Object> userDetail = userService.getUserDetailById(id);
+
+				// fullAddress 분리하여 address1과 address2로 추가
+				if (userDetail.containsKey("fullAddress")) {
+					String fullAddress = (String) userDetail.get("fullAddress");
+					Map<String, String> addressParts = splitAddress(fullAddress);
+					userDetail.put("address1", addressParts.get("address1"));
+					userDetail.put("address2", addressParts.get("address2"));
+				}
+
+				result.success = true;
+				result.data = userDetail;
+				result.message = "데이터 조회 성공";
+			} else {
+				result.success = false;
+				result.message = "유효한 ID가 제공되지 않았습니다.";
+			}
+		} catch (Exception e) {
+			result.success = false;
+			result.message = "데이터를 가져오는 중 오류가 발생했습니다.";
+		}
+
+		return result;
+	}
+	private Map<String, String> splitAddress(String fullAddress) {
+		Map<String, String> addressParts = new HashMap<>();
+		if (fullAddress != null && !fullAddress.isEmpty()) {
+			String[] parts = fullAddress.split("\\|", 2); // "|"를 기준으로 분리
+			addressParts.put("address1", parts[0].trim()); // 첫 번째 부분
+			addressParts.put("address2", parts.length > 1 ? parts[1].trim() : ""); // 두 번째 부분
+		} else {
+			addressParts.put("address1", "");
+			addressParts.put("address2", "");
+		}
+		return addressParts;
+	}
+
+	/*@GetMapping("/detail")
 	public AjaxResult getUserDetail(
 			@RequestParam(value="id") Integer id,
 			HttpServletRequest request) {
@@ -101,7 +142,7 @@ public class UserController {
 		AjaxResult result = new AjaxResult();
 		result.data = item;
 		return result;
-	}
+	}*/
 
 	// 사용자 그룹 조회
 	@GetMapping("/user_grp_list")
