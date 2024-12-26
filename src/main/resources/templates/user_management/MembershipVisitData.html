@@ -201,8 +201,14 @@
         function openModal(chartId) {
             const modal = document.getElementById('chartModal'); // 모달 가져오기
             const modalCanvas = document.getElementById('modalChartHolder'); // 모달 내부 캔버스
-            const chartElement = document.getElementById(chartId);
-            const chart = chartElement?.getContext('2d').chart; // 기존 차트 인스턴스 가져오기
+            const chartElement = document.getElementById(chartId); // 전달된 ID로 차트 캔버스 찾기
+
+            if (!chartElement) {
+                console.error(`차트 요소를 찾을 수 없습니다: ${chartId}`);
+                return;
+            }
+
+            const chart = Chart.getChart(chartElement); // 차트 인스턴스 가져오기
 
             if (!chart) {
                 console.error("해당 차트를 찾을 수 없습니다.");
@@ -221,9 +227,9 @@
             const modalChartHolder = modalCanvas.getContext('2d');
             window.modalChartInstance = new Chart(modalChartHolder, {
                 type: chart.config.type, // 기존 차트 타입 유지
-                data: chart.config.data, // 기존 차트 데이터 복사
+                data: chart.data, // 기존 차트 데이터 복사
                 options: {
-                    ...chart.config.options,
+                    ...chart.options,
                     responsive: true,
                     maintainAspectRatio: false, // 모달 크기에 맞추기
                 },
