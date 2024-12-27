@@ -88,9 +88,15 @@
                                 </a>
                             </li>-->
                             <li>
+                                <a class="btn btn-file2" title="파일 첨부" data-popup="popup1"
+                                   onclick="showPopup(this)">
+                                    파일 첨부<span>(0)</span>
+                                </a>
+                            </li>
+                            <li>
                                 <a class="btn btn-edit" id="btnSave" title="저장">
                                     <img src="/images/icon/ico-save.svg" alt="저장 아이콘">
-                                    수정
+                                    저장
                                 </a>
                             </li>
                             <li>
@@ -113,6 +119,58 @@
     <footer>
         <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
     </footer>
+
+    <!--첨부파일 팝업-->
+    <div class="modal">
+        <div class="popup-wrapper w700" id="popup1">
+            <div class="popup-title">
+                <h3>파일 업로드</h3>
+                <a title="팝업닫기" onclick="closePopup('popup1')" class="btn-popup-close">
+                    <img src="/images/icon/btn-popup-close.svg" alt="닫기">
+                </a>
+            </div>
+            <div class="popup-contents">
+                <div class="table-wrap">
+                    <table class="write-table">
+                        <caption>전기안전 점검 첨부파일</caption>
+                        <colgroup>
+                            <col class="wp20">
+                            <col class="wp80">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <th>
+                                첨부파일
+                            </th>
+                            <td>
+                                <div id="uploadComponent2" class="upload-component2">
+                                    <div class="upload-filebox2">
+                                        <img src="/images/icon/ico-fileupload.svg" alt="업로드아이콘">
+                                        <a class="btn" title="파일업로드">파일 업로드</a>
+                                        <input type="file" id="fileInput2" class="fileInput2" multiple>
+                                        <p>Maximun upload file size <span>1GiB</span></p>
+                                    </div>
+
+                                    <div class="upload-filelist2">
+                                        <div class="title">
+                                            <h5>Files (0)</h5>
+                                            <a title="Delete all" class="btn-file-deleteall2">Delete all</a>
+                                        </div>
+                                        <ul class="filelist2" id="filelist2">
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="popup-button">
+                    <button type="button" onclick="closePopup('popup1')" class="btn-navy">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </th:block>
 <th:block layout:fragment="scripts">
     <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>

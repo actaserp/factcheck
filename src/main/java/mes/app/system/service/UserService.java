@@ -198,7 +198,7 @@ public class UserService {
         		select ug.id as grp_id
 	            , ug."Name" as grp_name
 	            ,rd."Char1" as grp_check
-	            from user_group ug 
+	            from user_group ug
 	            left join rela_data rd on rd."DataPk2" = ug.id 
 	            and "RelationName" = 'auth_user-user_group' 
 	            and rd."DataPk1" = :id
