@@ -2,34 +2,33 @@ package mes.app.account;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 
+import lombok.extern.slf4j.Slf4j;
 import mes.app.MailService;
-import mes.app.UtilClass;
-import mes.app.account.service.TB_RP940_Service;
-import mes.app.account.service.TB_RP945_Service;
-import mes.domain.DTO.TB_RP940Dto;
-import mes.domain.DTO.TB_RP945Dto;
+import mes.app.account.service.TB_xusersService;
+import mes.app.system.service.UserService;
+
 import mes.domain.DTO.UserCodeDto;
 import mes.domain.entity.UserCode;
 import mes.domain.entity.UserGroup;
+import mes.domain.entity.actasEntity.TB_XUSERS;
+import mes.domain.entity.actasEntity.TB_XUSERSId;
 import mes.domain.repository.*;
-import org.apache.fop.layoutmgr.BorderOrPaddingElement;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import mes.domain.entity.TB_RP940;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -52,7 +51,7 @@ import mes.domain.security.Pbkdf2Sha256;
 import mes.domain.services.AccountService;
 import mes.domain.services.SqlRunner;
 
-
+@Slf4j
 @RestController
 public class AccountController {
 
@@ -69,28 +68,23 @@ public class AccountController {
 	SqlRunner sqlRunner;
 
 	@Autowired
-	TB_RP940_Service tbRp940Service;
-
-	@Autowired
-	TB_RP945_Service tbRp945Service;
-
-
-	@Autowired
-	TB_RP940Repository tb_rp940Repository;
-
-	@Autowired
-	TB_RP945Repository tb_rp945Repository;
-
-	@Autowired
 	MailService emailService;
 
+	@Autowired
+	TB_xusersService XusersService;
+
+	@Autowired
+	private UserService userService;
 
 	@Resource(name="authenticationManager")
 	private AuthenticationManager authManager;
 	@Autowired
 	private UserGroupRepository userGroupRepository;
+	@Autowired
+	JdbcTemplate jdbcTemplate;
 
-
+	private Boolean flag;
+	private Boolean flag_pw;
 
 	private final ConcurrentHashMap<String, String> tokenStore = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<String, Long> tokenExpiry = new ConcurrentHashMap<>();
@@ -241,18 +235,8 @@ public class AccountController {
 
 		AjaxResult result = new AjaxResult();
 
-
-		Optional<TB_RP940> rp940 =  tb_rp940Repository.findByUserid(userid);
 		Optional<User> user = userRepository.findByUsername(userid);
 
-
-
-		if(rp940.isPresent()){
-			result.success = false;
-			result.message = "이미 신청 완료하였습니다.";
-			return result;
-
-		}
 		if(!user.isPresent()){
 
 			result.success = true;
@@ -268,116 +252,84 @@ public class AccountController {
 
 	}
 
-	/**권한신청**/
+	/**사용자등록(관리자)**/
 	@PostMapping("/Register/save")
 	@Transactional
 	public AjaxResult RegisterUser(
-			@RequestParam(value = "agency") String agency,
-			@RequestParam(value = "agencyDepartment") String agencyDepartment,
-			@RequestParam(value = "level", required = false) String level,
-			@RequestParam(value = "name") String name,
-			@RequestParam(value = "tel", required = false) String tel,
+			@RequestParam(value = "saveName") String name,
+			@RequestParam(value = "userHP", required = false) String userHP,
 			@RequestParam(value = "email", required = false) String email,
 			@RequestParam(value = "id") String id,
 			@RequestParam(value = "password") String password,
-			@RequestParam(value = "authType") String authType,
-			@RequestParam(value = "spworkcd") String spworkcd,
-			@RequestParam(value = "spcompcd") String spcompcd,
-			@RequestParam(value = "spplancd") String spplancd,
-			@RequestParam(value = "reason") String reason,
-			@RequestParam(value = "firstText") String firstText,
-			@RequestParam(value = "secondText") String secondText,
-			@RequestParam(value = "thirdText") String thirdText,
-			@RequestParam(value = "authTypeText") String authTypeText,
-			@RequestParam(value = "agencynm") String agencynm,
 			@RequestParam(value = "AuthenticationCode") String AuthenticationCode
 
 	){
-
 		AjaxResult result = new AjaxResult();
 
 		try {
 			result = verifyAuthenticationCode(AuthenticationCode, email);
 			if(result.success){
-				//클라에서 동적으로 값이 넘어와서 몇개인지 모름, 그래서 쉼표구분자로 리스트형태로 분개해서 서버에서 노가다 뛰어여한다.
+				// "ZZ" 값을 전달하여 호출
+				List<Map<String, Object>> results = userService.getCustcdAndSpjangcd("ZZ");
 
+				if (results.isEmpty()) {
+					System.out.println("No data found for spjangcd = 'ZZ'");
+				} else {
+					results.forEach(row -> {
+						System.out.println("custcd: " + row.get("custcd"));
+						System.out.println("spjangcd: " + row.get("spjangcd"));
+					});
+				}
+				// 첫 번째 조회된 데이터 사용
+				Map<String, Object> firstRow = results.get(0);
+				String custcd = (String) firstRow.get("custcd");
+				String spjangcd = (String) firstRow.get("spjangcd");
+				String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
-				UtilClass util = new UtilClass();
-				List<Integer> spworkidList = util.parseUserIdsToInt(spworkcd);
-				List<Integer> spcompidList = util.parseUserIdsToInt(spcompcd);
-				List<Integer> spplanidList = util.parseUserIdsToInt(spplancd);
-
-
-				List<String> firstTextList = Arrays.asList(firstText.split(","));
-				List<String> secondTextList = Arrays.asList(secondText.split(","));
-				List<String> thirdTextList = Arrays.asList(thirdText.split(","));
-
-
-				TB_RP940Dto dto = TB_RP940Dto.builder()
-						.agency(agency)
-						.agencynm(agencynm)
-						.agencyDepartment(agencyDepartment)
-						.authType(authType)
-						.authgrpnm(authTypeText)
-						.appflag("N")
-						.email(email)
-						.id(id)
-						.level(level)
-						.tel(tel.replaceAll("-",""))
-						.name(name)
+				User user = User.builder()	//auth_user
+						.username(id)
 						.password(Pbkdf2Sha256.encode(password))
-						.reason(reason)
+						.phone(userHP)
+						.email(email)
+						.first_name(name)
+						.last_name(name)
+						.tel("")
+						.spjangcd(spjangcd)
+						.active(true)
+						.is_staff(false)
+						.date_joined(new Timestamp(System.currentTimeMillis()))
+						.superUser(false)
 						.build();
 
-				tbRp940Service.save(dto);
+				userService.save(user);
 
-				//신청순번의 최대값을 구한후 +1을 하고 문자열로 바꿔줌
-				//이거 반복문 안에 넣으면 db호출이 너무 많다.
-				String RawAskSeq = tb_rp945Repository.findMaxAskSeq();
-				RawAskSeq = (RawAskSeq != null) ? RawAskSeq : "0";
+				jdbcTemplate.execute("SET IDENTITY_INSERT user_profile ON");
+				// UserProfile 저장 (JDBC 사용)
+				String sql = "INSERT INTO user_profile (_created, lang_code, Name, UserGroup_id, User_id) VALUES (?,?, ?, ?, ?)";
+				jdbcTemplate.update(sql,
+						new Timestamp(System.currentTimeMillis()), // 현재 시간
+						"ko-KR", // lang_code (예: 한국어)
+						name, // Name (사용자 이름)
+						14 ,// marketing_manager (마케팅 관리자)
+						user.getId() // User_id
+				);
+				jdbcTemplate.execute("SET IDENTITY_INSERT user_profile OFF");
 
-				int AskSeqInt = Integer.parseInt(RawAskSeq) + 1;
+				TB_XUSERS xusers = TB_XUSERS.builder()
+						.passwd1(password)
+						.passwd2(password)
+						.shapass(Pbkdf2Sha256.encode(password))
+						.pernm(name)
+						.useyn("1")
+						.domcls("%")
+						.spjangcd(spjangcd)
+						.id(new TB_XUSERSId(custcd, id))
+						.build();
 
-
-				// 필요한 모든 UserCode를 한 번에 조회
-				Map<Integer, UserCode> spworkCodes = userCodeRepository.findAllById(spworkidList)
-						.stream().collect(Collectors.toMap(UserCode::getId, Function.identity()));
-				Map<Integer, UserCode> spcompCodes = userCodeRepository.findAllById(spcompidList)
-						.stream().collect(Collectors.toMap(UserCode::getId, Function.identity()));
-				Map<Integer, UserCode> spplanCodes = userCodeRepository.findAllById(spplanidList)
-						.stream().collect(Collectors.toMap(UserCode::getId, Function.identity()));
-
-				for(int i=0; i<spworkidList.size(); i++){
-
-
-					String askseq = String.format("%03d", AskSeqInt);
-
-					UserCode spworkid = spworkCodes.get(spworkidList.get(i));
-					UserCode spcompid = spcompCodes.get(spcompidList.get(i));
-					UserCode spplanid = spplanCodes.get(spplanidList.get(i));
-
-
-					TB_RP945Dto dto2 = TB_RP945Dto.builder()
-							.userid(id)
-							.askseq(askseq)
-							.spworkcd(spworkid.getCode())
-							.spcompcd(spcompid.getCode())
-							.spplancd(spplanid.getCode())
-							.spworknm(firstTextList.get(i))
-							.spcompnm(secondTextList.get(i))
-							.spplannm(thirdTextList.get(i))
-							.spworkid(spworkid.getId())
-							.spcompid(spcompid.getId())
-							.spplanid(spplanid.getId())
-							.build();
-
-					tbRp945Service.save(dto2);
-
-					AskSeqInt++;
-				}
+				XusersService.save(xusers);
 
 				result.success = true;
-				result.message = "신청이 완료되었습니다.";
+				result.message = "등록이 완료되었습니다.";
 				return result;
 			}else{
 				return result;
@@ -410,6 +362,7 @@ public class AccountController {
 		return result;
 	}
 
+
 	@PostMapping("/user-auth/AuthenticationEmail")
 	public AjaxResult PwSearch(@RequestParam("usernm") final String usernm,
 							   @RequestParam("mail") final String mail){
@@ -424,7 +377,8 @@ public class AccountController {
 			return result;
 		}
 
-		boolean flag = userRepository.existsByUsernameAndEmail(usernm, mail);
+		int exists = userRepository.existsByUsernameAndEmail(usernm, mail);
+		boolean flag = exists > 0;
 
 		if(flag) {
 			sendEmailLogic(mail, usernm);
@@ -439,17 +393,60 @@ public class AccountController {
 		return result;
 	}
 
-	private void sendEmailLogic(String mail, String usernm){
+
+	private void sendEmailLogic(String mail, String prenm){
 		Random random = new Random();
 		int randomNum = 100000 + random.nextInt(900000); // 100000부터 999999까지의 랜덤 난수 생성
 		String verificationCode = String.valueOf(randomNum); // 정수를 문자열로 변환
-		emailService.sendVerificationEmail(mail, usernm, verificationCode);
+		emailService.sendVerificationEmail(mail, prenm, verificationCode);
 
 		tokenStore.put(mail, verificationCode);
 		tokenExpiry.put(mail, System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(3));
 
 	}
 
+	@PostMapping("/user-auth/SaveAuthenticationEmail")
+	public AjaxResult saveMail(@RequestParam("usernm") final String usernm,
+							   @RequestParam("saveName") final String saveName,
+							   @RequestParam("mail") final String mail) {
+
+		AjaxResult result = new AjaxResult();
+
+		if (usernm.equals("empty")) {
+			saveEmailLogic(mail, saveName);
+
+			result.success = true;
+			result.message = "인증 메일이 발송되었습니다.";
+			return result;
+		}
+
+		int exists = userRepository.existsByUsernameAndEmail(usernm, mail);
+		boolean flag = exists > 0;
+
+		if (flag) {
+			saveEmailLogic(mail, usernm);
+
+			result.success = true;
+			result.message = "인증 메일이 발송되었습니다.";
+		} else {
+			result.success = false;
+			result.message = "해당 사용자가 존재하지 않습니다.";
+		}
+
+		return result;
+	}
+
+
+	private void saveEmailLogic(String mail, String usernm){
+		Random random = new Random();
+		int randomNum = 100000 + random.nextInt(900000); // 100000부터 999999까지의 랜덤 난수 생성
+		String verificationCode = String.valueOf(randomNum); // 정수를 문자열로 변환
+		emailService.saveVerificationEmail(mail, usernm, verificationCode);
+
+		tokenStore.put(mail, verificationCode);
+		tokenExpiry.put(mail, System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(3));
+
+	}
 	@PostMapping("/user-auth/verifyCode")
 	public AjaxResult verifyCode(@RequestParam("code") final String code,
 								 @RequestParam("mail") final String mail,
@@ -530,6 +527,7 @@ public class AccountController {
 	}
 
 
+
 	@GetMapping("/user-codes/parent")
 	public List<UserCodeDto> getUserCodeByParentId(@RequestParam Integer parentId){
 
@@ -567,6 +565,29 @@ public class AccountController {
 		return dtoList;
 	}
 
+	@PostMapping("/authentication")
+	public AjaxResult Authentication(@RequestParam(value = "AuthenticationCode") String AuthenticationCode,
+									 @RequestParam(value = "email", required = false) String email,
+									 @RequestParam String type
+	){
+		log.info("코드인증 들어옴(사용자 등록)");
+		AjaxResult result = verifyAuthenticationCode(AuthenticationCode, email);
 
+		if(type.equals("new")){
+			if(result.success){
+				flag = true;
+				result.message = "인증되었습니다.";
+
+			}
+
+		}else{
+			if(result.success){
+				flag_pw = true;
+				result.message = "인증되었습니다.";
+			}
+		}
+
+		return result;
+	}
 
 }

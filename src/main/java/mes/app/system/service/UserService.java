@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import io.micrometer.core.instrument.util.StringUtils;
 import mes.domain.services.SqlRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -263,5 +264,23 @@ public class UserService {
             """;
 //            System.out.println(sql);
         return sqlRunner.getRow(sql, params);
+    }
+
+    public List<Map<String, Object>> getCustcdAndSpjangcd(String spjangcd) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("spjangcd", spjangcd);
+
+        String sql = """
+                select custcd, spjangcd 
+                from tb_xa012 
+                where spjangcd = :spjangcd
+                """;
+
+        return sqlRunner.getRows(sql, params);
+    }
+
+    @Transactional
+    public void save(User user) {
+        userRepository.save(user);
     }
 }

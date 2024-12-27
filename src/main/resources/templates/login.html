@@ -247,7 +247,7 @@
                                 <td colspan="3">
                                     <div class="input-clear">
                                         <input type="text" id="id" name="id" class="wp50"
-                                               style="width: 360px !important;" placeholder="아이디">
+                                               style="width: 360px !important;" placeholder="아이디" autocomplete="username">
                                     </div>
                                     <a href="#" class="btn" id="btnDuplicate" style="margin:5px; ">중복확인</a>
                                 </td>
@@ -259,7 +259,7 @@
                                     </label>
                                 </th>
                                 <td>
-                                    <input type="password" id="password" name="password" placeholder="비밀번호">
+                                    <input type="password" id="password" name="password" placeholder="비밀번호" autocomplete="new-password">
                                 </td>
                                 <th>
                                     <label for="passwordchk">
@@ -267,7 +267,7 @@
                                     </label>
                                 </th>
                                 <td>
-                                    <input type="password" id="passwordchk" name="passwordchk" placeholder="비밀번호 확인">
+                                    <input type="password" id="passwordchk" name="passwordchk" placeholder="비밀번호 확인" autocomplete="new-password">
                                 </td>
                             </tr>
                             <tr>
@@ -282,42 +282,44 @@
                                     </div>
                                 </td>
                                 <th>
-                                    <label for="sexyn">
-                                        성&nbsp;&nbsp;별
+                                    <label for="userHP">
+                                        서비스 수신<br> 연락처
                                     </label>
                                 </th>
-                                <td>
+                                <td colspan="3">
                                     <div class="input-clear">
-                                        <select id="sexyn" name="sexyn" class="wp100">
-                                            <option value="">선택하세요</option>
-                                            <option value="F">여자</option>
-                                            <option value="M">남자</option>
-                                        </select>
+                                        <input type="tel" id="userHP" name="userHP" placeholder="핸드폰 번호">
                                     </div>
                                 </td>
                             </tr>
-                            <tr>
+                            <!--<tr>
                                 <th>
                                     <label for="birthyear">
                                         생년월일
                                     </label>
                                 </th>
-                                <td>
+                                <td colspan="3">
                                     <div class="input-clear">
                                         <input type="date"  id="birthyear" name="birthyear" placeholder="생년월일">
                                     </div>
                                 </td>
+                            </tr>-->
+                            <!--<tr>
                                 <th>
-                                    <label for="userHP">
-                                        핸드폰
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <input type="text" id="userHP" name="userHP" placeholder="핸드폰 번호">
-                                    </div>
-                                </td>
-                            </tr>
+                                     <label for="sexyn">
+                                         성&nbsp;&nbsp;별
+                                     </label>
+                                 </th>
+                                 <td>
+                                     <div class="input-clear">
+                                         <select id="sexyn" name="sexyn" class="wp100">
+                                             <option value="">선택하세요</option>
+                                             <option value="F">여자</option>
+                                             <option value="M">남자</option>
+                                         </select>
+                                     </div>
+                                 </td>
+                            </tr>-->
                             <tr>
                                 <th>
                                     <label>
@@ -331,10 +333,9 @@
                                                 style="margin: 0 0 0 5px;width: 14.5%;background: white;color: #03428E;border: 1px solid #03428E;"
                                                 id="BtnAuthenticationRegister2">코드발급
                                         </button>
-                                        <label style="width: 7%; margin-top: 10px; margin-left: 15px">인증코드:</label>
-                                        <input type="text" id="AuthenticationCodeRegister"
-                                               name="AuthenticationCodeRegister" required="" maxlength="38"
-                                               autocomplete="off" style="width: 18%;border: none;border-bottom: 1px solid;border-radius: 0px;">
+                                        <label style="width: 7%; margin-top: 10px; margin-left: 30px">인증코드:</label>
+                                        <input type="text" id="AuthenticationCodeRegister" name="AuthenticationCodeRegister" required="" maxlength="38"
+                                               autocomplete="off" style="width: 10%;border: none;border-bottom: 1px solid;border-radius: 0px;">
                                         <button type="button" id="Authentication"
                                                 style="margin: 0 0 0 5px;width: 14.5%;background: white;color: #03428E;border: 1px solid #03428E;">
                                             코드인증
@@ -345,7 +346,7 @@
                                     </div>
                                 </td>
                             </tr>
-                            <tr>
+                           <!-- <tr>
                                 <th>
                                     <label for="postno">
                                         주&nbsp;&nbsp;소
@@ -364,7 +365,7 @@
                                         <span id="guide" style="color:#999;display:none"></span>
                                     </div>
                                 </td>
-                            </tr>
+                            </tr>-->
                             </tbody>
                         </table>
                     </div>
@@ -620,59 +621,15 @@
         tdToDelete.parentElement.removeChild(tdToDelete);
     }
 
-
-    function updateNextSelect(param) {
-        let code = param.value;
-
-        // param의 다음 형제 요소를 찾습니다.
-        let nextSelect = $(param).next('select');
-
-        if (nextSelect.length) {
-
-            $.ajax({
-                url: '/user-codes/code',
-                type: 'GET',
-                data: { code: code },
-                success: function(data) {
-                    nextSelect.empty();
-                    nextSelect.append('<option value="">선택하세요</option>');
-                    data.forEach(function(item) {
-                        nextSelect.append('<option value="' + item.id + '">' + item.value + '</option>');
-                    });
-                },
-                error: function(xhr, status, error) {
-                    // 통신 실패 시 처리
-
-
-                    // 선택 옵션을 비우거나 기본 옵션을 설정할 수 있습니다.
-                    nextSelect.empty();
-                    nextSelect.append('<option value=""></option>');
-                }
-            });
-        } else {
-            console.error('다음 select 요소를 찾을 수 없습니다.');
-        }
-    }
-
-
     const requiredFields = [
         { id: 'id', name: 'ID' },
         { id: 'password', name: '비밀번호' },
         { id: 'passwordchk', name: '비밀번호확인' },
         { id: 'saveName', name: '이름' },
-        { id: 'sexyn', name: '성별' },
-        { id: 'birthyear', name: '생년월일' },
         { id: 'userHP', name: '핸드폰' },
     ];
 
-    // 필드명과 name값으로 유효성 검사할 필드 배열
-    const nameBasedFields = [
-        { name: 'spworkcd', displayName: '관할지역' },
-        { name: 'spcompcd', displayName: '발전산단' },
-        { name: 'spplancd', displayName: '발전소' }
-    ];
-
-    const clearFieldList = ['id', 'password', 'passwordchk', 'saveName', 'sexyn', 'birthyear', 'userHP']
+    const clearFieldList = ['id', 'password', 'passwordchk', 'saveName', 'userHP']
 
     // 유효성 검사
     function validateFields() {
@@ -726,6 +683,30 @@
         wrapper.style.display = 'block';
     }
 
+    /*function RegisterUserClose() {
+        // 팝업 닫기
+        let popup = document.getElementById('popup1');
+        let wrapper = document.getElementById('wrapper1');
+
+        popup.style.display = 'none';
+        wrapper.style.display = 'none';
+
+        // 입력폼 초기화
+        const form = document.getElementById('bomForm');
+        form.reset(); // form 태그의 모든 입력 필드 초기화
+
+        // 추가로 초기화가 필요한 필드들 처리 (예: 비활성화된 필드 등)
+        document.getElementById('AuthenticationCodeRegister').value = '';
+        document.getElementById('timer2').innerText = ''; // 타이머 초기화
+
+        Array.from(form.elements).forEach(element => {
+            if (element.hasAttribute('readOnly')) {
+                element.removeAttribute('readOnly'); // readOnly 속성 제거
+            }
+        });
+    }*/
+    let activeTimerInterval = null; // 전역 타이머 ID 변수
+
     function RegisterUserClose() {
         // 팝업 닫기
         let popup = document.getElementById('popup1');
@@ -737,8 +718,24 @@
         // 입력폼 초기화
         const form = document.getElementById('bomForm');
         form.reset(); // form 태그의 모든 입력 필드 초기화
-    }
 
+        // 추가로 초기화가 필요한 필드들 처리 (예: 비활성화된 필드 등)
+        document.getElementById('AuthenticationCodeRegister').value = '';
+        document.getElementById('timer2').innerText = ''; // 타이머 UI 초기화
+
+        // 실행 중인 타이머 중단
+        if (activeTimerInterval) {
+            clearInterval(activeTimerInterval); // 타이머 중단
+            activeTimerInterval = null; // 변수 초기화
+        }
+
+        // 입력 필드의 readOnly 속성 초기화
+        Array.from(form.elements).forEach(element => {
+            if (element.hasAttribute('readOnly')) {
+                element.removeAttribute('readOnly'); // readOnly 속성 제거
+            }
+        });
+    }
 
 
     function initializeSelect({
@@ -758,8 +755,6 @@
             });
         });
     }
-
-
 
 
     var userinfo = {
@@ -799,8 +794,6 @@
 
 <script type="text/javascript">
     var isChangeLang = 'N';
-
-
 
     function emailValidate(emailVal){
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -846,6 +839,7 @@
         }
 
 
+
         const selectConfigurations = [
             {  url: '/user-codes/parent',params: { parentId: 154 },elementId: 'agency', valueField: "id"},
             {  url: '/user-codes/parent',params: { parentId: 110 },elementId: 'firstSelect', valueField: "id"},
@@ -857,8 +851,96 @@
         let _csrf = document.getElementsByName('_csrf');
         let _CsrfValue = _csrf[0].value;
 
+        let emailAuthCode = false;
+        let emailAuthCode_pw = false;
 
-        //아이디 중복확인 신청
+        let btnAuthentication = $('#Authentication');
+        btnAuthentication.click(function (e){
+            let emailDom = document.getElementById('email');
+            let email = emailDom.value;
+            let AuthenticationCode = document.getElementById('AuthenticationCodeRegister').value;
+            let data = { email, AuthenticationCode, type: 'new' , _csrf: _CsrfValue}
+
+            console.log(document.getElementById('AuthenticationCodeRegister')); // null일 경우 문제 확인 가능
+
+            let fnSuccess = function (res){
+                if(res.success){
+                    emailAuthCode = true;
+                    Alert.alert('', res.message);
+                    emailDom.readOnly = true;
+                    document.getElementById('timer2').style.display = 'none';
+
+                }else{
+                    emailAuthCode = false;
+                    Alert.alert('', res.message);
+                }
+            }
+            AjaxUtil.postAsyncData("/authentication", data, fnSuccess);
+        })
+
+        $('#Authentication_pw').click(function(e){
+            let emailDom = document.getElementById('mailAddres');
+            let email = emailDom.value;
+            let AuthenticationCode = document.getElementById('AuthenticationCode').value;
+            let data = { email, AuthenticationCode, type : 'password' }
+
+            let fnSuccess = function (res) {
+                if(res.success){
+                    emailAuthCode_pw = true;
+                    Alert.alert('', res.message);
+                    emailDom.readOnly = true;
+                    document.getElementById('timer').style.display = 'none';
+                }else{
+                    emailAuthCode_pw = false;
+                    Alert.alert('', res.message);
+
+                }
+            }
+            AjaxUtil.postAsyncData("/authentication", data, fnSuccess);
+
+        })
+
+        //이메일인증(사용자 등록)
+        $('#BtnAuthenticationRegister2').click(function (e) {
+            let email = document.getElementById('email');
+            let mail = email.value;
+
+            let saveNameInput = document.getElementById('saveName');
+            let saveName = saveNameInput.value;
+
+            if (mail.trim().length === 0) {
+                Alert.alert('', '이메일을 입력해주세요.');
+                email.focus();
+                return;
+            }
+            if (!emailValidate(mail.trim())) {
+                Alert.alert('', '유효한 이메일 형식을 입력하세요.');
+                email.focus();
+                return false;
+            }
+
+            let data = { usernm: 'empty', saveName, mail, _CsrfValue };
+
+            showLoader();
+            let fnSuccess = function (res) {
+                if (res.success) {
+                    hideLoader();
+                    Alert.alert('', res.message, function(e) {
+                        startTimer(180, 'timer2');
+                    });
+                } else {
+                    hideLoader();
+                    Alert.alert('', res.message);
+                }
+            };
+
+            AjaxUtil.postAsyncData("/user-auth/SaveAuthenticationEmail", data, fnSuccess, function(){
+                hideLoader();
+                Alert.alert('', '서버통신 실패');
+            });
+        });
+
+        //아이디 중복확인(사용자 등록)
         let btnDuplicate = $('#btnDuplicate');
         btnDuplicate.click(function (e){
 
@@ -1048,7 +1130,7 @@
 
         })
 
-        //권한신청 버튼 클릭
+        //사용자등록 버튼 클릭
         let btnRegistersend = $('#btnSaveAuth');
 
         btnRegistersend.click(function (e) {
@@ -1059,10 +1141,7 @@
                 $('#AuthenticationCodeRegister').focus();
                 return;
             }
-
-            let authType = document.getElementById('authType');
-            let authTypeText = authType.options[authType.selectedIndex].text;
-
+            //유효성 검사
             if (!validateFields()) {
                 return false;
             }
@@ -1078,7 +1157,6 @@
             if (!emailValidate(emailValue.trim()))
             { Alert.alert('', '유효한 이메일 형식을 입력하세요.'); return false; }
 
-
             let password = document.getElementById('password').value;
             let password2 = document.getElementById('passwordchk').value;
 
@@ -1087,36 +1165,7 @@
                 return;
             }
 
-            function extractSelectValues(selectName) {
-                let inputs = document.querySelectorAll(`select[name="${selectName}"]`);
-                return Array.from(inputs).map(input => input.value).join(',');
-            }
-
-            function extractSelectTexts(selectName) {
-                let inputs = document.querySelectorAll(`select[name="${selectName}"]`);
-                return Array.from(inputs).map(input => input.options[input.selectedIndex].text).join(',');
-            }
-
-            let spworkcdString = extractSelectValues('spworkcd');
-            let spcompcdString = extractSelectValues('spcompcd');
-            let spplancdString = extractSelectValues('spplancd');
-
-            let firstText  = extractSelectTexts('spworkcd');
-            let secondText = extractSelectTexts('spcompcd');
-            let thirdText  = extractSelectTexts('spplancd');
-            let agencynm = extractSelectTexts('agency');
-
             let data = FormUtil.extractForm($('#bomForm'));
-
-            data.spworkcd = spworkcdString;
-            data.spcompcd = spcompcdString;
-            data.spplancd = spplancdString;
-
-            data.firstText = firstText;
-            data.secondText = secondText;
-            data.thirdText = thirdText;
-            data.authTypeText = authTypeText;
-            data.agencynm = agencynm;
 
             data.AuthenticationCode = $('#AuthenticationCodeRegister').val().trim();
 
@@ -1137,15 +1186,6 @@
             }
             let idfield = document.getElementById('id')
             idfield.removeAttribute('readonly')
-
-            //추가된 발전지역 요소들 삭제
-            const elements = document.getElementsByClassName('new-fl-ac');
-            const elementsArray = Array.from(elements);
-
-            elementsArray.forEach(element => {
-                element.remove();
-            });
-            //끝
 
             RegisterUserClose();
         })
@@ -1214,6 +1254,7 @@
             var submitData = $(form).serialize() + '&isChangeLang=' + isChangeLang;
             $.post('/login', submitData, function (result) {
                 let code = result.data.code;
+
                 if (code == 'NOUSER') {
 
                     Alert.alert('', '아이디 또는 비밀번호가 일치하지 않습니다.');
@@ -1238,6 +1279,7 @@
                     Alert.alert('', '승인되지 않은 사용자입니다.', clearFields);
                 }
                 else {
+
                     if (code == 'OK') {
                         let lang_cd = sessionStorage.getItem('lang_code');
                         let url = '/api/common/labels';
@@ -1277,6 +1319,7 @@
         }
         $('#loginFrm').validate({ submitHandler: submitHandler });
     });
+
 
 </script>
 
