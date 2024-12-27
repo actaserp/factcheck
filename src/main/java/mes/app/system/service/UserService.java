@@ -3,6 +3,7 @@ package mes.app.system.service;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import mes.domain.entity.User;
 import mes.domain.entity.UserGroup;
 import mes.domain.repository.UserGroupRepository;
@@ -16,6 +17,7 @@ import io.micrometer.core.instrument.util.StringUtils;
 import mes.domain.services.SqlRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class UserService {
 
@@ -27,74 +29,128 @@ public class UserService {
     private UserGroupRepository userGroupRepository;
 
     // 사용자 리스트 조회
-    public List<Map<String, Object>> getUserList(boolean superUser, String cltnm, String prenm, String biztypenm, String bizitemnm, String email, String spjangcd) {
+    /*public List<Map<String, Object>> getUserList(boolean superUser,String username, String email, String pernm, String userGroupId) {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("superUser", superUser);
 
         StringBuilder sql = new StringBuilder("""
-            SELECT
-                au.id,
-                au.last_name,
-                txc.cltnm,
-                au.username AS userid,
-                ug.id AS group_id,
-                au.email,
-                au.tel,
-                au.agencycd,
-                ug.Name AS group_name,
-                au.last_login,
-                up.lang_code,
-                au.is_active,
-                au.Phone,
-                txc.biztypenm,
-                txc.bizitemnm,
-                txc.prenm,
-                FORMAT(au.date_joined, 'yyyy-MM-dd') AS date_joined,
-                au.spjangcd AS spjType
-            FROM
-                auth_user au
-            LEFT JOIN
-                user_profile up ON up.User_id = au.id
-            LEFT JOIN
-                user_group ug ON ug.id = up.UserGroup_id
-            LEFT JOIN
-                TB_XCLIENT txc
-                ON au.username = txc.saupnum
-            WHERE
-                1 = 1
+        SELECT
+            au.id,
+            au.last_name,
+            au.username AS userid,
+            ug.id AS group_id,
+            au.email,
+            au.tel,
+            au.agencycd,
+            ug.Name AS group_name,
+            au.last_login,
+            up.lang_code,
+            au.is_active,
+            au.Phone,
+            tx.pernm,
+            FORMAT(au.date_joined, 'yyyy-MM-dd') AS date_joined
+         FROM
+             auth_user au
+         LEFT JOIN
+             user_profile up ON up.User_id = au.id
+         LEFT JOIN
+             user_group ug ON ug.id = up.UserGroup_id
+         LEFT JOIN
+             TB_XUSERS tx
+             ON tx.pernm = au.first_name
+         WHERE
+             1 = 1
         """);
-
-        if (spjangcd != null && !spjangcd.isEmpty()) {
-            sql.append(" AND au.spjangcd = :spjangcd");
-            params.addValue("spjangcd", spjangcd);
-        }
-        if (cltnm != null && !cltnm.isEmpty()) {
-            sql.append(" AND txc.cltnm LIKE CONCAT('%', :cltnm, '%')");
-            params.addValue("cltnm", cltnm);
-        }
-        if (prenm != null && !prenm.isEmpty()) {
-            sql.append(" AND txc.prenm LIKE CONCAT('%', :prenm, '%')");
-            params.addValue("prenm", prenm);
-        }
-        if (biztypenm != null && !biztypenm.isEmpty()) {
-            sql.append(" AND txc.biztypenm LIKE CONCAT('%', :biztypenm, '%')");
-            params.addValue("biztypenm", biztypenm);
-        }
-        if (bizitemnm != null && !bizitemnm.isEmpty()) {
-            sql.append(" AND txc.bizitemnm LIKE CONCAT('%', :bizitemnm, '%')");
-            params.addValue("bizitemnm", bizitemnm);
-        }
-        if (email != null && !email.isEmpty()) {
-            sql.append(" AND au.email LIKE CONCAT('%', :email, '%')");
-            params.addValue("email", email);
+        // 사용자 이름 조건
+        if (username != null && !username.trim().isEmpty()) {
+            sql.append(" AND au.username LIKE :username");
+            params.addValue("username", "%" + username.trim() + "%");
         }
 
+        // 이름 조건
+        if (pernm != null && !pernm.trim().isEmpty()) {
+            sql.append(" AND au.first_name LIKE :pernm");
+            params.addValue("pernm", "%" + pernm.trim() + "%");
+        }
+
+        // 사용자 그룹 조건
+        if (userGroupId != null && !userGroupId.trim().isEmpty()) {
+            sql.append(" AND up.UserGrup_id = :userGroupId");
+            params.addValue("userGroupId", userGroupId);
+        }
+
+        // 이메일 조건
+        if (email != null && !email.trim().isEmpty()) {
+            sql.append(" AND au.email LIKE :email");
+            params.addValue("email", "%" + email.trim() + "%");
+        }
+
+        // 정렬 조건 추가
+        sql.append(" ORDER BY au.date_joined DESC");
+
         // SQL 디버깅 로그
-        //log.info("Executing SQL:\n{}\nWith Parameters: {}", sql, params.getValues());
-        // SQL 디버깅 로그
-        //log.info("Executing SQL: {} with params: {}", sql, params.getValues());
+        log.info("Executing SQL: {} with Parameters: {}", sql, params.getValues());
 
         // SQL 실행 후 결과 반환
+        return sqlRunner.getRows(sql.toString(), params);
+    }*/
+    public List<Map<String, Object>> getUserList(boolean superUser, String username, String email, String pernm, String userGroupId) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("superUser", superUser);
+
+        StringBuilder sql = new StringBuilder("""
+    SELECT
+         au.id,
+         au.last_name,
+         au.username AS userid,
+         ug.id AS group_id,
+         au.email,
+         au.tel,
+         au.agencycd,
+         ug.Name AS group_name,
+         au.last_login,
+         up.lang_code,
+         au.is_active,
+         au.Phone,
+         tx.pernm,
+         FORMAT(au.date_joined, 'yyyy-MM-dd') AS date_joined
+     FROM
+         auth_user au
+     LEFT JOIN
+         user_profile up ON up.User_id = au.id
+     LEFT JOIN
+         user_group ug ON ug.id = up.UserGroup_id
+     LEFT JOIN
+         TB_XUSERS tx ON tx.pernm = au.first_name
+     WHERE
+         1 = 1
+    """);
+
+        if (username != null && !username.trim().isEmpty()) {
+            sql.append(" AND LOWER(au.username) LIKE LOWER(:username)");
+            params.addValue("username", "%" + username.trim().toLowerCase() + "%");
+        }
+
+        if (pernm != null && !pernm.trim().isEmpty()) {
+            sql.append(" AND LOWER(au.first_name) LIKE LOWER(:pernm)");
+            params.addValue("pernm", "%" + pernm.trim().toLowerCase() + "%");
+        }
+
+        if (userGroupId != null && !userGroupId.trim().isEmpty()) {
+            sql.append(" AND up.UserGroup_id = :userGroupId");
+            params.addValue("userGroupId", Integer.parseInt(userGroupId.trim()));
+        }
+
+        if (email != null && !email.trim().isEmpty()) {
+            sql.append(" AND LOWER(au.email) LIKE LOWER(:email)");
+            params.addValue("email", "%" + email.trim().toLowerCase() + "%");
+        }
+
+        sql.append(" ORDER BY au.date_joined DESC");
+
+//        log.info("Generated SQL: {}", sql.toString());
+//        log.info("SQL Parameters: {}", params.getValues());
+
         return sqlRunner.getRows(sql.toString(), params);
     }
 
@@ -225,7 +281,7 @@ public class UserService {
         params.addValue("id", id);
 
         String sql = """
-        SELECT 
+        SELECT
             au.id ,
             au.last_name,
             au.username AS userid,
@@ -236,33 +292,25 @@ public class UserService {
             au.is_active,
             au.Phone,
             FORMAT(au.date_joined, 'yyyy-MM-dd') AS date_joined,
-            txc.biztypenm ,
-            txc.bizitemnm ,
-            txc.prenm ,
-            txc.cltnm,
             ug.id AS group_id,
             ug.Name AS group_name,
             up.lang_code ,
-            au.*,
-            txc.zipcd AS postno
-            txc.*,
-            CASE
-                    WHEN au.spjangcd = 'ZZ' THEN '성우에스피(주)'
-                    WHEN au.spjangcd = 'PP' THEN '성우피앤비(주)'
-                    ELSE '알 수 없음'
-                END AS spjType
-        FROM 
+            au.*
+        FROM
             auth_user au
-        LEFT JOIN 
+        LEFT JOIN
             user_profile up ON up.User_id = au.id
-        LEFT JOIN 
+        LEFT JOIN
             user_group ug ON ug.id = up.UserGroup_id
-        LEFT JOIN 
-            TB_XCLIENT txc ON au.first_name = txc.cltnm 
-        WHERE 
+        LEFT JOIN
+             TB_XUSERS tx ON tx.pernm = au.first_name
+        WHERE
             au.id = :id
             """;
-//            System.out.println(sql);
+        // SQL 디버깅 로그
+        log.info("Executing SQL:\n{}\nWith Parameters: {}", sql, params.getValues());
+        // SQL 디버깅 로그
+        log.info("Executing SQL: {} with params: {}", sql, params.getValues());
         return sqlRunner.getRow(sql, params);
     }
 

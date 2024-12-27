@@ -217,47 +217,6 @@
   <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
 
   <script type="text/javascript">
-
-    /*// 초기화 함수
-    function init() {
-      // FlexGrid 생성
-      var theGrid = new wijmo.grid.FlexGrid('#theGrid', {
-        autoGenerateColumns: false,
-        columns: columns,
-        isReadOnly: true,
-        itemsSource: data // 하드코딩된 데이터 연결
-      });
-      theGrid.rowHeaders.columns.splice(0, 1);
-      theGrid.selection = new wijmo.grid.CellRange(-1, -1);
-      // 헤더 스타일 및 셀 렌더링
-      theGrid.formatItem.addHandler(function (s, e) {
-        if (e.panel === s.cells) { // 셀이 렌더링될 때만 처리
-          const col = s.columns[e.col];
-          const item = s.rows[e.row].dataItem[col.binding];
-
-          // 특정 컬럼이 'exflag'일 때 처리
-          if (col.binding === 'exflag') {
-            e.cell.innerHTML = ''; // 기존 내용을 비움
-
-            // 체크박스 생성 및 렌더링
-            const input = document.createElement('input');
-            input.type = 'checkbox';
-            input.checked = item === '1'; // '1'일 때 체크
-            input.disabled = true; // 읽기 전용
-            input.style.margin = '0 auto'; // 체크박스 수평 정렬
-            input.style.display = 'block'; // 블록 레벨로 설정하여 수직 정렬
-
-            e.cell.appendChild(input);
-
-            // 셀 스타일 설정 (중앙 정렬)
-            e.cell.style.display = 'flex';
-            e.cell.style.justifyContent = 'center';
-            e.cell.style.alignItems = 'center';
-          }
-        }
-      });
-    }*/
-
     let theGrid;
 
     function init() {

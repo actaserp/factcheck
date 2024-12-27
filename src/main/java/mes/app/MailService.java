@@ -30,7 +30,7 @@ public class MailService {
         mailSender.send(message);
     }
 
-    public void saveVerificationEmail(String to, String saveName, String uuid){
+    public void saveVerificationEmail(String to, String saveName,String uuid){
         if (saveName == null || saveName.isEmpty()) {
             saveName = "사용자";
         }

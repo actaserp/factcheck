@@ -73,80 +73,16 @@
                             <tbody>
                             <tr>
                                 <th>
-                                    <label for="">
-                                        업체명
+                                    <label for="userid">
+                                        아이디
                                     </label>
                                 </th>
                                 <td>
                                     <div class="input-clear">
-                                        <input type="text" id="cltnm" name="cltnm" style="width: 400px !important;">
+                                        <input type="text" id="userid" name="userid" class="wp50"
+                                               style="width: 300px !important;" placeholder="아이디">
                                     </div>
-                                </td>
-                                <th>
-                                    <label for="">
-                                        대표자
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <input type="text" id="prenm" name="prenm"style="width: 400px !important;" >
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label for="">
-                                        업태
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <input type="text" id="biztypenm" name="biztypenm" style="width: 400px !important;">
-                                    </div>
-                                </td>
-                                <th>
-                                    <label for="">
-                                        종목
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <input type="text" id="bizitemnm" name="bizitemnm" style="width: 400px !important;">
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label for="">
-                                        전화번호
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <input type="text" id="tel" name="tel" style="width: 400px !important;">
-                                    </div>
-                                </td>
-                                <th>
-                                    <label for="">
-                                        핸드폰
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <input type="text" id="phone" name="phone" style="width: 400px !important;">
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label for="id">
-                                        사업자 번호 (아이디)
-                                    </label>
-                                </th>
-                                <td>
-                                    <div class="input-clear">
-                                        <input type="text" id="login_id" name="login_id" class="wp50" style="width: 400px !important;">
-                                    </div>
+                                    <a href="#" class="btn" id="btnDuplicate" style="margin:5px; ">중복확인</a>
                                 </td>
                                 <th>
                                     <label for="email">
@@ -155,7 +91,48 @@
                                 </th>
                                 <td>
                                     <div class="input-clear">
-                                        <input type="text" id="email" name="email" style="width: 400px !important;">
+                                        <input type="text" id="email" name="email" placeholder="이메일"
+                                               style="width: 400px !important;">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="password">
+                                        비밀번호
+                                    </label>
+                                </th>
+                                <td>
+                                    <input type="password" id="password" name="password" placeholder="비밀번호" style="width: 400px !important;">
+                                </td>
+                                <th>
+                                    <label for="passwordchk">
+                                        비밀번호 확인
+                                    </label>
+                                </th>
+                                <td>
+                                    <input type="password" id="passwordchk" name="passwordchk" placeholder="비밀번호 확인" style="width: 400px !important;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="pernm">
+                                        이&nbsp;&nbsp;&nbsp;&nbsp;름
+                                    </label>
+                                </th>
+                                <td>
+                                    <div class="input-clear">
+                                        <input type="text" id="pernm" name="pernm" placeholder="이름" style="width: 400px !important;">
+                                    </div>
+                                </td>
+                                <th>
+                                    <label for="Phone">
+                                        서비스 수신 연락처
+                                    </label>
+                                </th>
+                                <td colspan="3">
+                                    <div class="input-clear">
+                                        <input type="tel" id="Phone" name="Phone" placeholder="핸드폰 번호" style="width: 400px !important;">
                                     </div>
                                 </td>
                             </tr>
@@ -173,7 +150,7 @@
                                     <input type="checkbox" id="is_active" name="is_active" style="display: block; margin: auto;">
                                 </td>
                             </tr>
-                            <tr>
+                            <!--<tr>
                                 <th>
                                     <label for="postno">
                                         주소
@@ -192,7 +169,7 @@
                                         <span id="guide" style="color:#999;display:none"></span>
                                     </div>
                                 </td>
-                            </tr>
+                            </tr>-->
                             </tbody>
                         </table>
                     </div>
@@ -214,7 +191,7 @@
                                     <label for="select1">
                                         이름</label></dt>
                                 <dd>
-                                    <div class="input-clear"><input type="text" id="keyword" name="keyword" class="wp100" maxlength="50" placeholder=""></div>
+                                    <div class="input-clear"><input type="text" id="keyword" name="keyword" class="wp100" maxlength="50" placeholder="이름"></div>
                                 </dd>
                             </dl>
                             <dl>
@@ -223,7 +200,7 @@
                                         사용자ID</label></dt>
 
                                 <dd>
-                                    <div class="input-clear"><input type="text" id="username" name="username" class="wp100" maxlength="50" autocomplete="off"></div>
+                                    <div class="input-clear"><input type="text" id="username" name="username" class="wp100" maxlength="50" placeholder="아이디" autocomplete="off"></div>
                                 </dd>
                             </dl>
                             <dl>
@@ -336,273 +313,180 @@
         var viewdata;
         let csrfToken = $("[name=_csrf]").val();
 
-        let columns = [
-            {binding: 'id', header: 'id', width: '*', align: 'center', visible: false, isReadOnly: true},
-            {binding: 'login_id', header: '사용자ID', width: '*', align: 'center', isReadOnly: true},
-            {binding: 'prenm', header: '대표자', width: '*', align: 'center', isReadOnly: true},
-            {binding: 'cltnm', header: '업체명', width: '*', align: 'center', isReadOnly: true},
-            {binding: 'group_name', header: '사용자그룹', width: '*', align: 'center', isReadOnly: true},
-            {binding: 'group_id', header: '사용자그룹', width: '*', align: 'center', visible: false},
-            {binding: 'biztypenm', header: '업태', width: '*', align: 'center', isReadOnly: true},
-            {binding: 'bizitemnm', header: '종목', width: '*', align: 'center', isReadOnly: true},
-            {binding: 'tel', header: '전화번호', width: '*', align: 'center', visible: false},
-            {binding: 'phone', header: '핸드폰', width: '*', align: 'center', visible: true},
-            {binding: 'email', header: '이메일', width: '*', align: 'center', visible: false},
-            {binding: 'date_joined', header: '생성일', width: '*', align: 'center', isReadOnly: true},
-        ];
-
-        const requiredFields = [
-            {id: 'login_id', name: '사용자ID'},
-            {id: 'prenm', name: '사용자명'},
-            {id: 'cltnm', name: '업체명'},
-            {id: 'authType', name: '사용자그룹'},
-            {id:'biztypenm',name:'업태'},
-            {id:'bizitemnm',name:'종목'},
-            {id:'tel', name: '전화번호'},
-            {id:'phone', name: '핸드폰'},
-            {id: 'email', name: '이메일'},
-        ]
-
         document.readyState === 'complete' ? init() : window.onload = init;
 
         <!-- 초반 페이지 진입시 그리드 바인딩 끝-->
         function init() {
+            fetchListData();
+        }
+        function fetchListData(searchParams = {}) {
             let data2 = [];
+
+            // 기본 검색 조건 설정
+            const defaultParams = {
+                group: '',
+                keyword: '',
+                username: '',
+                divinm: ''
+            };
+
+            // 전달된 검색 조건과 기본값 병합
+            const requestParams = { ...defaultParams, ...searchParams };
+
+            // 서버로부터 데이터를 비동기적으로 가져오기
             $.ajax({
                 url: '/api/system/user/read',
                 type: 'GET',
-                data: {},
-                async: false,
-                success: function (data) {
-                    let DataLength = 10 - data.data.length;
-
-                    data2 = data.data;
-                }
-            })
-
-            viewdata = new wijmo.collections.CollectionView(data2);
-            // 데이터 그리드에 바인딩
-            theGrid = new wijmo.grid.FlexGrid('#theGrid', {
-                autoGenerateColumns: false,
-                showMarquee: true,
-                allowSorting: 'MultiColumn',
-                columns: columns,  //홀짝 로우 음영주기
-                selectionMode: wijmo.grid.SelectionMode.Row, // 행 단위 선택
-                itemsSource: viewdata,
-                formatItem: function(s, e) {
-                    if (e.panel.cellType === wijmo.grid.CellType.Cell) {
-                        var col = s.columns[e.col];
-                        var item = s.rows[e.row].dataItem;
-                        if (col.binding === 'is_active') {
-                            /*// 셀이 렌더링된 후 기존 checkbox를 찾음
-                            var checkbox = e.cell.querySelector('input[type="checkbox"]');
-
-                            // 슈퍼유저일 경우 체크박스를 비활성화
-                            if (item && item.is_superuser === true) {
-                                checkbox.disabled = true;
-                            }*/
-                        }
-                    }
-                }
-            });
-
-            // 체크박스 클릭 후 값이 변경될 때 함수 실행
-            theGrid.cellEditEnded.addHandler(function(s, e) {
-                var col = s.columns[e.col];
-                var item = s.rows[e.row].dataItem;
-
-                // is_active 컬럼일 경우 처리
-                if (col.binding === 'is_active' && !item.is_superuser) {
-                    var newValue = item.is_active;
-
-                    var IdValue = item.id;
-
-                    console.log('item23', item);
-
-                    console.log('idvalue: ', IdValue);
-
-
-                    let data = {
-                        is_active: newValue,
-                        id : IdValue
+                data: requestParams, // 검색 조건 전달
+                success: function (response) {
+                    console.log("API Response:", response); // 응답 데이터를 출력
+                    if (response && Array.isArray(response.data)) {
+                        data2 = response.data;
                     }
 
-                    let fnSuccess = function (res){
-                        if(res.success){
-                            Alert.alert('', res.message);
-                        }else{
-                            Alert.alert('', res.message);
+                    // 데이터 가공: 순번 추가 및 최소 행 수 유지
+                    const minimumRows = 5;
+                    data2.forEach((item, index) => {
+                        item.rownum = index + 1; // 순번 추가
+                    });
+
+                    if (data2.length < minimumRows) {
+                        const additionalRows = minimumRows - data2.length;
+                        for (let i = 0; i < additionalRows; i++) {
+                            data2.push({
+                                id: '',
+                                userid: '',
+                                pernm: '',
+                                group_name: '',
+                                group_id: '',
+                                Phone: '',
+                                email: '',
+                                is_active: '',
+                                date_joined: '',
+                            });
                         }
                     }
 
-                    AjaxUtil.postAsyncData('/api/system/user/activate', data, fnSuccess);
-                }
-            });
-
-            // 선택이 변경될 때, 현재 항목 업데이트
-
-            theGrid.rowHeaders.columns.splice(0, 1);  //맨 앞에 헤더부분 없애기
-
-
-            // 더블클릭 이벤트 추가
-            theGrid.hostElement.addEventListener('dblclick', function(e) {
-                let hitTest = theGrid.hitTest(e);
-                if (hitTest.cellType === wijmo.grid.CellType.Cell) {
-                    let row = hitTest.row;
-                    let item = theGrid.rows[row].dataItem;
-
-                    console.log('Row double-clicked:', item);
-
-                    let userid = item.login_id;
-                    let smtpLabel = document.getElementById('smtpLabel');
-                    let smtpBox = document.getElementById('smtpbox');
-                    if(item.is_superuser){
-                        smtpLabel.style.display = 'block';
-                        smtpBox.style.display = 'block';
-                    }else{
-                        smtpLabel.style.display = 'none';
-                        smtpBox.style.display = 'none';
+                    // viewdata와 그리드 초기화 및 업데이트
+                    if (!viewdata) {
+                        viewdata = new wijmo.collections.CollectionView(data2);
+                    } else {
+                        viewdata.sourceCollection = data2;
+                        viewdata.refresh();
                     }
-                    document.getElementById('id').value = item.id;
-                    document.getElementById('userid').value =   item.login_id;
-                    document.getElementById('usernm').value =   item.Name;
-                    document.getElementById('authType').value = item.group_id;
-                    document.getElementById('email').value =    item.email;
-                    document.getElementById('tel').value =      item.tel;
-                    document.getElementById('divinm2').value =  item.divinm;
-                    document.getElementById('agencycd').value = item.agencycd;
 
-                    AjaxFunction.PostAjaxRequest('/api/system/user/modfind', false, 'application/json', true, userid, function (data) {
-                        if (data.success) {
+                    if (!theGrid) {
+                        theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+                            autoGenerateColumns: false,
+                            showMarquee: true,
+                            allowSorting: 'MultiColumn',
+                            selectionMode: wijmo.grid.SelectionMode.Row,
+                            columns: [
+                                { binding: 'id', header: 'id', width: '*', align: 'center', visible: false, isReadOnly: false },
+                                { binding: 'userid', header: '사용자ID', width: '*', align: 'center', isReadOnly: false },
+                                { binding: 'pernm', header: '이름', width: '*', align: 'center', isReadOnly: false },
+                                { binding: 'group_name', header: '사용자그룹', width: '*', align: 'center', isReadOnly: false },
+                                { binding: 'group_id', header: '사용자그룹', width: '*', align: 'center', visible: false },
+                                { binding: 'Phone', header: '핸드폰', width: '*', align: 'center', visible: false },
+                                { binding: 'email', header: '이메일', width: '*', align: 'center', visible: false },
+                                { binding: 'is_active', header: '활성화', width: '*', align: 'center', isReadOnly: false },
+                                { binding: 'date_joined', header: '생성일', width: '*', align: 'center', isReadOnly: false },
+                            ],
+                            itemsSource: viewdata,
+                        });
+                        theGrid.rowHeaders.columns.splice(0, 1);
+                        new FlexGridContextMenu(theGrid);
+                    } else {
+                        theGrid.itemsSource = viewdata; // 갱신된 CollectionView로 업데이트
+                        theGrid.refresh(); // 그리드 새로고침
+                    }
 
+                    // 그리드 더블 클릭 이벤트 추가
+                    let lastClickTime = 0;
+                    theGrid.hostElement.addEventListener('click', function (e) {
+                        const now = new Date().getTime();
 
-                            $('#password').prop('readonly', true);
+                        if (now - lastClickTime < 300) {
+                            const ht = theGrid.hitTest(e);
 
-                            const parent = $('#dataList');
-                            parent.empty();
-
-                            const listLen = data.data.length;
-
-
-                            for (let i = 0; i < listLen; i++) {
-                                const li = $('<li>');
-
-                                if (i !== 0) {
-                                    li.addClass('new-fl-ac');
-                                }
-
-                                li.css('marginTop', '2px');
-
-                                parent.append(li);
-                                $.ajax({
-                                    url: '/user-codes/parent',
-                                    type: 'GET',
-                                    async: false,   // 기본값: true
-                                    data: {parentId: 110},
-                                    success: function (response) {
-                                        console.log('Response from /user-codes/parent:', response);
-                                        let selectElement = $('#' + firstSelectId);
-                                        selectElement.empty(); // 이전 옵션 제거
-
-                                        $.each(response, function (index, item) {
-                                            selectElement.append($('<option>', {
-                                                value: item.code,
-                                                text: item.value
-                                            }));
-
-                                            selectElement.val();
-
-                                        });
-                                    },
-                                    error: function (jqXHR, textStatus, errorThrown) {
-                                        console.error('Error:', textStatus, errorThrown);
-                                    }
-                                });
-
-                                $('#' + firstSelectId).val(data.data[i].spworkcd);
-                                $('#' + firstSelectId).trigger('change');
-                                $('#' + secondSelectId).val(data.data[i].spcompcd);
-                                $('#' + secondSelectId).trigger('change');
-//                                console.log('thirdSelectId', thirdSelectId);
-                                console.log('dsaa', data.data[i].spplancd);
-
-                                $('#' + thirdSelectId).val(data.data[i].spplancd);
-
+                            if (ht.cellType === wijmo.grid.CellType.Cell) {
+                                const rowData = theGrid.rows[ht.row].dataItem;
+                                showUserInfo(rowData);
                             }
-                        } else {
-                            Alert.alert('', data.message, function(){ $('#listTabLink').click()});
-
                         }
-                    })
+                        lastClickTime = now;
+                    });
+                },
+                error: function () {
+                    console.error("데이터를 가져오는 중 오류가 발생했습니다.");
                 }
             });
+        }
+
+        function showUserInfo(rowData) {
+            // 필드 중 하나라도 비어있는지 확인하여 추가 데이터를 가져올지 결정
+            const hasMissingFields = !rowData || !rowData.userid || !rowData.email;
+
+            if (hasMissingFields) {
+                // 데이터가 불완전하거나 비어 있을 때
+                console.log("전송할 ID:", rowData.id);
+                if (rowData && rowData.id) {
+                    // 추가 데이터가 필요한 경우 AJAX 요청으로 가져오기
+                    $.ajax({
+                        url: '/api/system/user/detail',
+                        type: 'GET',
+                        data: { id: rowData.id },
+                        success: function (response) {
+                            if (response && response.data) {
+                                populateFields(response.data); // 서버에서 가져온 데이터로 폼 채우기
+                            } else {
+                                populateFields({}); // 데이터가 없을 경우 빈 필드로 채우기
+                            }
+                        },
+                        error: function () {
+                            console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+                            populateFields({}); // 오류 발생 시 빈 필드로 채우기
+                        }
+                    });
+                } else {
+                    // rowData가 없거나 ID가 없는 경우 빈 필드로 채우기
+                    populateFields({});
+                }
+            } else {
+                // 데이터가 완전한 경우
+                populateFields(rowData);
+            }
+        }
+
+        function populateFields(data) {
+            // 각 필드에 데이터를 채움
+            document.getElementById("pernm").value = data.pernm || '';
+            document.getElementById("userid").value = data.userid || '';
+            document.getElementById("Phone").value = data.Phone || '';
+            document.getElementById("is_active").value = data.is_active || '';
+            document.getElementById("email").value = data.email || '';
+
+            // authType(사용자 그룹) 설정
+            document.getElementById('authType').value = data.group_id;
+
+            // 체크박스 설정
+            document.getElementById("is_active").checked = data.is_active || false;
+
+            $('#userid').prop('readonly', true);
         }
 
         <!-- 초반 페이지 진입시 그리드 바인딩 끝-->
         //검색
         function searchData() {
-            let data = {
-                'group': $('#cboUserGroup').val(),
-                'keyword': $('#keyword').val(),
-                'username': $('#username').val(),
-                'divinm': $('#divinm').val()
-            }
-
-            let data2 = [];
-            $.ajax({
-                url: '/api/system/user/read',
-                type: 'GET',
-                data: data,
-                success: function (data) {
-                    data2 = data.data;
-                    viewdata = new wijmo.collections.CollectionView(data2);
-                    theGrid.itemsSource = viewdata;
-                },
-                error: function (xhr, status, error) {
-                    console.error('AJAX request error:', error);
-                }
-            });
-
-            //grid_binding(result.data);
+            const searchParams = {
+                group: $('#cboUserGroup').val(), // 사용자 그룹 ID
+                keyword: $('#keyword').val(),   // 이름 검색
+                username: $('#username').val(), // 사용자 ID 검색
+                divinm: $('#divinm').val(),     // 기타 조건
+            };
+            console.log("Search Params:", searchParams);
+            fetchListData(searchParams);
         }
-
-        function showPopup2(){
-
-            let selectedItems = theGrid.selectedItems;
-
-
-
-            document.getElementById('smtpid').value = selectedItems[0].smtpid;
-            document.getElementById('smtppw').value = selectedItems[0].smtppassword;
-
-            const modal = document.querySelector('.modal3');
-            const modalContent = document.querySelector('.popup-wrapper3');
-
-            // 모달과 콘텐츠를 표시
-            modal.style.display = 'block';
-            modalContent.style.display = 'block';
-
-            // 애니메이션을 위한 클래스 추가
-            requestAnimationFrame(() => {
-                modal.classList.add('show');
-                modalContent.classList.add('show');
-            });
-        }
-
-        function closeFilePopup(){
-            const modal = document.querySelector('.modal3');
-
-            modal.style.display = 'none';
-
-        }
-
-        const Filemodal = document.querySelector('.modal3');
-
-
-        const modalFileOpen = document.querySelector('.file_btn');
-        modalFileOpen.addEventListener('click', function(){
-            Filemodal.style.display = 'block';
-        });
 
         function grid_binding(data) {
             var inspecDto = data;
@@ -616,13 +500,10 @@
                     group_name: inspecDto[i]["group_name"],
                     group_id: inspecDto[i]["group_id"],
                     Value: inspecDto[i]["Value"],
-                    divinm: inspecDto[i]["divinm"],
-                    ranknm: inspecDto[i]["ranknm"],
                     is_active: inspecDto[i]["is_active"],
                     date_joined: inspecDto[i]["date_joined"],
                     email: inspecDto[i]["email"],
                     tel: inspecDto[i]["tel"],
-                    agencycd: inspecDto[i]["agencycd"],
                     is_superuser: inspecDto[i]["is_superuser"],
                 });
                 cnt++;
@@ -638,65 +519,27 @@
             }
         }
 
-        function createSelectElement(id, name, onChange, margin) {
-            return $('<select>', {
-                class: 'wp25 mg-r5',
-                id: id,
-                name: name,
-                onchange: onChange
-            }).append('<option></option>')
-                .attr('style', `margin-right: ${margin}px !important;`);
-        }
-
-        function createButtonElement(name, text, color, width, onClick) {
-            return $('<button>', {
-
-                name: name,
-                text: text,
-                css: {
-                    color: color,
-                    width: width
-                },
-                onclick: onClick
-            });
-        }
-
-        function saveSMTP(){
-
-            let smtpid = document.getElementById('smtpid').value;
-            let smtppw = document.getElementById('smtppw').value;
-
-            if(smtpid.trim().length === 0){
-                Alert.alert('', 'SMTP 아이디를 입력해주세요');
-                return;
-            }
-
-            if(smtppw.trim().length === 0){
-                Alert.alert('', 'SMTP 비밀번호를 입력해주세요');
-                return;
-            }
-
-            let data = {
-                id: $('#id').val(),
-                smtpid: $('#smtpid').val(),
-                smtppw: $('#smtppw').val()
-            };
-
-            AjaxUtil.postAsyncData('/api/system/user/smtp', data, function(res){
-                Alert.alert('', res.message);
-            });
-
-        }
-
         function clearForm(){
-            ['id', 'userid', 'usernm', 'authType', 'email','password', 'tel', 'divinm2', 'agencycd', 'firstSelect', 'secondSelect', 'thirdSelect'].forEach(id => {
-                document.getElementById(id).value = '';
+            ['id', 'userid', 'pernm', 'password','passwordchk','cltnm', 'authType', 'email','Phone', 'tel','username'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) { // 요소가 존재하는 경우에만 실행
+                    element.value = '';
+                }
             });
-            let smtpLabel = document.getElementById('smtpLabel');
-            let smtpBox = document.getElementById('smtpbox');
-
-            smtpLabel.style.display = 'none';
-            smtpBox.style.display = 'none';
+            // 체크박스 초기화 (체크 해제)
+            const isActiveCheckbox = document.getElementById('is_active');
+            if (isActiveCheckbox) {
+                isActiveCheckbox.checked = false;
+            }
+            const form = document.getElementById('tab1'); // 섹션 ID로 form 대체
+            if (form) {
+                const inputs = form.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    if (input.hasAttribute('readonly')) {
+                        input.removeAttribute('readonly'); // readonly 속성 제거
+                    }
+                });
+            }
 
             $('#password').prop('readonly', false);
             $('.new-fl-ac').remove();
@@ -704,6 +547,8 @@
 
         $(document).ready(function (e) {
 
+            AjaxUtil.fillSelectOptions($('#cboUserGroup'), 'user_group', '', '');
+            AjaxUtil.fillSelectOptions($('#authType'), 'user_group', '', '');
             initializeSelect({
                 url: '/user-auth/type',
                 params: {},
@@ -762,14 +607,8 @@
                 formData.append('divinm', $('#divinm2').val());
                 formData.append('agencycd', $('#agencycd').val());
                 formData.append('_csrf', $('[name=_csrf]').val());
-                formData.append('spworkcd', spworkcdString);
-                formData.append('spcompcd', spcompcdString);
-                formData.append('spplancd', spplancdString);
-                formData.append('spworknm', spworknm);
-                formData.append('spcompnm', spcompnm);
-                formData.append('spplannm', spplannm);
 
-                let bindingList = ['id', 'userid', 'usernm', 'authType', 'password', 'email', 'tel', 'divinm2', 'agencycd', 'firstSelect', 'secondSelect', 'thirdSelect'];
+                let bindingList = ['id', 'userid', 'usernm', 'authType', 'password', 'email', 'tel', 'agencycd'];
                 AjaxFunction.PostAjaxRequest('/api/system/user/save', true, false, false, formData, function (response) {
                         if (response.success) {
                             Alert.alert('', response.message, function () {

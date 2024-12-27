@@ -65,23 +65,22 @@ public class UserController {
 
 	// 사용자 리스트 조회
 	@GetMapping("/read")
-	public AjaxResult getUserList(@RequestParam(value = "cltnm", required = false) String cltnm, // 업체명
-								  @RequestParam(value = "prenm", required = false) String prenm, // 대표자
-								  @RequestParam(value = "biztypenm", required = false) String biztypenm, // 업태
-								  @RequestParam(value = "bizitemnm", required = false) String bizitemnm, // 종목
+	public AjaxResult getUserList(@RequestParam(value = "keyword", required = false) String pernm,
+								  @RequestParam(value = "group", required = false) String userGroupId,
+								  @RequestParam(value = "username", required = false) String username,
 								  @RequestParam(value = "email", required = false) String email,
-								  @RequestParam(value = "spjangcd", required = false) String spjangcd,
-								  Authentication auth){
+								  Authentication auth) {
+		log.info("Received Parameters - group: {}, keyword: {}, username: {}", userGroupId, pernm, username);
+
 		AjaxResult result = new AjaxResult();
-		User user = (User)auth.getPrincipal();
+		User user = (User) auth.getPrincipal();
 		boolean superUser = user.getSuperUser();
 
 		if (!superUser) {
-			superUser = user.getUserProfile().getUserGroup().getCode().equals("dev");
+			superUser = "dev".equals(user.getUserProfile().getUserGroup().getCode());
 		}
 
-		List<Map<String, Object>> items = this.userService.getUserList(superUser, cltnm, prenm, biztypenm, bizitemnm, email, spjangcd);
-
+		List<Map<String, Object>> items = userService.getUserList(superUser, username, email, pernm, userGroupId);
 		result.data = items;
 
 		return result;
@@ -97,14 +96,6 @@ public class UserController {
 			if (id != null && !id.isEmpty()) {
 				// ID로 특정 사용자 정보 조회
 				Map<String, Object> userDetail = userService.getUserDetailById(id);
-
-				// fullAddress 분리하여 address1과 address2로 추가
-				if (userDetail.containsKey("fullAddress")) {
-					String fullAddress = (String) userDetail.get("fullAddress");
-					Map<String, String> addressParts = splitAddress(fullAddress);
-					userDetail.put("address1", addressParts.get("address1"));
-					userDetail.put("address2", addressParts.get("address2"));
-				}
 
 				result.success = true;
 				result.data = userDetail;
