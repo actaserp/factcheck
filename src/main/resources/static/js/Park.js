@@ -169,6 +169,44 @@ function initializeSelect({
     });
 }
 
+function initializeSelect2({
+                              url,               // API 엔드포인트 URL
+                              params = {},       // 요청 매개변수 (기본값은 빈 객체)
+                              elementId,         // 셀렉트 요소의 ID
+                              defaultOption = "선택하세요",  // 기본 옵션 텍스트
+                              valueField = "code",    // 데이터의 값 필드 이름
+                              textField = "value"     // 데이터의 표시 필드 이름
+                          }) {
+    $.get(url, params, function(response) {
+        console.log('확인: ', response);
+
+        // 응답 데이터에서 data 추출
+        const data = response.data || [];
+
+        // DOM 요소 선택
+        let selectElement = $(`#${elementId}`);
+        if (!selectElement.length) {
+            console.error(`Element with ID "${elementId}" not found.`);
+            return;
+        }
+
+        // 기존 옵션 제거 후 기본 옵션 추가
+        selectElement.empty();
+        selectElement.append(`<option value="">${defaultOption}</option>`);
+
+        // 데이터가 배열인지 확인 후 옵션 추가
+        if (Array.isArray(data)) {
+            data.forEach(function(item) {
+                selectElement.append(`<option value="${item[valueField]}">${item[textField]}</option>`);
+            });
+        } else {
+            console.error("응답 데이터가 배열이 아닙니다:", data);
+        }
+    }).fail(function(xhr, status, error) {
+        console.error(`API 요청 실패: ${status}, ${error}`);
+        Alert.alert("데이터를 불러오는 중 문제가 발생했습니다. 관리자에게 문의하세요.",'');
+    });
+}
 
 //이메일 정규식
 function emailValidate(emailVal){

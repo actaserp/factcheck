@@ -135,14 +135,14 @@
                         <th><label for="grid">등급</label></th>
                         <td colspan="3">
                           <select id="grid" name="grid" class="wp100"  style="width: 670px; !important" >
-                            <option value="">선택하세요</option>
-                            <option value="S">S</option>
+                            <option ></option>
+                           <!-- <option value="S">S</option>
                             <option value="A">A</option>
                             <option value="B">C</option>
                             <option value="C">D</option>
                             <option value="D">D</option>
                             <option value="E">E</option>
-                            <option value="F">F</option>
+                            <option value="F">F</option>-->
                           </select>
                         </td>
                       </tr>
@@ -205,14 +205,7 @@
                         <th><label for="grface">표정</label></th>
                         <td>
                           <select id="grface" name="grface" class="wp100">
-                            <option value="">선택하세요</option>
-                            <option value="1">편안함표정</option>
-                            <option value="2">신중한표정</option>
-                            <option value="3">우려하는 모습</option>
-                            <option value="4">경계하는모습</option>
-                            <option value="5">불안한표정</option>
-                            <option value="6">긴장한표정</option>
-                            <option value="7">공포에질린모습</option>
+                            <option></option>
                           </select>
                         </td>
                       </tr>
@@ -220,27 +213,13 @@
                         <th><label for="grmood">날씨</label></th>
                         <td>
                           <select id="grmood" name="grmood" class="wp100">
-                            <option value="">선택하세요</option>
-                            <option value="1">맑음</option>
-                            <option value="2">약간 흐림</option>
-                            <option value="3">흐림</option>
-                            <option value="4">비</option>
-                            <option value="5">폭우</option>
-                            <option value="6">태풍</option>
-                            <option value="7">홍수</option>
+                            <option></option>
                           </select>
                         </td>
                         <th><label for="gricon">아이콘</label></th>
                         <td>
                           <select id="gricon" name="gricon" class="wp100">
-                            <option value="">선택하세요</option>
-                            <option value="1">방패,금고</option>
-                            <option value="2">돋보기</option>
-                            <option value="3">물음표</option>
-                            <option value="4">큰 눈</option>
-                            <option value="5">안절부정</option>
-                            <option value="6">좌절OTL</option>
-                            <option value="7">금지</option>
+                            <option></option>
                           </select>
                         </td>
                       </tr>
@@ -370,6 +349,24 @@
         }
       });
     }
+
+    //공통 코드
+    const selectConfigs = [
+      { parentCode: 'Rating', elementId: 'grid' },
+      { parentCode: 'icon', elementId: 'gricon' },
+      { parentCode: 'weather', elementId: 'grmood' },
+      { parentCode: 'flag', elementId: 'grflag' },
+      { parentCode: 'face', elementId: 'grface' }
+    ];
+    selectConfigs.forEach(config => {
+      initializeSelect2({
+        url: '/api/category/type',
+        params: { parentCode: config.parentCode },
+        elementId: config.elementId,
+        valueField: "id",
+        textField: "value"
+      });
+    });
 
   </script>
 </th:block>

@@ -57,14 +57,14 @@
             <div class="search-wrap">
               <dl>
                 <dt>
-                  <label for="txtCode">
+                  <label for="searchInput">
                     검색<span class="eq">*</span>
                   </label>
                 </dt>
                 <dd>
                   <div class="srch-box">
-                    <input type="text" id="txtCode" name="txtCode" class="input-srch">
-                    <a class="btn-srch" id="btnSearch" title="검색"></a>
+                    <input type="text" id="searchInput" name="searchInput" class="input-srch" placeholder="등기 명칭">
+                    <a class="btn-srch" id="btnSearch" title="검색" onclick="fetchListData()"></a>
                   </div>
                 </dd>
               </dl>
@@ -78,7 +78,7 @@
                   </a>
                 </li>
                 <li>
-                  <a class="btn btn-edit" id="btnSave" title="저장">
+                  <a class="btn btn-edit" id="btnSave" title="저장" onclick="SaveForm()">
                     <img src="/images/icon/ico-save.svg" alt="저장 아이콘">
                     저장
                   </a>
@@ -101,7 +101,7 @@
             </div>
             <div class="col wp50">
               <div class="section">
-                <form id="codeForm">
+                <form id="CategoryForm">
                   <!-- Hidden Fields -->
                   <input type="hidden" id="parent_id" name="parent_id" value="" />
                   <input class="form-control2" type="text" id="id" name="id" hidden />
@@ -120,54 +120,52 @@
                           <label for="regnm">등기 명칭</label>
                         </th>
                         <td colspan="3">
-                          <input type="text" id="regnm" name="regnm" class="wp100" placeholder="근저당권" />
+                          <select id="regnm" name="regnm" class="wp100"  style="width: 300px;!important" >
+                            <option></option>
+                          </select>
                         </td>
                       </tr>
                       <tr>
                         <th><label for="reggroup">상위그룹</label></th>
                         <td colspan="3">
-                          <input type="text" id="reggroup" name="reggroup" class="wp100" style="width: 300px;" placeholder="근저당"/>
+                          <select id="reggroup" name="reggroup" class="wp100"  style="width: 300px;!important" >
+                            <option></option>
+                          </select>
                         </td>
                       </tr>
                       <tr>
                         <th><label for="regstand">판정기준</label></th>
                         <td colspan="3">
                           <select id="regstand" name="regstand" class="wp100"  style="width: 300px;!important" >
-                            <option value="">선택하세요</option>
-                            <option value="A1">금액기준</option>
-                            <option value="A2">점수기준</option>
-                            <option value="A3">복합기준</option>
+                            <option></option>
                           </select>
                         </td>
                       </tr>
                       <tr colspan="2">
                         <th><label for="regmaxnum">최대위험점수</label></th>
-                        <td><input type="text" id="regmaxnum" name="regmaxnum" class="wp100" placeholder=" 최대위험 점수" /></td>
+                        <td><input type="text" id="regmaxnum" name="regmaxnum" class="wp100" placeholder=" 최대위험 점수" oninput="validateAndFormatInput(this)"/></td>
 
                         <th><label for="regyul">발생비율</label></th>
                         <td><input type="text" id="regyul" name="regyul" class="wp100" placeholder="발생비율" oninput="addPercentageSign(this)"/></td>
                       </tr>
                       <tr>
                         <th><label for="regstamt">기준금액</label></th>
-                        <td><input type="text" id="regstamt" name="regstamt" class="wp100" placeholder="기준금액"/></td>
+                        <td><input type="text" id="regstamt" name="regstamt" class="wp100" placeholder="기준금액 (단위: 만원)" oninput="formatWithCommas(this)"/></td>
 
                         <th><label for="riskclass">위험분류</label></th>
                         <td>
                           <select id="riskclass" name="riskclass" class="wp100">
-                            <option value="">선택하세요</option>
-                            <option value="기준1">최고 위험</option>
-                            <option value="기준1">높은 위험</option>
-                            <option value="기준1">위험</option>
+                           <option></option>
                           </select>
                         </td>
                       </tr>
                       <tr>
                         <th><label for="">순위조건</label></th>
                         <td >
-                          <input type="text" id="SUBSCORE" name="SUBSCORE" class="wp100" placeholder="후순위조건점수" style="width: 300px !important" />
+                          <input type="text" id="SUBSCORE" name="SUBSCORE" class="wp100" placeholder="후순위조건점수" style="width: 300px !important" oninput="inputNumber(this)" />
                         </td>
                         <td colspan="2">
-                          <input type="text" id="SENSCORE" name="SENSCORE" class="wp100" placeholder="선순위조건점수" style="width: 300px !important" />
+                          <input type="text" id="SENSCORE" name="SENSCORE" class="wp100" placeholder="선순위조건점수" style="width: 300px !important" oninput="inputNumber(this)" />
                         </td>
                       </tr>
                       <tr>
@@ -224,29 +222,30 @@
     }
 
     function fetchListData() {
-      let data2 = [
-        {rownum: 1,  regnm: '근저당권', reggroup: '상위그룹1', regmaxnum: 49, exflag: '0', regstamt: 5000 },
-        {rownum: 2,  regnm: '압류', reggroup: '상위그룹2', regmaxnum: 40, exflag: '1', regstamt: 10000 },
-        {rownum: 3,  regnm: '지상권', reggroup: '상위그룹3', regmaxnum: 20, exflag: '0', regstamt: 7500 }
-      ];
-      // 서버에서 데이터 가져오기
-      /*$.ajax({
-        url: '/api/ProgressStatus/read',
+      let data2 = [];
+      const searchValue = $('#searchInput').val();
+
+      $.ajax({
+        url: '/api/category/read',
         type: 'GET',
-        data: queryParams,
+        data: { regnm: searchValue },
         async: false,
         success: function (response) {
-          // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
           if (response && Array.isArray(response.data)) {
             data2 = response.data.map((item, index) => ({
-              rownum: index + 1
+              rownum: index + 1,
+              regnm: item.regnm || '',
+              reggroup: item.reggroup || '',
+              regmaxnum: item.regmaxnum || '',
+              exflag: item.exflag || '',
+              regstamt: item.regstamt || '',
             }));
           }
         },
         error: function () {
           console.error("데이터를 가져오는 중 오류가 발생했습니다.");
         }
-      });*/
+      });
 
       while (data2.length < 10) {
         data2.push({
@@ -271,8 +270,8 @@
             { binding: 'regnm', header: '등기명칭', align: 'center', width: 150 },
             { binding: 'reggroup', header: '상위그룹', align: 'center', width: 150 },
             { binding: 'regmaxnum', header: '최대위험점수', align: 'center', width: 150 },
-            { binding: 'exflag', header: '판정기준', align: 'center', width: 150 },
-            { binding: 'regstamt', header: '기준금액(만원)', align: 'center', width: "*" }
+            { binding: 'regstamt', header: '기준금액(만원)', align: 'center', width: "*" },
+            { binding: 'exflag', header: '판정기준', align: 'center', width: 100 },
           ],
           itemsSource: viewdata
         });
@@ -314,21 +313,145 @@
       });
     }
 
-
     // 발생비율(기호)
     function addPercentageSign(input) {
+      const cursorPosition = input.selectionStart;
       // 숫자만 추출
       let value = input.value.replace(/[^0-9.]/g, '');
+      // 입력값이 숫자로 변환 가능하고, 최대값 100 이하인지 체크
+      if (value && parseInt(value, 10) > 100) {
+        value = '100'; // 100으로 강제 설정
+      }
       // 입력 값이 비어 있지 않을 때만 % 추가
       if (value) {
         input.value = value + '%';
       } else {
         input.value = ''; // 빈 값 처리
       }
+      // 커서 위치 조정
+      if (cursorPosition <= value.length) {
+        input.setSelectionRange(cursorPosition, cursorPosition); // 커서를 유지
+      }
+    }
+    //기준금액(단위)
+    function formatWithCommas(input) {
+      const cursorPosition = input.selectionStart;
+      // 숫자만 추출
+      let value = input.value.replace(/[^0-9]/g, ''); // 소수점 제외
+
+      // 입력 값이 비어 있지 않을 때만 처리
+      if (value) {
+        // 천 단위 콤마 추가
+        const formatted = new Intl.NumberFormat().format(value);
+        input.value = formatted + '만원'; // "만원" 추가
+      } else {
+        input.value = ''; // 빈 값 처리
+      }
+      // 커서 위치 조정
+      if (cursorPosition <= value.length) {
+        input.setSelectionRange(cursorPosition, cursorPosition); // 커서를 유지
+      }
+    }
+    //최대위험점수
+    function validateAndFormatInput(input) {
+      // 기존 커서 위치 저장
+      const cursorPosition = input.selectionStart;
+      let value = input.value.replace(/[^0-9]/g, ''); // 숫자만 추출
+
+      // 최대값 100 체크
+      if (value && parseInt(value, 10) > 100) {
+        value = '100'; // 100으로 강제 설정
+      }
+
+      // "점" 추가
+      if (value) {
+        input.value = value + '점';
+      } else {
+        input.value = ''; // 빈 값 처리
+      }
+
+      // 커서 위치 조정
+      if (cursorPosition <= value.length) {
+        input.setSelectionRange(cursorPosition, cursorPosition); // 커서를 유지
+      }
+    }
+
+    function inputNumber(input) {
+      let value = input.value.replace(/[^0-9]/g, ''); // 숫자만 추출
+
+      // 최대값 100 제한
+      if (value && parseInt(value, 10) > 100) {
+        value = '100'; // 100으로 강제 설정
+      }
+
+      input.value = value; // 변경된 값을 다시 할당
     }
 
     // 초기화 실행
     init();
+    //공통 코드
+    const selectConfigs = [
+      { parentCode: 'AA', elementId: 'regstand' },
+      { parentCode: 'Risk', elementId: 'riskclass' },
+      { parentCode: 'AC', elementId: 'regnm' },
+      { parentCode: 'AC', elementId: 'reggroup' },
+    ];
+
+    selectConfigs.forEach(config => {
+      initializeSelect2({
+        url: '/api/category/type',
+        params: { parentCode: config.parentCode },
+        elementId: config.elementId,
+        valueField: "code",
+        textField: "value"
+      });
+    });
+
+    //저장
+    function SaveForm() {
+      // 폼 데이터를 수집
+      const formData = {
+        regnm: $("#regnm").val(),
+        reggroup: $("#reggroup").val(),
+        regstand: $("#regstand").val(),
+        regmaxnum: $("#regmaxnum").val(),
+        regyul: $("#regyul").val(),
+        regstamt: $("#regstamt").val(),
+        riskclass: $("#riskclass").val(),
+        SUBSCORE: $("#SUBSCORE").val(),
+        SENSCORE: $("#SENSCORE").val(),
+        normalizedName: $("#normalizedName").val(),
+        exflag: $("#exflag").is(":checked"),
+        description: $("#description").val(),
+        remark: $("#remark").val(),
+        _csrf: $('[name=_csrf]').val()
+      };
+
+      // AJAX 요청
+      $.ajax({
+        url: '/api/category/save',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        headers: {
+          'X-CSRF-Token': $('[name=_csrf]').val()
+        },
+        success: function (response) {
+          // 저장 성공 시 처리
+          if (response.success) {
+            Alert.alert("","저장이 완료되었습니다!");
+            location.reload(); // 저장 후 페이지 새로고침
+          } else {
+            console.error("저장 중 문제가 발생했습니다:", response.message);
+            Alert.alert("","저장 중 문제가 발생했습니다.");
+          }
+        },
+        error: function (xhr, status, error) {
+          console.error("저장 중 오류 발생:", status, error);
+          Alert.alert("","저장 중 오류가 발생했습니다. 관리자에게 문의하세요.");
+        }
+      });
+    }
 
     //초기화
     function clearForm() {
