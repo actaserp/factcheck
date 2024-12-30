@@ -53,25 +53,19 @@
                     <div class="button-wrap" style="border-top:none;">
                         <ul>
                             <li>
-                                <a class="btn btn-file2" title="파일 첨부" data-popup="popup1"
-                                   onclick="showPopup(this)">
-                                    파일 첨부<span>(0)</span>
-                                </a>
-                            </li>
-                            <li>
                                 <a class="btn btn-excell" title="신규등록" onclick="resetFormFields()">
                                     <img src="/images/icon/ico-plus.svg" alt="등록 아이콘">
                                     신규등록
                                 </a>
                             </li>
                             <li>
-                                <a class="btn btn-delete" title="삭제" id="btnDelete">
+                                <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="deleteAnswer($('#answerNo').val())">
                                     <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
                                     삭제
                                 </a>
                             </li>
                             <li>
-                                <a class="btn btn-edit" id="btnSave" title="저장">
+                                <a class="btn btn-edit" id="btnSave" title="저장" onclick="saveAnswer()">
                                     <img src="/images/icon/ico-save.svg" alt="저장 아이콘">
                                     저장
                                 </a>
@@ -89,57 +83,52 @@
                     <div class="col wp100">
                         <div class="section">
                             <form id="codeForm">
-                                <input type="hidden" id="parent_id" name="parent_id" value=""/>
+                                <input type="hidden" id="faqseq" name="faqseq" value=""/>
                                 <input class="form-control2" type="text" id="id" name="id" hidden />
                                 <div class="table-wrap">
                                     <table class="view-table" id="selectedData">
                                         <caption>FAQ 등록 테이블</caption>
+                                        <input type="hidden" id="answerNo">
                                         <colgroup>
                                             <col class="wp20">
                                             <col class="wauto">
                                         </colgroup>
                                         <tbody>
                                         <tr>
-                                            <th><label for="">Question</label></th>
+                                            <th><label for="question">Question</label></th>
                                             <td colspan="3">
-                                                <input type="text" id="" name="" class="wp100" required>
+                                                <input type="text" id="question" name="" class="wp100">
                                                 <div style="text-align:left; ">
                                                 </div>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th><label for="">Answer</label></th>
+                                            <th><label for="answer">Answer</label></th>
                                             <td>
-                                                <input type="text" id="" name="name" class="wp100">
+                                                <input type="text" id="answer" name="name" class="wp100">
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th><label for="">순서</label></th>
+                                            <th><label for="faqNo">순서</label></th>
                                             <td>
-                                                <input type="text" id="" name="name" class="wp100">
+                                                <input type="text" id="faqNo" name="name" class="wp100">
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th><label for="">분류</label></th>
+                                            <th><label for="comcode">문의구분</label></th>
                                             <td>
-                                                <select id="" name="name" class="wp100">
-                                                    <option value="">전체</option>
-                                                    <option value="0">주문의뢰</option>
-                                                    <option value="1">주문확인</option>
+                                                <select id="comcode" name="name" class="wp100">
+                                                    <option value="" selected disabled hidden>선택</option>
+                                                    <option value="01"></option>
+                                                    <option value="02"></option>
                                                 </select>
 
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th><label for="">비고</label></th>
+                                            <th><label for="remark">비고</label></th>
                                             <td colspan="3">
-                                                <input type="text" id="" name="" class="wp100">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th><label for="">비고</label></th>
-                                            <td colspan="3">
-                                                <textarea id="" name="" class="wp100"></textarea>
+                                                <input type="text" id="remark" name="" class="wp100">
                                             </td>
                                         </tr>
                                         </tbody>
@@ -172,71 +161,181 @@
         function init() {
             faqHtml();
         }
+        $(document).ready(function (e) {
+
+            // FAQ 공통코드 리스트(문의구분 select 바인드)
+            const parentId01 = 374;
+            const selectElementId01 = 'comcode';
+            fetchCommonCodes(parentId01, selectElementId01);
+        });
+
         // FAQ html
         function faqHtml() {
-            let data2 = [
-                {
-                    "no" : 1,
-                    "faqtext0" : "문의내용1",
-                    "faqtext1" : "답변내용1"
+            $.ajax({
+                url: '/api/FAQ/getFAQList',
+                type: 'GET',
+                data: {},
+                success: function (data) {
+                    console.log(data.data); // 데이터를 확인
+                    const data2 = data.data || []; // 데이터가 없으면 빈 배열로 처리
+                    const listCardWrap = document.getElementById('FAQarea');
+                    listCardWrap.innerHTML = ''; // 기존 내용을 초기화
+
+                    data2.forEach(item => {
+                        // 문의사항 렌더링
+                        const questionDiv = document.createElement('div');
+                        questionDiv.style.backgroundColor = '#D0E1EB';
+                        questionDiv.style.padding = '5px';
+                        questionDiv.style.marginRight = '20px';
+                        questionDiv.innerHTML = `&ensp;${item.no}.&ensp;${item.FAQTEXT || '문의 내용 없음'}`;
+
+                        // 클릭 이벤트 추가
+                        questionDiv.addEventListener('click', () => {
+                            selectFAQ(item);
+                        });
+
+                        // 문의사항 DOM에 추가
+                        listCardWrap.appendChild(questionDiv);
+
+                        // 답변이 있을 경우 렌더링
+                        if (item.answer) {
+                            const answerDiv = document.createElement('div');
+                            answerDiv.style.backgroundColor = '#CEFBBE';
+                            answerDiv.style.marginLeft = '20px';
+                            answerDiv.style.padding = '5px';
+                            answerDiv.style.marginTop = '3px';
+                            answerDiv.style.marginBottom = '3px';
+                            answerDiv.innerHTML = `&ensp;▷&ensp;${item.answer}`;
+                            listCardWrap.appendChild(answerDiv);
+                        }
+                    });
                 },
-                {
-                    "no" : 2,
-                    "faqtext0" : "문의내용2",
-                    "faqtext1" : "답변내용2"
-                },
-                {
-                    "no" : 3,
-                    "faqtext0" : "문의내용3",
-                    "faqtext1" : "답변내용3"
-                },
-                {
-                    "no" : 4,
-                    "faqtext0" : "문의내용4",
-                    "faqtext1" : "답변내용4"
-                },
-                {
-                    "no" : 5,
-                    "faqtext0" : "문의내용5",
-                    "faqtext1" : "답변내용5"
+                error: function () {
+                    Alert.alert('', '문의내역을 가져오는 데 실패했습니다.', function () {
+                        document.querySelector('.btn-popup-close').click();
+                    });
                 }
-            ];
-            // $.ajax({
-            //     url: '/api/mobile_production/read_work',
-            //     type: 'GET',
-            //     data: {
-            //         wono: wono,
-            //     },
-            //     success: function (data) {
-            //         console.log(data.data)
-            //         if(data.data.length > 0) {
-            //             renderActionHistory(data.data);
-            //         }else {
-            //             Alert.alert('', '작업이력이 없습니다.', function () {
-            //                 document.querySelector('.btn-popup-close').click();
-            //             });
-            //         }
-            //     }
-            // });
-
-            const listCardWrap = document.getElementById('FAQarea');
-            listCardWrap.innerHTML = ''; // 기존 내용을 초기화
-            // 색상을 순환적으로 할당하기 위한 인덱스
-            let colorIndex = 0;
-            // 날자 변환
-
-            data2.forEach(item => {
-                const cardHtml = `
-                        <div style="background-color: #D0E1EB; padding: 5px; margin-right: 20px;">
-                            &ensp;${item.no}.&ensp;${item.faqtext0}
-                        </div>
-                        <div style="background-color: #CEFBBE; margin-left: 20px; padding: 5px; margin-top: 3px; margin-bottom: 3px;">
-                            &ensp;▷&ensp;     ${item.faqtext1}
-                        </div>
-                    `;
-                listCardWrap.insertAdjacentHTML('beforeend', cardHtml);
             });
         }
+
+        // FAQ문의내용 클릭 이벤트 함수
+        function selectFAQ(faqInfo){
+            document.getElementById('question').value = faqInfo.FAQTEXT;
+            document.getElementById('answer').value = faqInfo.answer;
+            document.getElementById('faqNo').value = faqInfo.no;
+            document.getElementById('remark').value = faqInfo.REMARK;
+            document.getElementById('answerNo').value = faqInfo.answerNo;
+            document.getElementById('faqseq').value = faqInfo.FAQSEQ;
+            const selectfaqflag = document.getElementById('comcode');
+
+
+            setSelectedIndex(selectfaqflag, faqInfo.FAQFLAG);
+        }
+        // 문의구분 바인드
+        function setSelectedIndex(selectElement, selectedValue) {
+            console.log("selectedValue : ", selectedValue)
+            for (let i = 1; i < selectElement.options.length; i++) {
+                // 트림(공백 제거), 대소문자 무시, 타입 일치시키기
+                if (selectElement.options[i].value.trim().toLowerCase() === String(selectedValue).trim().toLowerCase()) {
+                    selectElement.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+        // 신규등록 fuction
+        function resetFormFields(){
+            const fieldsToReset = [
+                'question', 'answer', 'faqNo', 'remark','comcode'
+            ];
+            fieldsToReset.forEach(fieldId => {
+                document.getElementById(fieldId).value = '';
+            });
+        }
+        // 답변등록
+        function saveAnswer() {
+            // 알림 메시지를 결정하는 변수
+            let alertMessage;
+            alertMessage = '저장하시겠습니까?';
+            Alert.confirm('', alertMessage, function () {
+                let formData = new FormData();
+                formData.append('FAQTEXT', $('#answer').val());
+                formData.append('REMARK', $('#remark').val());
+                formData.append('CHSEQ', $('#faqseq').val());
+                formData.append('FAQSEQ', $('#answerNo').val());
+                // 새로 추가된 파일만 폼 데이터에 추가
+                uploadedFiles2.forEach((file, index) => {
+                    formData.append('filelist', file);
+                });
+                // 삭제된 파일 목록 추가
+                deletedFiles2.forEach((file, index) => {
+                    formData.append('deletedFiles2', new Blob([JSON.stringify(file)], {type: 'application/json'}));
+                });
+                console.log("formData : ", formData);
+                function sendAjaxRequest(url) {
+                    $.ajax({
+                        url: '/api/FAQ/save',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        headers: {
+                            'X-CSRF-Token': $('[name=_csrf]').val() // CSRF 토큰을 헤더에 추가
+                        },
+                        success: handleAjaxResponse,
+                        error: function () {
+                            Alert.alert('', '에러가발생하였습니다.');
+                        }
+                    });
+                }
+
+                function handleAjaxResponse(response) {
+                    if (response.success) {
+                        Alert.alert('', response.message, function () {
+                            fetchListData();
+                            resetFormFields();
+                        });
+                    } else {
+                        Alert.alert('', '저장에 실패했습니다.');
+                    }
+                }
+                sendAjaxRequest('/api/FAQ/save');
+            })
+        }
+        // 답변 삭제
+        function deleteAnswer(faqseq) {
+            let alertMessage;
+            alertMessage = '삭제하시겠습니까?';
+            Alert.confirm('', alertMessage, function () {
+                function sendAjaxRequest(url) {
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: {"faqseq" : faqseq},
+                        processData: false,
+                        contentType: false,
+                        headers: {
+                            'X-CSRF-Token': $('[name=_csrf]').val() // CSRF 토큰을 헤더에 추가
+                        },
+                        success: handleAjaxResponse,
+                        error: function () {
+                            Alert.alert('', '에러가발생하였습니다.');
+                        }
+                    });
+                }
+
+                function handleAjaxResponse(response) {
+                    if (response.success) {
+                        Alert.alert('', response.message, function () {
+                            fetchListData();
+                            resetFormFields();
+                        });
+                    } else {
+                        Alert.alert('', '삭제에 실패했습니다.');
+                    }
+                }
+            })
+        }
+
 
     </script>
 
