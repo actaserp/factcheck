@@ -256,20 +256,28 @@
             // 알림 메시지를 결정하는 변수
             let alertMessage;
             alertMessage = '저장하시겠습니까?';
+            // 필수 입력 필드 검사
+            let requiredFields = [
+                {id: '#faqseq', label: '문의글을 선택해주세요'},
+                {id: '#answer', label: '답변을 작성해주세요'}
+            ];
+            for (let i = 0; i < requiredFields.length; i++) {
+                let field = requiredFields[i];
+                let $element = $(field.id);
+                let value = $element.val();
+
+                // 요소가 존재하지 않거나, 값이 빈 문자열(선택되지 않은 경우)인 경우 경고
+                if ($element.length === 0 || value === null || value.trim() === '') {
+                    Alert.alert('', field.label);
+                    return;
+                }
+            }
             Alert.confirm('', alertMessage, function () {
                 let formData = new FormData();
                 formData.append('FAQTEXT', $('#answer').val());
                 formData.append('REMARK', $('#remark').val());
                 formData.append('CHSEQ', $('#faqseq').val());
                 formData.append('FAQSEQ', $('#answerNo').val());
-                // 새로 추가된 파일만 폼 데이터에 추가
-                uploadedFiles2.forEach((file, index) => {
-                    formData.append('filelist', file);
-                });
-                // 삭제된 파일 목록 추가
-                deletedFiles2.forEach((file, index) => {
-                    formData.append('deletedFiles2', new Blob([JSON.stringify(file)], {type: 'application/json'}));
-                });
                 console.log("formData : ", formData);
                 function sendAjaxRequest(url) {
                     $.ajax({
@@ -291,7 +299,7 @@
                 function handleAjaxResponse(response) {
                     if (response.success) {
                         Alert.alert('', response.message, function () {
-                            fetchListData();
+                            faqHtml();
                             resetFormFields();
                         });
                     } else {
@@ -308,7 +316,7 @@
             Alert.confirm('', alertMessage, function () {
                 function sendAjaxRequest(url) {
                     $.ajax({
-                        url: url,
+                        url: '/api/FAQ/delete',
                         type: 'POST',
                         data: {"faqseq" : faqseq},
                         processData: false,
@@ -326,7 +334,7 @@
                 function handleAjaxResponse(response) {
                     if (response.success) {
                         Alert.alert('', response.message, function () {
-                            fetchListData();
+                            faqHtml();
                             resetFormFields();
                         });
                     } else {

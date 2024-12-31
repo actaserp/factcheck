@@ -14,16 +14,6 @@ public class CM_FAQService {
     @Autowired
     SqlRunner sqlRunner;
 
-    // FAQ 답변 등록
-    public void saveFAQ(Map<String, Object> FAQAnswer) {
-        MapSqlParameterSource params = new MapSqlParameterSource();
-
-        String sql = """
-                
-                """;
-
-        List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
-    }
     // FAQ 문의내역 리스트
     public List<Map<String, Object>> getFAQList() {
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -50,6 +40,21 @@ public class CM_FAQService {
                     Q.FLAG = '0'
                 
                 """;
+
+        List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
+        return items;
+    }
+
+    // FAQ delete
+    public List<Map<String, Object>> deleteFAQ(int faqseq) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+
+        String sql = """
+                DELETE FROM TB_FAQINFO
+                WHERE FAQSEQ = :faqseq
+                """;
+        params.addValue("faqseq", faqseq);
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
         return items;

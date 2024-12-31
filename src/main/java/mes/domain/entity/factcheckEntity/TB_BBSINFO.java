@@ -8,39 +8,31 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name="TB_FAQINFO")
+@Table(name="TB_BBSINFO")
 @Setter
 @Getter
 @NoArgsConstructor
-public class TB_FAQINFO {
+public class TB_BBSINFO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    Integer FAQSEQ;
+    Integer QSTSEQ;
 
     @Column
-    String FAQTEXT;
-
+    String USERID;
+    @Column
+    String QSTTEXT;
     @Column
     String FLAG;
-
     @Column
-    String FAQFLAG;
-
-    @Column
-    int FASORT;
-
+    int QSTSORT;
     @Column
     int CHSEQ;
-
     @Column
-    String REMARK;
-
+    String QSTTEL;
     @Column
     Date INDATEM;
-
     @Column
     String INUSERID;
-
 }

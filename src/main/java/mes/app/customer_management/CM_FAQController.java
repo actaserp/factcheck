@@ -7,6 +7,7 @@ import mes.domain.model.AjaxResult;
 import mes.domain.repository.factcheckRepository.FAQRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,12 +38,29 @@ public class CM_FAQController {
     }
     // 문의/답변 등록
     @PostMapping("/save")
-    public AjaxResult saveFAQ(@RequestBody TB_FAQINFO faqAnswer) {
+    public AjaxResult saveFAQ( @ModelAttribute TB_FAQINFO faqAnswer) {
         AjaxResult result = new AjaxResult();
 
         try {
             // Repository를 통해 데이터 저장
             faqRepository.save(faqAnswer);
+
+            result.data = "데이터가 성공적으로 저장되었습니다.";
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.data = "데이터 저장 중 오류가 발생했습니다.";
+        }
+
+        return result;
+    }
+    // 답변 삭제
+    @PostMapping("/delete")
+    public AjaxResult deleteFAQ(@RequestParam int faqseq) {
+        AjaxResult result = new AjaxResult();
+
+        try {
+            // Repository를 통해 데이터 저장
+            faqService.deleteFAQ(faqseq);
 
             result.data = "데이터가 성공적으로 저장되었습니다.";
         } catch (Exception e) {

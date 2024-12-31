@@ -5,41 +5,43 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
-@Table(name="TB_FAQINFO")
+@Table(name="TB_FILEINFO")
 @Setter
 @Getter
 @NoArgsConstructor
-public class TB_FAQINFO {
+public class TB_FILEINFO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    Integer FAQSEQ;
+    Integer BBSSEQ;     // 순번
 
     @Column
-    String FAQTEXT;
-
+    String BBSDATE;    // 작성일자
     @Column
-    String FLAG;
-
+    String CHECKSEQ;   // 순번
     @Column
-    String FAQFLAG;
-
+    String FILEPATH;
     @Column
-    int FASORT;
-
+    String FILESVNM;
     @Column
-    int CHSEQ;
-
+    String FILEEXTNS;
     @Column
-    String REMARK;
-
+    String FILEURL;
+    @Column
+    String FILEORNM;
+    @Column
+    BigDecimal FILESIZE;
+    @Column
+    String FILEREM;
+    @Column
+    String REPTN;
     @Column
     Date INDATEM;
-
     @Column
     String INUSERID;
 

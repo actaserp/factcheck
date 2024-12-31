@@ -276,7 +276,7 @@
               formData.append('file', file);
 
               // 업로드 요청
-              fetch('/api/request/request/uploadEditor', {
+              fetch('/api/announcement/uploadEditor', {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -314,28 +314,20 @@
     }
     // 공지사항 그리드
     function fetchListData() {
-      let data2 = [{},{},{},{},{}];
+      let data2 = [];
 
 
-      // $.ajax({
-      //     url: '/api/request/request/read',
-      //     type: 'GET',
-      //     data: {
-      //         'reqnum': $('#reqnum').val()
-      //     },
-      //     async: false,
-      //     success: function (data) {
-      //         data2 = data.data;
-      //         data2.forEach(item =>{
-      //             item.hgrb = getHgrb((item.hgrb));
-      //             item.exfmtypedv = getListCgrb2(item.exfmtypedv);
-      //             item.infmtypedv = getListCgrb2(item.infmtypedv);
-      //             item.stframedv = getListCgrb2(item.stframedv);
-      //             item.stexplydv = getListCgrb2(item.stexplydv);
-      //             item.originOrdtext = item.ordtext;
-      //         })
-      //     }
-      // })
+      $.ajax({
+          url: '/api/announcement/read',
+          type: 'GET',
+          data: {},
+          async: false,
+          success: function (data) {
+              data2 = data.data;
+              data2.forEach(item =>{
+              })
+          }
+      })
 
       viewdata = new wijmo.collections.CollectionView(data2);
 
@@ -369,6 +361,8 @@
         theGrid.itemsSource = viewdata;
       }
     }
+    // 공지사항 등록/수정
+    // 공지사항 삭제
 
   </script>
 
