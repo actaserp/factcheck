@@ -109,7 +109,7 @@
                   <!-- Table Wrap -->
                   <div class="table-wrap">
                     <table class="view-table" id="selectedData" style="max-height: 740px;">
-                      <caption>보고분기 상세 테이블</caption>
+                      <caption>분류관리 등록 테이블</caption>
                       <colgroup>
                         <col class="wp20">
                         <col class="wauto">
@@ -162,16 +162,16 @@
                       <tr>
                         <th><label for="">순위조건</label></th>
                         <td >
-                          <input type="text" id="SUBSCORE" name="SUBSCORE" class="wp100" placeholder="후순위조건점수" style="width: 300px !important" oninput="inputNumber(this)" />
+                          <input type="text" id="subScore" name="subScore" class="wp100" placeholder="후순위조건점수" style="width: 300px !important" oninput="inputNumber(this)" />
                         </td>
                         <td colspan="2">
-                          <input type="text" id="SENSCORE" name="SENSCORE" class="wp100" placeholder="선순위조건점수" style="width: 300px !important" oninput="inputNumber(this)" />
+                          <input type="text" id="senScore" name="senScore" class="wp100" placeholder="선순위조건점수" style="width: 300px !important" oninput="inputNumber(this)" />
                         </td>
                       </tr>
                       <tr>
-                        <th><label for="normalizedName">순화명칭</label></th>
+                        <th><label for="regAsName">순화명칭</label></th>
                         <td colspan="3">
-                          <input type="text" id="normalizedName" name="normalizedName" class="wp100" placeholder="순화명칭"/>
+                          <input type="text" id="regAsName" name="regAsName" class="wp100" placeholder="순화명칭"/>
                         </td>
                       </tr>
                       <tr>
@@ -225,20 +225,36 @@
       let data2 = [];
       const searchValue = $('#searchInput').val();
 
+      // 서버로부터 데이터를 비동기적으로 가져오기
       $.ajax({
         url: '/api/category/read',
         type: 'GET',
         data: { regnm: searchValue },
         async: false,
+        headers: {
+          'X-CSRF-Token': $('[name=_csrf]').val()
+        },
         success: function (response) {
           if (response && Array.isArray(response.data)) {
             data2 = response.data.map((item, index) => ({
               rownum: index + 1,
+              regseq: item.regseq ||'',
+              regnm_display: item.regnm_display || '',
               regnm: item.regnm || '',
+              reggroup_display: item.reggroup_display || '',
               reggroup: item.reggroup || '',
               regmaxnum: item.regmaxnum || '',
               exflag: item.exflag || '',
               regstamt: item.regstamt || '',
+              regStand: item.regStand || '',
+              regStand_display: item.regStand_display || '',
+              regYul: item.regYul || '',
+              riskclass: item.riskclass || '',
+              subScore: item.subScore || '',
+              senScore: item.senScore || '',
+              regAsName: item.regAsName || '',
+              regComment: item.regComment || '',
+              remark: item.remark || ''
             }));
           }
         },
@@ -250,68 +266,161 @@
       while (data2.length < 10) {
         data2.push({
           rownum: data2.length + 1,
+          regseq:'',
+          regnm_display: '',
           regnm: '',
+          reggroup_display: '',
           reggroup: '',
           regmaxnum: '',
           exflag: '',
           regstamt: '',
+          regStand: '',
+          regStand_display: '',
+          riskclass: '',
+          subScore: '',
+          senScore: '',
+          regAsName: '',
+          regComment: '',
+          regYul:'',
+          remark: ''
         });
+
       }
 
       const viewdata = new wijmo.collections.CollectionView(data2);
 
       if (!theGrid) {
+        // 그리드 초기화
         theGrid = new wijmo.grid.FlexGrid('#theGrid', {
           autoGenerateColumns: false,
           showMarquee: true,
           isReadOnly: true,
           columns: [
             { binding: 'rownum', header: 'NO', align: 'center', width: 70 },
-            { binding: 'regnm', header: '등기명칭', align: 'center', width: 150 },
-            { binding: 'reggroup', header: '상위그룹', align: 'center', width: 150 },
+,            { binding: 'regseq', header: '고유번호', align: 'center', width: '*', visible: false},
+            { binding: 'regnm_display', header: '등기명칭', align: 'center', width: 150 },
+            { binding: 'regnm', header: '등기명칭코드', align: 'center', width: 150, visible: false },
+            { binding: 'reggroup_display',header:'상위그룹', align: 'center', width: 150 },
+            { binding: 'reggroup', header: '상위그룹코드', align: 'center', width: 150 ,visible: false },
             { binding: 'regmaxnum', header: '최대위험점수', align: 'center', width: 150 },
             { binding: 'regstamt', header: '기준금액(만원)', align: 'center', width: "*" },
-            { binding: 'exflag', header: '판정기준', align: 'center', width: 100 },
+            { binding: 'regStand_display', header: '판정기준', align: 'center', width: 100 },
+            { binding: 'regStand', header: '판정기준', align: 'center', width: 100 , visible: false },
+
+            { binding: 'exflag', header: '판명기준제외', visible: false },
+            { binding: 'regYul', header: '발생비율', visible: false },
+            { binding: 'riskclass', header: '위험분류', visible: false },
+            { binding: 'subScore', header: '후순위', visible: false },
+            { binding: 'senScore', header: '선순위', visible: false },
+            { binding: 'regAsName', header: '순화명칭', visible: false },
+            { binding: 'regComment', header: '설명', visible: false },
+            { binding: 'remark', header: '비고', visible: false }
           ],
+
           itemsSource: viewdata
         });
 
         theGrid.rowHeaders.columns.splice(0, 1);
+        attachDoubleClickEvent(theGrid); // 더블클릭 이벤트 추가
       } else {
-        theGrid.itemsSource = viewdata;
+        theGrid.itemsSource = viewdata; // 갱신된 CollectionView로 업데이트
+        theGrid.refresh(); // 그리드 새로고침
       }
+
+      // 셀 렌더링 이벤트 핸들러
       theGrid.formatItem.addHandler(function (s, e) {
-        if (e.panel === s.cells) { // 셀이 렌더링될 때만 처리
+        if (e.panel === s.cells) {
           const col = s.columns[e.col];
           const item = s.rows[e.row].dataItem[col.binding];
 
-          // 특정 컬럼이 'exflag'일 때 처리
           if (col.binding === 'exflag') {
-            e.cell.innerHTML = ''; // 기존 내용을 비움
+            e.cell.innerHTML = '';
 
-            // 데이터가 있는 경우 체크박스 생성
             if (item) {
               const input = document.createElement('input');
               input.type = 'checkbox';
-              input.checked = item === '1'; // '1'일 때 체크
-              input.disabled = true; // 읽기 전용
-              input.style.margin = '0 auto'; // 체크박스 수평 정렬
-              input.style.display = 'block'; // 블록 레벨로 설정하여 수직 정렬
+              input.checked = item === '1';
+              input.disabled = true;
+              input.style.margin = '0 auto';
+              input.style.display = 'block';
 
               e.cell.appendChild(input);
-
-              // 셀 스타일 설정 (중앙 정렬)
               e.cell.style.display = 'flex';
               e.cell.style.justifyContent = 'center';
               e.cell.style.alignItems = 'center';
             } else {
-              // 데이터가 없는 경우, 셀을 비워둠
               e.cell.style.display = '';
             }
           }
         }
       });
     }
+
+    // 더블클릭 이벤트
+    function attachDoubleClickEvent(grid) {
+      let lastClickTime = 0;
+      grid.hostElement.addEventListener('click', function (e) {
+        const now = new Date().getTime();
+
+        if (now - lastClickTime < 300) { // 300ms 이내의 두 번 클릭은 더블클릭으로 처리
+          const ht = grid.hitTest(e);
+
+          if (ht.cellType === wijmo.grid.CellType.Cell) {
+            const rowData = grid.rows[ht.row].dataItem; // 더블클릭한 행 데이터
+            console.log('Row Data:', rowData); // 디버깅: rowData 확인
+            modifyData(rowData); // 데이터 입력 필드에 채우기
+          }
+        }
+
+        lastClickTime = now;
+      });
+    }
+
+    function modifyData(rowData) {
+      // 기본 데이터 채우기
+      $('#regnm').val(rowData.regnm || '');
+      $('#reggroup').val(rowData.reggroup || '');
+      $('#regstand').val(rowData.regStand || '');
+      $('#regmaxnum').val(rowData.regmaxnum || '');
+      $('#regyul').val(rowData.REGYUL || '');
+      $('#regstamt').val(rowData.regstamt || '');
+      $('#riskclass').val(rowData.riskclass || '');
+      $('#subScore').val(rowData.subScore || '');
+      $('#senScore').val(rowData.senScore || '');
+      $('#regAsName').val(rowData.REGASNAME || '');
+      $('#exflag').prop('checked', rowData.exflag === '1');
+      $('#description').val(rowData.regComment || '');
+      $('#remark').val(rowData.remark || '');
+
+      // 추가 데이터 요청
+      $.ajax({
+        url: '/api/category/details',
+        type: 'GET',
+        data: { regseq: rowData.regseq },
+        headers: {
+          'X-CSRF-Token': $('[name=_csrf]').val()
+        },
+        success: function (response) {
+          console.log('Server Response:', response); // 응답 확인
+
+          if (response && response.data) {
+            // 서버 응답 데이터로 UI 업데이트
+            $('#subScore').val(response.data.SUBSCORE || rowData.SUBSCORE || '');
+            $('#senScore').val(response.data.SENSCORE || rowData.SENSCORE || '');
+            $('#regAsName').val(response.data.REGASNAME || rowData.REGASNAME || '');
+            $('#description').val(response.data.REGCOMMENT || rowData.REGCOMMENT || '');
+            $('#remark').val(response.data.REMARK || rowData.REMARK || '');
+            $('#regyul').val(response.data.REGYUL || rowData.REGYUL ||'');
+          } else {
+            console.warn('No data found in response:', response);
+          }
+        },
+        error: function () {
+          console.error('추가 데이터를 가져오는 중 오류가 발생했습니다.');
+        }
+      });
+    }
+
 
     // 발생비율(기호)
     function addPercentageSign(input) {
@@ -418,9 +527,9 @@
         regyul: $("#regyul").val(),
         regstamt: $("#regstamt").val(),
         riskclass: $("#riskclass").val(),
-        SUBSCORE: $("#SUBSCORE").val(),
-        SENSCORE: $("#SENSCORE").val(),
-        normalizedName: $("#normalizedName").val(),
+        subScore: $("#subScore").val(),
+        senScore: $("#senScore").val(),
+        regAsName: $("#regAsName").val(),
         exflag: $("#exflag").is(":checked"),
         description: $("#description").val(),
         remark: $("#remark").val(),
@@ -455,7 +564,7 @@
 
     //초기화
     function clearForm() {
-      const form = document.getElementById('codeForm');
+      const form = document.getElementById('CategoryForm');
 
       Array.from(form.elements).forEach(element => {
         switch (element.type) {

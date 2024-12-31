@@ -14,6 +14,7 @@ import javax.persistence.*;
 public class TB_REGISTER {  //등기분류관리
 
     @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "REGSEQ")
     private int regSeq;     //순번
 

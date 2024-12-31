@@ -5,7 +5,9 @@ import mes.domain.entity.UserCode;
 import mes.domain.entity.actasEntity.TB_REGISTER;
 import mes.domain.repository.UserCodeRepository;
 import mes.domain.repository.actasRepository.TB_registerRepository;
+import mes.domain.services.SqlRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -19,8 +21,12 @@ public class TB_registerService {
 
     @Autowired
     private UserCodeRepository userCodeRepository;
+
     @Autowired
     TB_registerRepository tbRegisterRepository;
+
+    @Autowired
+    SqlRunner sqlRunner;
 
     public TB_REGISTER saveOrUpdateRegister(Map<String, Object> formData) {
         // 기본 키 확인 (수정인지 새로 저장인지 판단)
@@ -55,9 +61,9 @@ public class TB_registerService {
                 : null);
 
         tbRegister.setRiskClass(formData.get("riskclass") != null ? formData.get("riskclass").toString() : null);
-        tbRegister.setSubScore(formData.get("SUBSCORE") != null ? Integer.parseInt(formData.get("SUBSCORE").toString()) : null);
-        tbRegister.setSenScore(formData.get("SENSCORE") != null ? Integer.parseInt(formData.get("SENSCORE").toString()) : null);
-        tbRegister.setRegAsName(formData.get("normalizedName") != null ? formData.get("normalizedName").toString() : null);
+        tbRegister.setSubScore(formData.get("subScore") != null ? Integer.parseInt(formData.get("subScore").toString()) : null);
+        tbRegister.setSenScore(formData.get("senScore") != null ? Integer.parseInt(formData.get("senScore").toString()) : null);
+        tbRegister.setRegAsName(formData.get("regAsName") != null ? formData.get("regAsName").toString() : null);
 
         // boolean 처리
         tbRegister.setExFlag(formData.get("exflag") != null && formData.get("exflag").toString().equalsIgnoreCase("true") ? "1" : "0");
@@ -90,6 +96,62 @@ public class TB_registerService {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("금액 형식 변환 중 오류 발생: " + value, e);
         }
+    }
+
+    public List<Map<String, Object>> getList(String searchInput) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        StringBuilder sql = new StringBuilder("""
+     SELECT
+         tr.regseq,
+         uc1.Value AS regnm_display,
+         tr.regnm,
+         uc2.Value AS reggroup_display,
+         tr.reggroup,
+         tr.regmaxnum,
+         tr.regstamt,
+         tr.exflag,
+         uc3.Value AS regStand_display,
+         tr.regStand,
+         tr.*
+     FROM TB_REGISTER tr
+     JOIN user_code uc1
+         ON uc1.Code = tr.regnm
+     JOIN user_code uc2
+         ON uc2.Code = tr.reggroup
+     JOIN user_code uc3
+         ON uc3.Code = tr.regStand
+     WHERE 1=1
+    """);
+
+        if (searchInput != null && !searchInput.isEmpty()) {
+            sql.append(" AND tr.regnm LIKE :searchInput");
+            params.addValue("searchInput", "%" + searchInput + "%");
+        }
+        log.info("바인딩:{}", sql.toString());
+
+        return sqlRunner.getRows(sql.toString(), params);
+    }
+
+
+    public List<Map<String, Object>> categorydetailsRead(String regseq) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        StringBuilder sql = new StringBuilder("""
+        SELECT
+            tr.*
+        FROM TB_REGISTER tr
+        WHERE 1=1
+    """);
+
+        if (regseq != null && !regseq.isEmpty()) {
+            sql.append(" AND tr.regseq = :regseq");
+            params.addValue("regseq", regseq);
+        }
+
+        // SQL과 파라미터 로그 출력
+        log.info("Generated SQL: {}", sql);
+        log.info("SQL Parameters: {}", params.getValues());
+
+        return sqlRunner.getRows(sql.toString(), params);
     }
 
 }
