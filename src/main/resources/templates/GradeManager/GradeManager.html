@@ -79,7 +79,7 @@
                 </dt>
                 <dd>
                   <div class="srch-box">
-                    <input type="text" id="txtCode" name="txtCode" class="input-srch">
+                    <input type="text" id="txtCode" name="txtCode" class="input-srch" onclick="fetchListData()">
                     <a class="btn-srch" id="btnSearch" title="검색"></a>
                   </div>
                 </dd>
@@ -100,7 +100,7 @@
                   </a>
                 </li>
                 <li>
-                  <a class="btn btn-delete" title="삭제" id="btnDelete">
+                  <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="SaveForm()">
                     <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
                     삭제
                   </a>
@@ -135,14 +135,7 @@
                         <th><label for="grid">등급</label></th>
                         <td colspan="3">
                           <select id="grid" name="grid" class="wp100"  style="width: 670px; !important" >
-                            <option ></option>
-                           <!-- <option value="S">S</option>
-                            <option value="A">A</option>
-                            <option value="B">C</option>
-                            <option value="C">D</option>
-                            <option value="D">D</option>
-                            <option value="E">E</option>
-                            <option value="F">F</option>-->
+                            <option></option>
                           </select>
                         </td>
                       </tr>
@@ -177,14 +170,7 @@
                         <th><label for="grflag">명칭</label></th>
                         <td colspan="3">
                           <select id="grflag" name="grflag" class="wp100" style="width: 670px; !important" >
-                            <option value="">선택하세요</option>
-                            <option value="1">안심</option>
-                            <option value="2">관심</option>
-                            <option value="3">주의</option>
-                            <option value="4">경계</option>
-                            <option value="5">불안</option>
-                            <option value="6">심각</option>
-                            <option value="7">위험</option>
+                            <option></option>
                           </select>
                         </td>
                       </tr>
@@ -259,12 +245,7 @@
     }
 
     function fetchListData() {
-      let data2 = [
-        { rownum:'1', grid: 'S', grscore: "100~90", grflag: "안심", grmood: '맑음', gricon: "방패,금고" },
-        { rownum:'2', grid: 'D', grscore: "59~50", grflag: "불안", grmood: '폭우', gricon: "안절부절" },
-        { rownum:'3', grid: 'C', grscore: "69~60", grflag: "경계", grmood: '비', gricon: "큰 눈" },
-        { rownum:'4', grid: 'A', grscore: "89~80", grflag: "관심", grmood: '약간 흐림', gricon: "돋보기" }
-      ];
+      let data2 = [];
       // 서버에서 데이터 가져오기
       /*$.ajax({
         url: '/api/ProgressStatus/read',
@@ -318,6 +299,41 @@
         theGrid.itemsSource = viewdata;
       }
     }
+    //저장
+    function SaveForm() {
+      // 폼 데이터를 수집
+      const formData = {
+
+        _csrf: $('[name=_csrf]').val()
+      };
+
+      // AJAX 요청
+      $.ajax({
+        url: '/api/category/save',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        headers: {
+          'X-CSRF-Token': $('[name=_csrf]').val()
+        },
+        success: function (response) {
+          // 저장 성공 시 처리
+          if (response.success) {
+            Alert.alert("","저장이 완료되었습니다!");
+            clearForm();
+            fetchListData();
+          } else {
+            console.error("저장 중 문제가 발생했습니다:", response.message);
+            Alert.alert("","저장 중 문제가 발생했습니다.");
+          }
+        },
+        error: function (xhr, status, error) {
+          console.error("저장 중 오류 발생:", status, error);
+          Alert.alert("","저장 중 오류가 발생했습니다. 관리자에게 문의하세요.");
+        }
+      });
+    }
+
 
     //초기화
     function clearForm() {

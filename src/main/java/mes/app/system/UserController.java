@@ -284,30 +284,13 @@ public class UserController {
 	}
 
 	// user 삭제
-	/*@Transactional
-	@PostMapping("/delete")
-	public AjaxResult deleteUser(@RequestParam("id") String id,
-								 @RequestParam(value = "username", required = false) String username
-	) {
-
-		UtilClass util = new UtilClass();
-		System.out.println(util.removeBrackers(username));
-		Optional<User> user = userRepository.findByUsername(util.removeBrackers(username));
-
-
-		Integer userid  = Integer.parseInt(util.removeBrackers(id))  ;
-
-		this.userRepository.deleteById(userid);
-		AjaxResult result = new AjaxResult();
-		return result;
-	}*/
 	@Transactional
 	@PostMapping("/delete")
 	public AjaxResult deleteUser(@RequestParam("id") String id,
 								 @RequestParam(value = "username", required = false) String username,
 								 @RequestParam(value = "auth", defaultValue = "false") boolean auth) {
 		AjaxResult result = new AjaxResult();
-		log.info("삭제 요청 처리 시작 - id: {}, username: {}", id, username);
+		//log.info("삭제 요청 처리 시작 - id: {}, username: {}", id, username);
 
 		if (auth) {
 			result.success = false;
@@ -319,18 +302,18 @@ public class UserController {
 		if (username != null && !username.trim().isEmpty()) {
 			String cleanedUsername = UtilClass.removeBrackers(username);
 			xuserstRepository.deleteById_userid(cleanedUsername);
-			log.info("TB_XUSERS에서 username {} 삭제 완료", cleanedUsername);
+			//log.info("TB_XUSERS에서 username {} 삭제 완료", cleanedUsername);
 		} else {
-			log.warn("username이 제공되지 않아 TB_XUSERS 삭제를 건너뜁니다.");
+			//log.warn("username이 제공되지 않아 TB_XUSERS 삭제를 건너뜁니다.");
 		}
 
 		// id로 User 삭제
 		if (id != null && !id.trim().isEmpty()) {
 			Integer userId = Integer.parseInt(UtilClass.removeBrackers(id));
 			userRepository.deleteById(userId);
-			log.info("User 엔티티에서 ID {} 삭제 완료", userId);
+			//log.info("User 엔티티에서 ID {} 삭제 완료", userId);
 		} else {
-			log.warn("id가 제공되지 않아 User 삭제를 건너뜁니다.");
+			//log.warn("id가 제공되지 않아 User 삭제를 건너뜁니다.");
 		}
 
 		result.success = true;

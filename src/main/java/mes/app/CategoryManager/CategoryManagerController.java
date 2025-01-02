@@ -24,9 +24,6 @@ public class CategoryManagerController {
     TB_registerService tbRegisterService;
 
     @Autowired
-    TB_registerRepository tbRegisterRepository;
-
-    @Autowired
     private UserCodeRepository userCodeRepository;
 
     @GetMapping("/type")
