@@ -45,29 +45,32 @@ public class CM_FAQController {
             // Repository를 통해 데이터 저장
             faqRepository.save(faqAnswer);
 
-            result.data = "데이터가 성공적으로 저장되었습니다.";
+            result.message = "답변이 성공적으로 저장되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();
-            result.data = "데이터 저장 중 오류가 발생했습니다.";
+            result.message = "답변 저장 중 오류가 발생했습니다.";
         }
 
         return result;
     }
-    // 답변 삭제
     @PostMapping("/delete")
-    public AjaxResult deleteFAQ(@RequestParam int faqseq) {
+    public AjaxResult deleteFAQ(@RequestBody Map<String, Integer> requestData) {
+        Integer faqseq = requestData.get("faqseq");
         AjaxResult result = new AjaxResult();
+        if (faqseq == null) {
+            result.message = "인식번호가 전달되지 않았습니다.";
+            return result;
+        }
 
         try {
-            // Repository를 통해 데이터 저장
             faqService.deleteFAQ(faqseq);
-
-            result.data = "데이터가 성공적으로 저장되었습니다.";
+            result.message = "답변내용이 성공적으로 삭제되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();
-            result.data = "데이터 저장 중 오류가 발생했습니다.";
+            result.message = "답변내용 삭제 중 오류가 발생했습니다.";
         }
 
         return result;
     }
+
 }

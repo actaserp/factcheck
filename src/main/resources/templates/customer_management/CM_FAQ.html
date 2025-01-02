@@ -105,7 +105,7 @@
                                         <tr>
                                             <th><label for="answer">Answer</label></th>
                                             <td>
-                                                <input type="text" id="answer" name="name" class="wp100">
+                                                <input type="text" id="answer" name="name" class="wp100" placeholder="25자 미만으로 작성해주십시오">
                                             </td>
                                         </tr>
                                         <tr>
@@ -228,7 +228,6 @@
             document.getElementById('faqseq').value = faqInfo.FAQSEQ;
             const selectfaqflag = document.getElementById('comcode');
 
-
             setSelectedIndex(selectfaqflag, faqInfo.FAQFLAG);
         }
         // 문의구분 바인드
@@ -313,14 +312,15 @@
         function deleteAnswer(faqseq) {
             let alertMessage;
             alertMessage = '삭제하시겠습니까?';
+            const intFaqSeq = parseInt(faqseq, 10);
             Alert.confirm('', alertMessage, function () {
                 function sendAjaxRequest(url) {
                     $.ajax({
-                        url: '/api/FAQ/delete',
+                        url: url,
                         type: 'POST',
-                        data: {"faqseq" : faqseq},
+                        data: JSON.stringify({ faqseq: intFaqSeq }),
                         processData: false,
-                        contentType: false,
+                        contentType: 'application/json; charset=UTF-8',
                         headers: {
                             'X-CSRF-Token': $('[name=_csrf]').val() // CSRF 토큰을 헤더에 추가
                         },
@@ -341,6 +341,7 @@
                         Alert.alert('', '삭제에 실패했습니다.');
                     }
                 }
+                sendAjaxRequest('/api/FAQ/delete');
             })
         }
 

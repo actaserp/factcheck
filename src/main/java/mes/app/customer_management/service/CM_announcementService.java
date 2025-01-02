@@ -13,6 +13,20 @@ public class CM_announcementService {
     @Autowired
     SqlRunner sqlRunner;
 
+    // BBS read
+    public List<Map<String, Object>> getBBSList() {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+        String sql = """
+                SELECT
+                    *
+                FROM
+                    TB_BBSINFO
+                """;
+
+        List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
+        return items;
+    }
     // BBS delete
     public List<Map<String, Object>> deleteBBS(int faqseq) {
         MapSqlParameterSource params = new MapSqlParameterSource();

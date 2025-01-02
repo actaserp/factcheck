@@ -41,6 +41,43 @@ public class CM_announcementController {
     @Autowired
     private Settings settings;
 
+    // 문의 리스트
+    @GetMapping("/read")
+    public AjaxResult getBBSList(){
+        List<Map<String, Object>> items = cmAnnouncementService.getBBSList();
+
+        for(Map<String, Object> item : items){
+            item.put("no", items.indexOf(item)+1);
+
+            // 날짜 형식 변환 (BBSDATE)
+            if (item.containsKey("BBSDATE")) {
+                String setupdt = (String) item.get("BBSDATE");
+                if (setupdt != null && setupdt.length() == 8) {
+                    String formattedDate = setupdt.substring(0, 4) + "-" + setupdt.substring(4, 6) + "-" + setupdt.substring(6, 8);
+                    item.put("BBSDATE", formattedDate);
+                }
+            }
+            // 날짜 형식 변환 (BBSFRDATE)
+            if (item.containsKey("BBSFRDATE")) {
+                String setupdt = (String) item.get("BBSFRDATE");
+                if (setupdt != null && setupdt.length() == 8) {
+                    String formattedDate = setupdt.substring(0, 4) + "-" + setupdt.substring(4, 6) + "-" + setupdt.substring(6, 8);
+                    item.put("BBSFRDATE", formattedDate);
+                }
+            }
+            // 날짜 형식 변환 (BBSTODATE)
+            if (item.containsKey("BBSTODATE")) {
+                String setupdt = (String) item.get("BBSTODATE");
+                if (setupdt != null && setupdt.length() == 8) {
+                    String formattedDate = setupdt.substring(0, 4) + "-" + setupdt.substring(4, 6) + "-" + setupdt.substring(6, 8);
+                    item.put("BBSTODATE", formattedDate);
+                }
+            }
+        }
+        AjaxResult result = new AjaxResult();
+        result.data = items;
+        return result;
+    }
     @PostMapping("/uploadEditor")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
         String uploadDir = "c:\\temp\\editorFile\\";

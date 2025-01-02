@@ -31,9 +31,9 @@ public class CM_FAQService {
                     A.FAQSEQ AS answerNo,
                     A.FAQTEXT AS answer
                 FROM
-                    MOB_FACTCHK.dbo.TB_FAQINFO Q
+                    TB_FAQINFO Q
                 LEFT JOIN
-                    MOB_FACTCHK.dbo.TB_FAQINFO A
+                    TB_FAQINFO A
                 ON
                     Q.FAQSEQ = A.CHSEQ
                 WHERE
@@ -44,9 +44,8 @@ public class CM_FAQService {
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
         return items;
     }
-
     // FAQ delete
-    public List<Map<String, Object>> deleteFAQ(int faqseq) {
+    public void deleteFAQ(int faqseq) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
 
@@ -56,7 +55,6 @@ public class CM_FAQService {
                 """;
         params.addValue("faqseq", faqseq);
 
-        List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
-        return items;
+        int deleteCnt = this.sqlRunner.execute(sql,params);
     }
 }

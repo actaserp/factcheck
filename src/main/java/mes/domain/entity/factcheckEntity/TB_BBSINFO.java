@@ -17,22 +17,24 @@ public class TB_BBSINFO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    Integer QSTSEQ;
+    Integer BBSSEQ;
 
     @Column
-    String USERID;
+    String BBSDATE;
     @Column
-    String QSTTEXT;
+    String BBSSUBJECT;
     @Column
-    String FLAG;
+    String BBSUSER;
     @Column
-    int QSTSORT;
+    String BBSTEXT;
     @Column
-    int CHSEQ;
+    String BBSTEL;
     @Column
-    String QSTTEL;
+    String BBSFRDATE;
     @Column
-    Date INDATEM;
+    String BBSTODATE;
+    @Column
+    String INDATEM;
     @Column
     String INUSERID;
 }
