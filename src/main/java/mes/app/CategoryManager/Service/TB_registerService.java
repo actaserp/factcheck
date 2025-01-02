@@ -147,24 +147,30 @@ public class TB_registerService {
     }
 
 
-    public List<Map<String, Object>> categorydetailsRead(String regseq) {
+    public List<Map<String, Object>> categorydetailsRead(String REGSEQ) {
         MapSqlParameterSource params = new MapSqlParameterSource();
         StringBuilder sql = new StringBuilder("""
-        SELECT
-            tr.*
-        FROM TB_REGISTER tr
-        WHERE 1=1
-    """);
+            SELECT
+                tr.*
+            FROM TB_REGISTER tr
+            WHERE 1=1
+        """);
 
-        if (regseq != null && !regseq.isEmpty()) {
-            sql.append(" AND tr.regseq = :regseq");
-            params.addValue("regseq", regseq);
+        if (REGSEQ != null && !REGSEQ.isEmpty()) {
+            sql.append(" AND tr.REGSEQ = :REGSEQ");
+            params.addValue("REGSEQ", REGSEQ);
         }
 
         // SQL과 파라미터 로그 출력
-//        log.info("Generated SQL: {}", sql);
-//        log.info("SQL Parameters: {}", params.getValues());
+        log.info("Generated SQL: {}", sql);
+        log.info("SQL Parameters: {}", params.getValues());
         return sqlRunner.getRows(sql.toString(), params);
     }
 
+    public void deleteRegisterById(Integer regSeq) {
+        if (!tbRegisterRepository.existsById(regSeq)) {
+            throw new IllegalArgumentException("해당 ID의 데이터가 존재하지 않습니다.");
+        }
+        tbRegisterRepository.deleteById(regSeq);
+    }
 }

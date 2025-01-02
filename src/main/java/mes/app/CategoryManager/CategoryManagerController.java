@@ -78,11 +78,11 @@ public class CategoryManagerController {
     }
 
     @GetMapping("/details")
-    public AjaxResult categorydetailsRead(@RequestParam(value = "regseq", required = false) String regseq) {
+    public AjaxResult categorydetailsRead(@RequestParam(value = "REGSEQ", required = false) String REGSEQ) {
         AjaxResult result = new AjaxResult();
         try {
             // 데이터 조회
-            List<Map<String, Object>> categorydetailsRead = tbRegisterService.categorydetailsRead(regseq);
+            List<Map<String, Object>> categorydetailsRead = tbRegisterService.categorydetailsRead(REGSEQ);
 
             if (categorydetailsRead != null && !categorydetailsRead.isEmpty()) {
                 // 데이터가 있을 경우 첫 번째 데이터를 반환
@@ -130,5 +130,27 @@ public class CategoryManagerController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/delete")
+    public AjaxResult deleteCategory(@RequestBody Map<String, Object> requestData) {
+        AjaxResult result = new AjaxResult();
+
+        try {
+            String regSeqStr = (String) requestData.get("REGSEQ");
+            if (regSeqStr == null || regSeqStr.isEmpty()) {
+                throw new IllegalArgumentException("삭제할 데이터의 REGSEQ가 누락되었습니다.");
+            }
+
+            Integer regSeq = Integer.parseInt(regSeqStr);
+            tbRegisterService.deleteRegisterById(regSeq);
+
+            result.success = true;
+            result.message = "삭제가 완료되었습니다.";
+        } catch (Exception e) {
+            result.success = false;
+            result.message = "삭제 중 오류 발생: " + e.getMessage();
+        }
+
+        return result;
+    }
 
 }

@@ -84,7 +84,7 @@
                   </a>
                 </li>
                 <li>
-                  <a class="btn btn-delete" title="삭제" id="btnDelete">
+                  <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="deleteData()">
                     <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
                     삭제
                   </a>
@@ -436,6 +436,7 @@
         }
       });
     }
+
     // 발생비율(기호)
     function addPercentageSign(input) {
       const cursorPosition = input.selectionStart;
@@ -588,6 +589,40 @@
         }
       });
     }
+
+    function deleteData() {
+      const regSeq = $('#REGSEQ').val(); // 폼의 숨겨진 필드에서 REGSEQ 가져오기
+
+      if (!regSeq) {
+        alert("삭제할 데이터를 선택해주세요.");
+        return;
+      }
+
+      $.ajax({
+        url: '/api/category/delete',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ REGSEQ: regSeq }),
+        headers: {
+          'X-CSRF-Token': $('[name=_csrf]').val()
+        },
+        success: function (response) {
+          if (response.success) {
+            Alert.alert('', "삭제가 완료되었습니다.");
+            fetchListData(); // 데이터 새로고침
+            clearForm(); // 폼 초기화
+          } else {
+            Alert.alert('', "삭제 중 문제가 발생했습니다: ");
+          }
+        },
+        error: function (xhr, status, error) {
+          Alert.alert('',"삭제 요청 중 오류가 발생했습니다.");
+          console.error("Error:", status, error);
+        }
+      });
+    }
+
+
 
     //초기화
     function clearForm() {
