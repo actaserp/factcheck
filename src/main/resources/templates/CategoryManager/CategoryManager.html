@@ -96,7 +96,7 @@
             <div class="wp50 mg-r20">
               <div class="container-fluid col">
                 <p id="selectedItem"></p>
-                <div id="theGrid" style="max-height: 740px;"></div>
+                <div id="theGrid" style="max-height: 630px;"></div>
               </div>
             </div>
             <div class="col wp50">
@@ -190,6 +190,7 @@
                         <th><label for="remark">비고</label></th>
                         <td colspan="3">
                           <input type="text" id="remark" name="remark" class="wp100" placeholder="비고" />
+                          <input type="hidden" id="REGSEQ" name="REGSEQ" />
                         </td>
                       </tr>
                       </tbody>
@@ -238,7 +239,7 @@
           if (response && Array.isArray(response.data)) {
             data2 = response.data.map((item, index) => ({
               rownum: index + 1,
-              regseq: item.regseq ||'',
+              REGSEQ: item.REGSEQ ||'',
               regnm_display: item.regnm_display || '',
               regnm: item.regnm || '',
               reggroup_display: item.reggroup_display || '',
@@ -266,7 +267,7 @@
       while (data2.length < 10) {
         data2.push({
           rownum: data2.length + 1,
-          regseq:'',
+          REGSEQ:'',
           regnm_display: '',
           regnm: '',
           reggroup_display: '',
@@ -297,7 +298,7 @@
           isReadOnly: true,
           columns: [
             { binding: 'rownum', header: 'NO', align: 'center', width: 70 },
-,            { binding: 'regseq', header: '고유번호', align: 'center', width: '*', visible: false},
+,           { binding: 'REGSEQ', header: '고유번호', align: 'center', width: '*', visible: false},
             { binding: 'regnm_display', header: '등기명칭', align: 'center', width: 150 },
             { binding: 'regnm', header: '등기명칭코드', align: 'center', width: 150, visible: false },
             { binding: 'reggroup_display',header:'상위그룹', align: 'center', width: 150 },
@@ -377,13 +378,26 @@
     }
 
     function modifyData(rowData) {
+      // 최대위험점수
+      const regmaxnumInput = $('#regmaxnum');
+      regmaxnumInput.val(rowData.regmaxnum || ''); // 기본 값 설정
+      validateAndFormatInput(regmaxnumInput[0]); // 포맷 적용
+
+      // 발생비율
+      const regyulInput = $('#regyul');
+      regyulInput.val(rowData.REGYUL || '');
+      addPercentageSign(regyulInput[0]); // 포맷 적용
+
+      // 기준금액
+      const regstamtInput = $('#regstamt');
+      regstamtInput.val(rowData.regstamt || '');
+      formatWithCommas(regstamtInput[0]); // 포맷 적용
+
       // 기본 데이터 채우기
+      $('#REGSEQ').val(rowData.REGSEQ);
       $('#regnm').val(rowData.regnm || '');
       $('#reggroup').val(rowData.reggroup || '');
       $('#regstand').val(rowData.regStand || '');
-      $('#regmaxnum').val(rowData.regmaxnum || '');
-      $('#regyul').val(rowData.REGYUL || '');
-      $('#regstamt').val(rowData.regstamt || '');
       $('#riskclass').val(rowData.riskclass || '');
       $('#subScore').val(rowData.subScore || '');
       $('#senScore').val(rowData.senScore || '');
@@ -396,7 +410,7 @@
       $.ajax({
         url: '/api/category/details',
         type: 'GET',
-        data: { regseq: rowData.regseq },
+        data: { REGSEQ: rowData.REGSEQ },
         headers: {
           'X-CSRF-Token': $('[name=_csrf]').val()
         },
@@ -408,9 +422,11 @@
             $('#subScore').val(response.data.SUBSCORE || rowData.SUBSCORE || '');
             $('#senScore').val(response.data.SENSCORE || rowData.SENSCORE || '');
             $('#regAsName').val(response.data.REGASNAME || rowData.REGASNAME || '');
+            $('#riskclass').val(response.data.RISKCLASS ||rowData.RISKCLASS || '');
             $('#description').val(response.data.REGCOMMENT || rowData.REGCOMMENT || '');
             $('#remark').val(response.data.REMARK || rowData.REMARK || '');
             $('#regyul').val(response.data.REGYUL || rowData.REGYUL ||'');
+            addPercentageSign(regyulInput[0]); // 포맷 적용
           } else {
             console.warn('No data found in response:', response);
           }
@@ -420,8 +436,6 @@
         }
       });
     }
-
-
     // 발생비율(기호)
     function addPercentageSign(input) {
       const cursorPosition = input.selectionStart;
@@ -442,25 +456,37 @@
         input.setSelectionRange(cursorPosition, cursorPosition); // 커서를 유지
       }
     }
+
     //기준금액(단위)
     function formatWithCommas(input) {
+      // 기존 커서 위치 저장
       const cursorPosition = input.selectionStart;
-      // 숫자만 추출
-      let value = input.value.replace(/[^0-9]/g, ''); // 소수점 제외
 
-      // 입력 값이 비어 있지 않을 때만 처리
+      // 숫자만 추출 (소수점 제외)
+      let value = input.value.replace(/[^0-9]/g, '');
+
+      // 입력 값이 비어있지 않을 때만 처리
       if (value) {
         // 천 단위 콤마 추가
         const formatted = new Intl.NumberFormat().format(value);
-        input.value = formatted + '만원'; // "만원" 추가
+        input.value = formatted + '만원';
       } else {
         input.value = ''; // 빈 값 처리
       }
+
       // 커서 위치 조정
-      if (cursorPosition <= value.length) {
-        input.setSelectionRange(cursorPosition, cursorPosition); // 커서를 유지
+      const adjustment = input.value.length - value.length - 2; // "만원" 길이(2)를 고려
+      const newCursorPosition = cursorPosition + adjustment;
+
+      // 커서 위치가 유효한 범위 내인지 확인
+      if (newCursorPosition >= 0 && newCursorPosition <= input.value.length - 2) {
+        input.setSelectionRange(newCursorPosition, newCursorPosition); // 커서를 유지
+      } else {
+        input.setSelectionRange(input.value.length - 2, input.value.length - 2); // "만원" 앞에 커서를 고정
       }
     }
+
+
     //최대위험점수
     function validateAndFormatInput(input) {
       // 기존 커서 위치 저장
@@ -476,7 +502,7 @@
       if (value) {
         input.value = value + '점';
       } else {
-        input.value = ''; // 빈 값 처리
+        input.value = '';
       }
 
       // 커서 위치 조정
@@ -490,9 +516,8 @@
 
       // 최대값 100 제한
       if (value && parseInt(value, 10) > 100) {
-        value = '100'; // 100으로 강제 설정
+        value = '100';
       }
-
       input.value = value; // 변경된 값을 다시 할당
     }
 
@@ -520,6 +545,7 @@
     function SaveForm() {
       // 폼 데이터를 수집
       const formData = {
+        REGSEQ: $('#REGSEQ').val() || null,
         regnm: $("#regnm").val(),
         reggroup: $("#reggroup").val(),
         regstand: $("#regstand").val(),
@@ -531,7 +557,7 @@
         senScore: $("#senScore").val(),
         regAsName: $("#regAsName").val(),
         exflag: $("#exflag").is(":checked"),
-        description: $("#description").val(),
+        regComment: $("#description").val(),
         remark: $("#remark").val(),
         _csrf: $('[name=_csrf]').val()
       };
@@ -549,7 +575,8 @@
           // 저장 성공 시 처리
           if (response.success) {
             Alert.alert("","저장이 완료되었습니다!");
-            location.reload(); // 저장 후 페이지 새로고침
+            clearForm();
+            fetchListData();
           } else {
             console.error("저장 중 문제가 발생했습니다:", response.message);
             Alert.alert("","저장 중 문제가 발생했습니다.");

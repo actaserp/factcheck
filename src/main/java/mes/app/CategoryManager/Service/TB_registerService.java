@@ -30,12 +30,18 @@ public class TB_registerService {
 
     public TB_REGISTER saveOrUpdateRegister(Map<String, Object> formData) {
         // 기본 키 확인 (수정인지 새로 저장인지 판단)
-        Integer regSeq = formData.get("regSeq") != null ? Integer.parseInt(formData.get("regSeq").toString()) : null;
+        Integer regSeq = formData.get("REGSEQ") != null ? Integer.parseInt(formData.get("REGSEQ").toString()) : null;
 
-        // 기존 엔티티 조회 또는 새로 생성
-        TB_REGISTER tbRegister = (regSeq != null)
-                ? tbRegisterRepository.findById(regSeq).orElse(new TB_REGISTER())
-                : new TB_REGISTER();
+        TB_REGISTER tbRegister;
+        if (regSeq != null) {
+            //log.info("수정 로직 실행");
+            tbRegister = tbRegisterRepository.findById(regSeq).orElseThrow(() ->
+                    new IllegalArgumentException("해당 ID의 데이터가 존재하지 않습니다.")
+            );
+        } else {
+            //log.info("신규 등록 로직 실행");
+            tbRegister = new TB_REGISTER();
+        }
 
         // 필수 값 확인
         if (formData.get("regnm") == null || formData.get("regnm").toString().isEmpty()) {
@@ -61,20 +67,28 @@ public class TB_registerService {
                 : null);
 
         tbRegister.setRiskClass(formData.get("riskclass") != null ? formData.get("riskclass").toString() : null);
-        tbRegister.setSubScore(formData.get("subScore") != null ? Integer.parseInt(formData.get("subScore").toString()) : null);
-        tbRegister.setSenScore(formData.get("senScore") != null ? Integer.parseInt(formData.get("senScore").toString()) : null);
+
+        if (formData.get("subScore") != null && !formData.get("subScore").toString().isEmpty()) {
+            tbRegister.setSubScore(Integer.parseInt(formData.get("subScore").toString()));
+        } else {
+            tbRegister.setSubScore(null);
+        }
+
+        if (formData.get("senScore") != null && !formData.get("senScore").toString().isEmpty()) {
+            tbRegister.setSenScore(Integer.parseInt(formData.get("senScore").toString()));
+        } else {
+            tbRegister.setSenScore(null);
+        }
         tbRegister.setRegAsName(formData.get("regAsName") != null ? formData.get("regAsName").toString() : null);
 
         // boolean 처리
         tbRegister.setExFlag(formData.get("exflag") != null && formData.get("exflag").toString().equalsIgnoreCase("true") ? "1" : "0");
 
-        tbRegister.setRegComment(formData.get("regcomment") != null ? formData.get("regcomment").toString() : null);
+        tbRegister.setRegComment(formData.get("regComment") != null ? formData.get("regComment").toString() : null);
         tbRegister.setRemark(formData.get("remark") != null ? formData.get("remark").toString() : null);
 
-        // 처리된 데이터 로그
-        //log.info("처리된 TB_REGISTER 데이터: {}", tbRegister);
-
         // 저장
+        //log.info("저장된 데이터: {}", tbRegister);
         return tbRegisterRepository.save(tbRegister);
     }
 
@@ -102,7 +116,7 @@ public class TB_registerService {
         MapSqlParameterSource params = new MapSqlParameterSource();
         StringBuilder sql = new StringBuilder("""
      SELECT
-         tr.regseq,
+         tr.REGSEQ,
          uc1.Value AS regnm_display,
          tr.regnm,
          uc2.Value AS reggroup_display,
@@ -124,11 +138,11 @@ public class TB_registerService {
     """);
 
         if (searchInput != null && !searchInput.isEmpty()) {
-            sql.append(" AND tr.regnm LIKE :searchInput");
-            params.addValue("searchInput", "%" + searchInput + "%");
+            sql.append(" AND uc1.Value LIKE :regnm_display");
+            params.addValue("regnm_display", "%" + searchInput + "%");
         }
-        log.info("바인딩:{}", sql.toString());
-
+        /*log.info("Generated SQL: {}", sql);
+        log.info("SQL Parameters: {}", params.getValues());*/
         return sqlRunner.getRows(sql.toString(), params);
     }
 
@@ -148,9 +162,8 @@ public class TB_registerService {
         }
 
         // SQL과 파라미터 로그 출력
-        log.info("Generated SQL: {}", sql);
-        log.info("SQL Parameters: {}", params.getValues());
-
+//        log.info("Generated SQL: {}", sql);
+//        log.info("SQL Parameters: {}", params.getValues());
         return sqlRunner.getRows(sql.toString(), params);
     }
 

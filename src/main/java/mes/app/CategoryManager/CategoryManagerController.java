@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +80,6 @@ public class CategoryManagerController {
     @GetMapping("/details")
     public AjaxResult categorydetailsRead(@RequestParam(value = "regseq", required = false) String regseq) {
         AjaxResult result = new AjaxResult();
-        log.info("더블클릭 이벤트 들어옴");
         try {
             // 데이터 조회
             List<Map<String, Object>> categorydetailsRead = tbRegisterService.categorydetailsRead(regseq);
