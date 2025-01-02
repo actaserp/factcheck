@@ -81,6 +81,7 @@
                                     <div class="input-clear">
                                         <input type="text" id="userid" name="userid" class="wp50"
                                                style="width: 300px !important;" placeholder="아이디">
+                                        <input type="hidden" id="id" name="id"/>
                                     </div>
                                     <a href="#" class="btn" id="btnDuplicate" style="margin:5px; ">중복확인</a>
                                 </td>
@@ -242,7 +243,7 @@
                     <!--//section-top end -->
                     <div class="container-fluid">
                         <p id="selectedItem"></p>
-                        <div id="theGrid" style="max-height: 450px;"></div>
+                        <div id="theGrid" style="max-height: 350px;"></div>
                     </div>
                     <div class="btn-wrap">
                     </div>
@@ -327,7 +328,6 @@
                 group: '',
                 keyword: '',
                 username: '',
-                divinm: ''
             };
 
             // 전달된 검색 조건과 기본값 병합
@@ -460,6 +460,7 @@
 
         function populateFields(data) {
             // 각 필드에 데이터를 채움
+            document.getElementById("id").value = data.id || '';
             document.getElementById("pernm").value = data.pernm || '';
             document.getElementById("userid").value = data.userid || '';
             document.getElementById("Phone").value = data.Phone || '';
@@ -482,7 +483,6 @@
                 group: $('#cboUserGroup').val(), // 사용자 그룹 ID
                 keyword: $('#keyword').val(),   // 이름 검색
                 username: $('#username').val(), // 사용자 ID 검색
-                divinm: $('#divinm').val(),     // 기타 조건
             };
             console.log("Search Params:", searchParams);
             fetchListData(searchParams);
@@ -518,6 +518,32 @@
                 theGrid.columns.push(col);
             }
         }
+
+        //아이디 중복확인(사용자 등록)
+        let btnDuplicate = $('#btnDuplicate');
+        btnDuplicate.click(function (e){
+
+            let userid = document.getElementById('userid').value;
+            if(userid.trim() === '' || userid === null){
+                Alert.alert('', '빈 값은 불가능합니다.');
+                return;
+            }
+            let data = {  userid }
+
+            let fnSuccess = function (res) {
+                if(res.success){
+                    AuthCode = true;
+                    Alert.alert('', res.message);
+                    document.getElementById('userid').readOnly = true;
+
+                } else if (!res.success){
+                    AuthCode = false;
+                    Alert.alert('', res.message);
+                }
+            };
+            AjaxUtil.postAsyncData("/useridchk", data, fnSuccess);
+
+        })
 
         function clearForm(){
             ['id', 'userid', 'pernm', 'password','passwordchk','cltnm', 'authType', 'email','Phone', 'tel','username'].forEach(id => {
@@ -572,59 +598,64 @@
 
             //저장
             $('#btnSave').click(function () {
-                if (!validateFields()) {
-                    return false;
-                }
+
                 const emailInput = document.getElementById('email');
                 const emailValue = emailInput.value.trim();
 
-                if (!emailValidate(emailValue.trim())) {
+                if (!emailValidate(emailValue)) {
                     Alert.alert('', '유효한 이메일 형식을 입력하세요.');
                     return false;
                 }
 
-                let id = document.getElementById('id').value.trim();
+                let id = document.getElementById('userid').value.trim();
                 let password = document.getElementById('password');
                 let pwd = password.value.trim();
-                if (id === undefined || id === '') {  //신규등록이므로 비밀번호 입력 체크
-                    if (pwd === undefined || pwd === '') {
-                        Alert.alert('', '비밀번호를 입력해주세요', function () {
-                            password.focus();
-                        })
-                        return;
-                    }
+
+                if (!id && !pwd) {
+                    Alert.alert('', '아이디와 비밀번호를 입력해주세요.', function () {
+                        password.focus();
+                    });
+                    return;
                 }
 
-                let formData = new FormData();
+                // Form 데이터 수집
+                let formData = {
+                    id: $('#id').val().trim(),
+                    login_id: $('#userid').val(),
+                    pernm: $('#pernm').val(),
+                    UserGroup_id: $('#authType').val(),
+                    password: pwd,
+                    email: emailValue,
+                    Phone: $('#Phone').val(),
+                    is_active: $('#is_active').is(':checked') ? 1 : 0,
+                    _csrf: $('[name=_csrf]').val()
+                };
 
-                formData.append('id', id);
-                formData.append('login_id', $('#userid').val());
-                formData.append('Name', $('#usernm').val());
-                formData.append('UserGroup_id', $('#authType').val());
-                formData.append('password', pwd);
-                formData.append('email', emailValue);
-                formData.append('tel', $('#tel').val());
-                formData.append('divinm', $('#divinm2').val());
-                formData.append('agencycd', $('#agencycd').val());
-                formData.append('_csrf', $('[name=_csrf]').val());
-
-                let bindingList = ['id', 'userid', 'usernm', 'authType', 'password', 'email', 'tel', 'agencycd'];
-                AjaxFunction.PostAjaxRequest('/api/system/user/save', true, false, false, formData, function (response) {
+                // AJAX 요청
+                $.ajax({
+                    url: '/api/system/user/saveOrUpdate',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData), // JSON 직렬화
+                    headers: {
+                        'X-CSRF-Token': $('[name=_csrf]').val()
+                    },
+                    success: function (response) {
                         if (response.success) {
                             Alert.alert('', response.message, function () {
                                 $('#listTabLink').click();
                                 searchData();
                             });
                             clearForm();
-
                         } else {
                             Alert.alert('', response.message);
                         }
                     },
-                    function (res){
-                        Alert.alert('', '에러가 발생하였습니다.');
-
-                    })
+                    error: function (xhr, status, error) {
+                        Alert.alert('', '요청 중 오류가 발생했습니다.');
+                        console.error("Error:", status, error);
+                    }
+                });
             });
 
             $('#btnDelete').click(function () {
@@ -641,15 +672,14 @@
                     Alert.alert('', '삭제할 항목을 선택하세요.');
                     return;
                 }
-                console.log('zz', selectedItems)
                 let delList = SelectItemPush(selectedItems, 'id');
-                let del940List = SelectItemPush(selectedItems, 'login_id');
-                console.log('삭제확인2', del940List);
+                let delXuserList = SelectItemPush(selectedItems, 'userid');
+                console.log('삭제확인2', delXuserList);
                 console.log('삭제확인', delList);
                 Alert.confirm('', '삭제하시겠습니까?', function () {
                     let data = {
                         'id': JSON.stringify(delList),
-                        'username': JSON.stringify(del940List),
+                        'username': JSON.stringify(delXuserList),
                         '_csrf': csrfToken,
                         'auth' : auth
                     }
@@ -684,7 +714,9 @@
                     AjaxUtil.postAsyncData('/api/system/user/delete', data, fnSuccess);
                 })
             })*/
+
         });
+
     </script>
 </th:block>
 </html>

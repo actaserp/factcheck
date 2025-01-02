@@ -24,7 +24,7 @@ public class UtilClass {
                 .collect(Collectors.toList()); // 리스트로 수집
     }
 
-    public String removeBrackers(String input){
+    public static String removeBrackers(String input){
         return input.replaceAll("[\\[\\]\"]", "");
     }
 

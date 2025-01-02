@@ -1,6 +1,8 @@
 package mes.app.system;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -11,12 +13,17 @@ import javax.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import mes.app.UtilClass;
 import mes.app.account.service.TB_RP945_Service;
+import mes.app.account.service.TB_xusersService;
 import mes.domain.DTO.TB_RP945Dto;
 import mes.domain.entity.TB_RP945;
 import mes.domain.entity.UserCode;
+import mes.domain.entity.actasEntity.TB_XUSERS;
+import mes.domain.entity.actasEntity.TB_XUSERSId;
 import mes.domain.repository.*;
+import mes.domain.repository.actasRepository.TB_XuserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.relational.core.sql.In;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.MultiValueMap;
@@ -58,7 +65,12 @@ public class UserController {
 	private TB_RP945Repository tB_RP945Repository;
 
 	@Autowired
-	TB_RP945_Service tbRp945Service;
+	TB_xusersService XusersService;
+	@Autowired
+	TB_XuserRepository xuserstRepository;
+	@Autowired
+	JdbcTemplate jdbcTemplate;
+
 	@Autowired
 	private UserCodeRepository userCodeRepository;
 
@@ -147,253 +159,132 @@ public class UserController {
 		return result;
 	}
 
-	/*@PostMapping("/save")
+	@PostMapping("/saveOrUpdate")
 	@Transactional
-	public AjaxResult saveUser(){
-
-	}*/
-
-
-	@PostMapping("/save")
-	@Transactional
-	public AjaxResult saveUser(
-			@RequestParam(value = "id", required = false) Integer id,
-			@RequestParam(value = "login_id") String login_id,
-			@RequestParam(value = "Name") String Name,
-			@RequestParam(value = "email") String email,
-			@RequestParam(value="UserGroup_id") Integer UserGroup_id,
-			@RequestParam(value="password", required = false) String password,
-			@RequestParam(value="tel", required = false) String tel,
-			@RequestParam(value="divinm", required = false) String divinm,
-			@RequestParam(value="agencycd", required = false) String agencycd,
-			@RequestParam(value="spworkcd") String spworkcd,
-			@RequestParam(value="spcompcd") String spcompcd,
-			@RequestParam(value="spplancd") String spplancd,
-			@RequestParam(value="spworknm") String spworknm,
-			@RequestParam(value="spcompnm") String spcompnm,
-			@RequestParam(value="spplannm") String spplannm,
-			Authentication auth
-	){
-
-		//산단 발전소 지역 코드를 공통코드 id로 받지않고 텍스트와 코드값으로 받는이유(spworkcd 등등) --> id로 받으면 공통코드테이블에서 호출해야한다. DB호출은 부담 차라리 값을 많이 넘기자
+	public AjaxResult saveUser(@RequestBody Map<String, Object> requestData, Authentication auth) {
 		AjaxResult result = new AjaxResult();
 
-		UtilClass util = new UtilClass();
-		List<Integer> spworkidList = util.parseUserIdsToInt(spworkcd);
-		List<Integer> spcompidList = util.parseUserIdsToInt(spcompcd);
-		List<Integer> spplanidList = util.parseUserIdsToInt(spplancd);
+		try {
+			// 요청 데이터 로그
+			//log.info("Received Request Data: {}", requestData);
 
-		List<String> spworknmList = Arrays.asList(spworknm.split(","));
-		List<String> spcompnmList = Arrays.asList(spcompnm.split(","));
-		List<String> spplannmList = Arrays.asList(spplannm.split(","));
+			// 데이터 매핑
+			Integer id = (requestData.get("id") != null && !requestData.get("id").toString().isEmpty()) ? Integer.valueOf(requestData.get("id").toString()) : null;
+			String loginId = (String) requestData.get("login_id");
+			String name = (String) requestData.get("pernm");
+			String email = (String) requestData.get("email");
+			Integer userGroupId = Integer.valueOf(requestData.get("UserGroup_id").toString());
+			String password = (String) requestData.get("password");
+			String phone = (String) requestData.get("Phone");
+			Boolean isActive = requestData.get("is_active") != null &&
+					Integer.valueOf(requestData.get("is_active").toString()) == 1;
 
-		String sql = null;
-		User user = null;
-		User loginUser = (User)auth.getPrincipal();
-		Timestamp today = new Timestamp(System.currentTimeMillis());
-		MapSqlParameterSource dicParam = new MapSqlParameterSource();
-		boolean username_chk = this.userRepository.findByUsername(login_id).isEmpty();
+			// "ZZ" 값을 전달하여 호출
+			List<Map<String, Object>> results = userService.getCustcdAndSpjangcd("ZZ");
 
-		if(id==null){
-			if (username_chk == false){
-				result.success = false;
-				result.message = "중복된 사번이 존재합니다.";
-				return result;
+			if (results.isEmpty()) {
+			} else {
+				results.forEach(row -> {
+				});
 			}
-			user = new User();
-			user.setPassword(Pbkdf2Sha256.encode(password));
-			user.setSuperUser(false);
-			user.setLast_name("");
-			user.setIs_staff(false);
+			// 첫 번째 조회된 데이터 사용
+			Map<String, Object> firstRow = results.get(0);
+			String custcd = (String) firstRow.get("custcd");
+			String spjangcd = (String) firstRow.get("spjangcd");
+			String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
-			dicParam.addValue("loginUser", loginUser.getId());
+			boolean isNewUser = (id == null || !userRepository.existsById(id));
+			//log.info("isNewUser: {}, id: {}", isNewUser, id);
 
-			sql = """
-		        	INSERT INTO user_profile 
-		        	("_created", "_creater_id", "User_id", "lang_code", "Name", "UserGroup_id" ) 
-		        	VALUES (now(), :loginUser, :User_id, :lang_code, :name, :UserGroup_id )
-		        """;
-		}else {
-
-
-
-			user = this.userRepository.getUserById(id);
-
-			//만약 있으면 수정, pk2개라서 관리하기 불편, 다 지우고 새로추가, 위치가 왜 여기냐 --> user객체 저장 혹은 수정전에 username을 가져와야함
-			List<TB_RP945> rp945List = tB_RP945Repository.findByUserid(user.getUsername());
-			if(!rp945List.isEmpty()){
-				tB_RP945Repository.deleteByUserid(user.getUsername());
+			User user;
+			// 신규 사용자 처리
+			if (isNewUser) {
+				user = User.builder()
+						.username(loginId)
+						.password(Pbkdf2Sha256.encode(password))
+						.email(email)
+						.first_name(name)
+						.last_name(name)
+						.active(isActive)
+						.is_staff(false)
+						.date_joined(new Timestamp(System.currentTimeMillis()))
+						.superUser(false)
+						.phone(phone)
+						.spjangcd(spjangcd)
+						.build();
+			} else {
+				// 기존 사용자 업데이트
+				user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("해당 사용자가 없습니다."));
+				/*user.setPassword(Pbkdf2Sha256.encode(password)); */
+				user.setEmail(email);
+				user.setFirst_name(name);
+				user.setLast_name(name);
+				user.setActive(isActive);
+				user.setPhone(phone);
+				//user.setAgencycd(agencycd);
 			}
 
-			sql = """
-					update user_profile set
-					     	"lang_code" = :lang_code, "Name" = :name
-					     	,   "UserGroup_id" = :UserGroup_id
-					where "User_id" = :User_id
-		        """;
-		}
+			// 사용자 저장
+			user = userRepository.save(user);
+			//log.info(isNewUser ? "새 사용자 저장 완료: " : "기존 사용자 업데이트 완료: " + user.getUsername());
 
-		user.setUsername(login_id);
-		user.setFirst_name(Name);
-		user.setEmail(email);
-		user.setDate_joined(today);
-		user.setActive(true);
-		user.setDivinm(divinm);
-		user.setTel(tel);
-		user.setAgencycd(agencycd);
+			// 사용자 프로필 처리
+			String profileSql = """
+			SET IDENTITY_INSERT user_profile ON;
+		
+			MERGE INTO user_profile AS target
+			USING (SELECT ? AS _created, ? AS lang_code, ? AS Name, ? AS UserGroup_id, ? AS User_id) AS source
+			ON target.User_id = source.User_id
+			WHEN MATCHED THEN
+				UPDATE SET Name = source.Name, UserGroup_id = source.UserGroup_id
+			WHEN NOT MATCHED THEN
+				INSERT (_created, lang_code, Name, UserGroup_id, User_id)
+				VALUES (source._created, source.lang_code, source.Name, source.UserGroup_id, source.User_id);
+		
+			SET IDENTITY_INSERT user_profile OFF;
+			""";
 
-		user = this.userRepository.save(user);
+			jdbcTemplate.update(
+					profileSql,
+					new Timestamp(System.currentTimeMillis()), // _created
+					"ko-KR",                                  // lang_code
+					name,                                    // Name
+					userGroupId,
+					user.getId()                              // User_id
+			);
 
-		dicParam.addValue("name", Name);
-		dicParam.addValue("UserGroup_id", UserGroup_id);
-		dicParam.addValue("lang_code", "ko-KR");
-		dicParam.addValue("User_id", user.getId());
+			//log.info("User Profile 저장 또는 업데이트 완료");
 
-		this.sqlRunner.execute(sql, dicParam);
-
-		result.data = user;
-
-
-		//신청순번의 최대값을 구한후 +1을 하고 문자열로 바꿔줌
-		//이거 반복문 안에 넣으면 db호출이 너무 많다.
-		String RawAskSeq = tB_RP945Repository.findMaxAskSeq();
-		RawAskSeq = (RawAskSeq != null) ? RawAskSeq : "0";
-
-		int AskSeqInt = Integer.parseInt(RawAskSeq) + 1;
-
-
-		Map<Integer, UserCode> spworkCodes = userCodeRepository.findAllById(spworkidList)
-				.stream().collect(Collectors.toMap(UserCode::getId, Function.identity()));
-		Map<Integer, UserCode> spcompCodes = userCodeRepository.findAllById(spcompidList)
-				.stream().collect(Collectors.toMap(UserCode::getId, Function.identity()));
-		Map<Integer, UserCode> spplanCodes = userCodeRepository.findAllById(spplanidList)
-				.stream().collect(Collectors.toMap(UserCode::getId, Function.identity()));
-
-
-		for(int i=0; i<spworkidList.size(); i++){
-
-			String askseq = String.format("%03d", AskSeqInt);
-
-			UserCode spworkid = spworkCodes.get(spworkidList.get(i));
-			UserCode spcompid = spcompCodes.get(spcompidList.get(i));
-			UserCode spplanid = spplanCodes.get(spplanidList.get(i));
-
-
-			TB_RP945Dto rp945dto = TB_RP945Dto.builder()
-					.userid(login_id)
-					.askseq(askseq)
-					.spworkcd(spworkid.getCode())
-					.spcompcd(spcompid.getCode())
-					.spplancd(spplanid.getCode())
-					.spworknm(spworknmList.get(i))
-					.spcompnm(spcompnmList.get(i))
-					.spplannm(spplannmList.get(i))
-					.spworkid(spworkid.getId())
-					.spcompid(spcompid.getId())
-					.spplanid(spplanid.getId())
+			// XUSERS 정보 설정 및 저장
+			TB_XUSERS xusers = TB_XUSERS.builder()
+					.passwd1(password != null ? password : user.getPassword())
+					.passwd2(password != null ? password : user.getPassword())
+					.shapass(Pbkdf2Sha256.encode(password != null ? password : user.getPassword()))
+					.pernm(name)
+					.useyn("1")
+					.domcls("%")
+					.spjangcd(spjangcd)
+					.id(new TB_XUSERSId(custcd, loginId))
 					.build();
-			tbRp945Service.save(rp945dto);
 
-			AskSeqInt++;
+			XusersService.save(xusers);
+			//log.info("Xusers entry saved successfully for loginId {}", loginId);
+
+			result.success = true;
+			result.message = "저장되었습니다.";
+			result.data = user;
+
+		} catch (Exception e) {
+			//log.error("Error occurred during saveOrUpdate: {}", e.getMessage(), e);
+			result.success = false;
+			result.message = "저장 중 오류가 발생했습니다: " + e.getMessage();
 		}
-		result.success = true;
-		result.message = "저장되었습니다.";
 
 		return result;
 	}
-	/*@PostMapping("/save")
-	@Transactional
-	public AjaxResult saveUser(
-			@RequestParam(value="id", required = false) Integer id,
-			@RequestParam(value="Name") String Name,		//이름 (user_profile.Name)
-			@RequestParam(value="login_id") String login_id, //사번 (auth_user.username)
-			@RequestParam(value="email", required = false, defaultValue = "") String email,
-			@RequestParam(value="Factory_id", required = false) Integer Factory_id,
-			@RequestParam(value="Depart_id", required = false) Integer Depart_id,
-			@RequestParam(value="UserGroup_id", required = false) Integer UserGroup_id,
-			@RequestParam(value="lang_code", required = false) String lang_code,
-			@RequestParam(value="is_active", required = false) Boolean is_active,
-			HttpServletRequest request,
-			Authentication auth
-			) {
-
-		AjaxResult result = new AjaxResult();
-
-		String sql = null;
-		User user = null;
-		User loginUser = (User)auth.getPrincipal();
-		Timestamp today = new Timestamp(System.currentTimeMillis());
-		MapSqlParameterSource dicParam = new MapSqlParameterSource();
-		boolean username_chk = this.userRepository.findByUsername(login_id).isEmpty();
-
-		if(is_active == null) {
-			is_active = false;
-		}
-
-
-		// new data일 경우
-		if (id==null) {
-			if (username_chk == false) {
-				result.success = false;
-				result.message="중복된 사번이 존재합니다.";
-				return result;
-			}
-			user = new User();
-			user.setPassword(Pbkdf2Sha256.encode("1"));
-			user.setSuperUser(false);
-			user.setLast_name("");
-			user.setIs_staff(false);
-
-			dicParam.addValue("loginUser", loginUser.getId());
-
-			sql = """
-		        	INSERT INTO user_profile
-		        	("_created", "_creater_id", "User_id", "lang_code", "Name", "Factory_id" , "Depart_id", "UserGroup_id" )
-		        	VALUES (now(), :loginUser, :User_id, :lang_code, :name, :Factory_id, :Depart_id, :UserGroup_id )
-		        """;
-		// 기존 user 수정일 경우
-		} else {
-			user = this.userRepository.getUserById(id);
-
-			if (login_id.equals(user.getUsername())==false && username_chk == false) {
-				result.success = false;
-				result.message="중복된 사번이 존재합니다.";
-				return result;
-			}
-
-			sql = """
-					update user_profile set
-					     	"lang_code" = :lang_code, "Name" = :name
-					     	, "Factory_id" = :Factory_id, "Depart_id"= :Depart_id, "UserGroup_id" = :UserGroup_id
-					where "User_id" = :User_id
-		        """;
-
-		}
-
-        user.setUsername(login_id);
-        user.setFirst_name(Name);
-        user.setEmail(email);
-        user.setDate_joined(today);
-        user.setActive(is_active);
-
-		user = this.userRepository.save(user);
-
-		dicParam.addValue("name", Name);
-		dicParam.addValue("UserGroup_id", UserGroup_id);
-		dicParam.addValue("Factory_id", Factory_id);
-		dicParam.addValue("Depart_id", Depart_id);
-		dicParam.addValue("lang_code", lang_code);
-        dicParam.addValue("User_id", user.getId());
-
-        this.sqlRunner.execute(sql, dicParam);
-
-		result.data = user;
-
-		return result;
-	}*/
 
 	// user 삭제
-	@Transactional
+	/*@Transactional
 	@PostMapping("/delete")
 	public AjaxResult deleteUser(@RequestParam("id") String id,
 								 @RequestParam(value = "username", required = false) String username
@@ -403,18 +294,49 @@ public class UserController {
 		System.out.println(util.removeBrackers(username));
 		Optional<User> user = userRepository.findByUsername(util.removeBrackers(username));
 
-		if(user.isPresent()){
-			tB_RP940Repository.deleteByUserid(user.get().getUsername());
-			tB_RP945Repository.deleteByUserid(user.get().getUsername());
-		}
 
 		Integer userid  = Integer.parseInt(util.removeBrackers(id))  ;
 
 		this.userRepository.deleteById(userid);
 		AjaxResult result = new AjaxResult();
 		return result;
-	}
+	}*/
+	@Transactional
+	@PostMapping("/delete")
+	public AjaxResult deleteUser(@RequestParam("id") String id,
+								 @RequestParam(value = "username", required = false) String username,
+								 @RequestParam(value = "auth", defaultValue = "false") boolean auth) {
+		AjaxResult result = new AjaxResult();
+		log.info("삭제 요청 처리 시작 - id: {}, username: {}", id, username);
 
+		if (auth) {
+			result.success = false;
+			result.message = "슈퍼유저는 수정 및 삭제가 불가능합니다.";
+			return result;
+		}
+
+		// username으로 TB_XUSERS 삭제
+		if (username != null && !username.trim().isEmpty()) {
+			String cleanedUsername = UtilClass.removeBrackers(username);
+			xuserstRepository.deleteById_userid(cleanedUsername);
+			log.info("TB_XUSERS에서 username {} 삭제 완료", cleanedUsername);
+		} else {
+			log.warn("username이 제공되지 않아 TB_XUSERS 삭제를 건너뜁니다.");
+		}
+
+		// id로 User 삭제
+		if (id != null && !id.trim().isEmpty()) {
+			Integer userId = Integer.parseInt(UtilClass.removeBrackers(id));
+			userRepository.deleteById(userId);
+			log.info("User 엔티티에서 ID {} 삭제 완료", userId);
+		} else {
+			log.warn("id가 제공되지 않아 User 삭제를 건너뜁니다.");
+		}
+
+		result.success = true;
+		result.message = "사용자 삭제가 완료되었습니다.";
+		return result;
+	}
 
 	@PostMapping("/modfind")
 	public AjaxResult getBtId(@RequestBody String userid){

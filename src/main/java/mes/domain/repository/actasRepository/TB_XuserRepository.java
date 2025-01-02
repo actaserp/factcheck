@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TB_XuserRepository extends JpaRepository<TB_XUSERS, TB_XUSERSId> {
+
+    void deleteById_userid(String userid);
 }
