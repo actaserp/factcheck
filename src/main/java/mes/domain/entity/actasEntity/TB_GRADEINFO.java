@@ -21,8 +21,11 @@ public class TB_GRADEINFO {
     @Column(name = "GRID")
     private String grId;
 
-    @Column(name="GRSCORE")
-    private int grScore;
+    @Column(name="GRSCORE01")
+    private int grScore01;
+
+    @Column(name="GRSCORE02")
+    private int grScore02;
 
     @Column(name="GRFLAG")
     private String grFlag;

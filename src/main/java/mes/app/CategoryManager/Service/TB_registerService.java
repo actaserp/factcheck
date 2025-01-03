@@ -117,7 +117,6 @@ public class TB_registerService {
         StringBuilder sql = new StringBuilder("""
      SELECT
          tr.REGSEQ,
-         uc1.Value AS regnm_display,
          tr.regnm,
          uc2.Value AS reggroup_display,
          tr.reggroup,
@@ -128,8 +127,6 @@ public class TB_registerService {
          tr.regStand,
          tr.*
      FROM TB_REGISTER tr
-     JOIN user_code uc1
-         ON uc1.Code = tr.regnm
      JOIN user_code uc2
          ON uc2.Code = tr.reggroup
      JOIN user_code uc3
@@ -141,8 +138,8 @@ public class TB_registerService {
             sql.append(" AND uc1.Value LIKE :regnm_display");
             params.addValue("regnm_display", "%" + searchInput + "%");
         }
-        /*log.info("Generated SQL: {}", sql);
-        log.info("SQL Parameters: {}", params.getValues());*/
+        log.info("Generated SQL: {}", sql);
+        log.info("SQL Parameters: {}", params.getValues());
         return sqlRunner.getRows(sql.toString(), params);
     }
 

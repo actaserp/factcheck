@@ -73,14 +73,14 @@
             <div class="search-wrap">
               <dl>
                 <dt>
-                  <label for="txtCode">
+                  <label for="searchInput">
                     검색<span class="eq">*</span>
                   </label>
                 </dt>
                 <dd>
                   <div class="srch-box">
-                    <input type="text" id="txtCode" name="txtCode" class="input-srch" onclick="fetchListData()">
-                    <a class="btn-srch" id="btnSearch" title="검색"></a>
+                    <input type="text" id="searchInput" name="searchInput" class="input-srch" placeholder="명칭">
+                    <a class="btn-srch" id="btnSearch" title="검색" onclick="fetchListData()" ></a>
                   </div>
                 </dd>
               </dl>
@@ -94,13 +94,13 @@
                   </a>
                 </li>
                 <li>
-                  <a class="btn btn-edit" id="btnSave" title="저장">
+                  <a class="btn btn-edit" id="btnSave" title="저장" onclick="SaveForm()">
                     <img src="/images/icon/ico-save.svg" alt="저장 아이콘">
                     저장
                   </a>
                 </li>
                 <li>
-                  <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="SaveForm()">
+                  <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="deleteData()">
                     <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
                     삭제
                   </a>
@@ -162,7 +162,7 @@
                             <option value="60">60</option>
                             <option value="50">50</option>
                             <option value="40">40</option>
-                            <option value="29(0)">29(0)</option>
+                            <option value="29">29</option>
                           </select>
                         </td>
                       </tr>
@@ -177,8 +177,8 @@
                       <tr>
                         <th><label for="grcolor">표시색상</label></th>
                         <td>
-                          <select id="grcolor" name="grcolor" class="wp100">
-                            <option value="">선택하세요</option>
+                          <select id="grcolor" name="grcolor" class="wp100" onchange="changeColor(this)">
+                            <option value="0">선택하세요</option>
                             <option value="white">흰색</option>
                             <option value="green">초록색</option>
                             <option value="skyblue">하늘색</option>
@@ -246,33 +246,57 @@
 
     function fetchListData() {
       let data2 = [];
+      const searchValue = $('#searchInput').val();
+
       // 서버에서 데이터 가져오기
-      /*$.ajax({
-        url: '/api/ProgressStatus/read',
+      $.ajax({
+        url: '/api/GradeManager/read',
         type: 'GET',
-        data: queryParams,
+        data: { grflag:searchValue},
         async: false,
+        headers: {
+          'X-CSRF-Token': $('[name=_csrf]').val()
+        },
         success: function (response) {
           // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
           if (response && Array.isArray(response.data)) {
             data2 = response.data.map((item, index) => ({
-              rownum: index + 1
+              rownum: index + 1,
+              grid: item.grid,
+              grid_display:item.grid_display,
+              grscore: `${item.grScore01 || ''} ~ ${item.grScore02 || ''}`, // 점수 결합
+              grface:item.grface,
+              grcolor: getColorText(item.grcolor),
+              grface_display:item.grface_display,
+              grflag:item.grflag,
+              grflag_display:item.grflag_display,
+              grmood:item.grmood,
+              grmood_display:item.grmood_display,
+              gricon:item.gricon,
+              gricon_display:item.gricon_display
             }));
           }
         },
         error: function () {
           console.error("데이터를 가져오는 중 오류가 발생했습니다.");
         }
-      });*/
+      });
 
       while (data2.length < 10) {
         data2.push({
           rownum: data2.length + 1,
           grid: '',
+          grid_display:'',
           grscore: '',
+          grcolor:'',
+          grface:'',
+          grface_display:'',
           grflag: '',
+          grflag_display:'',
           grmood: '',
+          grmood_display:'',
           gricon: '',
+          gricon_display:''
         });
       }
 
@@ -285,55 +309,190 @@
           isReadOnly: true,
           columns: [
             { binding: 'rownum', header: 'NO', align: 'center', width: 70 },
-            { binding: 'grid', header: '등급', align: 'center', width: 100 },
+            { binding: 'grid_display',header:'등급', align: 'center', width: 150 },
+            { binding: 'grid', header: '등급코드', align: 'center', width: 100 , visible: false},
             { binding: 'grscore', header: '점수', align: 'center', width: 150 },
-            { binding: 'grflag', header: '명칭', align: 'center', width: 150 },
-            { binding: 'grmood', header: '날씨', align: 'center', width: 150 },
-            { binding: 'gricon', header: '아이콘', align: 'center', width: '*' }
+            { binding: 'grflag_display',header:'명칭', align: 'center', width: 150 },
+            { binding: 'grflag', header: '명칭코드', align: 'center', width: 150 ,visible: false},
+            { binding: 'grmood_display',header:'날씨', align: 'center', width: 150 },
+            { binding: 'grmood', header: '날씨코드', align: 'center', width: 150 ,visible: false},
+            { binding: 'grcolor', header: '표시색상', align: 'center', width: 150 ,visible: false},
+            { binding: 'gricon_display',header:'아이콘', align: 'center', width: 150},
+            { binding: 'gricon', header: '아이콘코드', align: 'center', width: '*' ,visible: false},
+
           ],
           itemsSource: viewdata
         });
 
         theGrid.rowHeaders.columns.splice(0, 1);
+        attachDoubleClickEvent(theGrid); // 더블클릭 이벤트 추가
       } else {
         theGrid.itemsSource = viewdata;
       }
     }
+
+    function attachDoubleClickEvent(grid) {
+      let lastClickTime = 0;
+      grid.hostElement.addEventListener('click', function (e) {
+        const now = new Date().getTime();
+
+        if (now - lastClickTime < 300) { // 300ms 이내의 두 번 클릭은 더블클릭으로 처리
+          const ht = grid.hitTest(e);
+
+          if (ht.cellType === wijmo.grid.CellType.Cell) {
+            const rowData = grid.rows[ht.row].dataItem; // 더블클릭한 행 데이터
+            console.log('Row Data:', rowData); // 디버깅: rowData 확인
+            modifyData(rowData); // 데이터 입력 필드에 채우기
+          }
+        }
+
+        lastClickTime = now;
+      });
+    }
+
+    function modifyData(rowData) {
+      const changeColorInput = $('#grcolor');
+      const mappedValue = getColorValue(rowData.grcolor); // 매핑된 value 값 가져오기
+      changeColorInput.val(mappedValue).trigger('change'); // 드롭다운 값 설정
+      changeColor(changeColorInput[0]); // 색상 변경
+      // 기본 데이터 채우기
+      $('#grid').val(rowData.grid).trigger('change');
+      $('#grflag').val(rowData.grflag).trigger('change');
+      $('#grmood').val(rowData.grmood).trigger('change');
+      $('#gricon').val(rowData.gricon).trigger('change');
+      $('#grface').val(rowData.grface).trigger('change');
+      //$('#grcolor').val(rowData.grcolor || '');
+
+      // 점수는 두 개의 드롭다운에 나눠 설정
+      if (rowData.grscore) {
+        const [grScore01, grScore02] = rowData.grscore.split(' ~ ');
+        $('#grscore1').val(grScore01).trigger('change');
+        $('#grscore2').val(grScore02).trigger('change');
+      } else {
+        $('#grscore1').val('').trigger('change');
+        $('#grscore2').val('').trigger('change');
+      }
+
+      // 디버깅용 데이터 확인
+      console.log('Modified Data:', rowData);
+    }
+
+
     //저장
     function SaveForm() {
+
       // 폼 데이터를 수집
       const formData = {
-
+        grid: $('#grid').val(),
+        grScore01: $('#grscore1').val(),
+        grScore02:$('#grscore2').val(),
+        grcolor:$('#grcolor').val(),
+        grface:$('#grface').val(),
+        grflag: $('#grflag').val(),
+        grmood: $('#grmood').val(),
+        gricon:$('#gricon').val(),
         _csrf: $('[name=_csrf]').val()
       };
 
       // AJAX 요청
       $.ajax({
-        url: '/api/category/save',
+        url: '/api/GradeManager/save',
         type: 'POST',
-        contentType: 'application/json',
         data: JSON.stringify(formData),
+        contentType: 'application/json',
         headers: {
           'X-CSRF-Token': $('[name=_csrf]').val()
         },
         success: function (response) {
           // 저장 성공 시 처리
           if (response.success) {
-            Alert.alert("","저장이 완료되었습니다!");
+            Alert.alert("", "저장이 완료되었습니다!");
             clearForm();
             fetchListData();
           } else {
             console.error("저장 중 문제가 발생했습니다:", response.message);
-            Alert.alert("","저장 중 문제가 발생했습니다.");
+            Alert.alert("", "저장 중 문제가 발생했습니다.");
           }
         },
         error: function (xhr, status, error) {
           console.error("저장 중 오류 발생:", status, error);
-          Alert.alert("","저장 중 오류가 발생했습니다. 관리자에게 문의하세요.");
+          Alert.alert("", "저장 중 오류가 발생했습니다. 관리자에게 문의하세요.");
         }
       });
     }
 
+    function deleteData() {
+      const grid = $('#grid').val();
+      console.log('Grid Value:', $('#grid').val()); // 값이 출력되지 않으면 문제 발생
+
+      // 삭제 확인 창 표시
+      Alert.confirm('', '삭제하시겠습니까?', function () {
+          $.ajax({
+            url: '/api/GradeManager/delete',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ grid: grid }),
+            headers: {
+              'X-CSRF-Token': $('[name=_csrf]').val()
+            },
+            success: function (response) {
+              console.log('Ajax Response:', response); // 디버깅용
+              if (response.success) {
+                Alert.alert('', "삭제가 완료되었습니다.");
+                fetchListData(); // 데이터 새로고침
+                clearForm(); // 폼 초기화
+              } else {
+                Alert.alert('', "삭제 중 문제가 발생했습니다: " + response.message);
+              }
+            },
+            error: function (xhr, status, error) {
+              console.error('Ajax Error:', xhr, status, error); // 디버깅용
+              Alert.alert('', "삭제 요청 중 오류가 발생했습니다: " + xhr.responseText);
+            }
+          });
+      });
+    }
+
+    //드롭다운 색 설정
+    function changeColor(selectElement) {
+      const selectedColor = selectElement.value; // 선택된 색상 값을 가져옵니다.
+      // 선택된 색상이 유효한 경우 배경색을 해당 색상으로 변경합니다. 만약 '0' (기본 선택)일 경우, 배경색을 흰색으로 설정합니다.
+      selectElement.style.backgroundColor = selectedColor && selectedColor !== '0' ? selectedColor : 'white';
+      // 글자 색상 조정: 흰색, 노랑색, 주황색일 경우 검정색으로 설정하고, 그 외의 경우 흰색으로 설정합니다.
+      selectElement.style.color = (selectedColor === 'white' || selectedColor === 'yellow' || selectedColor === 'orange' || selectedColor === '0') ? 'black' : 'white';
+    }
+    function getColorText(grcolor) {
+      switch (grcolor) {
+        case 'white':
+          return "흰색";
+        case 'green':
+          return "초록색";
+        case 'skyblue':
+          return "하늘색";
+        case 'yellow':
+          return "노랑색";
+        case 'orange':
+          return "주황색";
+        case 'red':
+          return "빨강색";
+        case 'black':
+          return "검정색";
+        default:
+          return "선택하세요";
+      }
+    }
+    const colorMap = {
+      white: "흰색",
+      green: "초록색",
+      skyblue: "하늘색",
+      yellow: "노랑색",
+      orange: "주황색",
+      red: "빨강색",
+      black: "검정색"
+    };
+    function getColorValue(colorText) {
+      return Object.keys(colorMap).find(key => colorMap[key] === colorText) || '0';
+    }
 
     //초기화
     function clearForm() {
@@ -354,6 +513,9 @@
             break;
           case 'select-one':
             element.selectedIndex = 0;
+            // 드롭다운 초기화 후 색상 스타일도 기본값으로 설정
+            element.style.backgroundColor = 'white';
+            element.style.color = 'black';
             break;
           case 'select-multiple': // 다중 선택 초기화
             Array.from(element.options).forEach(option => {
@@ -379,7 +541,7 @@
         url: '/api/category/type',
         params: { parentCode: config.parentCode },
         elementId: config.elementId,
-        valueField: "id",
+        valueField: "code",
         textField: "value"
       });
     });

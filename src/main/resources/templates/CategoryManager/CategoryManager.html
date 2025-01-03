@@ -120,9 +120,7 @@
                           <label for="regnm">등기 명칭</label>
                         </th>
                         <td colspan="3">
-                          <select id="regnm" name="regnm" class="wp100"  style="width: 300px;!important" >
-                            <option></option>
-                          </select>
+                          <input type="text" id="regnm" name="regnm" class="wp100" placeholder="등기명칭" />
                         </td>
                       </tr>
                       <tr>
@@ -240,7 +238,6 @@
             data2 = response.data.map((item, index) => ({
               rownum: index + 1,
               REGSEQ: item.REGSEQ ||'',
-              regnm_display: item.regnm_display || '',
               regnm: item.regnm || '',
               reggroup_display: item.reggroup_display || '',
               reggroup: item.reggroup || '',
@@ -268,7 +265,6 @@
         data2.push({
           rownum: data2.length + 1,
           REGSEQ:'',
-          regnm_display: '',
           regnm: '',
           reggroup_display: '',
           reggroup: '',
@@ -299,8 +295,7 @@
           columns: [
             { binding: 'rownum', header: 'NO', align: 'center', width: 70 },
 ,           { binding: 'REGSEQ', header: '고유번호', align: 'center', width: '*', visible: false},
-            { binding: 'regnm_display', header: '등기명칭', align: 'center', width: 150 },
-            { binding: 'regnm', header: '등기명칭코드', align: 'center', width: 150, visible: false },
+            { binding: 'regnm', header: '등기명칭', align: 'center', width: 150 },
             { binding: 'reggroup_display',header:'상위그룹', align: 'center', width: 150 },
             { binding: 'reggroup', header: '상위그룹코드', align: 'center', width: 150 ,visible: false },
             { binding: 'regmaxnum', header: '최대위험점수', align: 'center', width: 150 },
@@ -597,32 +592,31 @@
         alert("삭제할 데이터를 선택해주세요.");
         return;
       }
-
-      $.ajax({
-        url: '/api/category/delete',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ REGSEQ: regSeq }),
-        headers: {
-          'X-CSRF-Token': $('[name=_csrf]').val()
-        },
-        success: function (response) {
-          if (response.success) {
-            Alert.alert('', "삭제가 완료되었습니다.");
-            fetchListData(); // 데이터 새로고침
-            clearForm(); // 폼 초기화
-          } else {
-            Alert.alert('', "삭제 중 문제가 발생했습니다: ");
+      Alert.confirm('', '삭제하시겠습니까?', function () {
+        $.ajax({
+          url: '/api/category/delete',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({REGSEQ: regSeq}),
+          headers: {
+            'X-CSRF-Token': $('[name=_csrf]').val()
+          },
+          success: function (response) {
+            if (response.success) {
+              Alert.alert('', "삭제가 완료되었습니다.");
+              fetchListData(); // 데이터 새로고침
+              clearForm(); // 폼 초기화
+            } else {
+              Alert.alert('', "삭제 중 문제가 발생했습니다: ");
+            }
+          },
+          error: function (xhr, status, error) {
+            Alert.alert('', "삭제 요청 중 오류가 발생했습니다.");
+            console.error("Error:", status, error);
           }
-        },
-        error: function (xhr, status, error) {
-          Alert.alert('',"삭제 요청 중 오류가 발생했습니다.");
-          console.error("Error:", status, error);
-        }
+        });
       });
     }
-
-
 
     //초기화
     function clearForm() {
