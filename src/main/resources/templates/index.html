@@ -390,6 +390,7 @@
                                 <div class="input-clear">
                                     <input type="text" id="login_id" name="login_id" class="form-control2" required
                                            readonly="readonly"/>
+                                    <input type="hidden" id="id" name="id"/>
                                 </div>
                             </td>
                             <th>
@@ -429,7 +430,7 @@
                             </th>
                             <td>
                                 <div class="input-clear">
-                                    <input type="text" id="tel" name="tel" placeholder="핸드폰번호">
+                                    <input type="text" id="phone" name="phone" placeholder="핸드폰번호">
                                 </div>
                             </td>
                             <th>
@@ -450,7 +451,7 @@
         </div>
         <div class="popup-button">
             <button class="btn-popup-close" onclick="UserInfoClose()">취소</button>
-            <button class="btn-navy" id="btnSaveAuth">수정</button>
+            <button class="btn-navy" id="btnSaveAuth" onclick="upUserInfo()">수정</button>
         </div>
     </div>
 </div> <!-- //dashboard-layout-popup end -->
@@ -997,115 +998,6 @@
 
 <script type="text/javascript">
 
-    <!-- 점검자 추가 버튼 이벤트-->
-    function addselectField(button) {
-        // 새로운 td 요소를 생성합니다.
-        var newTd = document.createElement('div');
-        newTd.className = 'fl-ac new-fl-ac';
-
-        if (!window.cloneCounter) {
-            window.cloneCounter = 1;
-        } else {
-            window.cloneCounter++;
-        }
-
-        // 새로운 input 요소를 생성합니다.
-        var originalSelect1 = document.getElementById('firstSelect');
-        var newInput = originalSelect1.cloneNode(true);
-        newInput.name = 'spworkcd';
-        newInput.id = originalSelect1.id + window.cloneCounter;
-        // newInput.className = 'wp100';
-        newInput.type = 'select';
-        newInput.width = 180;
-
-        var originalSelect2 = document.getElementById('secondSelect');
-        var newInput2 = originalSelect2.cloneNode(true);
-        newInput2.name = 'spcompcd';
-        // newInput2.className = 'wp100';
-        newInput2.type = 'select';
-        newInput2.id = originalSelect2.id + window.cloneCounter;
-        newInput2.width = 180;
-
-        var originalSelect3 = document.getElementById('thirdSelect');
-        var newInput3 = originalSelect3.cloneNode(true);
-        newInput3.name = 'spplancd';
-        // newInput2.className = 'wp100';
-        newInput3.type = 'select';
-        newInput3.id = originalSelect3.id + window.cloneCounter;
-        newInput3.width = 180;
-
-        // 삭제 버튼을 생성합니다.
-        var deleteButton = document.createElement('button');
-        deleteButton.textContent = '발전시설 삭제';
-        deleteButton.onclick = function () {
-            deleteSelectField(newInput); // 삭제 버튼을 클릭하면 해당 입력 필드를 삭제하는 함수 호출
-            deleteSelectField(newInput2);
-            deleteSelectField(newInput3);
-        };
-        deleteButton.style.marginLeft = '8px';
-        deleteButton.style.color = 'red';
-        deleteButton.style.marginTop = '5px';
-        // 새로운 td에 input 요소와 삭제 버튼을 추가합니다.
-        newTd.appendChild(newInput);
-        newTd.appendChild(newInput2);
-        newTd.appendChild(newInput3);
-        newTd.appendChild(deleteButton);
-
-        // 클릭된 버튼의 부모 td 요소를 찾습니다.
-        var parentTd = button.parentElement;
-
-        // 부모 td 요소 다음에 새로운 td 요소를 추가합니다.
-        parentTd.parentElement.insertBefore(newTd, parentTd.nextSibling);
-
-
-    }
-
-    function deleteSelectField(inputField) {
-        // 입력 필드의 부모 요소(td)를 찾아서 삭제합니다.
-        var tdToDelete = inputField.parentElement;
-        tdToDelete.parentElement.removeChild(tdToDelete);
-    }
-
-
-    function updateNextSelect(param) {
-        let code = param.value;
-        let value = param.options[param.selectedIndex].text;
-
-        console.log(code);
-        console.log(value);
-
-        // param의 다음 형제 요소를 찾습니다.
-        let nextSelect = $(param).next('select');
-
-        if (nextSelect.length) {
-            let nextSelectId = nextSelect.attr('id');
-
-            $.ajax({
-                url: '/user-codes/code',
-                type: 'GET',
-                data: {code: code, value: value},
-                success: function (data) {
-                    nextSelect.empty();
-                    nextSelect.append('<option value="">선택하세요</option>');
-                    data.forEach(function (item) {
-                        nextSelect.append('<option value="' + item.code + '">' + item.value + '</option>');
-                    });
-                },
-                error: function (xhr, status, error) {
-                    // 통신 실패 시 처리
-
-
-                    // 선택 옵션을 비우거나 기본 옵션을 설정할 수 있습니다.
-                    nextSelect.empty();
-                    nextSelect.append('<option value=""></option>');
-                }
-            });
-        } else {
-            console.error('다음 select 요소를 찾을 수 없습니다.');
-        }
-    }
-
-
     function UserInfo() {
         let popup = document.getElementById('popup1');
         let wrapper = document.getElementById('wrapper1');
@@ -1117,9 +1009,11 @@
             success: function (response) {
                 // AJAX 호출 성공 시 처리할 로직
                 if (response && response.data) {
+                    $('#id').val(response.data.id);
                     $('#login_id').val(response.data.login_id); // ID 필드 채우기
                     $('#name').val(response.data.name); // 이름 필드 채우기
                     $('#email').val(response.data.email);
+                    $('#phone').val(response.data.phone);
                 }
                 console.log('사용자 정보 가져오기 성공: ', response);
             },
@@ -1131,6 +1025,59 @@
 
         popup.style.display = 'block';
         wrapper.style.display = 'block';
+    }
+    function upUserInfo() {
+        const id = $('#id').val();
+        const loginId = $('#login_id').val();
+        const name = $('#name').val();
+        const password = $('#PasswordChange').val();
+        const passwordChk = $('#PasswordChangeChk').val();
+        const phone = $('#phone').val();
+        const email = $('#email').val();
+        console.log('ID 값:', id);
+        // 비밀번호 확인 로직 추가
+        if (password !== passwordChk) {
+            Alert.alert('', '비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
+        if (!loginId || !name || !phone || !email) {
+            Alert.alert('', '모든 필수 항목을 입력해주세요.');
+            return;
+        }
+
+        $.ajax({
+            url: '/account/userInfo/update', // 사용자 정보 업데이트 URL
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                id:id,
+                login_id: loginId,
+                name: name,
+                password: password,
+                phone: phone,
+                email: email
+            }),
+            headers: {
+                'X-CSRF-Token': $('[name=_csrf]').val() // CSRF 토큰 추가
+            },
+            success: function (response) {
+                if (response.success) {
+                    Alert.alert('', '사용자 정보가 성공적으로 수정되었습니다.', function () {
+                        // 팝업 닫기 및 데이터 새로고침
+                        UserInfoClose();
+                       /* fetchListData(); // 필요 시 데이터 새로고침*/
+                        location.reload(); // 페이지 새로고침
+                    });
+                } else {
+                    Alert.alert('', '수정 중 문제가 발생했습니다: ' + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('사용자 정보 수정 실패: ', error);
+                Alert.alert('', '사용자 정보 수정 요청 중 오류가 발생했습니다.');
+            }
+        });
     }
 
     /*function UserInfoClose() {
@@ -1148,16 +1095,9 @@
         popup.style.display = 'none';
         wrapper.style.display = 'none';
 
-        // 입력 폼 초기화
+        /*// 입력 폼 초기화
         const form = document.getElementById('userForm');
-        form.reset(); // 폼 전체 초기화
-
-        // 수동으로 초기화가 필요한 필드 (readonly 또는 기본값이 필요한 경우)
-        document.getElementById('login_id').value = ''; // readonly 필드 초기화
-        document.getElementById('postno').value = ''; // 우편번호 초기화
-        document.getElementById('address1').value = ''; // 도로명주소 초기화
-        document.getElementById('address2').value = ''; // 상세주소 초기화
-        document.getElementById('guide').style.display = 'none'; // 가이드 메시지 숨기기
+        form.reset(); // 폼 전체 초기화*/
     }
 
 
@@ -1181,7 +1121,6 @@
     }
 
 </script>
-
 <script type="text/javascript">
     var isChangeLang = 'N';
 

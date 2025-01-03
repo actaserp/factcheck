@@ -2,12 +2,16 @@ package mes.app.system.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
+import mes.app.account.service.TB_xusersService;
 import mes.domain.entity.User;
 import mes.domain.entity.UserGroup;
+import mes.domain.entity.actasEntity.TB_XUSERS;
 import mes.domain.repository.UserGroupRepository;
 import mes.domain.repository.UserRepository;
+import mes.domain.security.Pbkdf2Sha256;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.security.core.Authentication;
@@ -25,6 +29,8 @@ public class UserService {
     SqlRunner sqlRunner;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    TB_xusersService XusersService;
     @Autowired
     private UserGroupRepository userGroupRepository;
 
@@ -331,4 +337,64 @@ public class UserService {
     public void save(User user) {
         userRepository.save(user);
     }
+
+    @Transactional
+    public void updateUserInfo(Map<String, Object> requestData) {
+        Integer id = requestData.get("id") != null ? Integer.valueOf(requestData.get("id").toString()) : null;
+        String name = (String) requestData.get("name");
+        String password = (String) requestData.get("password");
+        String phone = (String) requestData.get("phone");
+        String email = (String) requestData.get("email");
+
+        if (id == null) {
+            throw new IllegalArgumentException("사용자 ID가 제공되지 않았습니다.");
+        }
+
+        // 사용자 조회
+        User user = userRepository.findById(id).orElseThrow(() -> {
+            log.error("사용자 조회 실패: id={}", id);
+            return new RuntimeException("해당 사용자가 없습니다.");
+        });
+
+        // 비밀번호 암호화
+        String encodedPassword = password != null && !password.isEmpty()
+                ? Pbkdf2Sha256.encode(password)
+                : user.getPassword();
+
+        // 사용자 정보 수정
+        user.setPassword(encodedPassword);
+        if (email != null) user.setEmail(email);
+        if (name != null) {
+            user.setFirst_name(name);
+            user.setLast_name(name);
+        }
+        if (phone != null) user.setPhone(phone);
+
+        // 사용자 정보 저장
+        userRepository.save(user);
+
+        log.info("사용자 정보 저장 완료: {}", user);
+
+        // TB_XUSERS 업데이트
+        TB_XUSERS xusers = TB_XUSERS.builder()
+                .passwd1(encodedPassword)
+                .passwd2(encodedPassword)
+                .shapass(encodedPassword)
+                .pernm(name)
+                .build();
+
+        XusersService.save(xusers);
+    }
+
+    public boolean existsById(Integer id) {
+        if (id == null) {
+            return false;
+        }
+        return userRepository.existsById(id);
+    }
+
+    public Optional<User> findById(Integer id) {
+        return userRepository.findById(id);
+    }
+
 }

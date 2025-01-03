@@ -166,7 +166,7 @@ public class UserController {
 
 		try {
 			// 요청 데이터 로그
-			//log.info("Received Request Data: {}", requestData);
+			log.info("Received Request Data: {}", requestData);
 
 			// 데이터 매핑
 			Integer id = (requestData.get("id") != null && !requestData.get("id").toString().isEmpty()) ? Integer.valueOf(requestData.get("id").toString()) : null;
@@ -176,8 +176,15 @@ public class UserController {
 			Integer userGroupId = Integer.valueOf(requestData.get("UserGroup_id").toString());
 			String password = (String) requestData.get("password");
 			String phone = (String) requestData.get("Phone");
-			Boolean isActive = requestData.get("is_active") != null &&
-					Integer.valueOf(requestData.get("is_active").toString()) == 1;
+			Boolean isActive = false;
+			if (requestData.get("is_active") != null) {
+				Object isActiveValue = requestData.get("is_active");
+				if (isActiveValue instanceof Number) {
+					isActive = ((Number) isActiveValue).intValue() == 1;
+				} else if (isActiveValue instanceof String) {
+					isActive = "1".equals(isActiveValue) || "true".equalsIgnoreCase(isActiveValue.toString());
+				}
+			}
 
 			// "ZZ" 값을 전달하여 호출
 			List<Map<String, Object>> results = userService.getCustcdAndSpjangcd("ZZ");
@@ -191,67 +198,74 @@ public class UserController {
 			Map<String, Object> firstRow = results.get(0);
 			String custcd = (String) firstRow.get("custcd");
 			String spjangcd = (String) firstRow.get("spjangcd");
-			String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-
-			boolean isNewUser = (id == null || !userRepository.existsById(id));
-			//log.info("isNewUser: {}, id: {}", isNewUser, id);
 
 			User user;
-			// 신규 사용자 처리
-			if (isNewUser) {
+			if (id != null && userService.existsById(id)) {
+				// 기존 사용자 업데이트
+				user = userService.findById(id).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+				user.setUsername(loginId);
+				user.setPassword(Pbkdf2Sha256.encode(password));
+				user.setPhone(phone);
+				user.setEmail(email);
+				user.setFirst_name(name);
+				user.setLast_name(name);
+				user.setSpjangcd(spjangcd);
+				user.setActive(isActive);
+				user.setDate_joined(user.getDate_joined()); // 기존 가입 날짜 유지
+			} else {
+				// 신규 사용자 생성
 				user = User.builder()
 						.username(loginId)
 						.password(Pbkdf2Sha256.encode(password))
+						.phone(phone)
 						.email(email)
 						.first_name(name)
 						.last_name(name)
+						.tel("")
+						.spjangcd(spjangcd)
 						.active(isActive)
 						.is_staff(false)
 						.date_joined(new Timestamp(System.currentTimeMillis()))
 						.superUser(false)
-						.phone(phone)
-						.spjangcd(spjangcd)
 						.build();
-			} else {
-				// 기존 사용자 업데이트
-				user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("해당 사용자가 없습니다."));
-				/*user.setPassword(Pbkdf2Sha256.encode(password)); */
-				user.setEmail(email);
-				user.setFirst_name(name);
-				user.setLast_name(name);
-				user.setActive(isActive);
-				user.setPhone(phone);
-				//user.setAgencycd(agencycd);
 			}
 
-			// 사용자 저장
-			user = userRepository.save(user);
-			//log.info(isNewUser ? "새 사용자 저장 완료: " : "기존 사용자 업데이트 완료: " + user.getUsername());
+			userService.save(user);
 
 			// 사용자 프로필 처리
-			String profileSql = """
-			SET IDENTITY_INSERT user_profile ON;
-		
-			MERGE INTO user_profile AS target
-			USING (SELECT ? AS _created, ? AS lang_code, ? AS Name, ? AS UserGroup_id, ? AS User_id) AS source
-			ON target.User_id = source.User_id
-			WHEN MATCHED THEN
-				UPDATE SET Name = source.Name, UserGroup_id = source.UserGroup_id
-			WHEN NOT MATCHED THEN
-				INSERT (_created, lang_code, Name, UserGroup_id, User_id)
-				VALUES (source._created, source.lang_code, source.Name, source.UserGroup_id, source.User_id);
-		
-			SET IDENTITY_INSERT user_profile OFF;
-			""";
+			String sql;
+			int rowsUpdated;
 
-			jdbcTemplate.update(
-					profileSql,
-					new Timestamp(System.currentTimeMillis()), // _created
-					"ko-KR",                                  // lang_code
-					name,                                    // Name
-					userGroupId,
-					user.getId()                              // User_id
+			// 먼저 UPDATE를 시도
+			jdbcTemplate.execute("SET IDENTITY_INSERT user_profile ON");
+			sql = """
+						UPDATE user_profile
+						SET Name = ?, UserGroup_id = ?
+						WHERE User_id = ?
+					""";
+			rowsUpdated = jdbcTemplate.update(sql,
+					name,             // Name (사용자 이름)
+					userGroupId,      // UserGroup_id (사용자 그룹 ID)
+					user.getId()      // User_id (사용자 ID)
 			);
+			jdbcTemplate.execute("SET IDENTITY_INSERT user_profile OFF");
+			// UPDATE가 적용되지 않은 경우 INSERT 실행
+			if (rowsUpdated == 0) {
+				jdbcTemplate.execute("SET IDENTITY_INSERT user_profile ON");
+				sql = """
+							INSERT INTO user_profile (_created, lang_code, Name, UserGroup_id, User_id)
+							VALUES (?, ?, ?, ?, ?)
+						""";
+				jdbcTemplate.update(sql,
+						new Timestamp(System.currentTimeMillis()), // 현재 시간
+						"ko-KR",                                   // lang_code (언어 코드)
+						name,                                      // Name (사용자 이름)
+						userGroupId,                               // UserGroup_id (사용자 그룹 ID)
+						user.getId()                               // User_id (사용자 ID)
+				);
+				jdbcTemplate.execute("SET IDENTITY_INSERT user_profile OFF");
+			}
+
 
 			//log.info("User Profile 저장 또는 업데이트 완료");
 
@@ -266,7 +280,6 @@ public class UserController {
 					.spjangcd(spjangcd)
 					.id(new TB_XUSERSId(custcd, loginId))
 					.build();
-
 			XusersService.save(xusers);
 			//log.info("Xusers entry saved successfully for loginId {}", loginId);
 

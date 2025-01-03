@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,6 +21,7 @@ import mes.app.account.service.TB_xusersService;
 import mes.app.system.service.UserService;
 
 import mes.domain.DTO.UserCodeDto;
+import mes.domain.DTO.UserDto;
 import mes.domain.entity.UserCode;
 import mes.domain.entity.UserGroup;
 import mes.domain.entity.actasEntity.TB_XUSERS;
@@ -27,7 +29,7 @@ import mes.domain.entity.actasEntity.TB_XUSERSId;
 import mes.domain.repository.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -38,10 +40,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import mes.domain.entity.User;
@@ -178,9 +177,156 @@ public class AccountController {
 		AjaxResult result = new AjaxResult();
 
 		Map<String, Object> dicData = new HashMap<String, Object>();
+		dicData.put("id", user.getId());
 		dicData.put("login_id", user.getUsername());
 		dicData.put("name", user.getUserProfile().getName());
+		dicData.put("email", user.getEmail());
+		dicData.put("phone", user.getPhone());
 		result.data = dicData;
+		return result;
+	}
+
+	@PostMapping("/account/userInfo/update")
+	@Transactional
+	public AjaxResult updateInfo(@RequestBody Map<String, Object> requestData, Authentication auth) {
+		AjaxResult result = new AjaxResult();
+
+		try {
+			// 요청 데이터 로그
+			log.info("Received Request Data: {}", requestData);
+
+			// 데이터 매핑
+			Integer id = (requestData.get("id") != null && !requestData.get("id").toString().isEmpty())
+					? Integer.valueOf(requestData.get("id").toString())
+					: null; // ID는 Integer로 변환
+			String loginId = (String) requestData.get("login_id");
+			String name = (String) requestData.get("name");
+			String email = (String) requestData.get("email");
+			String password = (String) requestData.get("password");
+			String phone = (requestData.get("phone") != null)
+					? (String) requestData.get("phone")
+					: ""; // "phone" 키가 없을 경우 기본값 빈 문자열 설정
+			Integer userGroupId = (requestData.get("UserGroup_id") != null && !requestData.get("UserGroup_id").toString().isEmpty())
+					? Integer.valueOf(requestData.get("UserGroup_id").toString())
+					: 0; // 기본값 0 설정
+
+			Boolean isActive = true; // 기본값
+			if (requestData.get("is_active") != null) {
+				Object isActiveValue = requestData.get("is_active");
+				if (isActiveValue instanceof Number) {
+					isActive = ((Number) isActiveValue).intValue() == 1;
+				} else if (isActiveValue instanceof String) {
+					isActive = "1".equals(isActiveValue) || "true".equalsIgnoreCase(isActiveValue.toString());
+				}
+			}
+
+
+			// "ZZ" 값을 전달하여 호출
+			List<Map<String, Object>> results = userService.getCustcdAndSpjangcd("ZZ");
+
+			if (results.isEmpty()) {
+			} else {
+				results.forEach(row -> {
+				});
+			}
+			// 첫 번째 조회된 데이터 사용
+			Map<String, Object> firstRow = results.get(0);
+			String custcd = (String) firstRow.get("custcd");
+			String spjangcd = (String) firstRow.get("spjangcd");
+
+			User user;
+			if (id != null && userService.existsById(id)) {
+				// 기존 사용자 업데이트
+				user = userService.findById(id).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+				user.setUsername(loginId);
+				user.setPassword(Pbkdf2Sha256.encode(password));
+				user.setPhone(phone);
+				user.setEmail(email);
+				user.setFirst_name(name);
+				user.setLast_name(name);
+				user.setSpjangcd(spjangcd);
+				user.setActive(isActive);
+				user.setDate_joined(user.getDate_joined()); // 기존 가입 날짜 유지
+			} else {
+				// 신규 사용자 생성
+				user = User.builder()
+						.username(loginId)
+						.password(Pbkdf2Sha256.encode(password))
+						.phone(phone)
+						.email(email)
+						.first_name(name)
+						.last_name(name)
+						.tel("")
+						.spjangcd(spjangcd)
+						.active(isActive)
+						.is_staff(false)
+						.date_joined(new Timestamp(System.currentTimeMillis()))
+						.superUser(false)
+						.build();
+			}
+
+			userService.save(user);
+
+			// 사용자 프로필 처리
+			String sql;
+			int rowsUpdated;
+
+			// 먼저 UPDATE를 시도
+			jdbcTemplate.execute("SET IDENTITY_INSERT user_profile ON");
+			sql = """
+						UPDATE user_profile
+						SET Name = ?
+						WHERE User_id = ?
+					""";
+			rowsUpdated = jdbcTemplate.update(sql,
+					name,             // Name (사용자 이름)
+					user.getId()      // User_id (사용자 ID)
+			);
+			jdbcTemplate.execute("SET IDENTITY_INSERT user_profile OFF");
+			// UPDATE가 적용되지 않은 경우 INSERT 실행
+			if (rowsUpdated == 0) {
+				jdbcTemplate.execute("SET IDENTITY_INSERT user_profile ON");
+				sql = """
+							INSERT INTO user_profile (_created, lang_code, Name, UserGroup_id, User_id)
+							VALUES (?, ?, ?, ?, ?)
+						""";
+				jdbcTemplate.update(sql,
+						new Timestamp(System.currentTimeMillis()), // 현재 시간
+						"ko-KR",                                   // lang_code (언어 코드)
+						name,                                      // Name (사용자 이름)
+						userGroupId,                               // UserGroup_id (사용자 그룹 ID)
+						user.getId()                               // User_id (사용자 ID)
+				);
+				jdbcTemplate.execute("SET IDENTITY_INSERT user_profile OFF");
+			}
+
+
+			//log.info("User Profile 저장 또는 업데이트 완료");
+
+			// XUSERS 정보 설정 및 저장
+			TB_XUSERS xusers = TB_XUSERS.builder()
+					.passwd1(password != null ? password : user.getPassword())
+					.passwd2(password != null ? password : user.getPassword())
+					.shapass(Pbkdf2Sha256.encode(password != null ? password : user.getPassword()))
+					.pernm(name)
+					.useyn("1")
+					.domcls("%")
+					.spjangcd(spjangcd)
+					.id(new TB_XUSERSId(custcd, loginId))
+					.build();
+			XusersService.save(xusers);
+			//log.info("Xusers entry saved successfully for loginId {}", loginId);
+
+			result.success = true;
+			result.message = "저장되었습니다.";
+			result.data = user;
+
+		} catch (Exception e) {
+			//log.error("Error occurred during saveOrUpdate: {}", e.getMessage(), e);
+			result.success = false;
+			result.message = "저장 중 오류가 발생했습니다: " + e.getMessage();
+		}
+
 		return result;
 	}
 
