@@ -23,4 +23,9 @@ public class TB_xusersService {
         return xuserstRepository.findById(tbXusersId);
     }
 
+    public void PasswordChange(String pw, String userid, String password) {
+
+        xuserstRepository.PasswordChange(pw,userid,password);
+    }
+
 }

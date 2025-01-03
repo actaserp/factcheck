@@ -27,6 +27,7 @@ import mes.domain.entity.UserGroup;
 import mes.domain.entity.actasEntity.TB_XUSERS;
 import mes.domain.entity.actasEntity.TB_XUSERSId;
 import mes.domain.repository.*;
+import mes.domain.repository.actasRepository.TB_XuserRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
@@ -71,7 +72,8 @@ public class AccountController {
 
 	@Autowired
 	TB_xusersService XusersService;
-
+	@Autowired
+	TB_XuserRepository xuserstRepository;
 	@Autowired
 	private UserService userService;
 
@@ -87,13 +89,42 @@ public class AccountController {
 
 	private final ConcurrentHashMap<String, String> tokenStore = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<String, Long> tokenExpiry = new ConcurrentHashMap<>();
+    @Autowired
+    private TB_XuserRepository tB_XuserRepository;
 
-	@GetMapping("/login")
+	/*@GetMapping("/login")
 	public ModelAndView loginPage(
 			HttpServletRequest request,
 			HttpServletResponse response,
 			HttpSession session, Authentication auth) {
 		ModelAndView mv = new ModelAndView("login");
+
+		Map<String, Object> userInfo = new HashMap<String, Object>();
+		Map<String, Object> gui = new HashMap<String, Object>();
+
+		mv.addObject("userinfo", userInfo);
+
+		mv.addObject("gui", gui);
+		if(auth!=null) {
+			SecurityContextLogoutHandler handler =  new SecurityContextLogoutHandler();
+			handler.logout(request, response, auth);
+		}
+
+		return mv;
+	}*/
+	@GetMapping("/login")
+	public ModelAndView loginPage(
+			HttpServletRequest request,
+			HttpServletResponse response,
+			HttpSession session, Authentication auth) {
+
+
+		// User-Agent를 기반으로 모바일 여부 감지
+		String userAgent = request.getHeader("User-Agent").toLowerCase();
+		boolean isMobile = userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone");
+
+		// 모바일이면 "mlogin" 뷰로, 아니면 "login" 뷰로 설정
+		ModelAndView mv = new ModelAndView(isMobile ? "mlogin" : "login");
 
 		Map<String, Object> userInfo = new HashMap<String, Object>();
 		Map<String, Object> gui = new HashMap<String, Object>();
@@ -608,7 +639,7 @@ public class AccountController {
 
 
 			userRepository.PasswordChange(pw, userid);
-
+			XusersService.PasswordChange(pw, userid,password);
 
 			result.success = true;
 			result.message = "비밀번호가 변경되었습니다.";
@@ -617,35 +648,6 @@ public class AccountController {
 		}else{
 			return result;
 		}
-
-		/*AjaxResult result = new AjaxResult();
-
-
-		String storedToken = tokenStore.get(mail);
-
-		if(storedToken != null && storedToken.equals(code)){
-			long expiryTime = tokenExpiry.getOrDefault(mail, 0L);
-			if(System.currentTimeMillis() > expiryTime){
-				result.success = false;
-				result.message = "인증 코드가 만료되었습니다.";
-				tokenStore.remove(mail);
-				tokenExpiry.remove(mail);
-			} else {
-
-				String pw = Pbkdf2Sha256.encode(password);
-
-
-				userRepository.PasswordChange(pw, userid);
-
-
-				result.success = true;
-				result.message = "비밀번호가 변경되었습니다.";
-			}
-		}else {
-			result.success = false;
-			result.message = "인증 코드가 유효하지 않습니다.";
-		}*/
-
 
 	}
 
