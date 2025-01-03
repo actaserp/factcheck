@@ -12,6 +12,10 @@ import mes.domain.entity.factcheckEntity.TB_FILEINFO;
 import mes.domain.model.AjaxResult;
 import mes.domain.repository.factcheckRepository.BBSINFORepository;
 import mes.domain.repository.factcheckRepository.FILEINFORepository;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,6 +77,35 @@ public class CM_announcementController {
                     item.put("BBSTODATE", formattedDate);
                 }
             }
+            ObjectMapper objectMapper = new ObjectMapper();
+            if (item.get("hd_files") != null) {
+                try {
+                    // JSON 문자열을 List<Map<String, Object>>로 변환
+                    List<Map<String, Object>> fileitems = objectMapper.readValue((String) item.get("hd_files"), new TypeReference<List<Map<String, Object>>>() {});
+
+                    for (Map<String, Object> fileitem : fileitems) {
+                        if (fileitem.get("filepath") != null && fileitem.get("fileornm") != null) {
+                            String filenames = (String) fileitem.get("fileornm");
+                            String filepaths = (String) fileitem.get("filepath");
+                            String filesvnms = (String) fileitem.get("filesvnm");
+
+                            List<String> fileornmList = filenames != null ? Arrays.asList(filenames.split(",")) : Collections.emptyList();
+                            List<String> filepathList = filepaths != null ? Arrays.asList(filepaths.split(",")) : Collections.emptyList();
+                            List<String> filesvnmList = filesvnms != null ? Arrays.asList(filesvnms.split(",")) : Collections.emptyList();
+
+                            item.put("isdownload", !fileornmList.isEmpty() && !filepathList.isEmpty());
+                        } else {
+                            item.put("isdownload", false);
+                        }
+                    }
+
+                    // fileitems를 다시 item에 넣어 업데이트
+                    item.remove("hd_files");
+                    item.put("hd_files", fileitems);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
         AjaxResult result = new AjaxResult();
         result.data = items;
@@ -109,6 +142,10 @@ public class CM_announcementController {
         AjaxResult result = new AjaxResult();
         ObjectMapper objectMapper = new ObjectMapper();
         User user = (User) auth.getPrincipal();
+        // 유저정보 TB_BBSINFO 객체에 바인드
+        BBSINFO.setBBSUSER(user.getUsername());
+        BBSINFO.setINUSERID(user.getUsername());
+
         try {
             // Repository를 통해 데이터 저장
             bbsinfoRepository.save(BBSINFO);
@@ -140,14 +177,17 @@ public class CM_announcementController {
                     TB_FILEINFO fileinfo = new TB_FILEINFO();
 
                     fileinfo.setFILEPATH(saveFilePath);
+                    fileinfo.setFiledate(BBSINFO.getBBSDATE());
                     fileinfo.setFILEORNM(fileName);
                     fileinfo.setFILESIZE(BigDecimal.valueOf(fileSize));
                     //fileinfo.setINDATEM(); // ("reqdate".replaceAll("-","")
                     fileinfo.setINUSERID(String.valueOf(user.getId()));
                     fileinfo.setFILEEXTNS(ext);
                     fileinfo.setFILEURL(saveFilePath);
+                    fileinfo.setCHECKSEQ("01");
 
                     try {
+                        fileinfo.setBbsseq(BBSINFO.getBBSSEQ());
                         fileinfoRepository.save(fileinfo);
                     }catch (Exception e) {
                         result.success = false;
@@ -180,11 +220,27 @@ public class CM_announcementController {
                 }
                 fileinfoRepository.deleteAll(FileList);
             }
+            // 웹 에디터 이미지 수정시 기존 이미지 삭제 작업
+            if (BBSINFO.getBBSSEQ() != null) {
+                bbsinfoRepository.findById(BBSINFO.getBBSSEQ()).ifPresent(bbsinfo -> {
+                    // 기존 및 새로운 이미지 URL 목록 추출
+                    List<String> originImages = extractImageUrlsFromHtml(bbsinfo.getBBSTEXT());
+                    List<String> newImages = extractImageUrlsFromHtml(BBSINFO.getBBSTEXT());
 
-            result.data = "데이터가 성공적으로 저장되었습니다.";
+                    // 삭제할 이미지 목록 추출 (기존 이미지 중 새로운 이미지에 없는 것)
+                    List<String> imagesToDelete = new ArrayList<>(originImages);
+                    imagesToDelete.removeAll(newImages);
+
+                    // 서버 디렉토리에서 삭제
+                    for (String imageUrl : imagesToDelete) {
+                        deleteImageFromServer(imageUrl);
+                    }
+                });
+            }
+            result.message = "공지사항이 성공적으로 저장되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();
-            result.data = "데이터 저장 중 오류가 발생했습니다.";
+            result.message = "공지사항 저장 중 오류가 발생했습니다.";
         }
 
         return result;
@@ -198,6 +254,13 @@ public class CM_announcementController {
             // Repository를 통해 데이터 저장
             cmAnnouncementService.deleteBBS(BBSSEQ);
             cmAnnouncementService.deleteFile(BBSSEQ);
+            bbsinfoRepository.findById(BBSSEQ).ifPresent(bbsinfo -> {
+                List<String> deleteImages = extractImageUrlsFromHtml(bbsinfo.getBBSTEXT());
+                // 서버 디렉토리에서 삭제
+                for (String imageUrl : deleteImages) {
+                    deleteImageFromServer(imageUrl);
+                }
+            });
             result.data = "데이터가 성공적으로 저장되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();
@@ -205,6 +268,48 @@ public class CM_announcementController {
         }
 
         return result;
+    }
+
+    // 에디터 파일 파싱 메서드
+    private List<String> extractImageUrlsFromHtml(String htmlContent) {
+        List<String> imageUrls = new ArrayList<>();
+
+        try {
+            // JSoup 라이브러리를 사용해 HTML 파싱
+            Document doc = Jsoup.parse(htmlContent);
+            Elements images = doc.select("img"); // <img> 태그 선택
+
+            for (Element img : images) {
+                String src = img.attr("src"); // src 속성 값 추출
+                if (src != null && !src.isEmpty()) {
+                    imageUrls.add(src);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return imageUrls;
+    }
+    // 에디터 파일 삭제 메서드
+    private boolean deleteImageFromServer(String imageUrl) {
+        try {
+            // 이미지 URL에서 파일 경로 추출
+            String uploadDir = "c:/temp/editorFile/"; // 업로드된 파일이 저장된 디렉토리
+            String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1); // 파일 이름 추출
+            File file = new File(uploadDir + fileName);
+
+            // 파일 존재 여부 확인 후 삭제
+            if (file.exists()) {
+                return file.delete();
+            } else {
+                System.err.println("삭제할 파일이 존재하지 않습니다: " + file.getAbsolutePath());
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }

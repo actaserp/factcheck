@@ -319,7 +319,7 @@
     }
     // 공지사항 그리드
     function fetchListData() {
-      let data2 = [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}];
+      let data2 = [];
       $.ajax({
           url: '/api/announcement/read',
           type: 'GET',
@@ -372,14 +372,30 @@
             let row = hitTest.row;
             let item = theGrid.rows[row].dataItem;
 
-            document.getElementById('bbsseq').value = item.bbsseq;
-            document.getElementById('panel_t').value = item.panel_t;
-            document.getElementById('panel_w').value = item.panel_w;
-            document.getElementById('panel_l').value = item.panel_l;
-            document.getElementById('reqseq').value = item.reqseq;
-            document.getElementById('isnew').value = item.isnew;
-            tinymce.get('remark').setContent(item.remark);  // 'ordtext'는 TinyMCE가 적용된 요소의 id
+            document.getElementById('bbsseq').value = item.BBSSEQ;
+            document.getElementById('subject').value = item.BBSSUBJECT;
+            document.getElementById('create_date').value = item.BBSDATE;
+            document.getElementById('show_start_date').value = item.BBSFRDATE;
+            document.getElementById('show_end_date').value = item.BBSTODATE;
+            document.getElementById('tel').value = item.BBSTEL;
+            tinymce.get('remark').setContent(item.BBSTEXT);  // 'ordtext'는 TinyMCE가 적용된 요소의 id
           }
+          let fileList = Array.isArray(item.hd_files) ? item.hd_files : [];
+
+          deletedFiles2 = [];
+          uploadedFiles2 = [];
+
+          fileList.forEach(file => {
+            let newFile = {
+              name: file.fileornm,
+              type: file.fileextns,
+              size: file.filesize,
+              fileid: file.fileid,
+              reqseq: item.reqseq,
+              lastModified: new Date().getTime(),
+            };
+            uploadedFiles2.push(newFile); // 파일 리스트에 추가
+          });
         })
       } else {
         // 이미 FlexGrid이 존재하는 경우, 데이터만 업데이트
@@ -423,6 +439,7 @@
 
       Alert.confirm('', alertMessage, function () {
         let formData = new FormData();
+        formData.append('BBSSEQ', $('#bbsseq').val())
         formData.append('BBSSUBJECT', $('#subject').val());
         formData.append('BBSTEXT', tinymce.get('remark').getContent());
         formData.append('BBSTEL', $('#tel').val());
@@ -509,11 +526,24 @@
     // 신규등록 버튼(폼 데이터 초기화)
     function resetFormFields(){
       const fieldsToReset = [
-        'subject', 'create_date', 'show_start_date', 'show_end_date','tel','remark'
+        'bbsseq',
+        'subject', 'create_date', 'show_start_date', 'show_end_date','tel'
       ];
       fieldsToReset.forEach(fieldId => {
         document.getElementById(fieldId).value = '';
       });
+      // TinyMCE 에디터 초기화
+      const editor = tinymce.get('remark'); // 'remark'는 TinyMCE가 초기화된 textarea의 ID
+      if (editor) {
+        editor.setContent(''); // 에디터 내용 초기화
+      }
+      document.getElementById('create_date').value = today;
+      $('.filelist2').empty(); // 파일 리스트 초기화
+      uploadedFiles2 = []; // 업로드된 파일 리스트 초기화
+      deletedFiles2 = [];
+      // 초기화된 파일 개수 업데이트
+      updateFileCount2();
+      resetFileInput($('.fileInput2'));
     }
 
   </script>

@@ -18,12 +18,14 @@ public class TB_FILEINFO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    Integer BBSSEQ;     // 순번
+    Integer fileseq;     // 순번
 
     @Column
-    String BBSDATE;    // 작성일자
+    String filedate;    // 작성일자
     @Column
-    String CHECKSEQ;   // 순번
+    String CHECKSEQ;   // 테이블 인식자 ( 01 : 공지사항 / 02 : 1:1문의)
+    @Column
+    int bbsseq;
     @Column
     String FILEPATH;
     @Column
@@ -39,7 +41,7 @@ public class TB_FILEINFO {
     @Column
     String FILEREM;
     @Column
-    String REPTN;
+    String REPYN;
     @Column
     Date INDATEM;
     @Column

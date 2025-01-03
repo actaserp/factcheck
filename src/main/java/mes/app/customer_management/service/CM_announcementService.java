@@ -19,9 +19,20 @@ public class CM_announcementService {
 
         String sql = """
                 SELECT
-                    *
+                    b.*,
+                    JSON_ARRAYAGG(
+                            JSON_OBJECT(
+                                'fileseq', f.FILESEQ,
+                                'filename', f.FILENAME,
+                                'filepath', f.FILEPATH
+                            )
+                        ) AS fileInfos
                 FROM
-                    TB_BBSINFO
+                    TB_BBSINFO b
+                LEFT JOIN
+                    TB_FILEINFO f
+                ON
+                    b.BBSSEQ = f.bbsseq
                 """;
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
