@@ -16,6 +16,10 @@
     .button-wrap {
       text-align: right; /* 오른쪽 정렬 */
     }
+    th {
+      padding: 10px;
+      white-space: nowrap; /* 텍스트 잘림 방지 */
+    }
 
     .button-list {
       display: inline-block; /* 가로로 나열 */
@@ -127,7 +131,7 @@
                     <table class="view-table" id="selectedData" style="max-height: 800px;">
                       <caption>급등관리 상세 테이블</caption>
                       <colgroup>
-                        <col class="wp20">
+                        <col class="wp50">
                         <col class="wauto">
                       </colgroup>
                       <tbody>
@@ -175,7 +179,7 @@
                         </td>
                       </tr>
                       <tr>
-                        <th><label for="grcolor">표시색상</label></th>
+                        <th><label for="grcolor">표시 색상</label></th>
                         <td>
                           <select id="grcolor" name="grcolor" class="wp100" onchange="changeColor(this)">
                             <option value="0">선택하세요</option>

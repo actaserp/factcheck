@@ -29,7 +29,7 @@ public class TB_registerService {
     SqlRunner sqlRunner;
 
     public TB_REGISTER saveOrUpdateRegister(Map<String, Object> formData) {
-        // 기본 키 확인 (수정인지 새로 저장인지 판단)
+        //수정인지 새로 저장인지 확인
         Integer regSeq = formData.get("REGSEQ") != null ? Integer.parseInt(formData.get("REGSEQ").toString()) : null;
 
         TB_REGISTER tbRegister;
@@ -138,8 +138,8 @@ public class TB_registerService {
             sql.append(" AND uc1.Value LIKE :regnm_display");
             params.addValue("regnm_display", "%" + searchInput + "%");
         }
-        log.info("Generated SQL: {}", sql);
-        log.info("SQL Parameters: {}", params.getValues());
+        //log.info("Generated SQL: {}", sql);
+        //log.info("SQL Parameters: {}", params.getValues());
         return sqlRunner.getRows(sql.toString(), params);
     }
 
@@ -159,8 +159,8 @@ public class TB_registerService {
         }
 
         // SQL과 파라미터 로그 출력
-        log.info("Generated SQL: {}", sql);
-        log.info("SQL Parameters: {}", params.getValues());
+       // log.info("Generated SQL: {}", sql);
+       // log.info("SQL Parameters: {}", params.getValues());
         return sqlRunner.getRows(sql.toString(), params);
     }
 

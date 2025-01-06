@@ -56,7 +56,7 @@
                                     </dt>
                                     <dd>
                                         <div class="srch-box">
-                                            <input id="keyword" name="keyword" class="form-control2" placeholder="회원명"/>
+                                            <input id="keyword" name="keyword" class="form-control2" placeholder="사용자명"/>
                                         </div>
                                     </dd>
                                 </dl>
@@ -65,8 +65,8 @@
                                     <dt><span class="eq"></span></dt>
                                     <dd>
                                         <li>
-                                            <a class="btn btn-delete" title="검색" id="btnSearch3">
-                                                <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                                            <a class="btn btn-delete" title="검색" id="btnSearch3" onclick="fetchListData()">
+                                                <img src="/images/icon/btn-srch.svg" alt="검색 아이콘" >
                                                 검색
                                             </a>
                                         </li>
@@ -127,72 +127,72 @@
         }
 
         function fetchListData() {
-            let data2 = [
-                {rownum: 1,name: '홍길동',state: 'login',login_time: '2024-12-19 09:00:00',logout_time: '2024-12-19 18:00:00',useTime: '9시간 0분',email: 'hong@example.com',number: 2,remark: ''},
-                {rownum: 2,name: '김철수',state: 'logout',login_time: '2024-12-18 08:50:00',logout_time: '2024-12-18 17:40:00',useTime: '8시간 50분',email: 'kim@example.com',number: 3,remark: ''},
-                {rownum: 3,name: '박영희',state: 'logout',login_time: '',logout_time: '',useTime: '0시간 0분',email: 'park@example.com',number: 1,remark: ''},
-                {rownum: 4,name: '최수진',state: 'login',login_time: '2024-12-19 08:45:00',logout_time: '2024-12-19 18:10:00',useTime: '9시간 25분',email: 'choi@example.com',number: 4,remark: ''},
-                {rownum: 5,name: '이민호',state: 'logout',login_time: '2024-12-18 09:10:00',logout_time: '2024-12-18 18:05:00',useTime: '8시간 55분',email: 'lee@example.com',number: 5,remark: ''}
-            ];
-            // 서버에서 데이터 가져오기
-            /*$.ajax({
-              url: '/api/ProgressStatus/read',
-              type: 'GET',
-              data: queryParams,
-              async: false,
-              success: function (response) {
-                // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
-                if (response && Array.isArray(response.data)) {
-                  data2 = response.data.map((item, index) => ({
-                    rownum: index + 1
-                  }));
-                }
-              },
-              error: function () {
-                console.error("데이터를 가져오는 중 오류가 발생했습니다.");
-              }
-            });*/
+            const params = {
+                srchStartDt: $('#srchStartDt').val(), // 시작일 값 읽기
+                srchEndDt: $('#srchEndDt').val(),     // 종료일 값 읽기
+                keyword: $('#keyword').val()         // 키워드 값 읽기
+            };
+            $.ajax({
+                url: '/api/system/loginlog/read2',
+                type: 'GET',
+                data: params,
+                success: function (response) {
+                    if (response && Array.isArray(response.data)) {
+                        data = response.data.map((item, index) => ({
+                            rownum: index + 1,
+                            name: item.name || '',
+                            first_name: item.first_name || '' ,
+                            state: item.state || '',
+                            login_time: item.login_time || '',
+                            logout_time: item.logout_time || '',
+                            useTime: item.useTime || '',
+                            email: item.email || '',
+                            number: item.number || '',
+                            remark: item.remark || ''
+                        }));
 
-            while (data2.length < 10) {
-                data2.push({
-                    rownum: data2.length + 1,
-                    name: '',
-                    state: '',
-                    login_time: '',
-                    logout_time: '',
-                    useTime: '',
-                    email: '',
-                    number: '',
-                    remark: '',
-                });
-            }
+                        while (data.length < 10) {
+                            data.push({
+                                rownum: data.length + 1,
+                                name: '',
+                                first_name: '',
+                                state: '',
+                                login_time: '',
+                                logout_time: '',
+                                useTime: '',
+                                email: '',
+                                number: '',
+                                remark: '',
+                            });
+                        }
+                    }
+                    const viewdata = new wijmo.collections.CollectionView(data);
 
-            const viewdata = new wijmo.collections.CollectionView(data2);
-
-            if (!theGrid) {
-                theGrid = new wijmo.grid.FlexGrid('#theGrid', {
-                    autoGenerateColumns: false,
-                    showMarquee: true,
-                    isReadOnly: true,
-                    columns: [
-                        {binding: 'rownum', header: 'No', width: 80, align: 'center'},
-                        {binding: 'name', header: '사용자명', width: 160, align: 'center'},
-                        {binding: 'state', header: '상태', width: 150, align: 'center'},
-                        {binding: 'login_time', header: '로그인 시간', width: 200, align: 'center'},
-                        {binding: 'logout_time', header: '로그아웃 시간', width: 200, align: 'center'},
-                        {binding: 'useTime', header: '이용 시간', width: 170, align: 'center'},
-                        {binding: 'email', header: '이메일', width: 200, align: 'center'},
-                        {binding: 'number', header: '조회건수', width: 90, align: 'center'},
-                        {binding: 'remark', header: '비고', width: "*", align: 'center'},
-                    ],
-                    itemsSource: viewdata
-                });
-
-                theGrid.rowHeaders.columns.splice(0, 1);
-            } else {
-                theGrid.itemsSource = viewdata;
-            }
+                    if (!theGrid) {
+                        theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+                            autoGenerateColumns: false,
+                            columns: [
+                                { binding: 'rownum', header: 'No', width: 80, align: 'center' },
+                                { binding: 'name', header: '사용자ID', width: 160, align: 'center' },
+                                { binding: 'first_name', header: '사용자명', width: 160, align: 'center' },
+                                { binding: 'state', header: '상태', width: 130, align: 'center' },
+                                { binding: 'login_time', header: '로그인 시간', width: 200, align: 'center' },
+                                { binding: 'logout_time', header: '로그아웃 시간', width: 200, align: 'center' },
+                                { binding: 'useTime', header: '이용 시간', width: 170, align: 'center' },
+                                { binding: 'email', header: '이메일', width: 220, align: 'center' },
+                                { binding: 'number', header: '조회건수', width: 90, align: 'center' },
+                                { binding: 'remark', header: '비고', width: '*', align: 'center' },
+                            ],
+                            itemsSource: viewdata,
+                        });
+                        theGrid.rowHeaders.columns.splice(0, 1);
+                    } else {
+                        theGrid.itemsSource = viewdata;
+                    }
+                },
+            });
         }
+
     </script>
 </th:block>
 
