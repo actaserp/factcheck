@@ -157,6 +157,10 @@
         var viewdata;
 
         document.readyState === 'complete' ? init() : window.onload = init;
+        // 오늘 날짜 설정
+        const date = new Date();
+        date.setHours(date.getHours() + 9); // UTC+9로 한국 시간 설정
+        const today = date.toISOString().split('T')[0];
 
         function init() {
             faqHtml();
@@ -277,6 +281,8 @@
                 formData.append('REMARK', $('#remark').val());
                 formData.append('CHSEQ', $('#faqseq').val());
                 formData.append('FAQSEQ', $('#answerNo').val());
+                formData.append('INDATEM', today);
+                formData.append('FLAG', '1');
                 console.log("formData : ", formData);
                 function sendAjaxRequest(url) {
                     $.ajax({

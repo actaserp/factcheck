@@ -13,14 +13,80 @@ public class CM_QnaService {
     @Autowired
     SqlRunner sqlRunner;
 
-    // FAQ 답변등록
-    public void saveRegisterScore() {
+    // QnA 문의내역 리스트
+    public List<Map<String, Object>> getQnAList(String searchText) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
+        StringBuilder sql = new StringBuilder("""
+                   SELECT
+                        Q.QSTSEQ,
+                        Q.QSTTEXT,
+                        Q.FLAG,
+                        Q.QSTSORT,
+                        Q.CHSEQ,
+                        Q.INDATEM,
+                        Q.INUSERID,
+                        Q.USERID,
+                        Q.INDATEM,
+                        A.QSTSEQ AS answerNo,
+                        A.QSTTEXT AS answer,
+                        A.INDATEM AS answerdate,
+                        A.QSTTEL AS answerTel,
+                        STRING_AGG(CAST(F.FILEORNM AS VARCHAR(MAX)), ',') AS fileornm,
+                        STRING_AGG(CAST(F.FILEPATH AS VARCHAR(MAX)), ',') AS filepath,
+                        STRING_AGG(CAST(F.FILESIZE AS VARCHAR(MAX)), ',') AS filesize,
+                        STRING_AGG(CAST(F.FILEEXTNS AS VARCHAR(MAX)), ',') AS fileextns
+                    FROM
+                        TB_USERQST Q
+                    LEFT JOIN
+                        TB_USERQST A
+                    ON
+                        Q.QSTSEQ = A.CHSEQ
+                    LEFT JOIN
+                        TB_FILEINFO F
+                    ON
+                        Q.QSTSEQ = F.BBSSEQ
+                        AND F.CHECKSEQ = '02'
+                    WHERE
+                        Q.FLAG = '0'
+                """);
+        // 문의내용필터
+        if (searchText != null && !searchText.isEmpty()) {
+            sql.append(" AND Q.QSTTEXT LIKE :searchText");
+            params.addValue("searchText", "%" + searchText + "%");
+        }
+        //  GROUP BY 조건 추가
+        sql.append(" GROUP BY" +
+                "                    Q.QSTSEQ, Q.INDATEM, Q.USERID, Q.QSTTEXT, Q.FLAG, Q.QSTSORT, Q.CHSEQ, Q.INDATEM, Q.INUSERID, A.QSTSEQ, A.QSTTEXT, A.INDATEM, A.QSTTEL");
+        List<Map<String,Object>> items = this.sqlRunner.getRows(sql.toString(),params);
+        return items;
+    }
+    // FAQ delete
+    public void deleteQnA(int faqseq) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+
         String sql = """
-                
+                DELETE FROM TB_USERQST
+                WHERE FAQSEQ = :faqseq
                 """;
+        params.addValue("faqseq", faqseq);
+
+        int deleteCnt = this.sqlRunner.execute(sql,params);
+    }
+    // File delete
+    public List<Map<String, Object>> deleteFile(int faqseq) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+
+        String sql = """
+                DELETE FROM TB_FILEINFO
+                WHERE FAQSEQ = :faqseq
+                AND FLAG = '02'
+                """;
+        params.addValue("faqseq", faqseq);
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
+        return items;
     }
 }

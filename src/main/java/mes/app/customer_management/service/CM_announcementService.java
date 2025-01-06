@@ -14,28 +14,37 @@ public class CM_announcementService {
     SqlRunner sqlRunner;
 
     // BBS read
-    public List<Map<String, Object>> getBBSList() {
+    public List<Map<String, Object>> getBBSList(String searchText) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
-        String sql = """
+        params.addValue("searchText", "%" + searchText + "%");
+
+        StringBuilder sql = new StringBuilder("""
                 SELECT
                     b.*,
-                    JSON_ARRAYAGG(
-                            JSON_OBJECT(
-                                'fileseq', f.FILESEQ,
-                                'filename', f.FILENAME,
-                                'filepath', f.FILEPATH
-                            )
-                        ) AS fileInfos
+                    COALESCE((
+                        SELECT JSON_QUERY((
+                            SELECT
+                                f.FILESEQ AS fileseq,
+                                f.FILESIZE AS filesize,
+                                f.FILEEXTNS AS fileextns,
+                                f.FILEORNM AS fileornm,
+                                f.FILEPATH AS filepath
+                            FROM TB_FILEINFO f
+                            WHERE b.BBSSEQ = f.BBSSEQ
+                            AND f.CHECKSEQ = '01'
+                            FOR JSON PATH
+                        ))
+                    ), '[]') AS fileInfos
                 FROM
                     TB_BBSINFO b
-                LEFT JOIN
-                    TB_FILEINFO f
-                ON
-                    b.BBSSEQ = f.bbsseq
-                """;
-
-        List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
+                WHERE 1=1
+                """);
+        // 제목필터
+        if (searchText != null && !searchText.isEmpty()) {
+            sql.append(" AND b.BBSSUBJECT LIKE :searchText");
+        }
+        List<Map<String,Object>> items = this.sqlRunner.getRows(sql.toString(),params);
         return items;
     }
     // BBS delete
@@ -60,6 +69,7 @@ public class CM_announcementService {
         String sql = """
                 DELETE FROM TB_FILEINFO
                 WHERE FAQSEQ = :faqseq
+                AND FLAG = '01'
                 """;
         params.addValue("faqseq", faqseq);
 

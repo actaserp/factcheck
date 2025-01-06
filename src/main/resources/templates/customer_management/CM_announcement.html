@@ -83,7 +83,7 @@
                 <dd>
                   <div class="srch-box">
                     <input type="text" id="txtCode" name="txtCode" class="input-srch">
-                    <a class="btn-srch" id="btnSearch" title="검색"></a>
+                    <a class="btn-srch" id="btnSearch" title="검색" onclick="fetchListData()"></a>
                   </div>
                 </dd>
               </dl>
@@ -103,7 +103,7 @@
                   </a>
                 </li>
                 <li>
-                  <a class="btn btn-delete" title="삭제" id="btnDelete">
+                  <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="deleteAnswer($('#bbsseq').val())">
                     <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
                     삭제
                   </a>
@@ -323,7 +323,9 @@
       $.ajax({
           url: '/api/announcement/read',
           type: 'GET',
-          data: {},
+          data: {
+            'search_text': $('#txtCode').val(),
+          },
           async: false,
           success: function (data) {
               data2 = data.data;
@@ -379,23 +381,30 @@
             document.getElementById('show_end_date').value = item.BBSTODATE;
             document.getElementById('tel').value = item.BBSTEL;
             tinymce.get('remark').setContent(item.BBSTEXT);  // 'ordtext'는 TinyMCE가 적용된 요소의 id
+
+            // filelist 처리
+            let fileList = Array.isArray(item.filelist) ? item.filelist : [];
+
+            deletedFiles2 = [];
+            uploadedFiles2 = [];
+
+            fileList.forEach(file => {
+              let newFile = {
+                name: file.fileornm,
+                type: file.fileextns,
+                size: file.filesize,
+                fileid: file.fileid,
+                reqseq: item.reqseq,
+                lastModified: new Date().getTime(),
+              };
+              uploadedFiles2.push(newFile); // 파일 리스트에 추가
+            });
+
+
+            $('.filelist2').empty(); // 파일 리스트 초기화
+            updateFileCount2();
+            updateFileListUI2();
           }
-          let fileList = Array.isArray(item.hd_files) ? item.hd_files : [];
-
-          deletedFiles2 = [];
-          uploadedFiles2 = [];
-
-          fileList.forEach(file => {
-            let newFile = {
-              name: file.fileornm,
-              type: file.fileextns,
-              size: file.filesize,
-              fileid: file.fileid,
-              reqseq: item.reqseq,
-              lastModified: new Date().getTime(),
-            };
-            uploadedFiles2.push(newFile); // 파일 리스트에 추가
-          });
         })
       } else {
         // 이미 FlexGrid이 존재하는 경우, 데이터만 업데이트

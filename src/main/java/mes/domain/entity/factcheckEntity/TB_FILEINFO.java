@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -43,7 +44,7 @@ public class TB_FILEINFO {
     @Column
     String REPYN;
     @Column
-    Date INDATEM;
+    LocalDateTime INDATEM;
     @Column
     String INUSERID;
 

@@ -47,8 +47,8 @@ public class CM_announcementController {
 
     // 문의 리스트
     @GetMapping("/read")
-    public AjaxResult getBBSList(){
-        List<Map<String, Object>> items = cmAnnouncementService.getBBSList();
+    public AjaxResult getBBSList(@RequestParam(value = "search_text", required = false) String searchText){
+        List<Map<String, Object>> items = cmAnnouncementService.getBBSList(searchText);
 
         for(Map<String, Object> item : items){
             item.put("no", items.indexOf(item)+1);
@@ -78,10 +78,10 @@ public class CM_announcementController {
                 }
             }
             ObjectMapper objectMapper = new ObjectMapper();
-            if (item.get("hd_files") != null) {
+            if (item.get("fileinfos") != null) {
                 try {
                     // JSON 문자열을 List<Map<String, Object>>로 변환
-                    List<Map<String, Object>> fileitems = objectMapper.readValue((String) item.get("hd_files"), new TypeReference<List<Map<String, Object>>>() {});
+                    List<Map<String, Object>> fileitems = objectMapper.readValue((String) item.get("fileinfos"), new TypeReference<List<Map<String, Object>>>() {});
 
                     for (Map<String, Object> fileitem : fileitems) {
                         if (fileitem.get("filepath") != null && fileitem.get("fileornm") != null) {
@@ -100,8 +100,8 @@ public class CM_announcementController {
                     }
 
                     // fileitems를 다시 item에 넣어 업데이트
-                    item.remove("hd_files");
-                    item.put("hd_files", fileitems);
+                    item.remove("fileinfos");
+                    item.put("filelist", fileitems);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -261,6 +261,8 @@ public class CM_announcementController {
                     deleteImageFromServer(imageUrl);
                 }
             });
+            // 파일 서버에서 삭제
+
             result.data = "데이터가 성공적으로 저장되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();
