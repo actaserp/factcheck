@@ -1,16 +1,13 @@
 package mes.app.customer_management;
 
 import mes.app.customer_management.service.CM_FAQService;
-import mes.app.register.service.RegisterService;
 import mes.domain.entity.factcheckEntity.TB_FAQINFO;
 import mes.domain.model.AjaxResult;
 import mes.domain.repository.factcheckRepository.FAQRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
 

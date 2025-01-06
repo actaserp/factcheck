@@ -93,7 +93,22 @@ public class LoginLogController {
 							"Unknown".equals(item.get("login_id"))
 			);
 
+			LocalDate today = LocalDate.now();
+
 			for (Map<String, Object> item : items) {
+				// 상태 변경: 로그아웃 시간이 현재 날짜와 다른 경우
+				if (item.containsKey("logout_time") && item.get("logout_time") != null) {
+					try {
+						String logoutTimeStr = item.get("logout_time").toString();
+						LocalDate logoutDate = LocalDate.parse(logoutTimeStr.substring(0, 10)); // "YYYY-MM-DD" 추출
+						if (!logoutDate.equals(today)) {
+							item.put("state", "LOGOUT");
+						}
+					} catch (Exception e) {
+						log.error("로그아웃 시간 처리 중 오류 발생: {}", e.getMessage());
+					}
+				}
+
 				if (item.containsKey("useTime") && item.get("useTime") != null) {
 					try {
 						double useTime = Double.parseDouble(item.get("useTime").toString());

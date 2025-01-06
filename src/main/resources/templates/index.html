@@ -447,6 +447,10 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="container-fluid">
+                    <p id="RealInfoItem"></p>
+                    <div id="theGrid" style="max-height: 300px;"></div>
+                </div>
             </form>
         </div>
         <div class="popup-button">
@@ -997,6 +1001,7 @@
 </script>
 
 <script type="text/javascript">
+    let theGrid;
 
     function UserInfo() {
         let popup = document.getElementById('popup1');
@@ -1026,6 +1031,7 @@
         popup.style.display = 'block';
         wrapper.style.display = 'block';
     }
+
     function upUserInfo() {
         const id = $('#id').val();
         const loginId = $('#login_id').val();
@@ -1080,13 +1086,6 @@
         });
     }
 
-    /*function UserInfoClose() {
-        let popup = document.getElementById('popup1');
-        let wrapper = document.getElementById('wrapper1');
-
-        popup.style.display = 'none';
-        wrapper.style.display = 'none';
-    }*/
     function UserInfoClose() {
         // 팝업 닫기
         let popup = document.getElementById('popup1');
