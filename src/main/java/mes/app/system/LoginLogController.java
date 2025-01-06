@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import mes.app.system.service.LoginLogService;
 import mes.domain.model.AjaxResult;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/system/loginlog")
 public class LoginLogController {
@@ -86,24 +88,25 @@ public class LoginLogController {
 
 		// 반환 전 날짜 포맷 처리
 		if (items != null && !items.isEmpty()) {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
-			DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			items.removeIf(item ->
+					"Unknown".equals(item.get("name")) ||
+							"Unknown".equals(item.get("login_id"))
+			);
 
 			for (Map<String, Object> item : items) {
-				// login_time과 logout_time 처리
-				if (item.containsKey("login_time") && item.get("login_time") != null) {
-					item.put("login_time",
-							LocalDateTime.parse(item.get("login_time").toString(), formatter).format(outputFormatter));
-				}
-				if (item.containsKey("logout_time") && item.get("logout_time") != null) {
-					item.put("logout_time",
-							LocalDateTime.parse(item.get("logout_time").toString(), formatter).format(outputFormatter));
-				}
 				if (item.containsKey("useTime") && item.get("useTime") != null) {
-					double useTime = Double.parseDouble(item.get("useTime").toString());
-					int hours = (int) useTime; // 정수 부분은 시간
-					int minutes = (int) Math.round((useTime - hours) * 60); // 소수 부분은 분으로 변환
-					item.put("useTime", String.format("%d시간 %02d분", hours, minutes));
+					try {
+						double useTime = Double.parseDouble(item.get("useTime").toString());
+						int hours = (int) useTime; // 정수 부분은 시간
+						int minutes = (int) Math.round((useTime - hours) * 60); // 소수 부분은 분으로 변환
+
+						// "시간 분" 형식으로 변환하여 저장
+						item.put("useTime", String.format("%d시간 %02d분", hours, minutes));
+					} catch (NumberFormatException e) {
+						// 숫자 변환 실패 시 기본값 또는 에러 처리
+						item.put("useTime", "0시간 00분");
+						log.error("useTime 값을 변환하는 동안 오류 발생: {}", e.getMessage());
+					}
 				}
 			}
 		}

@@ -9,7 +9,7 @@
         <!-- Page Title -->
         <div class="page-title-wrap">
             <div class="left">
-                <h2>사용자 로그인 현황</h2>
+                <h2>사용자 로그인 현황</h2> <!--모바일 사용자 로그인 현황보여줌-->
                 <!--                <a title="북마크" class="bookmark toggle">-->
                 <!--                    내메뉴-->
                 <!--                </a>-->
@@ -128,9 +128,9 @@
 
         function fetchListData() {
             const params = {
-                srchStartDt: $('#srchStartDt').val(), // 시작일 값 읽기
-                srchEndDt: $('#srchEndDt').val(),     // 종료일 값 읽기
-                keyword: $('#keyword').val()         // 키워드 값 읽기
+                srchStartDt: $('#srchStartDt').val(),
+                srchEndDt: $('#srchEndDt').val(),
+                keyword: $('#keyword').val()
             };
             $.ajax({
                 url: '/api/system/loginlog/read2',
@@ -141,13 +141,13 @@
                         data = response.data.map((item, index) => ({
                             rownum: index + 1,
                             name: item.name || '',
-                            first_name: item.first_name || '' ,
+                            login_id: item.login_id || '' ,
                             state: item.state || '',
                             login_time: item.login_time || '',
                             logout_time: item.logout_time || '',
                             useTime: item.useTime || '',
                             email: item.email || '',
-                            number: item.number || '',
+                            views: item.views || '',
                             remark: item.remark || ''
                         }));
 
@@ -155,13 +155,13 @@
                             data.push({
                                 rownum: data.length + 1,
                                 name: '',
-                                first_name: '',
+                                login_id: '',
                                 state: '',
                                 login_time: '',
                                 logout_time: '',
                                 useTime: '',
                                 email: '',
-                                number: '',
+                                views: '',
                                 remark: '',
                             });
                         }
@@ -173,14 +173,14 @@
                             autoGenerateColumns: false,
                             columns: [
                                 { binding: 'rownum', header: 'No', width: 80, align: 'center' },
-                                { binding: 'name', header: '사용자ID', width: 160, align: 'center' },
-                                { binding: 'first_name', header: '사용자명', width: 160, align: 'center' },
+                                { binding: 'login_id', header: '사용자ID', width: 160, align: 'center' },
+                                { binding: 'name', header: '사용자명', width: 160, align: 'center' },
                                 { binding: 'state', header: '상태', width: 130, align: 'center' },
                                 { binding: 'login_time', header: '로그인 시간', width: 200, align: 'center' },
                                 { binding: 'logout_time', header: '로그아웃 시간', width: 200, align: 'center' },
                                 { binding: 'useTime', header: '이용 시간', width: 170, align: 'center' },
                                 { binding: 'email', header: '이메일', width: 220, align: 'center' },
-                                { binding: 'number', header: '조회건수', width: 90, align: 'center' },
+                                { binding: 'views', header: '조회건수', width: 90, align: 'center' },
                                 { binding: 'remark', header: '비고', width: '*', align: 'center' },
                             ],
                             itemsSource: viewdata,

@@ -76,79 +76,101 @@ public class LoginLogService {
 
         // SQL 생성
         StringBuilder sql = new StringBuilder("""
+    WITH DailyUsage AS (
         SELECT
-             login_id AS name,
-             first_name,
-             날짜,
-             email,
-             MIN(첫_로그인_시간) AS login_time,
-             MAX(마지막_로그아웃_시간) AS logout_time,
-             CAST(SUM(일일_이용_시간_분) / 60.0 AS DECIMAL(10, 2)) AS useTime
-        FROM (
-            SELECT
-                User_id,
-                login_id,
-                email,
-                first_name,
-                CONVERT(VARCHAR(10), Login_Time, 120) AS 날짜,
-                Login_Time AS 첫_로그인_시간,
-                CASE
-                    WHEN CONVERT(VARCHAR(10), Login_Time, 120) = CONVERT(VARCHAR(10), Logout_Time, 120) THEN Logout_Time
-                    ELSE DATEADD(SECOND, -1, DATEADD(DAY, 1, CONVERT(DATETIME, CONVERT(VARCHAR(10), Login_Time, 120))))
-                END AS 마지막_로그아웃_시간,
-                CASE
-                    WHEN CONVERT(VARCHAR(10), Login_Time, 120) = CONVERT(VARCHAR(10), Logout_Time, 120) THEN DATEDIFF(MINUTE, Login_Time, Logout_Time)
-                    ELSE DATEDIFF(MINUTE, Login_Time, DATEADD(SECOND, -1, DATEADD(DAY, 1, CONVERT(DATETIME, CONVERT(VARCHAR(10), Login_Time, 120)))))
-                END AS 일일_이용_시간_분
-            FROM (
-                SELECT DISTINCT
-                    ll.User_id AS User_id,
-                    ll._created AS Login_Time,
-                    lo._created AS Logout_Time,
-                    au.username AS login_id,
-                    au.email AS email,
-                    au.first_name AS first_name,
-                    ll."Type" AS login_type
-                FROM
-                    MOB_FACTCHK.dbo.login_log ll
-                JOIN
-                    MOB_FACTCHK.dbo.login_log lo
-                    ON ll.User_id = lo.User_id
-                    AND ll."Type" = 'login'
-                    AND lo."Type" = 'logout'
-                    AND lo._created > ll._created
-                LEFT JOIN auth_user au ON au.id = ll."User_id"
-                LEFT JOIN user_profile up ON up."User_id" = ll."User_id"
-            ) AS SubQuery
-        ) AS DailyUsage
-        WHERE 날짜 BETWEEN :start AND :end
-    """);
+            ll."User_id",
+            COALESCE(up."Name", 'Unknown') AS name,
+            COALESCE(au.username, 'Unknown') AS login_id,
+            au.email AS email,
+            CONVERT(VARCHAR(10), ll._created, 120) AS 날짜,
+            MIN(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) AS login_time,
+            MAX(CASE WHEN ll."Type" = 'LOGOUT' THEN ll._created ELSE NULL END) AS logout_time,
+            CASE
+                WHEN MIN(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) IS NOT NULL
+                     AND MAX(CASE WHEN ll."Type" = 'LOGOUT' THEN ll._created ELSE NULL END) IS NOT NULL THEN 'LOGOUT'
+                WHEN MIN(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) IS NOT NULL THEN 'LOGIN'
+                ELSE '로그아웃 중'
+            END AS state
+        FROM
+            login_log ll
+        LEFT JOIN user_profile up
+            ON up."User_id" = ll."User_id"
+        LEFT JOIN auth_user au
+            ON au.id = ll."User_id"
+        WHERE
+            ll._created BETWEEN :start AND :end
+        GROUP BY
+            ll."User_id",
+            up."Name",
+            au.username,
+            au.email,
+            CONVERT(VARCHAR(10), ll._created, 120)
+    ),
+    UsageWithCounts AS (
+        SELECT
+            du.User_id,
+            du.name,
+            du.login_id,
+            du.email,
+            du.날짜,
+            du.login_time,
+            du.logout_time,
+            du.state,
+            COUNT(si.REQDATE) AS views -- TB_SEARCHINFO 테이블을 기반으로 조회 건수 계산
+        FROM
+            DailyUsage du
+        LEFT JOIN MOB_FACTCHK.dbo.TB_SEARCHINFO si
+            ON si.USERID = du.User_id
+            AND si.REQDATE BETWEEN du.login_time AND du.logout_time
+        GROUP BY
+            du.User_id,
+            du.name,
+            du.login_id,
+            du.email,
+            du.날짜,
+            du.login_time,
+            du.logout_time,
+            du.state
+    )
+    SELECT
+        User_id,
+        name,
+        login_id,
+        email,
+        날짜,
+        state,
+        views,
+        CONVERT(VARCHAR, login_time, 120) AS login_time,
+        CASE
+            WHEN logout_time IS NULL THEN '로그아웃 없음'
+            ELSE CONVERT(VARCHAR, logout_time, 120)
+        END AS logout_time,
+        CASE
+            WHEN logout_time IS NULL THEN NULL
+            ELSE CAST(DATEDIFF(MINUTE, login_time, logout_time) / 60.0 AS DECIMAL(10, 2))
+        END AS useTime
+    FROM
+        UsageWithCounts
+    ORDER BY
+        login_time DESC
+""");
 
         // 키워드 검색 조건 추가
         if (StringUtils.isNotEmpty(keyword)) {
-            sql.append("""
-            AND (login_id LIKE '%' + :keyword + '%')
-        """);
+            sql.insert(sql.indexOf("WHERE") + 5,
+                    " (au.username LIKE '%' + :keyword + '%' OR up.Name LIKE '%' + :keyword + '%') AND");
             dicParam.addValue("keyword", keyword);
         }
 
-        // SQL 그룹화 및 정렬
-        sql.append("""
-        GROUP BY User_id, login_id, email,first_name, 날짜
-        ORDER BY User_id, 날짜
-    """);
-
         // SQL 실행
         try {
-            log.info("Generated SQL: {}", sql);
-            log.info("SQL Parameters: {}", dicParam.getValues());
+            log.info("Generated SQL: \n{}", sql);
+            dicParam.getValues().forEach((key, value) -> log.info("SQL Parameter - {}: {}", key, value));
             return this.sqlRunner.getRows(sql.toString(), dicParam);
         } catch (Exception e) {
-            // 예외 처리
-            System.err.println("SQL 실행 중 오류 발생: " + e.getMessage());
+            log.error("SQL 실행 중 오류 발생", e);
             throw new RuntimeException("로그인 로그 조회 중 오류가 발생했습니다.", e);
         }
     }
-
 
 }
