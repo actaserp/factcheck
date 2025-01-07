@@ -14,4 +14,8 @@ public interface FILEINFORepository extends JpaRepository<TB_FILEINFO, Integer> 
 
     @Query("SELECT f FROM TB_FILEINFO f WHERE f.CHECKSEQ = :checkseq AND f.bbsseq = :bbsseq")
     List<TB_FILEINFO> findAllByCheckseqAndBbsseq(@Param("checkseq") String checkseq, @Param("bbsseq") int bbsseq);
+
+    @Query("SELECT f FROM TB_FILEINFO f WHERE f.FILEORNM = :fileornm AND f.bbsseq = :bbsseq")
+    TB_FILEINFO findBySvnmAndSeq(@Param("fileornm") String fileornm, @Param("bbsseq") int bbsseq);
+
 }

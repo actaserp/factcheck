@@ -442,6 +442,10 @@
                     formData.append('deletedFiles2', new Blob([JSON.stringify(file)], {type: 'application/json'}));
                 });
                 console.log("formData : ", formData);
+                // FormData의 내용을 출력
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}:`, value);
+                }
 
                 function sendAjaxRequest(url) {
                     $.ajax({

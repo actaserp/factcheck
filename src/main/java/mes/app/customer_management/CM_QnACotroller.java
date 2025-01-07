@@ -220,9 +220,9 @@ public class CM_QnACotroller {
                     String content = new String(deletedFile.getBytes(), StandardCharsets.UTF_8);
                     Map<String, Object> deletedFileMap = new ObjectMapper().readValue(content, new TypeReference<Map<String, Object>>() {});
 
-                    Integer fileid = (Integer) deletedFileMap.get("fileid");
+                    String fileid = (String) deletedFileMap.get("name");
 
-                    TB_FILEINFO File = fileinfoRepository.findById(fileid).orElse(null);
+                    TB_FILEINFO File = fileinfoRepository.findBySvnmAndSeq(fileid, faqAnswer.getQSTSEQ());
                     // id : fileid
                     if (File != null) {
                         // 파일 삭제

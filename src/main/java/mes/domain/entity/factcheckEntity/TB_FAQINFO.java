@@ -3,8 +3,10 @@ package mes.domain.entity.factcheckEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -38,7 +40,8 @@ public class TB_FAQINFO {
     String REMARK;
 
     @Column
-    Date INDATEM;
+    @DateTimeFormat(pattern = "yyyy-MM-dd") // 형식 지정
+    LocalDate INDATEM;
 
     @Column
     String INUSERID;
