@@ -76,7 +76,7 @@ public class CM_QnaService {
         int deleteCnt = this.sqlRunner.execute(sql,params);
     }
     // File delete
-    public List<Map<String, Object>> deleteFile(int qstseq) {
+    public void deleteFile(int qstseq) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
 
@@ -87,7 +87,6 @@ public class CM_QnaService {
                 """;
         params.addValue("qstseq", qstseq);
 
-        List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
-        return items;
+        int deleteCnt = this.sqlRunner.execute(sql,params);
     }
 }

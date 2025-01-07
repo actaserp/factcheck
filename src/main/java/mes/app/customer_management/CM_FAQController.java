@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/FAQ")
+@RequestMapping("/api/FAQ")
 public class CM_FAQController {
 
     @Autowired

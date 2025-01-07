@@ -17,21 +17,30 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @RestController
-@RequestMapping("api/announcement")
+@RequestMapping("/api/announcement")
 public class CM_announcementController {
     @Autowired
     CM_announcementService cmAnnouncementService;
@@ -248,8 +257,9 @@ public class CM_announcementController {
     }
     // 답변 삭제
     @PostMapping("/delete")
-    public AjaxResult deleteBBS(@RequestParam int BBSSEQ) {
+    public AjaxResult deleteBBS(@RequestBody Map<String, Object> requestData) {
         AjaxResult result = new AjaxResult();
+        int BBSSEQ = Integer.parseInt((String) requestData.get("BBSSEQ"));
 
         try {
             // Repository를 통해 데이터 저장
@@ -272,10 +282,10 @@ public class CM_announcementController {
                     file.delete();
                 }
             }
-            result.data = "데이터가 성공적으로 저장되었습니다.";
+            result.message = "공지사항이 성공적으로 삭제되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();
-            result.data = "데이터 저장 중 오류가 발생했습니다.";
+            result.message = "공지사항 삭제 중 오류가 발생했습니다.";
         }
 
         return result;
@@ -322,5 +332,110 @@ public class CM_announcementController {
             return false;
         }
     }
+    @PostMapping("/downloader")
+    public ResponseEntity<?> downloadFile(@RequestBody List<Map<String, Object>> downloadList) throws IOException {
 
+        // 파일 목록과 파일 이름을 담을 리스트 초기화
+        List<File> filesToDownload = new ArrayList<>();
+        List<String> fileNames = new ArrayList<>();
+
+        // ZIP 파일 이름을 설정할 변수 초기화
+        String tketcrdtm = null;
+        String tketnm = null;
+
+        // 파일을 메모리에 쓰기
+        for (Map<String, Object> fileInfo : downloadList) {
+            String filePath = (String) fileInfo.get("filepath");    // 파일 경로
+            String fileName = (String) fileInfo.get("filesvnm");    // 파일 이름(uuid)
+            String originFileName = (String) fileInfo.get("fileornm");  //파일 원본이름(origin Name)
+
+            File file = new File(filePath + File.separator + fileName);
+
+            // 파일이 실제로 존재하는지 확인
+            if (file.exists()) {
+                filesToDownload.add(file);
+                fileNames.add(originFileName); // 다운로드 받을 파일 이름을 originFileName으로 설정
+            }
+        }
+
+        // 파일이 없는 경우
+        if (filesToDownload.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 파일이 하나인 경우 그 파일을 바로 다운로드
+        if (filesToDownload.size() == 1) {
+            File file = filesToDownload.get(0);
+            String originFileName = fileNames.get(0); // originFileName 가져오기
+
+            HttpHeaders headers = new HttpHeaders();
+            String encodedFileName = URLEncoder.encode(originFileName, StandardCharsets.UTF_8.toString()).replaceAll("\\+", "%20");
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=*''" + encodedFileName);
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentLength(file.length());
+
+            ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(file.toPath()));
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource);
+        }
+
+        String zipFileName = (tketcrdtm != null && tketnm != null) ? tketcrdtm + "_" + tketnm + ".zip" : "download.zip";
+
+        // 파일이 두 개 이상인 경우 ZIP 파일로 묶어서 다운로드
+        ByteArrayOutputStream zipBaos = new ByteArrayOutputStream();
+        try (ZipOutputStream zipOut = new ZipOutputStream(zipBaos)) {
+
+            Set<String> addedFileNames = new HashSet<>(); // 이미 추가된 파일 이름을 저장할 Set
+            int fileCount = 1;
+
+            for (int i = 0; i < filesToDownload.size(); i++) {
+                File file = filesToDownload.get(i);
+                String originFileName = fileNames.get(i); // originFileName 가져오기
+
+                // 파일 이름이 중복될 경우 숫자를 붙여 고유한 이름으로 만듦
+                String uniqueFileName = originFileName;
+                while (addedFileNames.contains(uniqueFileName)) {
+                    uniqueFileName = originFileName.replace(".", "_" + fileCount++ + ".");
+                }
+
+                // 고유한 파일 이름을 Set에 추가
+                addedFileNames.add(uniqueFileName);
+
+                try (FileInputStream fis = new FileInputStream(file)) {
+                    ZipEntry zipEntry = new ZipEntry(originFileName);
+                    zipOut.putNextEntry(zipEntry);
+
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = fis.read(buffer)) > 0) {
+                        zipOut.write(buffer, 0, len);
+                    }
+
+                    zipOut.closeEntry();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                }
+            }
+
+            zipOut.finish();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        ByteArrayResource zipResource = new ByteArrayResource(zipBaos.toByteArray());
+
+        HttpHeaders headers = new HttpHeaders();
+        String encodedZipFileName = URLEncoder.encode(zipFileName, StandardCharsets.UTF_8.toString()).replaceAll("\\+", "%20");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=*''" + encodedZipFileName);
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentLength(zipResource.contentLength());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(zipResource);
+    }
 }

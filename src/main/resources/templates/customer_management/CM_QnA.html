@@ -264,6 +264,7 @@
 
         var theGrid;
         var viewdata;
+        let csrfToken = $("[name=_csrf]").val();
 
         document.readyState === 'complete' ? init() : window.onload = init;
         // 오늘 날짜 설정
@@ -312,9 +313,22 @@
                         {binding: 'QSTTEXT', header: '문의', width: '*', align: 'right'},
                         {binding: 'datetum', header: '답변기간', width: 85, align: 'center'},
                         {binding: 'answer', header: '답변', width: '*', minWidth: 100, align: 'right'},
-                        {binding: 'answerTel', header: '연락처', width: 140, minWidth: 100, align: 'center'}
+                        {binding: 'answerTel', header: '연락처', width: 140, minWidth: 100, align: 'center'},
+                        {binding: 'downloads', header: '첨부파일', width: '*', minWidth: 105, align: 'center'},
+                        {binding: 'isdownload', visible: false}
                     ],
                     itemsSource: viewdata,
+                    itemFormatter: function (panel, r, c, cell) {
+                        if (panel.cellType === wijmo.grid.CellType.Cell) {
+                            var item = panel.rows[r].dataItem; // 현재 행의 데이터 항목
+                            if (panel.columns[c].binding === 'downloads') {
+                                cell.innerHTML = ''; // 셀 내용 초기화
+                                if (item.isdownload) {
+                                    cell.innerHTML = '<a title="다운로드" class="btn-filedown" onclick="downloadFile_order()">다운로드</a>';
+                                }
+                            }
+                        }
+                    }
                 });
                 // 헤더를 중앙 정렬하는 이벤트 핸들러
                 theGrid.formatItem.addHandler(function (s, e) {
@@ -468,9 +482,9 @@
                     $.ajax({
                         url: url,
                         type: 'POST',
-                        data: {"QSTSEQ" : qstseq},
+                        data: JSON.stringify({"QSTSEQ" : qstseq}),
                         processData: false,
-                        contentType: false,
+                        contentType: 'application/json',
                         headers: {
                             'X-CSRF-Token': $('[name=_csrf]').val() // CSRF 토큰을 헤더에 추가
                         },
@@ -511,6 +525,32 @@
             updateFileCount2();
             resetFileInput($('.fileInput2'));
         }
+        // 다운로드
+        function downloadFile_order() {
+            let selectedItems = theGrid.selectedItems; // 선택된 항목 가져오기
+            let downloadList = [];
+
+            // 선택된 항목에서 다운로드할 파일 목록 생성
+            selectedItems.forEach(function (item) {
+                // filelist 배열을 순회하여 downloadList에 추가
+                if (item.filelist && Array.isArray(item.filelist)) {
+                    item.filelist.forEach(function (file) {
+                        downloadList.push({
+                            filepath: file.filepath, // 개별 파일 경로
+                            filesvnm: file.filesvnm, // 개별 저장된 파일 이름 (uuid)
+                            fileornm: file.fileornm  // 개별 원본 파일 이름
+                        });
+                    });
+                }
+            });
+
+            // 다운로드 URL 지정
+            let downloadUrl = '/api/QnA/downloader';
+
+            // Jung.js에서 정의한 downloadFiles 함수 호출
+            downloadFiles(downloadList, downloadUrl);
+        }
+
     </script>
 
 </th:block>

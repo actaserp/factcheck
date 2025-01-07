@@ -49,32 +49,30 @@ public class CM_announcementService {
         return items;
     }
     // BBS delete
-    public List<Map<String, Object>> deleteBBS(int faqseq) {
+    public void deleteBBS(int bbsseq) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
 
         String sql = """
                 DELETE FROM TB_BBSINFO
-                WHERE FAQSEQ = :faqseq
+                WHERE BBSSEQ = :bbsseq
                 """;
-        params.addValue("faqseq", faqseq);
+        params.addValue("bbsseq", bbsseq);
 
-        List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
-        return items;
+        int deleteCnt = this.sqlRunner.execute(sql,params);
     }
     // File delete
-    public List<Map<String, Object>> deleteFile(int faqseq) {
+    public void deleteFile(int bbsseq) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
 
         String sql = """
                 DELETE FROM TB_FILEINFO
-                WHERE bbsseq = :faqseq
-                AND FLAG = '01'
+                WHERE bbsseq = :bbsseq
+                AND CHECKSEQ = '01'
                 """;
-        params.addValue("faqseq", faqseq);
+        params.addValue("bbsseq", bbsseq);
 
-        List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
-        return items;
+        int deleteCnt = this.sqlRunner.execute(sql,params);
     }
 }
