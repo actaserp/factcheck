@@ -68,6 +68,9 @@ public class TB_GRADEINFOService {
             sql.append(" AND uc3.Value LIKE :grflag_display");
             params.addValue("grflag_display", "%" + searchInput + "%");
         }
+
+        sql.append(" ORDER BY tg.grScore01 DESC");
+
         //log.info("Generated SQL: {}", sql);
         //log.info("SQL Parameters: {}", params.getValues());
         return sqlRunner.getRows(sql.toString(), params);

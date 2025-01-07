@@ -116,7 +116,7 @@
             <div class="wp50 mg-r20">
               <div class="container-fluid col">
                 <p id="selectedItem"></p>
-                <div id="theGrid" style="max-height: 740px;"></div>
+                <div id="theGrid" style="max-height: 600px;"></div>
               </div>
             </div>
             <div class="col wp50">
@@ -286,7 +286,7 @@
         }
       });
 
-      while (data2.length < 10) {
+      while (data2.length < 15) {
         data2.push({
           rownum: data2.length + 1,
           grid: '',
@@ -314,7 +314,7 @@
           columns: [
             { binding: 'rownum', header: 'NO', align: 'center', width: 70 },
             { binding: 'grid_display',header:'등급', align: 'center', width: 150 },
-            { binding: 'grid', header: '등급코드', align: 'center', width: 100 , visible: false},
+            { binding: 'grid', header: '등급 코드', align: 'center', width: 100 , visible: false},
             { binding: 'grscore', header: '점수', align: 'center', width: 150 },
             { binding: 'grflag_display',header:'명칭', align: 'center', width: 150 },
             { binding: 'grflag', header: '명칭코드', align: 'center', width: 150 ,visible: false},
@@ -345,7 +345,7 @@
 
           if (ht.cellType === wijmo.grid.CellType.Cell) {
             const rowData = grid.rows[ht.row].dataItem; // 더블클릭한 행 데이터
-            console.log('Row Data:', rowData); // 디버깅: rowData 확인
+            //console.log('Row Data:', rowData); // 디버깅: rowData 확인
             modifyData(rowData); // 데이터 입력 필드에 채우기
           }
         }
@@ -440,7 +440,7 @@
               'X-CSRF-Token': $('[name=_csrf]').val()
             },
             success: function (response) {
-              console.log('Ajax Response:', response); // 디버깅용
+              //console.log('Ajax Response:', response); // 디버깅용
               if (response.success) {
                 Alert.alert('', "삭제가 완료되었습니다.");
                 fetchListData(); // 데이터 새로고침

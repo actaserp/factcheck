@@ -63,7 +63,7 @@
                 </dt>
                 <dd>
                   <div class="srch-box">
-                    <input type="text" id="searchInput" name="searchInput" class="input-srch" placeholder="등기 명칭">
+                    <input type="text" id="searchInput" name="searchInput" class="input-srch" placeholder="등기 명칭" >
                     <a class="btn-srch" id="btnSearch" title="검색" onclick="fetchListData()"></a>
                   </div>
                 </dd>
@@ -205,7 +205,7 @@
   </div> <!--//layout-contents end -->
 
   <footer style="margin-top: 12px;">
-    <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
+    <p>Copyrightⓒ factCheck corp.All rights reserved.</p>
   </footer>
 
 </th:block>
@@ -261,7 +261,7 @@
         }
       });
 
-      while (data2.length < 10) {
+      while (data2.length < 15) {
         data2.push({
           rownum: data2.length + 1,
           REGSEQ:'',
@@ -295,8 +295,8 @@
           columns: [
             { binding: 'rownum', header: 'NO', align: 'center', width: 70 },
 ,           { binding: 'REGSEQ', header: '고유번호', align: 'center', width: '*', visible: false},
-            { binding: 'regnm', header: '등기명칭', align: 'center', width: 150 },
-            { binding: 'reggroup_display',header:'상위그룹', align: 'center', width: 150 },
+            { binding: 'regnm', header: '등기 명칭', align: 'center', width: 150 },
+            { binding: 'reggroup_display',header:'상위 그룹', align: 'center', width: 150 },
             { binding: 'reggroup', header: '상위그룹코드', align: 'center', width: 150 ,visible: false },
             { binding: 'regmaxnum', header: '최대위험점수', align: 'center', width: 150 },
             { binding: 'regstamt', header: '기준금액(만원)', align: 'center', width: "*" },
@@ -539,6 +539,26 @@
 
     //저장
     function SaveForm() {
+
+      // 폼 데이터를 수집하기 전에 유효성 검사
+      const regnm = $("#regnm").val();
+      const reggroup = $("#reggroup").val();
+      const regstand = $("#regstand").val();
+
+      // 필수 입력값 유효성 검사
+      if (!regnm) {
+        Alert.alert("", "등기 명칭을 입력하세요.");
+        return;
+      }
+      if (!reggroup) {
+        Alert.alert("", "등록 그룹을 선택하세요.");
+        return;
+      }
+      if (!regstand) {
+        Alert.alert("", "기준 금액을 입력하세요.");
+        return;
+      }
+
       // 폼 데이터를 수집
       const formData = {
         REGSEQ: $('#REGSEQ').val() || null,
@@ -639,6 +659,7 @@
         }
       });
     }
+
 
 
   </script>

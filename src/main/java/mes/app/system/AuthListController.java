@@ -2,13 +2,10 @@ package mes.app.system;
 
 
 import mes.app.UtilClass;
-import mes.app.account.service.TB_RP940_Service;
 import mes.app.system.service.AuthListService;
 import mes.app.system.service.UserService;
-import mes.domain.DTO.TB_RP940Dto;
 import mes.domain.entity.TB_RP940;
 import mes.domain.entity.User;
-import mes.domain.entity.UserCode;
 import mes.domain.model.AjaxResult;
 import mes.domain.repository.TB_RP940Repository;
 import mes.domain.repository.TB_RP945Repository;
@@ -21,7 +18,6 @@ import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -40,8 +36,6 @@ public class AuthListController {
     @Autowired
     TB_RP945Repository tb_rp945Repository;
 
-    @Autowired
-    TB_RP940_Service tbRp940Service;
     @Autowired
     private UserService userService;
     @Autowired

@@ -60,6 +60,11 @@ public class CategoryManagerController {
             // 데이터 조회
             List<Map<String, Object>> categoryList = tbRegisterService.getList(regnm);
 
+            for (Map<String, Object> item : categoryList) {
+                if (item.containsKey("regmaxnum") && item.get("regmaxnum") != null) {
+                    item.put("regmaxnum", item.get("regmaxnum").toString() + "점");
+                }
+            }
             // 데이터가 있을 경우 성공 메시지
             result.success = true;
             result.message = "데이터 조회 성공";

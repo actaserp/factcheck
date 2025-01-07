@@ -19,7 +19,7 @@
     </div>
     <!-- Select -->
     <div class="tab-contents">
-      <section class="tab-item" id="tab2" style="height: 850px; overflow: hidden;">
+      <section class="tab-item" id="tab2" style="height: 750px; overflow: hidden;">
         <div class="section-top">
           <div class="search-wrap">
             <dl>
@@ -49,7 +49,7 @@
               </dt>
               <dd>
                 <div class="srch-box">
-                  <input type="text" id="searchUserNm" name="searchCltnm" class="input-srch"
+                  <input type="text" id="searchUserNm" name="searchUserNm" class="input-srch"
                          placeholder="회원명" style="border-radius: 5px;">
                 </div>
               </dd>
@@ -58,7 +58,7 @@
               <dt>&nbsp;</dt>
               <dd>
                 <li>
-                  <a class="btn btn-delete" title="검색" id="searchButton1" onclick="searchData()">
+                  <a class="btn btn-delete" title="검색" id="searchButton1" onclick="fetchListData()">
                     <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
                     <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
                     검색
@@ -70,13 +70,13 @@
         </div>
         <div class="container-fluid">
           <p id="selectedItem"></p>
-          <div id="theGrid" style="max-height: 800px"></div>
+          <div id="theGrid" style="max-height: 630px"></div>
         </div>
       </section>
     </div> <!--//tab-wrap end-->
   </div> <!--//layout-contents end -->
   <footer>
-    <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
+    <p>Copyrightⓒ factCheck corp. All rights reserved.</p>
   </footer>
 </th:block>
 <th:block layout:fragment="scripts">
@@ -111,36 +111,38 @@
     }
 
     function fetchListData() {
-      let data2 = [
-        { rownum: 1, userNm: '홍길동', indatem:'2024-12-19', sexYN: '남', userAddr: '서울', userHP: '010-1234-5678', userEmail: 'hong@example.com',InquiryCount: 2, remark: '비고' },
-        { rownum: 2, userNm: '김철수', indatem:'2024-10-10', sexYN: '남', userAddr: '부산', userHP: '010-9876-5432', userEmail: 'kim@example.com',InquiryCount: 2, remark: '비고' },
-        { rownum: 3, userNm: '이영희', indatem:'2024-11-15', sexYN: '여', userAddr: '인천', userHP: '010-5555-1234', userEmail: 'lee@example.com', InquiryCount: 3, remark: '비고' },
-        { rownum: 4, userNm: '박민수', indatem:'2024-08-22', sexYN: '남', userAddr: '대구', userHP: '010-6666-7890', userEmail: 'park@example.com', InquiryCount: 5, remark: '비고' },
-        { rownum: 5, userNm: '최수정', indatem:'2024-09-12', sexYN: '여', userAddr: '광주', userHP: '010-7777-3456', userEmail: 'choi@example.com', InquiryCount: 1, remark: '비고' },
-        { rownum: 6, userNm: '김지훈', indatem:'2024-07-19', sexYN: '남', userAddr: '대전', userHP: '010-8888-9876', userEmail: 'kimjh@example.com', InquiryCount: 4, remark: '비고' }
-      ];
+      let data = [ ];
+      const searchValue = $('#searchUserNm').val();
       // 서버에서 데이터 가져오기
-      /*$.ajax({
-        url: '/api/ProgressStatus/read',
+      $.ajax({
+        url: 'api/XUserInfo/read',
         type: 'GET',
-        data: queryParams,
+        data: {userNm : searchValue},
         async: false,
         success: function (response) {
           // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
           if (response && Array.isArray(response.data)) {
-            data2 = response.data.map((item, index) => ({
-              rownum: index + 1
+            data = response.data.map((item, index) => ({
+              rownum: index + 1,
+              userNm: item.userNm ||'',
+              inDateTm:item.inDateTm || '',
+              sexYN: item.sexYN ||'',
+              userAddr: item.userAddr ||'',
+              userHP: item.userHP || '',
+              userEmail: item.userEmail || '',
+              InquiryCount: item.InquiryCount ||'',
+              remark:item.remark || '',
             }));
           }
         },
         error: function () {
           console.error("데이터를 가져오는 중 오류가 발생했습니다.");
         }
-      });*/
+      });
 
-      while (data2.length < 10) {
-        data2.push({
-          rownum: data2.length + 1,
+      while (data.length < 15) {
+        data.push({
+          rownum: data.length + 1,
           userNm: '',
           indatem: '',
           sexYN: '',
@@ -152,7 +154,7 @@
         });
       }
 
-      const viewdata = new wijmo.collections.CollectionView(data2);
+      const viewdata = new wijmo.collections.CollectionView(data);
 
       if (!theGrid) {
         theGrid = new wijmo.grid.FlexGrid('#theGrid', {
@@ -162,12 +164,12 @@
           columns: [
             { binding: 'rownum', header: '순번', width: 70, align: 'center' },
             { binding: 'userNm', header: '사용자명', width: 110, minWidth: 100, align: 'center' },
-            {binding: 'indatem', header: '등록일자', width: 150, minWidth: 100, align: 'center'},
+            { binding: 'indatem', header: '등록일자', width: 150, minWidth: 100, align: 'center'},
             { binding: 'sexYN', header: '성별', width:70, minWidth: 70, align: 'center' },
             { binding: 'userAddr', header: '주소', width: '*', minWidth: 250, align: 'center' },
             { binding: 'userHP', header: '연락처', width: '*', minWidth: 150, align: 'center' },
             { binding: 'userEmail', header: '이메일', width: '*', minWidth: 100, align: 'center' },
-            {binding: 'InquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
+            { binding: 'InquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
             { binding: 'remark', header: '비고', width: 100, align: 'center', minWidth: 150 }
           ],
           itemsSource: viewdata

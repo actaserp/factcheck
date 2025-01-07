@@ -63,15 +63,15 @@
         <!-- Page Title -->
         <div class="page-title-wrap">
             <div class="left">
-                <h2>회원방문통계</h2>
+                <h2>회원 방문 통계</h2>
                 <!--<a title="북마크" class="bookmark toggle">
                     내메뉴
                 </a>-->
             </div>
             <ul class="page-navi">
                 <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
-                <li>회원관리</li>
-                <li>회원방문통계</li>
+                <li>회원 관리</li>
+                <li>회원 방문 통계</li>
             </ul>
         </div>
         <!-- Select -->
@@ -139,7 +139,7 @@
                         </ul>
                         <span class="material-symbols-outlined"
                               style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
-                              onclick="openModal('Chart1Modal')">zoom_out_map</span>
+                              onclick="openModal('chart1')">zoom_out_map</span>
                     </div>
                     </section>
                     <section class="col wp50" style="flex: 1; margin-right: 10px; height:650px; position: relative;">
@@ -156,7 +156,7 @@
                         </ul>
                         <span class="material-symbols-outlined"
                               style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
-                              onclick="openModal('Chart2Modal')">zoom_out_map</span>
+                              onclick="openModal('chart2')">zoom_out_map</span>
                     </div>
                     </section>
                 </div>
@@ -164,14 +164,16 @@
         </div> <!--//tab-wrap end-->
     </div> <!--//layout-contents end -->
     <footer>
-        <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
+        <p>Copyrightⓒ factCheck corp. All rights reserved.</p>
     </footer>
     <div id="chartModal" class="modal" style="opacity:100">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <canvas id="modalChartHolder" style="width: 1292px; height: 474px; box-sizing: border-box; display: block;" width="1292" height="474"></canvas>
+            <canvas id="modalChartHolder" style="width: 1250px; height: 490px; display: block; box-sizing: border-box;"
+                    width="1250" height="490"></canvas>
         </div>
     </div>
+
 </th:block>
 <th:block layout:fragment="scripts">
     <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
@@ -199,9 +201,9 @@
 
         // 모달 열기 함수
         function openModal(chartId) {
-            const modal = document.getElementById('chartModal'); // 모달 가져오기
-            const modalCanvas = document.getElementById('modalChartHolder'); // 모달 내부 캔버스
-            const chartElement = document.getElementById(chartId); // 전달된 ID로 차트 캔버스 찾기
+            const modal = document.getElementById('chartModal');
+            const modalCanvas = document.getElementById('modalChartHolder'); // 모달 캔버스
+            const chartElement = document.getElementById(chartId); // 원본 차트 캔버스
 
             if (!chartElement) {
                 console.error(`차트 요소를 찾을 수 없습니다: ${chartId}`);
@@ -209,30 +211,30 @@
             }
 
             const chart = Chart.getChart(chartElement); // 차트 인스턴스 가져오기
-
             if (!chart) {
-                console.error("해당 차트를 찾을 수 없습니다.");
+                console.error(`해당 차트를 찾을 수 없습니다: ${chartId}`);
                 return;
             }
 
             // 모달 보이기
             modal.style.display = 'block';
 
-            // 기존 모달 차트가 있다면 제거
+            // 기존 모달 차트 제거
             if (window.modalChartInstance) {
-                window.modalChartInstance.destroy();
+                window.modalChartInstance.destroy(); // 기존 차트 삭제
+                window.modalChartInstance = null; // 초기화
             }
 
             // 모달 차트 생성
             const modalChartHolder = modalCanvas.getContext('2d');
             window.modalChartInstance = new Chart(modalChartHolder, {
-                type: chart.config.type, // 기존 차트 타입 유지
-                data: chart.data, // 기존 차트 데이터 복사
+                type: chart.config.type,
+                data: JSON.parse(JSON.stringify(chart.data)), // 데이터 복사
                 options: {
                     ...chart.options,
                     responsive: true,
-                    maintainAspectRatio: false, // 모달 크기에 맞추기
-                },
+                    maintainAspectRatio: false
+                }
             });
         }
 

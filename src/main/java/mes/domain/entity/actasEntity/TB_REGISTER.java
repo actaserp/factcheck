@@ -3,6 +3,7 @@ package mes.domain.entity.actasEntity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "TB_REGISTER")
@@ -31,7 +32,7 @@ public class TB_REGISTER {  //등기분류관리
     private Integer regMaxNum;  //최대위험점수
 
     @Column(name = "REGYUL")
-    private Integer regYul;     //발샐비율
+    private BigDecimal regYul;     //발샐비율
 
     @Column(name = "REGSTAMT")
     private Float regStAmt;     //기준금액

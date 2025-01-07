@@ -1,30 +1,21 @@
 package mes.app.system;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 import mes.app.UtilClass;
-import mes.app.account.service.TB_RP945_Service;
-import mes.app.account.service.TB_xusersService;
-import mes.domain.DTO.TB_RP945Dto;
+import mes.app.account.service.TB_xuserService;
 import mes.domain.entity.TB_RP945;
-import mes.domain.entity.UserCode;
 import mes.domain.entity.actasEntity.TB_XUSERS;
 import mes.domain.entity.actasEntity.TB_XUSERSId;
 import mes.domain.repository.*;
 import mes.domain.repository.actasRepository.TB_XuserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
@@ -65,7 +56,7 @@ public class UserController {
 	private TB_RP945Repository tB_RP945Repository;
 
 	@Autowired
-	TB_xusersService XusersService;
+	TB_xuserService XusersService;
 	@Autowired
 	TB_XuserRepository xuserstRepository;
 	@Autowired

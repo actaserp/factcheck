@@ -31,7 +31,7 @@
         </div>
         <!-- Select -->
         <div class="tab-contents">
-            <section class="tab-item" id="tab2" style="height: 850px; overflow: hidden;">
+            <section class="tab-item" id="tab2" style="height: 750px; overflow: hidden;">
                 <div class="section-top">
                     <div class="search-wrap">
                         <dl>
@@ -71,7 +71,6 @@
                             <dd>
                                 <li>
                                     <a class="btn btn-delete" title="검색" id="searchButton1" onclick="searchData()">
-                                        <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
                                         <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
                                         검색
                                     </a>
@@ -111,13 +110,13 @@
 
                 <div class="container-fluid">
                     <p id="selectedItem"></p>
-                    <div id="theGrid" style="max-height: 800px"></div>
+                    <div id="theGrid" style="max-height: 650px"></div>
                 </div>
             </section>
         </div> <!--//tab-wrap end-->
     </div> <!--//layout-contents end -->
     <footer>
-        <p>Copyrightⓒ 0000 corp. All rights reserved.</p>
+        <p>ⓒ factCheck corp.All rights reserved.</p>
     </footer>
 
     <!--첨부파일 팝업-->
@@ -227,7 +226,7 @@
               }
             });*/
 
-            while (data2.length < 10) {
+            while (data2.length < 15) {
                 data2.push({
                     rownum: data2.length + 1,
                     indatem: '',

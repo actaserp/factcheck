@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
-import mes.app.account.service.TB_xusersService;
+import mes.app.account.service.TB_xuserService;
 import mes.domain.entity.User;
 import mes.domain.entity.UserGroup;
 import mes.domain.entity.actasEntity.TB_XUSERS;
@@ -17,7 +17,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import io.micrometer.core.instrument.util.StringUtils;
 import mes.domain.services.SqlRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +29,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    TB_xusersService XusersService;
+    TB_xuserService XusersService;
     @Autowired
     private UserGroupRepository userGroupRepository;
 

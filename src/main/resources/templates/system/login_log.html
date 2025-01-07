@@ -90,7 +90,9 @@
         </div> <!--//tab-wrap end-->
     </div> <!--//layout-contents end -->
 
-
+    <footer style="margin-top: 12px;">
+        <p>Copyrightⓒ factCheck corp.All rights reserved.</p>
+    </footer>
 </th:block>
 <th:block layout:fragment="scripts">
     <th:block th:replace="/common/approve_box :: approve_box"></th:block>
@@ -171,6 +173,7 @@
                     if (!theGrid) {
                         theGrid = new wijmo.grid.FlexGrid('#theGrid', {
                             autoGenerateColumns: false,
+                            isReadOnly: true,
                             columns: [
                                 { binding: 'rownum', header: 'No', width: 80, align: 'center' },
                                 { binding: 'login_id', header: '사용자ID', width: 160, align: 'center' },

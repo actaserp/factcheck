@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +55,8 @@ public class TB_registerService {
         tbRegister.setRegStand(formData.get("regstand") != null ? formData.get("regstand").toString() : null);
 
         // 숫자 및 금액 필드 처리
-        tbRegister.setRegMaxNum(formData.get("regmaxnum") != null
-                ? parseNumericField(formData.get("regmaxnum").toString(), "점")
+        tbRegister.setRegMaxNum(formData.get("regmaxnum") != null && !formData.get("regmaxnum").toString().trim().isEmpty()
+                ? Integer.parseInt(formData.get("regmaxnum").toString().replace("점", "").trim())
                 : null);
 
         tbRegister.setRegYul(formData.get("regyul") != null
@@ -88,20 +89,27 @@ public class TB_registerService {
         tbRegister.setRemark(formData.get("remark") != null ? formData.get("remark").toString() : null);
 
         // 저장
-        //log.info("저장된 데이터: {}", tbRegister);
+        log.info("저장된 데이터: {}", tbRegister);
         return tbRegisterRepository.save(tbRegister);
     }
 
 
     // 숫자 필드 변환 ("점", "%" 제거)
-    private Integer parseNumericField(String value, String suffixToRemove) {
-        //log.info("Parsing numeric field: value={}, suffixToRemove={}", value, suffixToRemove);
+    private BigDecimal parseNumericField(String value, String suffixToRemove) {
+        log.info("Parsing numeric field: value={}, suffixToRemove={}", value, suffixToRemove);
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+
         try {
-            return Integer.parseInt(value.replace(suffixToRemove, "").trim());
+            // 접미사 제거 후 BigDecimal로 변환
+            String sanitizedValue = value.replace(suffixToRemove, "").trim();
+            return new BigDecimal(sanitizedValue);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("숫자 형식 변환 중 오류 발생: " + value, e);
         }
     }
+
 
     private Float parseFloatField(String value, String suffixToRemove) {
         //log.info("Parsing float field: value={}, suffixToRemove={}", value, suffixToRemove);
@@ -135,8 +143,8 @@ public class TB_registerService {
     """);
 
         if (searchInput != null && !searchInput.isEmpty()) {
-            sql.append(" AND uc1.Value LIKE :regnm_display");
-            params.addValue("regnm_display", "%" + searchInput + "%");
+            sql.append(" AND tr.regnm LIKE :searchInput");
+            params.addValue("searchInput", "%" + searchInput + "%");
         }
         //log.info("Generated SQL: {}", sql);
         //log.info("SQL Parameters: {}", params.getValues());

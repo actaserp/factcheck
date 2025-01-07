@@ -8,7 +8,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,11 +16,10 @@ import javax.transaction.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 import mes.app.MailService;
-import mes.app.account.service.TB_xusersService;
+import mes.app.account.service.TB_xuserService;
 import mes.app.system.service.UserService;
 
 import mes.domain.DTO.UserCodeDto;
-import mes.domain.DTO.UserDto;
 import mes.domain.entity.UserCode;
 import mes.domain.entity.UserGroup;
 import mes.domain.entity.actasEntity.TB_XUSERS;
@@ -71,7 +69,7 @@ public class AccountController {
 	MailService emailService;
 
 	@Autowired
-	TB_xusersService XusersService;
+	TB_xuserService XusersService;
 	@Autowired
 	TB_XuserRepository xuserstRepository;
 	@Autowired

@@ -38,4 +38,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	void PasswordChange(@Param("pw") String pw, @Param("userid") String userid);
 
 
+	Optional<User> findByEmail(String email);
 }
