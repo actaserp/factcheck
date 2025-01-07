@@ -184,6 +184,7 @@ public class CM_announcementController {
                     fileinfo.setINUSERID(String.valueOf(user.getId()));
                     fileinfo.setFILEEXTNS(ext);
                     fileinfo.setFILEURL(saveFilePath);
+                    fileinfo.setFILESVNM(file_uuid_name);
                     fileinfo.setCHECKSEQ("01");
 
                     try {
@@ -262,7 +263,15 @@ public class CM_announcementController {
                 }
             });
             // 파일 서버에서 삭제
-
+            List<TB_FILEINFO> filelist = fileinfoRepository.findAllByCheckseqAndBbsseq("01", BBSSEQ);
+            for (TB_FILEINFO fileinfo : filelist) {
+                String filePath = fileinfo.getFILEPATH();
+                String fileName = fileinfo.getFILESVNM();
+                File file = new File(filePath, fileName);
+                if (file.exists()) {
+                    file.delete();
+                }
+            }
             result.data = "데이터가 성공적으로 저장되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();

@@ -29,7 +29,8 @@ public class CM_announcementService {
                                 f.FILESIZE AS filesize,
                                 f.FILEEXTNS AS fileextns,
                                 f.FILEORNM AS fileornm,
-                                f.FILEPATH AS filepath
+                                f.FILEPATH AS filepath,
+                                f.FILESVNM AS filesvnm
                             FROM TB_FILEINFO f
                             WHERE b.BBSSEQ = f.BBSSEQ
                             AND f.CHECKSEQ = '01'
@@ -68,7 +69,7 @@ public class CM_announcementService {
 
         String sql = """
                 DELETE FROM TB_FILEINFO
-                WHERE FAQSEQ = :faqseq
+                WHERE bbsseq = :faqseq
                 AND FLAG = '01'
                 """;
         params.addValue("faqseq", faqseq);

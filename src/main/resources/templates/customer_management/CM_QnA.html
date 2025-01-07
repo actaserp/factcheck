@@ -417,7 +417,18 @@
                 formData.append('QSTSEQ', $('#answerNo').val());
                 formData.append('INDATEM', $('#answerdate').val());
                 formData.append('QSTTEL', $('#qsttel').val());
+
+                // 새로 추가된 파일만 폼 데이터에 추가
+                uploadedFiles2.forEach((file, index) => {
+                    formData.append('filelist', file);
+                });
+
+                // 삭제된 파일 목록 추가
+                deletedFiles2.forEach((file, index) => {
+                    formData.append('deletedFiles2', new Blob([JSON.stringify(file)], {type: 'application/json'}));
+                });
                 console.log("formData : ", formData);
+
                 function sendAjaxRequest(url) {
                     $.ajax({
                         url: url,

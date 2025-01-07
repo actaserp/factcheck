@@ -35,6 +35,7 @@ public class CM_QnaService {
                         STRING_AGG(CAST(F.FILEORNM AS VARCHAR(MAX)), ',') AS fileornm,
                         STRING_AGG(CAST(F.FILEPATH AS VARCHAR(MAX)), ',') AS filepath,
                         STRING_AGG(CAST(F.FILESIZE AS VARCHAR(MAX)), ',') AS filesize,
+                        STRING_AGG(CAST(F.FILESVNM AS VARCHAR(MAX)), ',') AS filesvnm,
                         STRING_AGG(CAST(F.FILEEXTNS AS VARCHAR(MAX)), ',') AS fileextns
                     FROM
                         TB_USERQST Q
@@ -45,7 +46,7 @@ public class CM_QnaService {
                     LEFT JOIN
                         TB_FILEINFO F
                     ON
-                        Q.QSTSEQ = F.BBSSEQ
+                        A.QSTSEQ = F.BBSSEQ
                         AND F.CHECKSEQ = '02'
                     WHERE
                         Q.FLAG = '0'
@@ -61,30 +62,30 @@ public class CM_QnaService {
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql.toString(),params);
         return items;
     }
-    // FAQ delete
-    public void deleteQnA(int faqseq) {
+    // QnA delete
+    public void deleteQnA(int qstseq) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
 
         String sql = """
                 DELETE FROM TB_USERQST
-                WHERE FAQSEQ = :faqseq
+                WHERE QSTSEQ = :qstseq
                 """;
-        params.addValue("faqseq", faqseq);
+        params.addValue("qstseq", qstseq);
 
         int deleteCnt = this.sqlRunner.execute(sql,params);
     }
     // File delete
-    public List<Map<String, Object>> deleteFile(int faqseq) {
+    public List<Map<String, Object>> deleteFile(int qstseq) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
 
         String sql = """
                 DELETE FROM TB_FILEINFO
-                WHERE FAQSEQ = :faqseq
-                AND FLAG = '02'
+                WHERE bbsseq = :qstseq
+                AND CHECKSEQ = '02'
                 """;
-        params.addValue("faqseq", faqseq);
+        params.addValue("qstseq", qstseq);
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
         return items;

@@ -99,16 +99,34 @@ public class CM_QnACotroller {
                 }
             }
 
+            List<Map<String, Object>> filelist = new ArrayList<>();
             // 파일 이름과 경로를 리스트로 변환
             if (item.containsKey("fileornm") && item.containsKey("filepath")) {
                 String filenames = (String) item.get("fileornm");
                 String filepaths = (String) item.get("filepath");
+                String filesvnms = (String) item.get("filesvnm");
+                String filesizes = (String) item.get("filesize");
 
                 List<String> filenameList = filenames != null ? Arrays.asList(filenames.split(",")) : Collections.emptyList();
                 List<String> filepathList = filepaths != null ? Arrays.asList(filepaths.split(",")) : Collections.emptyList();
+                List<String> filesvnmList = filesvnms != null ? Arrays.asList(filesvnms.split(",")) : Collections.emptyList();
+                List<String> filesizeList = filesizes != null ? Arrays.asList(filesizes.split(",")) : Collections.emptyList();
 
-                item.put("filenameList", filenameList);
-                item.put("filepathList", filepathList);
+                for (int i = 0; i < filenameList.size(); i++) {
+                    Map<String, Object> fileInfo = new HashMap<>();
+                    fileInfo.put("fileornm", filenameList.get(i));
+                    if (i < filepathList.size()) {
+                        fileInfo.put("filepath", filepathList.get(i));
+                    }
+                    if (i < filesvnmList.size()) {
+                        fileInfo.put("filesvnm", filesvnmList.get(i));
+                    }
+                    if (i < filesizeList.size()) {
+                        fileInfo.put("filesize", filesizeList.get(i));
+                    }
+                    filelist.add(fileInfo);
+                }
+                item.put("filelist", filelist);
                 item.put("isdownload", !filenameList.isEmpty() && !filepathList.isEmpty());
             } else {
                 item.put("filenameList", Collections.emptyList());
@@ -132,14 +150,13 @@ public class CM_QnACotroller {
         // 유저정보 TB_USERQST 객체에 바인드
         faqAnswer.setINUSERID(user.getUsername());
         faqAnswer.setUSERID(user.getUsername());
-        log.info("INDATEM : {}", faqAnswer.getINDATEM());
         try {
             // Repository를 통해 데이터 저장
             qnaRepository.save(faqAnswer);
             // 파일 저장 처리
             if(files != null){
                 for (MultipartFile multipartFile : files) {
-                    String path = settings.getProperty("file_upload_path") + "1:1문의";
+                    String path = settings.getProperty("file_upload_path") + "QnA문의";
                     MultipartFile file = multipartFile;
                     int fileSize = (int) file.getSize();
 
@@ -164,13 +181,14 @@ public class CM_QnACotroller {
                     TB_FILEINFO fileinfo = new TB_FILEINFO();
 
                     fileinfo.setFILEPATH(saveFilePath);
-                    fileinfo.setFiledate(String.valueOf(faqAnswer.getINDATEM()));
+                    fileinfo.setFiledate(String.valueOf(faqAnswer.getINDATEM()).replace("-",""));
                     fileinfo.setFILEORNM(fileName);
                     fileinfo.setFILESIZE(BigDecimal.valueOf(fileSize));
-                    //fileinfo.setINDATEM(); // ("reqdate".replaceAll("-","")
+                    fileinfo.setINDATEM(faqAnswer.getINDATEM().atStartOfDay()); // ("reqdate".replaceAll("-","")
                     fileinfo.setINUSERID(String.valueOf(user.getId()));
                     fileinfo.setFILEEXTNS(ext);
                     fileinfo.setFILEURL(saveFilePath);
+                    fileinfo.setFILESVNM(file_uuid_name);
                     fileinfo.setCHECKSEQ("02");
 
                     try {
@@ -229,7 +247,16 @@ public class CM_QnACotroller {
         try {
             qnaService.deleteQnA(qnaseq);
             qnaService.deleteFile(qnaseq);
-
+            // 파일 서버에서 삭제
+            List<TB_FILEINFO> filelist = fileinfoRepository.findAllByCheckseqAndBbsseq("02", qnaseq);
+            for (TB_FILEINFO fileinfo : filelist) {
+                String filePath = fileinfo.getFILEPATH();
+                String fileName = fileinfo.getFILESVNM();
+                File file = new File(filePath, fileName);
+                if (file.exists()) {
+                    file.delete();
+                }
+            }
             result.message = "답변내용이 성공적으로 삭제되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();
