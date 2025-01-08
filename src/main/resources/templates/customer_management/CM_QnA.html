@@ -309,10 +309,10 @@
                     selectionMode: wijmo.grid.SelectionMode.Row,
                     columns: [
                         {binding: 'INDATEM', header: '문의일자', width: 120, minWidth: 120, align: 'center'},
+                        {binding: 'answer', header: '답변', width: '*', minWidth: 180, align: 'right'},
+                        {binding: 'QSTTEXT', header: '문의', width: '*', minWidth: 180, align: 'right'},
                         {binding: 'USERID', header: '사용자', width: 120, align: 'right'},
-                        {binding: 'QSTTEXT', header: '문의', width: '*', align: 'right'},
                         {binding: 'datetum', header: '답변기간', width: 85, align: 'center'},
-                        {binding: 'answer', header: '답변', width: '*', minWidth: 100, align: 'right'},
                         {binding: 'answerTel', header: '연락처', width: 140, minWidth: 100, align: 'center'},
                         {binding: 'downloads', header: '첨부파일', width: '*', minWidth: 105, align: 'center'},
                         {binding: 'isdownload', visible: false}

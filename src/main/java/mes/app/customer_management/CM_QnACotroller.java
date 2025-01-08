@@ -248,13 +248,9 @@ public class CM_QnACotroller {
     }
     // 답변 삭제
     @PostMapping("/delete")
-    public AjaxResult deleteQnA(@RequestBody Map<String, Integer> requestData) {
-        Integer qnaseq = requestData.get("qnaseq");
+    public AjaxResult deleteQnA(@RequestBody Map<String, Object> requestData) {
         AjaxResult result = new AjaxResult();
-        if (qnaseq == null) {
-            result.message = "인식번호가 전달되지 않았습니다.";
-            return result;
-        }
+        int qnaseq = Integer.parseInt((String) requestData.get("QSTSEQ"));
 
         try {
             qnaService.deleteQnA(qnaseq);
