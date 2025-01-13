@@ -5,14 +5,6 @@
 
 <head>
   <style>
-    .wj-header {
-      text-align: center;
-    }
-
-    /* 셀 왼쪽 정렬 */
-    .wj-cell {
-      text-align: left;
-    }
     .button-wrap {
       text-align: right; /* 오른쪽 정렬 */
     }
@@ -20,19 +12,10 @@
       padding: 10px;
       white-space: nowrap; /* 텍스트 잘림 방지 */
     }
-
-    .button-list {
-      display: inline-block; /* 가로로 나열 */
-      list-style: none; /* 기본 리스트 스타일 제거 */
-      margin: 0; /* 여백 초기화 */
-      padding: 0; /* 여백 초기화 */
-    }
-
     .button-list li {
       display: inline; /* 인라인 요소로 설정 */
       margin-left: 10px; /* 버튼 간 간격 */
     }
-
     table td {
       border-bottom: 1px solid #EBEBEB;
       height: 48px;
@@ -42,6 +25,15 @@
       width: 100% !important;
       box-sizing: border-box; /* padding 포함 */
     }
+    .view-table {
+      max-height: none; /* 높이 제한 제거 */
+      height: auto; /* 내용에 맞는 높이 */
+      overflow: visible; /* 스크롤 제거 */
+      width: 100%; /* 테이블 전체 폭을 부모에 맞춤 */
+      font-size: 16px; /* 기본 글자 크기 */
+      border-collapse: collapse; /* 테이블 셀 간 간격 제거 */
+    }
+
   </style>
 </head>
 
@@ -128,7 +120,7 @@
 
                   <!-- Table Wrap -->
                   <div class="table-wrap">
-                    <table class="view-table" id="selectedData" style="max-height: 800px;">
+                    <table class="view-table" id="selectedData">
                       <caption>급등관리 상세 테이블</caption>
                       <colgroup>
                         <col class="wp50">
@@ -138,7 +130,7 @@
                       <tr>
                         <th><label for="grid">등급</label></th>
                         <td colspan="3">
-                          <select id="grid" name="grid" class="wp100"  style="width: 670px; !important" >
+                          <select id="grid" name="grid" class="wp100"  style="width: 650px; !important" >
                             <option></option>
                           </select>
                         </td>
@@ -316,10 +308,10 @@
             { binding: 'grid_display',header:'등급', align: 'center', width: 150 },
             { binding: 'grid', header: '등급 코드', align: 'center', width: 100 , visible: false},
             { binding: 'grscore', header: '점수', align: 'center', width: 150 },
-            { binding: 'grflag_display',header:'명칭', align: 'center', width: 150 },
-            { binding: 'grflag', header: '명칭코드', align: 'center', width: 150 ,visible: false},
-            { binding: 'grmood_display',header:'날씨', align: 'center', width: 150 },
-            { binding: 'grmood', header: '날씨코드', align: 'center', width: 150 ,visible: false},
+            { binding: 'grflag_display',header:'명칭', align: 'center', width: 120 },
+            { binding: 'grflag', header: '명칭코드', align: 'center', width: '*' ,visible: false},
+            { binding: 'grmood_display',header:'날씨', align: 'center', width: 130 },
+            { binding: 'grmood', header: '날씨코드', align: 'center', width: 140 ,visible: false},
             { binding: 'grcolor', header: '표시색상', align: 'center', width: 150 ,visible: false},
             { binding: 'gricon_display',header:'아이콘', align: 'center', width: 150},
             { binding: 'gricon', header: '아이콘코드', align: 'center', width: '*' ,visible: false},
