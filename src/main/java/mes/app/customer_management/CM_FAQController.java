@@ -1,13 +1,16 @@
 package mes.app.customer_management;
 
 import mes.app.customer_management.service.CM_FAQService;
+import mes.domain.entity.User;
 import mes.domain.entity.factcheckEntity.TB_FAQINFO;
 import mes.domain.model.AjaxResult;
 import mes.domain.repository.factcheckRepository.FAQRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -35,13 +38,41 @@ public class CM_FAQController {
     }
     // 문의/답변 등록
     @PostMapping("/save")
-    public AjaxResult saveFAQ( @ModelAttribute TB_FAQINFO faqAnswer) {
+    public AjaxResult saveFAQ(@RequestParam Map<String, String> params,
+                              Authentication auth) {
         AjaxResult result = new AjaxResult();
+        User user = (User) auth.getPrincipal();
 
         try {
+            // 문의글 등록/수정 로직
+            TB_FAQINFO faqQuestion = new TB_FAQINFO();
+            if(params.get("FAQSEQ") != null && !params.get("FAQSEQ").isEmpty()) {
+                faqQuestion.setFAQSEQ(Integer.valueOf(params.get("FAQSEQ")));
+            }
+            faqQuestion.setFAQTEXT(params.get("question"));
+            faqQuestion.setFLAG("0");
+            faqQuestion.setFAQFLAG(params.get("FAQFLAG"));
+            faqQuestion.setFASORT(Integer.parseInt(params.get("FAQSORT")));
+            faqQuestion.setREMARK(params.get("REMARK"));
+            faqQuestion.setINDATEM(LocalDate.parse(params.get("INDATEM")));
+            faqQuestion.setINUSERID(user.getUsername());
             // Repository를 통해 데이터 저장
-            faqRepository.save(faqAnswer);
+            faqRepository.save(faqQuestion);
 
+            // 답변글 등록/수정 로직 (문의글 id가 넘어왔을 경우만 / 문의글 하위 개념)
+            if(params.get("FAQSEQ") != null && !params.get("FAQSEQ").isEmpty()) {
+                TB_FAQINFO faqAnswer = new TB_FAQINFO();
+                if (params.get("answerNo") != null && !params.get("answerNo").isEmpty()) {
+                    faqAnswer.setFAQSEQ(Integer.valueOf(params.get("answerNo")));
+                }
+                faqAnswer.setFAQTEXT(params.get("answer"));
+                faqAnswer.setFLAG("1");
+                faqAnswer.setINDATEM(LocalDate.parse(params.get("INDATEM")));
+                faqAnswer.setCHSEQ(Integer.valueOf(params.get("CHSEQ")));
+                faqAnswer.setINUSERID(user.getUsername());
+
+                faqRepository.save(faqAnswer);
+            }
             result.message = "답변이 성공적으로 저장되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();

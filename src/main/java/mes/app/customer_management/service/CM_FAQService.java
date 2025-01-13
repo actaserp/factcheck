@@ -27,7 +27,7 @@ public class CM_FAQService {
                     Q.FLAG,
                     Q.INDATEM,
                     Q.INUSERID,
-                    A.REMARK,
+                    Q.REMARK,
                     A.FAQSEQ AS answerNo,
                     A.FAQTEXT AS answer
                 FROM
@@ -52,7 +52,7 @@ public class CM_FAQService {
 
         String sql = """
                 DELETE FROM TB_FAQINFO
-                WHERE FAQSEQ = :faqseq
+                WHERE FAQSEQ = :faqseq OR CHSEQ = :faqseq;
                 """;
         params.addValue("faqseq", faqseq);
 

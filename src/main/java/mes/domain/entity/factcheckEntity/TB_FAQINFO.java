@@ -34,7 +34,7 @@ public class TB_FAQINFO {
     int FASORT;
 
     @Column
-    int CHSEQ;
+    Integer CHSEQ;
 
     @Column
     String REMARK;

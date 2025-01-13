@@ -59,7 +59,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="deleteAnswer($('#answerNo').val())">
+                                <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="deleteAnswer()">
                                     <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
                                     삭제
                                 </a>
@@ -83,12 +83,13 @@
                     <div class="col wp100">
                         <div class="section">
                             <form id="codeForm">
-                                <input type="hidden" id="faqseq" name="faqseq" value=""/>
                                 <input class="form-control2" type="text" id="id" name="id" hidden />
                                 <div class="table-wrap">
                                     <table class="view-table" id="selectedData">
                                         <caption>FAQ 등록 테이블</caption>
-                                        <input type="hidden" id="answerNo">
+                                        <input type="hidden" id="faqseq" name="faqseq" value=""/><!-- 문의글 id -->
+                                        <input type="hidden" id="answerNo"> <!-- 답변글 id -->
+                                        <input type="hidden" id="isAnswer"> <!-- 답변클릭 이벤트 확인값 -->
                                         <colgroup>
                                             <col class="wp20">
                                             <col class="wauto">
@@ -105,7 +106,7 @@
                                         <tr>
                                             <th><label for="answer">Answer</label></th>
                                             <td>
-                                                <input type="text" id="answer" name="name" class="wp100" placeholder="25자 미만으로 작성해주십시오">
+                                                <input type="text" id="answer" name="name" class="wp100" placeholder="25자 미만으로 작성해주십시오" readonly>
                                             </td>
                                         </tr>
                                         <tr>
@@ -191,7 +192,7 @@
                         questionDiv.style.backgroundColor = '#D0E1EB';
                         questionDiv.style.padding = '5px';
                         questionDiv.style.marginRight = '20px';
-                        questionDiv.innerHTML = `&ensp;${item.no}.&ensp;${item.FAQTEXT || '문의 내용 없음'}`;
+                        questionDiv.innerHTML = `&ensp;${item.no}.&ensp;${item.FAQTEXT || '문의 내용 없음'} \n`;
 
                         // 클릭 이벤트 추가
                         questionDiv.addEventListener('click', () => {
@@ -210,6 +211,10 @@
                             answerDiv.style.marginTop = '3px';
                             answerDiv.style.marginBottom = '3px';
                             answerDiv.innerHTML = `&ensp;▷&ensp;${item.answer}`;
+                            // 클릭 이벤트 추가
+                            answerDiv.addEventListener('click', () => {
+                                selectAnswer(item);
+                            });
                             listCardWrap.appendChild(answerDiv);
                         }
                     });
@@ -221,22 +226,36 @@
                 }
             });
         }
-
         // FAQ문의내용 클릭 이벤트 함수
         function selectFAQ(faqInfo){
-            document.getElementById('question').value = faqInfo.FAQTEXT;
-            document.getElementById('answer').value = faqInfo.answer;
-            document.getElementById('faqNo').value = faqInfo.no;
-            document.getElementById('remark').value = faqInfo.REMARK;
-            document.getElementById('answerNo').value = faqInfo.answerNo;
-            document.getElementById('faqseq').value = faqInfo.FAQSEQ;
-            const selectfaqflag = document.getElementById('faqflag');
+            document.getElementById('faqseq').value = faqInfo.FAQSEQ; // 문의글 id
+            document.getElementById('answerNo').value = faqInfo.answerNo; // 답변글 id
 
+            document.getElementById('question').value = faqInfo.FAQTEXT; // 문의내용
+            document.getElementById('answer').value = faqInfo.answer;    // 답변내용
+            document.getElementById('faqNo').value = faqInfo.FASORT;     // 순서
+            document.getElementById('remark').value = faqInfo.REMARK;    // 비고
+            document.getElementById('isAnswer').value = '';    // 답변클릭 확인값
+            const selectfaqflag = document.getElementById('faqflag');   // 문의구분(공통코드)
             setSelectedIndex(selectfaqflag, faqInfo.FAQFLAG);
+            document.getElementById('answer').removeAttribute('readonly');
+        }
+        // FAQ문의내용 클릭 이벤트 함수
+        function selectAnswer(faqInfo){
+            document.getElementById('faqseq').value = faqInfo.FAQSEQ; // 문의글 id
+            document.getElementById('answerNo').value = faqInfo.answerNo; // 답변글 id
+
+            document.getElementById('question').value = faqInfo.FAQTEXT; // 문의내용
+            document.getElementById('answer').value = faqInfo.answer;    // 답변내용
+            document.getElementById('faqNo').value = faqInfo.FASORT;     // 순서
+            document.getElementById('remark').value = faqInfo.REMARK;    // 비고
+            document.getElementById('isAnswer').value = '1';    // 답변클릭 확인값
+            const selectfaqflag = document.getElementById('faqflag');   // 문의구분(공통코드)
+            setSelectedIndex(selectfaqflag, faqInfo.FAQFLAG);
+            document.getElementById('answer').removeAttribute('readonly');
         }
         // 문의구분 바인드
         function setSelectedIndex(selectElement, selectedValue) {
-            console.log("selectedValue : ", selectedValue)
             for (let i = 1; i < selectElement.options.length; i++) {
                 // 트림(공백 제거), 대소문자 무시, 타입 일치시키기
                 if (selectElement.options[i].value.trim().toLowerCase() === String(selectedValue).trim().toLowerCase()) {
@@ -248,11 +267,14 @@
         // 신규등록 fuction
         function resetFormFields(){
             const fieldsToReset = [
-                'question', 'answer', 'faqNo', 'remark','faqflag'
+                'question', 'answer', 'faqNo', 'remark','faqflag','answerNo','isAnswer','faqseq'
             ];
             fieldsToReset.forEach(fieldId => {
                 document.getElementById(fieldId).value = '';
             });
+            // readonly 속성 부여
+            document.getElementById('answer').setAttribute('readonly', 'readonly');
+            document.getElementById('remark').removeAttribute('readonly');
         }
         // 답변등록
         function saveAnswer() {
@@ -277,12 +299,16 @@
             }
             Alert.confirm('', alertMessage, function () {
                 let formData = new FormData();
-                formData.append('FAQTEXT', $('#answer').val());
-                formData.append('REMARK', $('#remark').val());
-                formData.append('CHSEQ', $('#faqseq').val());
-                formData.append('FAQSEQ', $('#answerNo').val());
-                formData.append('INDATEM', today);
-                formData.append('FLAG', '1');
+                    formData.append('answer', $('#answer').val()); // 답변글로 등록/수정
+                    formData.append('CHSEQ', $('#faqseq').val());
+                    formData.append('answerNo', $('#answerNo').val());
+                    formData.append('question', $('#question').val()); // 문의글로 등록/수정
+                    formData.append('REMARK', $('#remark').val());
+                    formData.append('FAQSEQ', $('#faqseq').val());
+                    formData.append('FAQSORT', $('#faqNo').val());
+                    formData.append('FAQFLAG', $('#faqflag').val());
+                    formData.append('INDATEM', today);
+
                 console.log("formData : ", formData);
                 function sendAjaxRequest(url) {
                     $.ajax({
@@ -315,10 +341,33 @@
             })
         }
         // 답변 삭제
-        function deleteAnswer(faqseq) {
+        function deleteAnswer() {
+
             let alertMessage;
-            alertMessage = '삭제하시겠습니까?';
-            const intFaqSeq = parseInt(faqseq, 10);
+            let intFaqSeq;
+            if($('#isAnswer').val()) {
+                intFaqSeq = parseInt($('#answerNo').val(), 10);
+                alertMessage = '답변내용을 삭제하시겠습니까?';
+            }else{
+                intFaqSeq = parseInt($('#faqseq').val(), 10);
+                alertMessage = '문의내용 삭제시 답변내용까지 삭제됩니다.';
+            }
+            // 필수 입력 필드 검사
+            let requiredFields = [
+                {id: '#faqseq', label: '문의글 혹은 답변글을 선택해주세요'},
+                // {id: '#answer', label: '답변을 작성해주세요'}
+            ];
+            for (let i = 0; i < requiredFields.length; i++) {
+                let field = requiredFields[i];
+                let $element = $(field.id);
+                let value = $element.val();
+
+                // 요소가 존재하지 않거나, 값이 빈 문자열(선택되지 않은 경우)인 경우 경고
+                if ($element.length === 0 || value === null || value.trim() === '') {
+                    Alert.alert('', field.label);
+                    return;
+                }
+            }
             Alert.confirm('', alertMessage, function () {
                 function sendAjaxRequest(url) {
                     $.ajax({
