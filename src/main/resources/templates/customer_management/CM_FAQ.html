@@ -165,6 +165,7 @@
 
         function init() {
             faqHtml();
+            resetFormFields();
         }
         $(document).ready(function (e) {
 
@@ -266,6 +267,7 @@
         }
         // 신규등록 fuction
         function resetFormFields(){
+            let data = {}
             const fieldsToReset = [
                 'question', 'answer', 'faqNo', 'remark','faqflag','answerNo','isAnswer','faqseq'
             ];
@@ -274,7 +276,16 @@
             });
             // readonly 속성 부여
             document.getElementById('answer').setAttribute('readonly', 'readonly');
-            document.getElementById('remark').removeAttribute('readonly');
+            // 순서 최대값 불러오기
+            AjaxUtil.getAsyncData('/api/FAQ/selectMaxFasort', data, Success, Failure);
+        }
+        // 순서 최대값 불러와 바인드
+        let Success = function (result){
+            console.log("faqNo", result);
+            document.getElementById('faqNo').value = result.data.MaxFASORT;
+        }
+        let Failure = function (result){
+            Alert.alert('', '순서를 불러오는데 실패하였습니다.');
         }
         // 답변등록
         function saveAnswer() {

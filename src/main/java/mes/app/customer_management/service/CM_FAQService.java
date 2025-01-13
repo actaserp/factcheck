@@ -58,4 +58,17 @@ public class CM_FAQService {
 
         int deleteCnt = this.sqlRunner.execute(sql,params);
     }
+    // FAQ selectMaxFasort
+    public Map<String, Object> selectMaxFasort() {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+        String sql = """
+                SELECT COALESCE(MAX(FASORT), 0) + 1 AS MaxFASORT
+                FROM MOB_FACTCHK.dbo.TB_FAQINFO;
+                """;
+
+        Map<String, Object> MaxFASORT = this.sqlRunner.getRow(sql,params);
+        return MaxFASORT;
+    }
+
 }
