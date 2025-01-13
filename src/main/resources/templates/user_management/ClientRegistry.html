@@ -1,5 +1,8 @@
 <html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <style>
+  .text-left {
+    text-align: left;
+  }
 
 </style>
 <th:block layout:fragment="content">
@@ -84,6 +87,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="text/javascript">
 
+
     $(document).ready(function() {
       // 현재 날짜 설정
       const today = new Date();
@@ -99,34 +103,40 @@
       const endOfMonth = new Date(year, month + 1, 0);
       const endMonthFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
       $('#endDate').val(endMonthFormatted);
-    });
 
-    document.addEventListener('DOMContentLoaded', function () {
       init();
     });
 
     let theGrid;
+
     function init() {
       fetchListData();
     }
 
     function fetchListData() {
       let data = [ ];
-      const searchValue = $('#searchUserNm').val();
+      const params = {
+        startDate: $('#startDate').val(),
+        endDate: $('#endDate').val(),
+        searchUserNm: $('#searchUserNm').val()
+      };
+
       // 서버에서 데이터 가져오기
       $.ajax({
-        url: 'api/XUserInfo/read',
+        url: '/api/MUserInfo/read',
         type: 'GET',
-        data: {userNm : searchValue},
+        data: params,
         async: false,
         success: function (response) {
           // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
           if (response && Array.isArray(response.data)) {
             data = response.data.map((item, index) => ({
               rownum: index + 1,
+              USERID: item.USERID ||'',
               userNm: item.userNm ||'',
               inDateTm:item.inDateTm || '',
               sexYN: item.sexYN ||'',
+              indatem:item.indatem || '',
               userAddr: item.userAddr ||'',
               userHP: item.userHP || '',
               userEmail: item.userEmail || '',
@@ -143,6 +153,7 @@
       while (data.length < 15) {
         data.push({
           rownum: data.length + 1,
+          USERID:'',
           userNm: '',
           indatem: '',
           sexYN: '',
@@ -163,12 +174,13 @@
           isReadOnly: true,
           columns: [
             { binding: 'rownum', header: '순번', width: 70, align: 'center' },
+            { binding: 'USERID', header:'유저아이디', visible: false},
             { binding: 'userNm', header: '사용자명', width: 110, minWidth: 100, align: 'center' },
             { binding: 'indatem', header: '등록일자', width: 150, minWidth: 100, align: 'center'},
             { binding: 'sexYN', header: '성별', width:70, minWidth: 70, align: 'center' },
-            { binding: 'userAddr', header: '주소', width: '*', minWidth: 250, align: 'center' },
-            { binding: 'userHP', header: '연락처', width: '*', minWidth: 150, align: 'center' },
-            { binding: 'userEmail', header: '이메일', width: '*', minWidth: 100, align: 'center' },
+            { binding: 'userAddr', header: '주소', width: '*', minWidth: 230, align: 'left' },
+            { binding: 'userHP', header: '연락처', width: 150, minWidth: 110, align: 'center' },
+            { binding: 'userEmail', header: '이메일', width: 160, minWidth: 100, align: 'center' },
             { binding: 'InquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
             { binding: 'remark', header: '비고', width: 100, align: 'center', minWidth: 150 }
           ],

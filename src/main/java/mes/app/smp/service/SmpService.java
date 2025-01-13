@@ -68,7 +68,7 @@ public class SmpService {
 				userCodeRepository.save(code);
 			});
 			
-			System.out.println(hour + "시의 SMP 정보가 업데이트 되었습니다. SMP 값: " + smp + ", 업데이트 시간: " + now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+			//System.out.println(hour + "시의 SMP 정보가 업데이트 되었습니다. SMP 값: " + smp + ", 업데이트 시간: " + now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 			
 		} catch (URISyntaxException e) {
 			System.err.println("Error in accessing the API: " + e.getMessage());

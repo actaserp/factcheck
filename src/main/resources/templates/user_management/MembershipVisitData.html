@@ -113,7 +113,7 @@
                             <dt>&nbsp;</dt>
                             <dd>
                                 <li>
-                                    <a class="btn btn-delete" title="검색" id="searchButton" onclick="searchButton()">
+                                    <a class="btn btn-delete" title="검색" id="searchButton" onclick="init()">
                                         <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
                                         <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
                                         검색
@@ -123,43 +123,58 @@
                         </dl>
                     </div>
                 </div>
-
                 <div class="container-fluid" style="display: flex; align-items: center; justify-content: space-between;">
+                    <!-- 첫 번째 섹션 -->
                     <section class="col wp50" style="flex: 1; margin-right: 10px; height:650px; position: relative;">
-                    <!-- 첫 번째 차트 -->
-                    <div>
-                        <canvas id="chart1" style="width: 100%; height:250px;"></canvas>
-                        <ul class="tab-links-sub" style="position: absolute; top:10px; right: 10px;">
-                            <li>
-                                <a href="#tab1-chart1" title="통계" onclick="loadStatsData1()">통계</a>
-                            </li>
-                            <li>
-                                <a href="#tab2-chart1" title="현황" onclick="loadTrendData1()">현황</a>
-                            </li>
-                        </ul>
-                        <span class="material-symbols-outlined"
-                              style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
-                              onclick="openModal('chart1')">zoom_out_map</span>
-                    </div>
+                        <div>
+                            <!-- 차트 -->
+                            <canvas id="chart1" style="width: 100%; height:250px;"></canvas>
+                            <!-- 그리드 -->
+                            <div id="theGrid1" style="display: none; width: 100%; height: 250px;"></div>
+
+                            <!-- 탭 링크 -->
+                            <ul class="tab-links-sub" style="position: absolute; top:10px; right: 10px;">
+                                <li>
+                                    <a href="#tab1-chart1" title="통계" onclick="loadStatsData1('chart1', 'theGrid1')">통계</a>
+                                </li>
+                                <li>
+                                    <a href="#tab2-theGrid1" title="현황" onclick="showGrid1('chart1', 'theGrid1')">현황</a>
+                                </li>
+                            </ul>
+
+                            <!-- 확대 버튼 -->
+                            <span class="material-symbols-outlined"
+                                  style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
+                                  onclick="openModal('chart1')">zoom_out_map</span>
+                        </div>
                     </section>
+
+                    <!-- 두 번째 섹션 -->
                     <section class="col wp50" style="flex: 1; margin-right: 10px; height:650px; position: relative;">
-                    <!-- 두 번째 차트 -->
-                    <div>
-                        <canvas id="chart2" style="width: 100%; height:250px;"></canvas>
-                        <ul class="tab-links-sub" style="position: absolute; top:10px; right: 10px;">
-                            <li>
-                                <a href="#tab1-chart2" title="통계" onclick="loadStatsData2()">통계</a>
-                            </li>
-                            <li>
-                                <a href="#tab2-chart2" title="현황" onclick="loadTrendData2()">현황</a>
-                            </li>
-                        </ul>
-                        <span class="material-symbols-outlined"
-                              style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
-                              onclick="openModal('chart2')">zoom_out_map</span>
-                    </div>
+                        <div>
+                            <!-- 차트 -->
+                            <canvas id="chart2" style="width: 100%; height:250px;"></canvas>
+                            <!-- 그리드 -->
+                            <div id="theGrid2" style="display: none; width: 100%; height: 250px;"></div>
+
+                            <!-- 탭 링크 -->
+                            <ul class="tab-links-sub" style="position: absolute; top:10px; right: 10px;">
+                                <li>
+                                    <a href="#tab1-chart2" title="통계" onclick="loadStatsData2('chart2', 'theGrid2')">통계</a>
+                                </li>
+                                <li>
+                                    <a href="#tab2-theGrid2" title="현황" onclick="showGrid2('chart2', 'theGrid2')">현황</a>
+                                </li>
+                            </ul>
+
+                            <!-- 확대 버튼 -->
+                            <span class="material-symbols-outlined"
+                                  style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
+                                  onclick="openModal('chart2')">zoom_out_map</span>
+                        </div>
                     </section>
                 </div>
+
             </section>
         </div> <!--//tab-wrap end-->
     </div> <!--//layout-contents end -->
@@ -196,8 +211,15 @@
             const endMonthFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
             $('#endDate').val(endMonthFormatted);
 
+            init();
 
         });
+
+
+        function init() {
+            loadStatsData1();
+            loadStatsData2();
+        }
 
         // 모달 열기 함수
         function openModal(chartId) {
@@ -270,8 +292,8 @@
             data: {
                 labels: Array.from({ length: 12 }, (_, i) => `${i + 1}월`),
                 datasets: [{
-                    label: '통계 데이터',
-                    data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 200)), // 0 ~ 200 사이의 데이터 생성
+                    label: `데이터`,
+                    data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 200)), // 초기값
                     backgroundColor: 'rgba(54, 162, 235, 0.5)',
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1,
@@ -295,15 +317,44 @@
                 scales: {
                     y: {
                         min: 0, // Y축 최소값
-                        max: 200, // Y축 최대값
+                        max: 300, // Y축 최대값
                         ticks: {
-                            stepSize: 10, // 10 단위로 눈금 표시
+                            stepSize: 20, // 10 단위로 눈금 표시
                         },
                     },
                 },
             },
         });
 
+        // 데이터 로드 및 차트 업데이트
+        function loadStatsData1() {
+            // 입력된 날짜를 가져옵니다.
+            const params = {
+                startDate: $('#startDate').val(),
+                endDate: $('#endDate').val(),
+            };
+
+            $.ajax({
+                url: '/api/userStatistics/chart1', // API 엔드포인트
+                type: 'GET',
+                data: params, // GET 요청의 파라미터
+                async: false, // 동기 요청
+                success: function (response) {
+                    // 응답이 올바르게 도착했는지 확인
+                    if (response && response.success && response.data) {
+                        // 서버에서 받은 데이터를 차트에 반영
+                        chart1.data.labels = response.data.labels || chart1.data.labels; // X축 레이블
+                        chart1.data.datasets[0].data = response.data.values || []; // Y축 데이터
+                        chart1.update(); // 차트 업데이트
+                    } else {
+                        console.error("서버에서 유효한 데이터를 받지 못했습니다.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("데이터를 가져오는 중 오류가 발생했습니다.", error);
+                }
+            });
+        }
 
         // 두 번째 차트 생성
         let chart2 = new Chart(ctx2, {
@@ -312,7 +363,7 @@
                 labels: Array.from({ length: 12 }, (_, i) => `${i + 1}월`),
                 datasets: [{
                     label: '통계 데이터',
-                    data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 100)), // 0 ~ 100 사이의 데이터 생성
+                    data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 200)), // 초기값
                     backgroundColor: 'rgba(255, 99, 132, 0.5)',
                     borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 1,
@@ -345,42 +396,110 @@
             },
         });
 
-        // 첫 번째 차트 업데이트
-        function loadStatsData1() {
-            chart1.config.type = 'bar'; // 유형 설정
-            chart1.data.datasets[0].data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 200));// 데이터 업데이트
-            chart1.update(); // 차트 갱신
-        }
-
-        /*서버에서 데이터 가져올때
-        function loadStatsData1() {
-            fetch('/api/chart1/stats') // API 엔드포인트 호출
-                .then(response => response.json()) // JSON 데이터로 변환
-                .then(data => {
-                    chart1.data.datasets[0].data = data.values; // 서버에서 받은 데이터로 업데이트
-                    chart1.update(); // 차트 갱신
-                })
-                .catch(error => console.error('데이터 로드 실패:', error));
-        }*/
-
-
-        function loadTrendData1() {
-            chart1.config.type = 'line'; // 유형 설정
-            chart1.data.datasets[0].data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 200)); // 데이터 업데이트
-            chart1.update(); // 차트 갱신
-        }
-
-       // 두 번째 차트 업데이트
+        // 두 번째 차트 업데이트
         function loadStatsData2() {
-            chart2.config.type = 'bar'; // 유형 설정
-            chart2.data.datasets[0].data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100));// 데이터 업데이트
-            chart2.update(); // 차트 갱신
+            // 입력된 날짜를 가져옵니다.
+            const params = {
+                startDate: $('#startDate').val(),
+                endDate: $('#endDate').val(),
+            };
+
+            $.ajax({
+                url: '/api/userStatistics/chart2', // API 엔드포인트
+                type: 'GET',
+                data: params, // GET 요청의 파라미터
+                async: false, // 동기 요청
+                success: function (response) {
+                    // 응답이 올바르게 도착했는지 확인
+                    if (response && response.success && response.data) {
+                        // 서버에서 받은 데이터를 차트에 반영
+                        chart2.data.labels = response.data.labels || chart2.data.labels; // X축 레이블
+                        chart2.data.datasets[0].data = response.data.values || []; // Y축 데이터
+                        chart2.update(); // 차트 업데이트
+                    } else {
+                        console.error("서버에서 유효한 데이터를 받지 못했습니다.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("데이터를 가져오는 중 오류가 발생했습니다.", error);
+                }
+            });
         }
 
-        function loadTrendData2() {
-            chart2.config.type = 'line'; // 유형 설정
-            chart2.data.datasets[0].data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100)); // 데이터 업데이트
-            chart2.update();
+        function showGrid1(){
+
+            let data = [ ];
+            const params = {
+                startDate: $('#startDate').val(),
+                endDate: $('#endDate').val(),
+                searchUserNm: $('#searchUserNm').val()
+            };
+
+            // 서버에서 데이터 가져오기
+            $.ajax({
+                url: '/api/userStatistics/read',
+                type: 'GET',
+                data: params,
+                async: false,
+                success: function (response) {
+                    // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
+                    if (response && Array.isArray(response.data)) {
+                        data = response.data.map((item, index) => ({
+                            rownum: index + 1,
+                            USERID: item.USERID ||'',
+                            userNm: item.userNm ||'',
+                            indatem :item.indatem || '' ,
+                            inDateTm:item.inDateTm || '',
+                            userAddr: item.userAddr || '',
+                            InquiryCount: item.InquiryCount ||'',
+                            remark:item.remark || '',
+                        }));
+                    }
+                },
+                error: function () {
+                    console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+                }
+            });
+
+            while (data.length < 15) {
+                data.push({
+                    rownum: data.length + 1,
+                    USERID:'',
+                    userNm: '',
+                    indatem: '',
+                    userAddr: '',
+                    InquiryCount: '',
+                    remark: '',
+                });
+            }
+
+            const viewdata = new wijmo.collections.CollectionView(data);
+
+            if (!theGrid1) {
+                theGrid1 = new wijmo.grid.FlexGrid('#theGrid1', {
+                    autoGenerateColumns: false,
+                    showMarquee: true,
+                    isReadOnly: true,
+                    columns: [
+                        { binding: 'rownum', header: '순번', width: 70, align: 'center' },
+                        { binding: 'USERID', header:'유저아이디', visible: false},
+                        { binding: 'userNm', header: '사용자명', width: 110, minWidth: 100, align: 'center' },
+                        { binding: 'indatem', header: '등록일자', width: 150, minWidth: 100, align: 'center'},
+                        { binding: 'userAddr', header: '주소', width: '*', minWidth: 230, align: 'left' },
+                        { binding: 'InquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
+                        { binding: 'remark', header: '비고', width: 100, align: 'center', minWidth: 150 }
+                    ],
+                    itemsSource: viewdata
+                });
+
+                theGrid1.rowHeaders.columns.splice(0, 1);
+            } else {
+                theGrid1.itemsSource = viewdata;
+            }
+        }
+
+        function showGrid2(){
+
         }
 
 
