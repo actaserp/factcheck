@@ -247,7 +247,7 @@ public class CM_announcementController {
                     }
                 });
             }
-            result.message = "공지사항이 성공적으로 저장되었습니다.";
+            result.message = "저장되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();
             result.message = "공지사항 저장 중 오류가 발생했습니다.";
@@ -282,7 +282,7 @@ public class CM_announcementController {
                     file.delete();
                 }
             }
-            result.message = "공지사항이 성공적으로 삭제되었습니다.";
+            result.message = "삭제되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();
             result.message = "공지사항 삭제 중 오류가 발생했습니다.";

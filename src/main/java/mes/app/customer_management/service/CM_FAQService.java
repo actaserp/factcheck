@@ -38,6 +38,7 @@ public class CM_FAQService {
                     Q.FAQSEQ = A.CHSEQ
                 WHERE
                     Q.FLAG = '0'
+                ORDER BY Q.FASORT ASC
                 
                 """;
 

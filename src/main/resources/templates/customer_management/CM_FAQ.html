@@ -115,9 +115,9 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th><label for="comcode">문의구분</label></th>
+                                            <th><label for="faqflag">문의구분</label></th>
                                             <td>
-                                                <select id="comcode" name="name" class="wp100">
+                                                <select id="faqflag" name="faqflag" class="wp100">
                                                     <option value="" selected disabled hidden>선택</option>
                                                     <option value="01"></option>
                                                     <option value="02"></option>
@@ -169,7 +169,7 @@
 
             // FAQ 공통코드 리스트(문의구분 select 바인드)
             const parentId01 = 374;
-            const selectElementId01 = 'comcode';
+            const selectElementId01 = 'faqflag';
             fetchCommonCodes(parentId01, selectElementId01);
         });
 
@@ -230,7 +230,7 @@
             document.getElementById('remark').value = faqInfo.REMARK;
             document.getElementById('answerNo').value = faqInfo.answerNo;
             document.getElementById('faqseq').value = faqInfo.FAQSEQ;
-            const selectfaqflag = document.getElementById('comcode');
+            const selectfaqflag = document.getElementById('faqflag');
 
             setSelectedIndex(selectfaqflag, faqInfo.FAQFLAG);
         }
@@ -248,7 +248,7 @@
         // 신규등록 fuction
         function resetFormFields(){
             const fieldsToReset = [
-                'question', 'answer', 'faqNo', 'remark','comcode'
+                'question', 'answer', 'faqNo', 'remark','faqflag'
             ];
             fieldsToReset.forEach(fieldId => {
                 document.getElementById(fieldId).value = '';
@@ -261,8 +261,8 @@
             alertMessage = '저장하시겠습니까?';
             // 필수 입력 필드 검사
             let requiredFields = [
-                {id: '#faqseq', label: '문의글을 선택해주세요'},
-                {id: '#answer', label: '답변을 작성해주세요'}
+                // {id: '#faqseq', label: '문의글을 선택해주세요'},
+                // {id: '#answer', label: '답변을 작성해주세요'}
             ];
             for (let i = 0; i < requiredFields.length; i++) {
                 let field = requiredFields[i];

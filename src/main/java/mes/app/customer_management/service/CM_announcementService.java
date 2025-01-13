@@ -45,6 +45,8 @@ public class CM_announcementService {
         if (searchText != null && !searchText.isEmpty()) {
             sql.append(" AND b.BBSSUBJECT LIKE :searchText");
         }
+        // 정렬 조건 추가
+        sql.append(" ORDER BY b.BBSDATE DESC");
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql.toString(),params);
         return items;
     }

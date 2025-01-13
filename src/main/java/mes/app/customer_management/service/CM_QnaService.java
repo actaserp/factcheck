@@ -59,6 +59,8 @@ public class CM_QnaService {
         //  GROUP BY 조건 추가
         sql.append(" GROUP BY" +
                 "                    Q.QSTSEQ, Q.INDATEM, Q.USERID, Q.QSTTEXT, Q.FLAG, Q.QSTSORT, Q.CHSEQ, Q.INDATEM, Q.INUSERID, A.QSTSEQ, A.QSTTEXT, A.INDATEM, A.QSTTEL");
+        // 정렬 조건 추가
+        sql.append(" ORDER BY Q.INDATEM DESC");
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql.toString(),params);
         return items;
     }

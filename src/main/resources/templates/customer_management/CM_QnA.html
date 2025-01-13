@@ -96,12 +96,12 @@
                                         파일 첨부<span>(0)</span>
                                     </a>
                                 </li>
-                                <li>
-                                    <a class="btn btn-excell" title="신규등록" onclick="resetFormFields()">
-                                        <img src="/images/icon/ico-plus.svg" alt="등록 아이콘">
-                                        신규등록
-                                    </a>
-                                </li>
+<!--                                <li>-->
+<!--                                    <a class="btn btn-excell" title="신규등록" onclick="resetFormFields()">-->
+<!--                                        <img src="/images/icon/ico-plus.svg" alt="등록 아이콘">-->
+<!--                                        신규등록-->
+<!--                                    </a>-->
+<!--                                </li>-->
                                 <li>
                                     <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="deleteAnswer($('#answerNo').val())">
                                         <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
@@ -127,7 +127,7 @@
                         <div class="wp50 mg-r20">
                             <div class="container-fluid col">
                                 <p id="selectedItem"></p>
-                                <div id="theGrid" style="max-height: 740px;"></div>
+                                <div id="theGrid" style="max-height: 590px;"></div>
                             </div>
                         </div>
                         <div class="col wp50">
@@ -294,6 +294,10 @@
                     data2.forEach(item =>{
 
                     })
+                    // data2의 개수가 11개 미만인 경우 빈 객체 추가
+                    while (data2.length < 11) {
+                        data2.push({});
+                    }
                 }
             })
 
@@ -310,8 +314,8 @@
                     columns: [
                         {binding: 'INDATEM', header: '문의일자', width: 120, minWidth: 120, align: 'center'},
                         {binding: 'answer', header: '답변', width: '*', minWidth: 180, align: 'right'},
-                        {binding: 'QSTTEXT', header: '문의', width: '*', minWidth: 180, align: 'right'},
-                        {binding: 'USERID', header: '사용자', width: 120, align: 'right'},
+                        {binding: 'QSTTEXT', header: '문의', width: '*', minWidth: 180, align: 'left'},
+                        {binding: 'USERID', header: '사용자', width: 120, align: 'center'},
                         {binding: 'datetum', header: '답변기간', width: 85, align: 'center'},
                         {binding: 'answerTel', header: '연락처', width: 140, minWidth: 100, align: 'center'},
                         {binding: 'downloads', header: '첨부파일', width: '*', minWidth: 105, align: 'center'},

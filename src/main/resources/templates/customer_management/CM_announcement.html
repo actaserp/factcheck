@@ -127,7 +127,7 @@
             <div class="wp50 mg-r20">
               <div class="container-fluid col">
                 <p id="selectedItem"></p>
-                <div id="theGrid" style="max-height: 660px;"></div>
+                <div id="theGrid" style="max-height: 580px;"></div>
               </div>
             </div>
             <div class="col wp50">
@@ -255,8 +255,8 @@
       language: "ko_KR",
       selector: "#remark",
       plugins: "paste image imagetools",
-      height: 500,
-      width: 730,
+      height: 420,
+      width: 660,
       toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent | image",
       paste_data_images: false,
       file_picker_types: 'image',
@@ -313,6 +313,12 @@
     date.setHours(date.getHours() + 9); // UTC+9로 한국 시간 설정
     const today = date.toISOString().split('T')[0];
     document.getElementById('create_date').value = today;
+    document.getElementById('show_start_date').value = today;
+    // 일주일 뒤 날짜 설정
+    const nextWeek = new Date(date); // 오늘 날짜를 복사하여 새 객체 생성
+    nextWeek.setDate(nextWeek.getDate() + 7); // 7일 더하기
+    const nextWeekDate = nextWeek.toISOString().split('T')[0];
+    document.getElementById('show_end_date').value = nextWeekDate;
 
     function init() {
       fetchListData();
@@ -333,6 +339,10 @@
               data2.forEach(item =>{
                 item.period = `${item.BBSFRDATE} ~ ${item.BBSTODATE}`; // 게시기간 형식으로 변환
               })
+            // data2의 개수가 11개 미만인 경우 빈 객체 추가
+            while (data2.length < 11) {
+              data2.push({});
+            }
           }
       })
 
@@ -349,12 +359,12 @@
           columns: [
             {binding: 'no', header: '순번', width: 60, minWidth: 60, align: 'center'},
             {binding: 'BBSDATE', header: '등록일자', width: 120, minWidth: 120, align: 'center'},
-            {binding: 'BBSUSER', header: '등록자', width: 100, align: 'right'},
-            {binding: 'BBSSUBJECT', header: '제목', width: '*', align: 'right'},
+            {binding: 'BBSUSER', header: '등록자', width: 100, align: 'center'},
+            {binding: 'BBSSUBJECT', header: '제목', width: 230, align: 'right'},
             {binding: 'BBSTEL', header: '연락처', width: 140, minWidth: 100, align: 'center'},
-            {binding: 'period', header: '게시기간', width: 220, minWidth: 100, align: 'center'},
             {binding: 'downloads', header: '첨부파일', width: '*', minWidth: 105, align: 'center'},
-            {binding: 'isdownload', visible: false}
+            {binding: 'isdownload', visible: false},
+            {binding: 'period', header: '게시기간', width: 220, minWidth: 100, align: 'center'}
           ],
           itemsSource: viewdata,
           itemFormatter: function (panel, r, c, cell) {
@@ -434,8 +444,7 @@
         {id: '#subject', label: '문의글을 선택해주세요'},
         {id: '#show_start_date', label: '시작일을 작성해주세요'},
         {id: '#show_end_date', label: '종료일을 작성해주세요'},
-        {id: '#tel', label: '연락처를 작성해주세요'},
-        {id: '#remark', label: '답변을 작성해주세요', isEditor: true} // TinyMCE 필드
+        {id: '#tel', label: '연락처를 작성해주세요'}
       ];
 
       for (let i = 0; i < requiredFields.length; i++) {
