@@ -103,7 +103,7 @@
 <!--                                    </a>-->
 <!--                                </li>-->
                                 <li>
-                                    <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="deleteAnswer($('#answerNo').val())">
+                                    <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="deleteAnswer()">
                                         <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
                                         삭제
                                     </a>
@@ -313,7 +313,7 @@
                     selectionMode: wijmo.grid.SelectionMode.Row,
                     columns: [
                         {binding: 'INDATEM', header: '문의일자', width: 120, minWidth: 120, align: 'center'},
-                        {binding: 'answer', header: '답변', width: '*', minWidth: 180, align: 'right'},
+                        {binding: 'answer', header: '답변', width: '*', minWidth: 180, align: 'left'},
                         {binding: 'QSTTEXT', header: '문의', width: '*', minWidth: 180, align: 'left'},
                         {binding: 'USERID', header: '사용자', width: 120, align: 'center'},
                         {binding: 'datetum', header: '답변기간', width: 85, align: 'center'},
@@ -435,6 +435,7 @@
                 formData.append('QSTSEQ', $('#answerNo').val());
                 formData.append('INDATEM', $('#answerdate').val());
                 formData.append('QSTTEL', $('#qsttel').val());
+                formData.append('FLAG', '1');
 
                 // 새로 추가된 파일만 폼 데이터에 추가
                 uploadedFiles2.forEach((file, index) => {
@@ -482,9 +483,17 @@
             })
         }
         // 공지사항 삭제
-        function deleteAnswer(qstseq) {
+        function deleteAnswer() {
             let alertMessage;
-            alertMessage = '삭제하시겠습니까?';
+            let qstseq;
+            if($('#answerNo').val()){
+                alertMessage = '답변을 삭제하시겠습니까?';
+                qstseq = document.getElementById('answerNo').value;
+            }else{
+                alertMessage = '문의글을 삭제하시겠습니까?';
+                qstseq = document.getElementById('qstseq').value;
+            }
+
             Alert.confirm('', alertMessage, function () {
                 function sendAjaxRequest(url) {
                     $.ajax({

@@ -360,7 +360,7 @@
             {binding: 'no', header: '순번', width: 60, minWidth: 60, align: 'center'},
             {binding: 'BBSDATE', header: '등록일자', width: 120, minWidth: 120, align: 'center'},
             {binding: 'BBSUSER', header: '등록자', width: 100, align: 'center'},
-            {binding: 'BBSSUBJECT', header: '제목', width: 230, align: 'right'},
+            {binding: 'BBSSUBJECT', header: '제목', width: 230, align: 'left'},
             {binding: 'BBSTEL', header: '연락처', width: 140, minWidth: 100, align: 'center'},
             {binding: 'downloads', header: '첨부파일', width: '*', minWidth: 105, align: 'center'},
             {binding: 'isdownload', visible: false},
@@ -441,10 +441,9 @@
       alertMessage = '저장하시겠습니까?';
       // 필수 입력 필드 검사
       let requiredFields = [
-        {id: '#subject', label: '문의글을 선택해주세요'},
+        {id: '#subject', label: '제목을 작성해주세요'},
         {id: '#show_start_date', label: '시작일을 작성해주세요'},
-        {id: '#show_end_date', label: '종료일을 작성해주세요'},
-        {id: '#tel', label: '연락처를 작성해주세요'}
+        {id: '#show_end_date', label: '종료일을 작성해주세요'}
       ];
 
       for (let i = 0; i < requiredFields.length; i++) {
