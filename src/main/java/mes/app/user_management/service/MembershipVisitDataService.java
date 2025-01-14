@@ -48,54 +48,51 @@ public class MembershipVisitDataService {
         return sqlRunner.getRows(sql.toString(), params);
     }
 
+
     public List<Map<String, Object>> getViewCountChart(String startDate, String endDate) {
         MapSqlParameterSource params = new MapSqlParameterSource();
-        StringBuilder sql = new StringBuilder("""       
+        StringBuilder sql = new StringBuilder("""
         SELECT
-            FORMAT(CONVERT(DATETIME, REQDATE, 120), 'yyyy-MM') AS YearMonth, -- 연월로 그룹화
+            FORMAT(REQDATE, 'yyyy-MM') AS YearMonth, -- 연월
             COUNT(*) AS TotalInquiryCount -- 총 조회 건수
-        FROM
-            TB_SEARCHINFO se
-        JOIN TB_USERINFO tu ON tu.USERID = se.USERID
-        WHERE
-            CONVERT(DATETIME, REQDATE, 120) BETWEEN :startDate AND :endDate
+        FROM TB_SEARCHINFO
+        WHERE 1 = 1
         """);
+
         // 동적 조건 추가
         if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
-            sql.append(" AND tu.INDATEM BETWEEN :startDate AND :endDate "); // 날짜 범위 조건
+            sql.append(" AND REQDATE >= :startDate AND REQDATE < :endDate ");
             params.addValue("startDate", startDate);
             params.addValue("endDate", endDate);
         }
 
-        sql.append("""
-        GROUP BY
-           FORMAT(CONVERT(DATETIME, REQDATE, 120), 'yyyy-MM')
-        ORDER BY
-            YearMonth
-        """);
+        sql.append(" GROUP BY FORMAT(REQDATE, 'yyyy-MM') ORDER BY YearMonth;"); // 연월별 그룹화 및 정렬
 
         //log.info("조회건수List SQL: {}", sql);
         //log.info("SQL Parameters: {}", params.getValues());
+
         return sqlRunner.getRows(sql.toString(), params);
     }
+
+
 
     public List<Map<String, Object>> getGridList(String startDate, String endDate) {
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         StringBuilder sql = new StringBuilder("""
-       SELECT
+        SELECT
             tu.USERID,
             tu.USERNM AS userNm,
             tu.USERADDR AS userAddr,
             tu.INDATEM as indatem,
-            se.REQDATE as InquiryCount,
+            se.REQDATE,
             COALESCE(req.InquiryCount, 0) AS InquiryCount
-       FROM
+        FROM
             TB_USERINFO tu
-       LEFT JOIN
+        LEFT JOIN
             TB_SEARCHINFO se
             ON se.USERID = tu.USERID
-       LEFT JOIN
+        LEFT JOIN
             (SELECT
                 USERID,
                 COUNT(*) AS InquiryCount
@@ -106,8 +103,8 @@ public class MembershipVisitDataService {
              GROUP BY
                 USERID) req
             ON tu.USERID = req.USERID
-       WHERE 1=1
-    """);
+        WHERE 1=1
+        """);
 
         // 조건에 따라 동적으로 SQL 추가
         if (startDate != null && !startDate.isEmpty()) {
@@ -119,9 +116,54 @@ public class MembershipVisitDataService {
             params.addValue("endDate", endDate);
         }
 
-//        log.info("Generated SQL: {}", sql);
+//        log.info("회원등록 현황 그리드 SQL: {}", sql);
 //        log.info("SQL Parameters: {}", params.getValues());
         // 결과 반환
         return sqlRunner.getRows(sql.toString(), params);
     }
+
+    //조회 건수
+    public List<Map<String, Object>> getGridList2(String startDate, String endDate) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        StringBuilder sql = new StringBuilder("""
+        SELECT
+            tu.USERID,
+            tu.USERNM AS userNm,
+            tu.USERADDR AS userAddr,
+            FORMAT(se.REQDATE, 'yyyy-MM-dd') AS YearMonthDay, -- 연월일
+            COUNT(se.REQDATE) AS TotalInquiryCount -- 총 조회 건수
+        FROM TB_USERINFO tu
+        LEFT JOIN TB_SEARCHINFO se ON tu.USERID = se.USERID
+        WHERE 1 = 1
+        """);
+
+        // 동적 조건 추가
+        if (startDate != null && !startDate.isEmpty()) {
+            sql.append(" AND se.REQDATE >= :startDate ");
+            params.addValue("startDate", startDate);
+        }
+        if (endDate != null && !endDate.isEmpty()) {
+            sql.append(" AND se.REQDATE < :endDate ");
+            params.addValue("endDate", endDate);
+        }
+
+        // GROUP BY 및 ORDER BY 추가
+        sql.append("""
+        GROUP BY 
+            tu.USERID,
+            tu.USERNM,
+            tu.USERADDR,
+            FORMAT(se.REQDATE, 'yyyy-MM-dd')
+        ORDER BY YearMonthDay, tu.USERID
+    """);
+
+        // SQL 디버깅용 로그 (필요시 활성화)
+         //log.info("조회건수 현황 그리드 SQL: {}", sql);
+         //log.info("SQL Parameters: {}", params.getValues());
+
+        // 결과 반환
+        return sqlRunner.getRows(sql.toString(), params);
+    }
+
+
 }

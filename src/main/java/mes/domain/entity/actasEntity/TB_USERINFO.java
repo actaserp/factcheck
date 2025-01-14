@@ -61,6 +61,12 @@ public class TB_USERINFO {
     @Column(name = "INUSERID")
     private String inUserId;    //아이디
 
+    @Column(name = "USERSIDO")
+    private String userIDO;     //시
+
+    @Column(name="USERGU")
+    private String userGU;      //구군
+
     @Column(name = "INUSERNM")
     private String inUserNm;    //입력자명
 

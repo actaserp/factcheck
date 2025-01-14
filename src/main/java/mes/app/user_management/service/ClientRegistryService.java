@@ -20,123 +20,69 @@ public class ClientRegistryService {
     @Autowired
     SqlRunner sqlRunner;
 
-   /* public List<Map<String, Object>> getList(String startDate, String endDate, String searchUserNm) {
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        StringBuilder sql = new StringBuilder("""
+    public List<Map<String, Object>> getList(String startDate, String endDate, String searchUserNm) {
+      MapSqlParameterSource params = new MapSqlParameterSource();
+      StringBuilder sql = new StringBuilder("""
         SELECT
-            tu.USERID,
-            tu.USERNM AS userNm,
-            tu.SEXYN AS sexYN,
-            tu.USERHP AS userHP,
-            tu.POSTCD,
-            tu.USERADDR AS userAddr,
-            tu.USERMAIL AS userEmail,
-            tu.INDATEM AS indatem,
-            COUNT(se.REQDATE) AS InquiryCount -- 사용자의 검색 횟수 카운트
-        FROM
-            TB_USERINFO tu
-        LEFT JOIN
-            TB_SEARCHINFO se
-            ON se.USERID = tu.USERID
-        """);
+           tu.USERID,
+           tu.USERGU AS userGU,
+           tu.USERSIDO AS usersido,
+           tu.USERNM AS userNm,
+           tu.SEXYN AS sexYN,
+           tu.USERHP AS userHP,
+           tu.POSTCD,
+           tu.USERADDR AS userAddr,
+           tu.USERMAIL AS userEmail,
+           tu.INDATEM AS indatem, -- 등록일자
+           COALESCE(COUNT(se.REQDATE), 0) AS InquiryCount -- 조회 카운트
+       FROM
+           TB_USERINFO tu
+       LEFT JOIN TB_SEARCHINFO se
+       ON tu.USERID = se.USERID
+           AND se.REQDATE >= :startDate
+           AND se.REQDATE <= :endDate
+       WHERE 1=1
+       """);
 
-        // WHERE 절 동적 조건 추가
-        sql.append("WHERE 1=1 "); // 기본 조건 (추가 조건 연결을 용이하게 하기 위함)
-
+      // WHERE 절 동적 조건 추가
         if (startDate != null && !startDate.isEmpty()) {
-            sql.append("AND se.REQDATE >= :startDate ");
+            sql.append(" AND tu.INDATEM >= :startDate "); // 공백 추가
             params.addValue("startDate", startDate);
         }
-
         if (endDate != null && !endDate.isEmpty()) {
-            sql.append("AND se.REQDATE <= :endDate ");
+            sql.append(" AND tu.INDATEM <= :endDate "); // 공백 추가
             params.addValue("endDate", endDate);
         }
-
         if (searchUserNm != null && !searchUserNm.isEmpty()) {
-            sql.append("AND tu.USERNM LIKE :searchUserNm ");
+            sql.append(" AND tu.USERNM LIKE :searchUserNm "); // 공백 추가
             params.addValue("searchUserNm", "%" + searchUserNm + "%");
         }
+
 
         // GROUP BY 및 ORDER BY 추가
         sql.append("""
         GROUP BY
-            tu.USERID,
-            tu.USERNM,
-            tu.SEXYN,
-            tu.USERHP,
-            tu.POSTCD,
-            tu.USERADDR,
-            tu.USERMAIL,
-            tu.INDATEM
+          tu.USERID,
+          tu.USERGU,
+          tu.USERSIDO,
+          tu.USERNM,
+          tu.SEXYN,
+          tu.USERHP,
+          tu.POSTCD,
+          tu.USERADDR,
+          tu.USERMAIL,
+          tu.INDATEM
+        """);
+
+            sql.append("""
         ORDER BY
-            InquiryCount DESC
-    """);
+          tu.USERNM ASC
+        """);
 
-        //log.info("회원관리List SQL: {}", sql);
-        //log.info("SQL Parameters: {}", params.getValues());
+      log.info("회원관리List SQL: {}", sql);
+      log.info("SQL Parameters: {}", params.getValues());
 
-        // 결과 반환
-        return sqlRunner.getRows(sql.toString(), params);
-    }*/
-   public List<Map<String, Object>> getList(String startDate, String endDate, String searchUserNm) {
-       MapSqlParameterSource params = new MapSqlParameterSource();
-       StringBuilder sql = new StringBuilder("""
-        SELECT
-            tu.USERID,
-            tu.USERNM AS userNm,
-            tu.SEXYN AS sexYN,
-            tu.USERHP AS userHP,
-            tu.POSTCD,
-            tu.USERADDR AS userAddr,
-            tu.USERMAIL AS userEmail,
-            tu.INDATEM AS indatem,
-            COUNT(se.REQDATE) AS InquiryCount -- 사용자의 검색 횟수 카운트
-        FROM
-            TB_USERINFO tu
-        LEFT JOIN
-            TB_SEARCHINFO se
-            ON se.USERID = tu.USERID
-            AND (:startDate IS NULL OR se.REQDATE >= :startDate)
-            AND (:endDate IS NULL OR se.REQDATE <= :endDate)
-    """);
-
-       // WHERE 절 동적 조건 추가
-       sql.append("WHERE 1=1 "); // 기본 조건 (추가 조건 연결을 용이하게 하기 위함)
-       if (startDate != null && !startDate.isEmpty()) {
-           sql.append("AND (:startDate IS NULL OR tu.INDATEM >= :startDate) ");
-           params.addValue("startDate", startDate);
-       }
-       if (endDate != null && !endDate.isEmpty()) {
-           sql.append("AND (:endDate IS NULL OR tu.INDATEM <= :endDate) ");
-           params.addValue("endDate", endDate);
-       }
-       if (searchUserNm != null && !searchUserNm.isEmpty()) {
-           sql.append("AND tu.USERNM LIKE :searchUserNm ");
-           params.addValue("searchUserNm", "%" + searchUserNm + "%");
-       }
-
-       // GROUP BY 및 ORDER BY 추가
-       sql.append("""
-        GROUP BY
-            tu.USERID,
-            tu.USERNM,
-            tu.SEXYN,
-            tu.USERHP,
-            tu.POSTCD,
-            tu.USERADDR,
-            tu.USERMAIL,
-            tu.INDATEM
-        ORDER BY
-            InquiryCount DESC
-    """);
-
-      // log.info("회원관리List SQL: {}", sql);
-       //log.info("SQL Parameters: {}", params.getValues());
-
-       // 결과 반환
-       return sqlRunner.getRows(sql.toString(), params);
-   }
-
+      return sqlRunner.getRows(sql.toString(), params);
+  }
 
 }

@@ -96,25 +96,11 @@
                                 </ul>
                             </dd>
                         </dl>
-                        <!--<dl>
-                            <dt>
-                                <label for="searchTitle">
-                                    회원명<span class="eq">*</span>
-                                </label>
-                            </dt>
-                            <dd>
-                                <div class="srch-box">
-                                    <input type="text" id="searchTitle" name="searchTitle" class="input-srch"
-                                           placeholder="회원명" style="border-radius: 5px;">
-                                </div>
-                            </dd>
-                        </dl>-->
                         <dl>
                             <dt>&nbsp;</dt>
                             <dd>
                                 <li>
                                     <a class="btn btn-delete" title="검색" id="searchButton" onclick="init()">
-                                        <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
                                         <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
                                         검색
                                     </a>
@@ -123,54 +109,57 @@
                         </dl>
                     </div>
                 </div>
+
                 <div class="container-fluid" style="display: flex; align-items: center; justify-content: space-between;">
                     <!-- 첫 번째 섹션 -->
-                    <section class="col wp50" style="flex: 1; margin-right: 10px; height:650px; position: relative;">
-                        <div>
-                            <!-- 차트 -->
-                            <canvas id="chart1" style="width: 100%; height:250px;"></canvas>
-                            <!-- 그리드 -->
-                            <div id="theGrid1" style="display: none; width: 100%; height: 250px;"></div>
+                    <section class="col wp50" style="flex: 1; margin-right: 10px; height:650px; position: relative;" id="tabGroup1">
+                        <div class="title-wrap" style="margin-bottom: 0px">
+                            <ul class="tab-links-sub" style="position: absolute; top:15px; right: 10px;">
+                                <li>
+                                    <button  title="통계" onclick="loadStatsData1();">통계</button>
 
-                            <!-- 탭 링크 -->
-                            <ul class="tab-links-sub" style="position: absolute; top:10px; right: 10px;">
-                                <li>
-                                    <a href="#tab1-chart1" title="통계" onclick="loadStatsData1('chart1', 'theGrid1')">통계</a>
-                                </li>
-                                <li>
-                                    <a href="#tab2-theGrid1" title="현황" onclick="showGrid1('chart1', 'theGrid1')">현황</a>
+                                    <button title="현황" onclick="showGrid1();">현황</button>
                                 </li>
                             </ul>
-
-                            <!-- 확대 버튼 -->
-                            <span class="material-symbols-outlined"
-                                  style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
-                                  onclick="openModal('chart1')">zoom_out_map</span>
+                        </div>
+                        <div class="tab-contents">
+                            <div class="tab-item-sub" id="tab1-chart1" style="display: block;">
+                                <!-- 차트 -->
+                                <canvas id="chart1" style="width: 100%; height:250px;"></canvas>
+                                <span class="material-symbols-outlined"
+                                      style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
+                                      onclick="openModal('chart1')">zoom_out_map</span>
+                            </div>
+                            <div class="tab-item-sub" id="tab2-theGrid1" style="display: none;">
+                                <!-- 그리드 --> <h1>회원 등록</h1>
+                                <div id="theGrid1" style="width: 100%; height: 550px; margin-top:20px "></div>
+                            </div>
                         </div>
                     </section>
-
                     <!-- 두 번째 섹션 -->
-                    <section class="col wp50" style="flex: 1; margin-right: 10px; height:650px; position: relative;">
-                        <div>
-                            <!-- 차트 -->
-                            <canvas id="chart2" style="width: 100%; height:250px;"></canvas>
-                            <!-- 그리드 -->
-                            <div id="theGrid2" style="display: none; width: 100%; height: 250px;"></div>
+                    <section class="col wp50" style="flex: 1; margin-right: 10px; height:650px; position: relative;" id="tabGroup2">
+                        <div class="title-wrap" style="margin-bottom: 0px">
+                            <ul class="tab-links-sub" style="position: absolute; top:15px; right: 10px;">
+                                <li>
+                                    <button type="button" title="통계" onclick="loadStatsData2();">통계</button>
 
-                            <!-- 탭 링크 -->
-                            <ul class="tab-links-sub" style="position: absolute; top:10px; right: 10px;">
-                                <li>
-                                    <a href="#tab1-chart2" title="통계" onclick="loadStatsData2('chart2', 'theGrid2')">통계</a>
-                                </li>
-                                <li>
-                                    <a href="#tab2-theGrid2" title="현황" onclick="showGrid2('chart2', 'theGrid2')">현황</a>
+                                    <button type="button" title="현황" onclick="showGrid2();">현황</button>
                                 </li>
                             </ul>
-
-                            <!-- 확대 버튼 -->
-                            <span class="material-symbols-outlined"
-                                  style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
-                                  onclick="openModal('chart2')">zoom_out_map</span>
+                        </div>
+                        <div class="tab-contents">
+                            <div class="tab-item-sub" id="tab3-chart2" style="display: block;">
+                                <!-- 차트 -->
+                                <canvas id="chart2" style="width: 100%; height:250px;"></canvas>
+                                <span class="material-symbols-outlined"
+                                      style="position: absolute;top:70px; right: 10px;cursor: pointer;z-index: 10;color: rgb(179, 179, 179);"
+                                      onclick="openModal('chart2')">zoom_out_map
+                </span>
+                            </div>
+                            <div class="tab-item-sub" id="tab4-theGrid2" style="display: none;">
+                                <!-- 그리드 --> <h1>조회 건수</h1>
+                                <div id="theGrid2" style="width: 100%; height: 550px; margin-top:20px "></div>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -196,6 +185,7 @@
     <script type="text/javascript">
 
         $(document).ready(function() {
+
             // 현재 날짜 설정
             const today = new Date();
             const year = today.getFullYear();
@@ -213,75 +203,31 @@
 
             init();
 
-        });
 
+        });
+        document.readyState === 'complete' ? init() : window.onload = init;
+
+        let theGrid1
+        let theGrid2
 
         function init() {
             loadStatsData1();
             loadStatsData2();
         }
 
-        // 모달 열기 함수
-        function openModal(chartId) {
-            const modal = document.getElementById('chartModal');
-            const modalCanvas = document.getElementById('modalChartHolder'); // 모달 캔버스
-            const chartElement = document.getElementById(chartId); // 원본 차트 캔버스
-
-            if (!chartElement) {
-                console.error(`차트 요소를 찾을 수 없습니다: ${chartId}`);
-                return;
-            }
-
-            const chart = Chart.getChart(chartElement); // 차트 인스턴스 가져오기
-            if (!chart) {
-                console.error(`해당 차트를 찾을 수 없습니다: ${chartId}`);
-                return;
-            }
-
-            // 모달 보이기
-            modal.style.display = 'block';
-
-            // 기존 모달 차트 제거
-            if (window.modalChartInstance) {
-                window.modalChartInstance.destroy(); // 기존 차트 삭제
-                window.modalChartInstance = null; // 초기화
-            }
-
-            // 모달 차트 생성
-            const modalChartHolder = modalCanvas.getContext('2d');
-            window.modalChartInstance = new Chart(modalChartHolder, {
-                type: chart.config.type,
-                data: JSON.parse(JSON.stringify(chart.data)), // 데이터 복사
-                options: {
-                    ...chart.options,
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
+        function showTab(tabIdToShow, tabGroup) {
+            // 모든 탭 그룹의 콘텐츠를 숨김
+            const tabs = document.querySelectorAll(`#${tabGroup} .tab-item-sub`);
+            tabs.forEach(tab => {
+                tab.style.display = "none";
             });
-        }
 
-        // 모달 닫기 함수
-        function closeModal() {
-            const modal = document.getElementById('chartModal');
-            modal.style.display = 'none';
-
-            // 모달 차트 제거
-            if (window.modalChartInstance) {
-                window.modalChartInstance.destroy();
-                window.modalChartInstance = null; // 인스턴스 초기화
+            // 선택된 탭만 표시
+            const selectedTab = document.querySelector(`#${tabIdToShow}`);
+            if (selectedTab) {
+                selectedTab.style.display = "block";
             }
         }
-
-        // 모달 외부 클릭으로 닫기 이벤트
-        window.addEventListener('click', (event) => {
-            const modal = document.getElementById('chartModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        });
-
-        // 닫기 버튼 클릭 이벤트
-        document.querySelector('.close').addEventListener('click', closeModal);
 
         const ctx1 = document.getElementById('chart1').getContext('2d');
         const ctx2 = document.getElementById('chart2').getContext('2d');
@@ -328,6 +274,7 @@
 
         // 데이터 로드 및 차트 업데이트
         function loadStatsData1() {
+            showTab('tab1-chart1', 'tabGroup1');
             // 입력된 날짜를 가져옵니다.
             const params = {
                 startDate: $('#startDate').val(),
@@ -356,14 +303,14 @@
             });
         }
 
-        // 두 번째 차트 생성
+        // 차트 초기화
         let chart2 = new Chart(ctx2, {
             type: 'bar',
             data: {
-                labels: Array.from({ length: 12 }, (_, i) => `${i + 1}월`),
+                labels: Array.from({ length: 12 }, (_, i) => `${i + 1}월`), // 1월 ~ 12월
                 datasets: [{
                     label: '통계 데이터',
-                    data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 200)), // 초기값
+                    data: Array(12).fill(0), // 초기 값
                     backgroundColor: 'rgba(255, 99, 132, 0.5)',
                     borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 1,
@@ -378,43 +325,41 @@
                         display: true,
                         text: '조회 건수',
                         font: {
-                            size: 24, // 글씨 크기 (기본값: 12)
+                            size: 24,
                         },
-                        align: 'start', //글씨 위치
+                        align: 'start',
                     },
                 },
                 responsive: true,
                 scales: {
                     y: {
                         min: 0, // Y축 최소값
-                        max: 100, // Y축 최대값
+                        max: 100,
                         ticks: {
-                            stepSize: 10, // 10 단위로 눈금 표시
+                            stepSize: 10,
                         },
                     },
                 },
             },
         });
 
-        // 두 번째 차트 업데이트
+        // 차트 업데이트 함수
         function loadStatsData2() {
-            // 입력된 날짜를 가져옵니다.
+            showTab('tab3-chart2', 'tabGroup2');
             const params = {
                 startDate: $('#startDate').val(),
                 endDate: $('#endDate').val(),
             };
 
             $.ajax({
-                url: '/api/userStatistics/chart2', // API 엔드포인트
+                url: '/api/userStatistics/chart2',
                 type: 'GET',
-                data: params, // GET 요청의 파라미터
-                async: false, // 동기 요청
+                data: params,
                 success: function (response) {
-                    // 응답이 올바르게 도착했는지 확인
                     if (response && response.success && response.data) {
-                        // 서버에서 받은 데이터를 차트에 반영
-                        chart2.data.labels = response.data.labels || chart2.data.labels; // X축 레이블
-                        chart2.data.datasets[0].data = response.data.values || []; // Y축 데이터
+                        // 서버 응답 데이터를 차트에 반영
+                        chart2.data.labels = response.data.labels || chart2.data.labels;
+                        chart2.data.datasets[0].data = response.data.values || [];
                         chart2.update(); // 차트 업데이트
                     } else {
                         console.error("서버에서 유효한 데이터를 받지 못했습니다.");
@@ -426,13 +371,13 @@
             });
         }
 
-        function showGrid1(){
 
+        function showGrid1(){
+            showTab('tab2-theGrid1', 'tabGroup1');
             let data = [ ];
             const params = {
                 startDate: $('#startDate').val(),
                 endDate: $('#endDate').val(),
-                searchUserNm: $('#searchUserNm').val()
             };
 
             // 서버에서 데이터 가져오기
@@ -469,11 +414,10 @@
                     indatem: '',
                     userAddr: '',
                     InquiryCount: '',
-                    remark: '',
                 });
             }
 
-            const viewdata = new wijmo.collections.CollectionView(data);
+            viewdata = new wijmo.collections.CollectionView(data);
 
             if (!theGrid1) {
                 theGrid1 = new wijmo.grid.FlexGrid('#theGrid1', {
@@ -487,21 +431,88 @@
                         { binding: 'indatem', header: '등록일자', width: 150, minWidth: 100, align: 'center'},
                         { binding: 'userAddr', header: '주소', width: '*', minWidth: 230, align: 'left' },
                         { binding: 'InquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
-                        { binding: 'remark', header: '비고', width: 100, align: 'center', minWidth: 150 }
+                        // { binding: 'remark', header: '비고', width: 100, align: 'center', minWidth: 150 }
                     ],
                     itemsSource: viewdata
-                });
 
+                });
                 theGrid1.rowHeaders.columns.splice(0, 1);
+                new FlexGridContextMenu(theGrid);
+                window.downloadFileName = '회원등록_현황';
             } else {
                 theGrid1.itemsSource = viewdata;
             }
         }
 
         function showGrid2(){
+            showTab('tab4-theGrid2', 'tabGroup2');
+            let data = [ ];
+            const params = {
+                startDate: $('#startDate').val(),
+                endDate: $('#endDate').val(),
+            };
 
+            // 서버에서 데이터 가져오기
+            $.ajax({
+                url: '/api/userStatistics/read2',
+                type: 'GET',
+                data: params,
+                async: false,
+                success: function (response) {
+                    // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
+                    if (response && Array.isArray(response.data)) {
+                        data = response.data.map((item, index) => ({
+                            rownum: index + 1,
+                            USERID: item.USERID ||'',
+                            userNm: item.userNm ||'',
+                            YearMonthDay :item.YearMonthDay || '' ,
+                            userAddr: item.userAddr || '',
+                            TotalInquiryCount: item.TotalInquiryCount ||'',
+                            remark:item.remark || '',
+                        }));
+                    }
+                },
+                error: function () {
+                    console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+                }
+            });
+
+            while (data.length < 15) {
+                data.push({
+                    rownum: data.length + 1,
+                    USERID:'',
+                    userNm: '',
+                    userAddr: '',
+                    YearMonthDay: '',
+                    TotalInquiryCount: '',
+                });
+            }
+
+            const viewdata = new wijmo.collections.CollectionView(data);
+
+            if (!theGrid2) {
+                theGrid2 = new wijmo.grid.FlexGrid('#theGrid2', {
+                    autoGenerateColumns: false,
+                    showMarquee: true,
+                    isReadOnly: true,
+                    columns: [
+                        { binding: 'rownum', header: '순번', width: 70, align: 'center' },
+                        { binding: 'USERID', header:'유저아이디', visible: false},
+                        { binding: 'userNm', header: '사용자명', width: 110, minWidth: 100, align: 'center' },
+                        { binding: 'YearMonthDay', header: '조회일자', width: 150, minWidth: 100, align: 'center'},
+                        { binding: 'userAddr', header: '주소', width: '*', minWidth: 230, align: 'left' },
+                        { binding: 'TotalInquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
+                    ],
+                    itemsSource: viewdata
+                });
+
+                theGrid2.rowHeaders.columns.splice(0, 1);
+                new FlexGridContextMenu(theGrid);
+                window.downloadFileName = '조회건수_현황';
+            } else {
+                theGrid2.itemsSource = viewdata;
+            }
         }
-
 
     </script>
 </th:block>

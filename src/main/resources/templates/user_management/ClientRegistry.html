@@ -28,7 +28,7 @@
             <dl>
               <dt>
                 <label for="searchUserNm">
-                  날짜<span class="eq">*</span>
+                  등록일자<span class="eq">*</span>
                 </label>
               </dt>
               <dd>
@@ -108,6 +108,14 @@
     });
 
     let theGrid;
+    let viewdata;
+
+    document.getElementById('searchUserNm').addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        fetchListData(); // 엔터 키를 눌렀을 때 실행할 함수
+      }
+    });
+
 
     function init() {
       fetchListData();
@@ -141,7 +149,8 @@
               userHP: item.userHP || '',
               userEmail: item.userEmail || '',
               InquiryCount: item.InquiryCount ||'',
-              remark:item.remark || '',
+              usersido:item.usersido || '',
+              userGU:item.userGU || '',
             }));
           }
         },
@@ -161,11 +170,12 @@
           userHP: '',
           userEmail: '',
           InquiryCount: '',
-          remark: '',
+          usersido: '',
+          userGU: '',
         });
       }
 
-      const viewdata = new wijmo.collections.CollectionView(data);
+      viewdata = new wijmo.collections.CollectionView(data);
 
       if (!theGrid) {
         theGrid = new wijmo.grid.FlexGrid('#theGrid', {
@@ -174,20 +184,25 @@
           isReadOnly: true,
           columns: [
             { binding: 'rownum', header: '순번', width: 70, align: 'center' },
-            { binding: 'USERID', header:'유저아이디', visible: false},
+            { binding: 'USERID', header:'유저아이디', width: 110, minWidth: 100, align: 'center'},
             { binding: 'userNm', header: '사용자명', width: 110, minWidth: 100, align: 'center' },
             { binding: 'indatem', header: '등록일자', width: 150, minWidth: 100, align: 'center'},
             { binding: 'sexYN', header: '성별', width:70, minWidth: 70, align: 'center' },
+            { binding: 'usersido', header: '시', width: 80, align: 'center', minWidth: 80 },
+            { binding: 'userGU', header: '구군', width: 80, align: 'center', minWidth: 80 },
             { binding: 'userAddr', header: '주소', width: '*', minWidth: 230, align: 'left' },
+            { binding: 'InquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
             { binding: 'userHP', header: '연락처', width: 150, minWidth: 110, align: 'center' },
             { binding: 'userEmail', header: '이메일', width: 160, minWidth: 100, align: 'center' },
-            { binding: 'InquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
-            { binding: 'remark', header: '비고', width: 100, align: 'center', minWidth: 150 }
+
           ],
           itemsSource: viewdata
         });
 
         theGrid.rowHeaders.columns.splice(0, 1);
+        // ContextMenu 추가
+        new FlexGridContextMenu(theGrid);
+        window.downloadFileName = '회원관리';
       } else {
         theGrid.itemsSource = viewdata;
       }
