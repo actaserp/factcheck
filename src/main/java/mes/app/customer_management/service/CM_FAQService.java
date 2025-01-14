@@ -60,6 +60,7 @@ public class CM_FAQService {
     }
     // FAQ selectMaxFasort
     public Map<String, Object> selectMaxFasort() {
+
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         String sql = """

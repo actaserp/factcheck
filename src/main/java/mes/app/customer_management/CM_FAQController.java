@@ -103,6 +103,7 @@ public class CM_FAQController {
     @GetMapping("/selectMaxFasort")
     public AjaxResult selectMaxFasort() {
         AjaxResult result = new AjaxResult();
+
         try {
             result.data = faqService.selectMaxFasort();
         } catch (Exception e) {
