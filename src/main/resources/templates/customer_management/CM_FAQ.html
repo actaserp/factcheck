@@ -112,7 +112,7 @@
                                         <tr>
                                             <th><label for="faqNo">순서</label></th>
                                             <td>
-                                                <input type="text" id="faqNo" name="name" class="wp100">
+                                                <input type="number" id="faqNo" name="name" class="wp100">
                                             </td>
                                         </tr>
                                         <tr>
@@ -193,10 +193,10 @@
                         questionDiv.style.backgroundColor = '#D0E1EB';
                         questionDiv.style.padding = '5px';
                         questionDiv.style.marginRight = '20px';
-                        questionDiv.innerHTML = `&ensp;${item.no}.&ensp;${item.FAQTEXT || '문의 내용 없음'} \n`;
+                        questionDiv.innerHTML = `&ensp;&ensp;${item.FAQTEXT || '문의 내용 없음'} \n`;
 
                         // 클릭 이벤트 추가
-                        questionDiv.addEventListener('click', () => {
+                        questionDiv.addEventListener('dblclick', () => {
                             selectFAQ(item);
                         });
 
@@ -213,7 +213,7 @@
                             answerDiv.style.marginBottom = '3px';
                             answerDiv.innerHTML = `&ensp;▷&ensp;${item.answer}`;
                             // 클릭 이벤트 추가
-                            answerDiv.addEventListener('click', () => {
+                            answerDiv.addEventListener('dblclick', () => {
                                 selectAnswer(item);
                             });
                             listCardWrap.appendChild(answerDiv);
