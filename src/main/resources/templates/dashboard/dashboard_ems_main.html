@@ -9,7 +9,7 @@
     <!--- (레이아웃) Contents 영역 -->
     <div class="layout-contents">
         <!-- Page Title -->
-        <div class="page-title-wrap">
+        <div class="page-title-wrap" style="margin-bottom: 0px">
             <div class="left">
                 <h2>FACT CHECK 모니터링</h2>
 <!--                <a id="toggleButton" onclick="toggleSearchWrap()"><img src="/images/icon/ico-down.png"-->
@@ -50,7 +50,7 @@
             <div class="card-wrap swiper card-swiper">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide">
-                        <section>
+                        <section class="singupCard">
                             <div class="title">
                                 <h3>금일신규사용자</h3>
                                 <a href="#" title="더보기" class="btn-plus"></a>
@@ -173,7 +173,7 @@
                         <h3>일주일 가입자현황</h3>
                         <ul class="tab-links-sub">
                             <li>
-                                <a href="#tab1" title="일주일" style="padding: 3px 10px 3px 10px;">10.1~10.7(주간)</a>
+                                <a href="#tab1" title="일주일" id="weekPeriod" style="padding: 3px 10px 3px 10px;">10.1~10.7(주간)</a>
                             </li>
                             <li>
                                 <a href="#tab2" title="유출자현황" style="padding: 3px 10px 3px 10px;">유출자현황</a>
@@ -190,26 +190,29 @@
                         <!-- tab1 -->
                         <div class="tab-item-sub h280" id="tab1">
                             <div class="chart-wrap">
-                                <canvas id="revenueChart" width="740" height="265" style="width: 740px; height: 265px;"></canvas>
+                                <canvas id="SignupOfWeek" width="740" height="265" style="width: 740px; height: 265px;"></canvas>
 <!--                                <span class="material-symbols-outlined" style="position: absolute; top: 17px; right: 3px; cursor: pointer; z-index: 10; color: rgb(179, 179, 179);" onclick="openModal('revenueChart')">zoom_out_map</span>-->
                             </div>
                         </div>
                         <!-- tab1 -->
                         <div class="tab-item-sub h280" id="tab2">
                             <div class="chart-wrap">
-
+                                <canvas id="Signout" width="740" height="265" style="width: 740px; height: 265px;"></canvas>
+                                <!--                                <span class="material-symbols-outlined" style="position: absolute; top: 17px; right: 3px; cursor: pointer; z-index: 10; color: rgb(179, 179, 179);" onclick="openModal('revenueChart')">zoom_out_map</span>-->
                             </div>
                         </div>
                         <!-- tab1 -->
                         <div class="tab-item-sub h280" id="tab3">
                             <div class="chart-wrap">
-
+                                <canvas id="CntOfRegister" width="740" height="265" style="width: 740px; height: 265px;"></canvas>
+                                <!--                                <span class="material-symbols-outlined" style="position: absolute; top: 17px; right: 3px; cursor: pointer; z-index: 10; color: rgb(179, 179, 179);" onclick="openModal('revenueChart')">zoom_out_map</span>-->
                             </div>
                         </div>
                         <!-- tab1 -->
                         <div class="tab-item-sub h280" id="tab4">
                             <div class="chart-wrap">
-
+                                <canvas id="BestSearch" width="740" height="265" style="width: 740px; height: 265px;"></canvas>
+                                <!--                                <span class="material-symbols-outlined" style="position: absolute; top: 17px; right: 3px; cursor: pointer; z-index: 10; color: rgb(179, 179, 179);" onclick="openModal('revenueChart')">zoom_out_map</span>-->
                             </div>
                         </div>
                     </div>
@@ -409,17 +412,6 @@
         var theGrid3;
         var viewdata3;
 
-        // 차트 데이터 설정
-        const revenueData = {
-            labels: ["월", "화", "수", "목", "금", "토", "일"],
-            datasets: [{
-                data: [12, 15, 18, 21, 24, 27, 15],
-                backgroundColor: 'rgba(98, 178, 253, 0.5)',
-                borderColor: 'rgba(98, 178, 253, 1)',
-                borderWidth: 1
-            }]
-        };
-
         document.readyState === 'complete' ? init() : window.onload = init;
 
         function init() {
@@ -427,6 +419,10 @@
             fetchListData2();
             fetchListData3();
             createCharts();
+            const zoomIcon = document.querySelector('.chart-wrap .material-symbols-outlined');
+            if (zoomIcon) {
+                zoomIcon.style.display = 'none'; // 또는 zoomIcon.style.visibility = 'hidden';
+            }
         }
 
         var swiper = new Swiper(".card-swiper", {
@@ -450,26 +446,19 @@
         function fetchListData() {
             let data2 = [{},{},{},{},{}];
 
-
-            // $.ajax({
-            //     url: '/api/request/request/read',
-            //     type: 'GET',
-            //     data: {
-            //         'reqnum': $('#reqnum').val()
-            //     },
-            //     async: false,
-            //     success: function (data) {
-            //         data2 = data.data;
-            //         data2.forEach(item =>{
-            //             item.hgrb = getHgrb((item.hgrb));
-            //             item.exfmtypedv = getListCgrb2(item.exfmtypedv);
-            //             item.infmtypedv = getListCgrb2(item.infmtypedv);
-            //             item.stframedv = getListCgrb2(item.stframedv);
-            //             item.stexplydv = getListCgrb2(item.stexplydv);
-            //             item.originOrdtext = item.ordtext;
-            //         })
-            //     }
-            // })
+            $.ajax({
+                url: '/api/factDashboard/todaySignup',
+                type: 'GET',
+                data: {},
+                async: false,
+                success: function (data) {
+                    data2 = data.data;
+                    // data2의 개수가 4개 미만인 경우 빈 객체 추가
+                    while (data2.length < 4) {
+                        data2.push({});
+                    }
+                }
+            })
 
             viewdata1 = new wijmo.collections.CollectionView(data2);
 
@@ -483,11 +472,11 @@
                     selectionMode: wijmo.grid.SelectionMode.Row,
                     columns: [
                         {binding: 'no', header: 'No', width: 80, minWidth: 80, align: 'center'},
-                        {binding: 'createdDate', header: '등록일', width: 120, align: 'right'},
-                        {binding: 'usernm', header: '사용자명', width: 120, align: 'right'},
-                        {binding: 'place', header: '지역', width: 100, align: 'right'},
-                        {binding: 'age', header: '연령', width: 80, align: 'right'},
-                        {binding: 'phone', header: '연락처', width: '*', minWidth: 100, align: 'center'}
+                        {binding: 'INDATEM', header: '등록일', width: 120, align: 'center'},
+                        {binding: 'USERNM', header: '사용자명', width: 85, align: 'center'},
+                        {binding: 'USERADDR', header: '지역', width: 200, align: 'left'},
+                        {binding: 'AGENUM', header: '연령', width: 80, align: 'center'},
+                        {binding: 'USERHP', header: '연락처', width: '*', minWidth: 100, align: 'center'}
                     ],
                     itemsSource: viewdata1,
                 });
@@ -510,25 +499,21 @@
             let data2 = [{},{},{},{},{}];
 
 
-            // $.ajax({
-            //     url: '/api/request/request/read',
-            //     type: 'GET',
-            //     data: {
-            //         'reqnum': $('#reqnum').val()
-            //     },
-            //     async: false,
-            //     success: function (data) {
-            //         data2 = data.data;
-            //         data2.forEach(item =>{
-            //             item.hgrb = getHgrb((item.hgrb));
-            //             item.exfmtypedv = getListCgrb2(item.exfmtypedv);
-            //             item.infmtypedv = getListCgrb2(item.infmtypedv);
-            //             item.stframedv = getListCgrb2(item.stframedv);
-            //             item.stexplydv = getListCgrb2(item.stexplydv);
-            //             item.originOrdtext = item.ordtext;
-            //         })
-            //     }
-            // })
+            $.ajax({
+                url: '/api/factDashboard/todayAddress',
+                type: 'GET',
+                data: {
+                    'reqnum': $('#reqnum').val()
+                },
+                async: false,
+                success: function (data) {
+                    data2 = data.data;
+                    // data2의 개수가 4개 미만인 경우 빈 객체 추가
+                    while (data2.length < 4) {
+                        data2.push({});
+                    }
+                }
+            })
 
             viewdata2 = new wijmo.collections.CollectionView(data2);
 
@@ -542,11 +527,11 @@
                     selectionMode: wijmo.grid.SelectionMode.Row,
                     columns: [
                         {binding: 'no', header: 'No', width: 80, minWidth: 80, align: 'center'},
-                        {binding: 'createdDate', header: '검색일', width: 120, align: 'right'},
-                        {binding: 'usernm', header: '사용자명', width: 120, align: 'right'},
-                        {binding: 'place', header: '지역', width: 100, align: 'right'},
-                        {binding: 'age', header: '점수', width: 100, align: 'right'},
-                        {binding: 'phone', header: '조회건수', width: '*', minWidth: 100, align: 'center'}
+                        {binding: 'REQDATE', header: '검색일', width: 120, align: 'center'},
+                        {binding: 'USERNM', header: '사용자명', width: '*', align: 'center'},
+                        {binding: 'RESIDO', header: '지역', width: '*', minWidth: 180, align: 'center'},
+                        {binding: 'REALSCORE', header: '점수', width: 80, align: 'center'},
+                        {binding: 'REALPOINT', header: '조회건수', width: 90, minWidth: 80, align: 'center'}
                     ],
                     itemsSource: viewdata2,
                 });
@@ -569,26 +554,19 @@
         function fetchListData3() {
             let data2 = [{},{},{},{}];
 
-
-            // $.ajax({
-            //     url: '/api/request/request/read',
-            //     type: 'GET',
-            //     data: {
-            //         'reqnum': $('#reqnum').val()
-            //     },
-            //     async: false,
-            //     success: function (data) {
-            //         data2 = data.data;
-            //         data2.forEach(item =>{
-            //             item.hgrb = getHgrb((item.hgrb));
-            //             item.exfmtypedv = getListCgrb2(item.exfmtypedv);
-            //             item.infmtypedv = getListCgrb2(item.infmtypedv);
-            //             item.stframedv = getListCgrb2(item.stframedv);
-            //             item.stexplydv = getListCgrb2(item.stexplydv);
-            //             item.originOrdtext = item.ordtext;
-            //         })
-            //     }
-            // })
+            $.ajax({
+                url: '/api/factDashboard/QnAList',
+                type: 'GET',
+                data: {},
+                async: false,
+                success: function (data) {
+                    data2 = data.data;
+                    // data2의 개수가 3개 미만인 경우 빈 객체 추가
+                    while (data2.length < 3) {
+                        data2.push({});
+                    }
+                }
+            })
 
             viewdata3 = new wijmo.collections.CollectionView(data2);
 
@@ -602,11 +580,11 @@
                     selectionMode: wijmo.grid.SelectionMode.Row,
                     columns: [
                         {binding: 'no', header: 'No', width: 80, minWidth: 80, align: 'center'},
-                        {binding: 'createdDate', header: '문의일자', width: 120, align: 'right'},
-                        {binding: 'usernm', header: '사용자명', width: 100, align: 'right'},
-                        {binding: 'place', header: '문의내용', width: 200, align: 'right'},
-                        {binding: 'age', header: '연락처', width: 120, align: 'right'},
-                        {binding: 'phone', header: '등록시간', width: '*', minWidth: 120, align: 'center'}
+                        {binding: 'INDATEM', header: '문의일자', width: 120, align: 'center'},
+                        {binding: 'USERID', header: '사용자명', width: 100, align: 'center'},
+                        {binding: 'QSTTEXT', header: '문의내용', width: 200, align: 'left'},
+                        {binding: 'QSTTEL', header: '연락처', width: 140, align: 'center'},
+                        {binding: 'INDATEMTIME', header: '등록시간', width: '*', minWidth: 120, align: 'center'}
                     ],
                     itemsSource: viewdata3,
                 });
@@ -626,28 +604,124 @@
         }
         // 차트 생성 함수
         function createCharts() {
-            const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+            let data2 = [];
+            const ctxSignupOfWeek = document.getElementById('SignupOfWeek').getContext('2d');
+            const ctxSignout = document.getElementById('Signout').getContext('2d');
+            const ctxCntOfRegister = document.getElementById('CntOfRegister').getContext('2d');
+            const ctxBestSearch = document.getElementById('BestSearch').getContext('2d');
 
             // 기존 차트 인스턴스가 있으면 제거
-            if ($('#revenueChart').data('chart')) {
-                $('#revenueChart').data('chart').destroy();
+            if ($('#SignupOfWeek').data('chart')) {
+                $('#SignupOfWeek').data('chart').destroy();
             }
+            if ($('#Signout').data('chart')) {
+                $('#Signout').data('chart').destroy();
+            }
+            if ($('#CntOfRegister').data('chart')) {
+                $('#CntOfRegister').data('chart').destroy();
+            }
+            if ($('#BestSearch').data('chart')) {
+                $('#BestSearch').data('chart').destroy();
+            }
+            $.ajax({
+                url: '/api/factDashboard/createCharts',
+                type: 'GET',
+                data: {},
+                async: false,
+                success: function (data) {
+                    data2 = data.data;
+                    console.log("data2 : ", data2);
 
-            // 차트 생성 후 인스턴스를 data 속성에 저장
-            $('#revenueChart').data('chart', new Chart(ctxRevenue, {
-                type: 'bar',
-                data: revenueData,
-                options: {
-                    plugins: {
-                        legend: {
-                            display: false // 범례 비활성화
-                        }
-                    },
-                    scales: {
-                        y: {beginAtZero: true}
+                    // 차트 작업
+                    // 일주일 가입자 현황 데이터
+                    let SignupOfWeek = data2.SignupOfWeek;
+                    // X축 레이블과 Y축 데이터 생성
+                    const DAY = SignupOfWeek.map(item => item.DAY);
+                    const CNT = SignupOfWeek.map(item => item.CNT);
+                    const firstDate = new Date(data2.SignupOfWeek[0].DATE);
+                    const lastDate = new Date(data2.SignupOfWeek[data2.SignupOfWeek.length - 1].DATE);
+
+                    // mm.dd 형식으로 변환하는 함수
+                    const formatDate = (date) => {
+                        const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+                        const day = String(date.getDate()).padStart(2, '0');
+                        return `${month}.${day}`;
+                    };
+                    // 형식 변환
+                    const formattedDateRange = `${formatDate(firstDate)}~${formatDate(lastDate)}`;
+                    // id가 'weekPeriod'인 요소를 찾습니다.
+                    const weekPeriodElement = document.getElementById('weekPeriod');
+
+                    // 요소의 텍스트를 수정합니다.
+                    if (weekPeriodElement) {
+                        weekPeriodElement.textContent = `${formattedDateRange}(주간)`;
                     }
+                    // 새로운 차트 데이터
+                    const SignupOfWeekData = {
+                        labels: DAY,
+                        datasets: [{
+                            data: CNT,
+                            backgroundColor: 'rgba(98, 178, 253, 0.5)',
+                            borderColor: 'rgba(98, 178, 253, 1)',
+                            borderWidth: 1
+                        }]
+                    };
+                    // 차트 생성 후 인스턴스를 data 속성에 저장
+                    $('#SignupOfWeek').data('chart', new Chart(ctxSignupOfWeek, {
+                        type: 'bar',
+                        data: SignupOfWeekData,
+                        options: {
+                            plugins: {
+                                legend: {
+                                    display: false // 범례 비활성화
+                                }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    }));
+                    // 차트 데이터 활용 카드 설정(금일 신규 사용자 카드)
+                    // 전일 신규 데이터
+                    let LastDayCnt = data2.SignupOfWeek[data2.SignupOfWeek.length - 2].CNT;
+                    // 오늘 신규 데이터
+                    let ThisDayCnt = data2.SignupOfWeek[data2.SignupOfWeek.length - 1].CNT;
+                    // 두 값의 차이 계산
+                    const difference0 = ThisDayCnt - LastDayCnt;
+                    const division0 = LastDayCnt !== 0 ? ((difference0 / LastDayCnt) * 100).toFixed(2) : 0; // 퍼센트 계산
+                    // 결과를 HTML에 업데이트
+                    const requestSection = document.querySelector('.singupCard dl dd');
+                        requestSection.innerHTML = `${ThisDayCnt} <span class="unit">명</span>`;
+                    // 전일 대비 퍼센테이지 업데이트
+                    const percentageSection = document.querySelector('.singupCard dl:nth-of-type(2) dd');
+                    if(difference0 >= 0) {
+                        percentageSection.innerHTML = `<span class="up"></span> ${division0} <span class="unit">%</span>`;
+                    }else{
+                        percentageSection.innerHTML = `<span class="down"></span> ${division0} <span class="unit">%</span>`;
+                    }
+
                 }
-            }));
+            })
+        }
+        // 카드데이터
+        function cardData() {
+            $.ajax({
+                url: '/api/factDashboard/cardDatas',
+                type: 'GET',
+                data: {},
+                async: false,
+                success: function (data) {
+                    data2 = data.data;
+                    data2.forEach(item =>{
+                        item.hgrb = getHgrb((item.hgrb));
+                        item.exfmtypedv = getListCgrb2(item.exfmtypedv);
+                        item.infmtypedv = getListCgrb2(item.infmtypedv);
+                        item.stframedv = getListCgrb2(item.stframedv);
+                        item.stexplydv = getListCgrb2(item.stexplydv);
+                        item.originOrdtext = item.ordtext;
+                    })
+                }
+            })
         }
     </script>
     <!--</body>-->
