@@ -113,7 +113,7 @@ public class FactCheckDashBoardService {
                     DATENAME(WEEKDAY, INDATEM) AS DAY,
                     COUNT(*) AS CNT
                 FROM
-                    MOB_FACTCHK.dbo.TB_USERINFO
+                    TB_USERINFO
                 WHERE
                     INDATEM >= CAST(GETDATE() - 6 AS DATE)
                     AND INDATEM < CAST(GETDATE() + 1 AS DATE)
@@ -123,6 +123,7 @@ public class FactCheckDashBoardService {
                 ORDER BY
                     DATE;
             """;
+        // 데이터가 없는 요일 조회 예시
 //        WITH DateRange AS (
 //                SELECT CAST(GETDATE() - 6 AS DATE) + ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1 AS INDATEM
 //                FROM master..spt_values
@@ -135,7 +136,7 @@ public class FactCheckDashBoardService {
 //        FROM
 //        DateRange DR
 //        LEFT JOIN
-//        MOB_FACTCHK.dbo.TB_USERINFO UI ON CAST(UI.INDATEM AS DATE) = DR.INDATEM
+//        TB_USERINFO UI ON CAST(UI.INDATEM AS DATE) = DR.INDATEM
 //        GROUP BY
 //        DR.INDATEM,
 //                DATENAME(WEEKDAY, DR.INDATEM)
@@ -151,7 +152,20 @@ public class FactCheckDashBoardService {
     public List<Map<String, Object>> Signout() {
 
         String sql = """
-                
+            SELECT
+                CAST(CONVERT(DATE, STUFF(STUFF(WDRAWDATE, 5, 0, '-'), 8, 0, '-')) AS DATE) AS DATE,
+                DATENAME(WEEKDAY, CAST(CONVERT(DATE, STUFF(STUFF(WDRAWDATE, 5, 0, '-'), 8, 0, '-')) AS DATE)) AS DAY,
+                COUNT(*) AS CNT
+            FROM
+                TB_USERINFO
+            WHERE
+                CAST(CONVERT(DATE, STUFF(STUFF(WDRAWDATE, 5, 0, '-'), 8, 0, '-')) AS DATE) >= CAST(GETDATE() - 6 AS DATE)
+                AND CAST(CONVERT(DATE, STUFF(STUFF(WDRAWDATE, 5, 0, '-'), 8, 0, '-')) AS DATE) < CAST(GETDATE() + 1 AS DATE)
+            GROUP BY
+                CAST(CONVERT(DATE, STUFF(STUFF(WDRAWDATE, 5, 0, '-'), 8, 0, '-')) AS DATE),
+                DATENAME(WEEKDAY, CAST(CONVERT(DATE, STUFF(STUFF(WDRAWDATE, 5, 0, '-'), 8, 0, '-')) AS DATE))
+            ORDER BY
+                DATE;
             """;
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql, null);
@@ -162,7 +176,20 @@ public class FactCheckDashBoardService {
     public List<Map<String, Object>> CntOfRegister() {
 
         String sql = """
-                
+                SELECT
+                    CAST(REQDATE AS DATE) AS DATE,
+                    DATENAME(WEEKDAY, REQDATE) AS DAY,
+                    COUNT(*) AS CNT
+                FROM
+                    MOB_FACTCHK.dbo.TB_SEARCHINFO
+                WHERE
+                    REQDATE >= CAST(GETDATE() - 6 AS DATE)
+                    AND REQDATE < CAST(GETDATE() + 1 AS DATE)
+                GROUP BY
+                    CAST(REQDATE AS DATE),
+                    DATENAME(WEEKDAY, REQDATE)
+                ORDER BY
+                    DATE;
             """;
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql, null);
@@ -173,14 +200,13 @@ public class FactCheckDashBoardService {
     public List<Map<String, Object>> BestSearch() {
 
         String sql = """
-                
             """;
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql, null);
 
         return items;
     }
-    // 카드 데이터(집계)
+    // 카드 데이터(집계 총가입자, 미답변 문의건수, 금일 상위 검색지역)
     public List<Map<String, Object>> cardDatas() {
 
         String sql = """

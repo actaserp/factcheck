@@ -110,7 +110,7 @@
                         </section>
                     </div>
                     <div class="swiper-slide">
-                        <section>
+                        <section class="CntOfRegisterCard">
                             <div class="title">
                                 <h3>금일 등기열람건수</h3>
                                 <a href="#" title="더보기" class="btn-plus"></a>
@@ -698,6 +698,94 @@
                         percentageSection.innerHTML = `<span class="up"></span> ${division0} <span class="unit">%</span>`;
                     }else{
                         percentageSection.innerHTML = `<span class="down"></span> ${division0} <span class="unit">%</span>`;
+                    }
+
+                    // 유출자 현황 데이터
+                    let Signout = data2.Signout;
+
+                    // Signout 데이터가 빈 배열인지 확인
+                    if (Signout.length === 0) {
+                        // 빈 데이터일 경우 처리
+                        console.log("유출자 현황 데이터가 없습니다."); // 콘솔에 메시지 출력
+                        $('#Signout').text("유출자 현황 데이터가 없습니다."); // HTML 요소에 메시지 표시
+                    } else {
+                        // X축 레이블과 Y축 데이터 생성
+                        const DAY2 = Signout.map(item => item.DAY);
+                        const CNT2 = Signout.map(item => item.CNT);
+                        const firstDate2 = new Date(Signout[0].DATE);
+                        const lastDate2 = new Date(Signout[Signout.length - 1].DATE);
+
+                        // 새로운 차트 데이터
+                        const SignoutData = {
+                            labels: DAY2,
+                            datasets: [{
+                                data: CNT2,
+                                backgroundColor: 'rgba(98, 178, 253, 0.5)',
+                                borderColor: 'rgba(98, 178, 253, 1)',
+                                borderWidth: 1
+                            }]
+                        };
+
+                        // 차트 생성 후 인스턴스를 data 속성에 저장
+                        $('#Signout').data('chart', new Chart(ctxSignout, {
+                            type: 'bar',
+                            data: SignoutData,
+                            options: {
+                                plugins: {
+                                    legend: {
+                                        display: false // 범례 비활성화
+                                    }
+                                },
+                                scales: {
+                                    y: { beginAtZero: true }
+                                }
+                            }
+                        }));
+                    }
+
+                    // 등기열람건수 데이터
+                    let CntOfRegister = data2.CntOfRegister;
+                    // X축 레이블과 Y축 데이터 생성
+                    const DAY3 = CntOfRegister.map(item => item.DAY);
+                    const CNT3 = CntOfRegister.map(item => item.CNT);
+
+                    // 새로운 차트 데이터
+                    const CntOfRegisterData = {
+                        labels: DAY3,
+                        datasets: [{
+                            data: CNT3,
+                            backgroundColor: 'rgba(98, 178, 253, 0.5)',
+                            borderColor: 'rgba(98, 178, 253, 1)',
+                            borderWidth: 1
+                        }]
+                    };
+                    // 차트 생성 후 인스턴스를 data 속성에 저장
+                    $('#CntOfRegister').data('chart', new Chart(ctxCntOfRegister, {
+                        type: 'bar',
+                        data: CntOfRegisterData,
+                        options: {
+                            plugins: {
+                                legend: {
+                                    display: false // 범례 비활성화
+                                }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    }));
+                    // 차트 데이터 활용 카드 설정(금일 신규 사용자 카드)
+                    let LastDayCnt2 = data2.CntOfRegister[data2.CntOfRegister.length - 2].CNT;
+                    let ThisDayCnt2 = data2.CntOfRegister[data2.CntOfRegister.length - 1].CNT;
+                    const difference2 = ThisDayCnt2 - LastDayCnt2;
+                    const division2 = LastDayCnt2 !== 0 ? ((difference2 / LastDayCnt2) * 100).toFixed(2) : 0; // 퍼센트 계산
+                    const requestSection2 = document.querySelector('.CntOfRegisterCard dl dd');
+                    requestSection2.innerHTML = `${ThisDayCnt2} <span class="unit">건</span>`;
+                    const percentageSection2 = document.querySelector('.CntOfRegisterCard dl:nth-of-type(2) dd');
+                    if(difference0 >= 0) {
+                        percentageSection2.innerHTML = `<span class="up"></span> ${division2} <span class="unit">%</span>`;
+                    }else{
+                        percentageSection2.innerHTML = `<span class="down"></span> ${division2} <span class="unit">%</span>`;
                     }
 
                 }
