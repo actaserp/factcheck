@@ -549,7 +549,7 @@
 
                         folders.forEach(function (folder) {
                             let $li = $('<li class="dep2-1"></li>');
-                            let $a = $('<a href="#"></a>').text(folder.folder_name);
+                            let $a = $('<a href="#"></a>').text('- ' + folder.folder_name);
                             $li.append($a);
 
                             let $subUl = $('<ul class="dep3 documents" style="display: none;"></ul>');
