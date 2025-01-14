@@ -96,7 +96,7 @@
                                         </colgroup>
                                         <tbody>
                                         <tr>
-                                            <th><label for="question">Question</label></th>
+                                            <th><label for="question">Question<span class="eq">*</span></label></th>
                                             <td colspan="3">
                                                 <input type="text" id="question" name="" class="wp100">
                                                 <div style="text-align:left; ">
@@ -116,7 +116,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th><label for="faqflag">문의구분</label></th>
+                                            <th><label for="faqflag">문의구분<span class="eq">*</span></label></th>
                                             <td>
                                                 <select id="faqflag" name="faqflag" class="wp100">
                                                     <option value="" selected disabled hidden>선택</option>
@@ -291,11 +291,10 @@
         function saveAnswer() {
             // 알림 메시지를 결정하는 변수
             let alertMessage;
-            alertMessage = '저장하시겠습니까?';
             // 필수 입력 필드 검사
             let requiredFields = [
-                // {id: '#faqseq', label: '문의글을 선택해주세요'},
-                // {id: '#answer', label: '답변을 작성해주세요'}
+                {id: '#faqflag', label: '문의구분을 선택해주세요'},
+                {id: '#question', label: '문의내용을 작성해주세요'}
             ];
             for (let i = 0; i < requiredFields.length; i++) {
                 let field = requiredFields[i];
@@ -307,6 +306,7 @@
                     Alert.alert('', field.label);
                     return;
                 }
+                alertMessage = '저장하시겠습니까?';
             }
             Alert.confirm('', alertMessage, function () {
                 let formData = new FormData();

@@ -53,7 +53,7 @@ public class CM_QnaService {
                 """);
         // 문의내용필터
         if (searchText != null && !searchText.isEmpty()) {
-            sql.append(" AND Q.QSTTEXT LIKE :searchText");
+            sql.append(" AND Q.USERID LIKE :searchText");
             params.addValue("searchText", "%" + searchText + "%");
         }
         //  GROUP BY 조건 추가
