@@ -1,4 +1,7 @@
 <html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
+
+<meta name="_csrf" content="${_csrf.token}">
+<meta name="_csrf_header" content="${_csrf.headerName}">
 <style>
 
 </style>
@@ -24,7 +27,7 @@
     <div class="tab-wrap">
       <div class="tab-contents">
         <!-- Section -->
-        <section class="tab-item" id="tab1" style="height: 820px;">
+        <section class="tab-item" id="tab1" style="height: 800px;">
           <div class="section-top">
             <form id="searchForm">
               <div class="search-wrap">
@@ -48,13 +51,13 @@
 
                 <dl>
                   <dt>
-                    <label for="select1">
-                      회원명<span class="eq"></span>
+                    <label for="txtCode">
+                      지역명<span class="eq"></span>
                     </label>
                   </dt>
                   <dd>
                     <div class="srch-box">
-                      <input type="text" id="txtCode" name="txtCode">
+                      <input type="text" id="txtCode" name="txtCode" placeholder="지역명">
                     </div>
                   </dd>
                 </dl>
@@ -63,7 +66,7 @@
                   <dt><span class="eq"></span></dt>
                   <dd>
                     <li>
-                      <a class="btn btn-delete" title="검색" id="btnSearch1">
+                      <a class="btn btn-delete" title="검색" id="btnSearch1" onclick="fetchListData()">
                         <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
                         검색
                       </a>
@@ -76,7 +79,7 @@
           </div> <!--//section-top end -->
           <div class="container-fluid">
             <p id="selectedItem"></p>
-            <div id="theGrid" style="max-height: 700px;"></div>
+            <div id="theGrid" style="max-height: 660px;"></div>
           </div>
 
           <div class="btn-wrap">
@@ -98,12 +101,6 @@
   <th:block th:replace="/common/popup_select_user_code :: popup_select_user_code"></th:block>
 
   <script type="text/javascript">
-
-    var theGrid;
-    var viewdata;
-
-
-
     $(document).ready(function() {
       // 현재 날짜 설정
       const today = new Date();
@@ -122,133 +119,120 @@
 
     });
     document.readyState === 'complete' ? init() : window.onload = init;
+
+    var theGrid;
+    var viewdata;
+
+    document.getElementById('txtCode').addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault(); // 기본 동작(폼 제출) 방지
+        fetchListData();
+      }
+    });
+
     function init() {
-      fetchDynamicGridData();
+      fetchListData();
     }
-    function fetchDynamicGridData() {
+
+    function fetchListData() {
+      let data = [];
+
       const params = {
         startDate: $('#startDate').val(),
         endDate: $('#endDate').val(),
-        searchUserNm: $('#searchUserNm').val(),
+        searchUserNm: $('#txtCode').val(),
       };
 
       // Ajax 통신을 통해 데이터 가져오기
       $.ajax({
-        url: '/api/MUserInfo/read', // 기존 API를 사용
+        url: '/api/report/read',
         type: 'GET',
         data: params,
         dataType: 'json',
         success: function (response) {
-          if (response && response.data && Array.isArray(response.data)) {
-            const processedData = processResponseData(response.data);
-            renderFlexGrid(processedData);
+          console.log("API 응답 데이터:", response);
+
+          if (response && Array.isArray(response.data)) {
+            data = response.data.map((item, index) => ({
+              rownum: index + 1,
+              region: item.region || '',
+              district: item.district || '',
+              age_10: item.age_10 || '',
+              age_20: item.age_20 || '',
+              age_30: item.age_30 || '',
+              age_40: item.age_40 || '',
+              age_50: item.age_50 || '',
+              age_60: item.age_60 || '',
+              age_70: item.age_70 || '',
+              total: item.total || '',
+            }));
+          }
+
+          // 데이터가 15개 미만일 경우 빈 데이터 추가
+          while (data.length < 15) {
+            data.push({
+              rownum: data.length + 1,
+              region: '',
+              district: '',
+              age_10: '',
+              age_20: '',
+              age_30: '',
+              age_40: '',
+              age_50: '',
+              age_60: '',
+              age_70: '',
+              total: '',
+            });
+          }
+
+          console.log('처리된 데이터:', data);
+
+          // 그리드에 데이터 적용
+          viewdata = new wijmo.collections.CollectionView(data);
+
+          if (!theGrid) {
+            theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+              allowMerging: 'ColumnHeaders',
+              autoGenerateColumns: false,
+              selectionMode: wijmo.grid.SelectionMode.Row,
+              isReadOnly: true,
+              columns: [
+                { binding: 'rownum', header: 'NO', width: 70, align: 'center' },
+                { binding: 'region', header: '지역(시)', width: 120, allowMerging: true},
+                { binding: 'district', header: '구군', width: 120 },
+                { binding: 'age_10', header: '10대 이하', width: '*', align: 'center' },
+                { binding: 'age_20', header: '20대', width: '*', align: 'center' },
+                { binding: 'age_30', header: '30대', width: '*', align: 'center' },
+                { binding: 'age_40', header: '40대', width: '*', align: 'center' },
+                { binding: 'age_50', header: '50대', width: '*', align: 'center' },
+                { binding: 'age_60', header: '60대', width: '*', align: 'center' },
+                { binding: 'age_70', header: '70대 이상', width: '*', align: 'center' },
+                { binding: 'total', header: '합계', width: 100, align: 'center' },
+              ],
+              itemsSource: viewdata,
+              allowMerging: 'Cells',
+            });
+            const headerRow = new wijmo.grid.Row();
+            headerRow.allowMerging = true;
+            theGrid.columnHeaders.rows.splice(0, 0, headerRow);
+            const panel = theGrid.columnHeaders;
+            panel.setCellData(0, 3, '나이');
+            panel.setCellData(0, 1, '지역 및 구군');
+
+            theGrid.rowHeaders.columns.splice(0, 1);
+            // ContextMenu 추가
+            new FlexGridContextMenu(theGrid);
+            window.downloadFileName = '통계보고서';
+
           } else {
-            console.warn('데이터가 없습니다.');
+            theGrid.itemsSource = viewdata;
           }
         },
-        error: function (xhr, status, error) {
-          console.error('데이터를 가져오는 중 오류 발생:', error);
-        },
+        error: function () {
+          console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+        }
       });
     }
-
-    function processResponseData(data) {
-      // 데이터 가공
-      const ageGroups = ['20', '30', '40', '50', '60', '70+α']; // 나이대별 그룹
-      const gridData = {};
-
-      data.forEach((item) => {
-        const region = item.usersido || '기타';
-        const district = item.userGU || '알수없음';
-        const age = item.ageGroup || '미상';
-
-        if (!gridData[region]) {
-          gridData[region] = { districts: {}, regionTotal: 0 };
-        }
-        if (!gridData[region].districts[district]) {
-          gridData[region].districts[district] = { total: 0 };
-        }
-
-        gridData[region].districts[district].total += 1;
-
-        // 나이대별 데이터 추가
-        if (!gridData[region].districts[district][`age_${age}`]) {
-          gridData[region].districts[district][`age_${age}`] = 0;
-        }
-        gridData[region].districts[district][`age_${age}`] += 1;
-        gridData[region].regionTotal += 1;
-      });
-
-      // FlexGrid에 적합한 형식으로 변환
-      const formattedData = [];
-      for (const [region, regionData] of Object.entries(gridData)) {
-        for (const [district, districtData] of Object.entries(regionData.districts)) {
-          formattedData.push({
-            region,
-            district,
-            ...ageGroups.reduce((acc, age) => {
-              acc[`age_${age}`] = districtData[`age_${age}`] || 0;
-              return acc;
-            }, {}),
-            total: districtData.total,
-          });
-        }
-      }
-
-      return formattedData;
-    }
-
-    function renderFlexGrid(dynamicData) {
-      const ageGroups = ['20', '30', '40', '50', '60', '70+α'];
-
-      if (!theGrid) {
-        // FlexGrid 생성
-        theGrid = new wijmo.grid.FlexGrid('#theGrid', {
-          allowMerging: 'ColumnHeaders',
-          autoGenerateColumns: false,
-          selectionMode: wijmo.grid.SelectionMode.Row,
-          isReadOnly: true,
-          columns: [
-            { binding: 'region', header: '지역(시)', width: 120, allowMerging: true },
-            { binding: 'district', header: '구군', width: 120 },
-            ...ageGroups.map((age) => ({
-              binding: `age_${age}`,
-              header: age,
-              width: '*',
-              align: 'center',
-            })),
-            { binding: 'total', header: '합계', width: 100, align: 'center' },
-          ],
-        });
-
-        // 상위 헤더 병합 및 스타일 설정
-        const headerRow = new wijmo.grid.Row();
-        headerRow.allowMerging = true;
-        theGrid.columnHeaders.rows.splice(0, 0, headerRow);
-
-        const panel = theGrid.columnHeaders;
-        panel.setCellData(0, 0, '나이');
-        panel.setCellData(0, 1, '지역 및 구군');
-
-
-        theGrid.formatItem.addHandler((s, e) => {
-          if (e.panel === s.columnHeaders && e.range.rowSpan > 1) {
-            e.cell.style.textAlign = 'center';
-            e.cell.style.verticalAlign = 'middle';
-            e.cell.style.backgroundColor = '#d0e1eb';
-            e.cell.style.fontWeight = 'bold';
-          }
-        });
-      }
-      theGrid.rowHeaders.columns.splice(0, 1);
-      new FlexGridContextMenu(theGrid);
-      window.downloadFileName = '통계보고서';
-
-      // 데이터 바인딩
-      theGrid.itemsSource = dynamicData;
-    }
-
-
 
 
   </script>
