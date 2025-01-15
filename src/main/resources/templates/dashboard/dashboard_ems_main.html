@@ -192,27 +192,43 @@
                             <div class="chart-wrap">
                                 <canvas id="SignupOfWeek" width="740" height="265" style="width: 740px; height: 265px;"></canvas>
 <!--                                <span class="material-symbols-outlined" style="position: absolute; top: 17px; right: 3px; cursor: pointer; z-index: 10; color: rgb(179, 179, 179);" onclick="openModal('revenueChart')">zoom_out_map</span>-->
+                                <div id="noDataMessage1" style="width: 740px; text-align: center; font-size: 16px; color: gray; display: flex;
+                                                                justify-content: center; align-items: center; height: 280px;">
+                                    가입자현황이 없습니다.
+                                </div>
                             </div>
                         </div>
-                        <!-- tab1 -->
+                        <!-- tab2 -->
                         <div class="tab-item-sub h280" id="tab2">
                             <div class="chart-wrap">
                                 <canvas id="Signout" width="740" height="265" style="width: 740px; height: 265px;"></canvas>
                                 <!--                                <span class="material-symbols-outlined" style="position: absolute; top: 17px; right: 3px; cursor: pointer; z-index: 10; color: rgb(179, 179, 179);" onclick="openModal('revenueChart')">zoom_out_map</span>-->
+                                <div id="noDataMessage2" style="width: 740px; text-align: center; font-size: 16px; color: gray; display: flex;
+                                                                justify-content: center; align-items: center; height: 280px;">
+                                    탈퇴현황이 없습니다.
+                                </div>
                             </div>
                         </div>
-                        <!-- tab1 -->
+                        <!-- tab3 -->
                         <div class="tab-item-sub h280" id="tab3">
                             <div class="chart-wrap">
                                 <canvas id="CntOfRegister" width="740" height="265" style="width: 740px; height: 265px;"></canvas>
                                 <!--                                <span class="material-symbols-outlined" style="position: absolute; top: 17px; right: 3px; cursor: pointer; z-index: 10; color: rgb(179, 179, 179);" onclick="openModal('revenueChart')">zoom_out_map</span>-->
+                                <div id="noDataMessage3" style="width: 740px; text-align: center; font-size: 16px; color: gray; display: flex;
+                                                                justify-content: center; align-items: center; height: 280px;">
+                                    등기열람현황이 없습니다.
+                                </div>
                             </div>
                         </div>
-                        <!-- tab1 -->
+                        <!-- tab4 -->
                         <div class="tab-item-sub h280" id="tab4">
                             <div class="chart-wrap">
                                 <canvas id="BestSearch" width="740" height="265" style="width: 740px; height: 265px;"></canvas>
                                 <!--                                <span class="material-symbols-outlined" style="position: absolute; top: 17px; right: 3px; cursor: pointer; z-index: 10; color: rgb(179, 179, 179);" onclick="openModal('revenueChart')">zoom_out_map</span>-->
+                                <div id="noDataMessage4" style="width: 740px; text-align: center; font-size: 16px; color: gray; display: flex;
+                                                                justify-content: center; align-items: center; height: 280px;">
+                                    지역검색현황이 없습니다.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -424,10 +440,11 @@
             fetchListData3();
             createCharts();
             cardData();
-            const zoomIcon = document.querySelector('.chart-wrap .material-symbols-outlined');
-            if (zoomIcon) {
-                zoomIcon.style.display = 'none'; // 또는 zoomIcon.style.visibility = 'hidden';
-            }
+            // 모든 tab에서 아이콘을 숨기기
+            const zoomIcons = document.querySelectorAll('.chart-wrap .material-symbols-outlined');
+            zoomIcons.forEach(icon => {
+                icon.style.display = 'none'; // 또는 icon.style.visibility = 'hidden';
+            });
         }
 
         var swiper = new Swiper(".card-swiper", {
@@ -634,57 +651,73 @@
                 async: false,
                 success: function (data) {
                     data2 = data.data;
-                    console.log("data2 : ", data2);
-
                     // 차트 작업
                     // 일주일 가입자 현황 데이터
                     let SignupOfWeek = data2.SignupOfWeek;
-                    // X축 레이블과 Y축 데이터 생성
-                    const DAY = SignupOfWeek.map(item => item.DAY);
-                    const CNT = SignupOfWeek.map(item => item.CNT);
+                    const noDataMessage1 = document.getElementById('noDataMessage1');
+                    const canvasElement1 = document.getElementById('Signout');
                     const firstDate = data2.SignupOfWeek[0].DATE;
                     const lastDate = data2.SignupOfWeek[data2.SignupOfWeek.length - 1].DATE;
 
-                    // mm.dd 형식으로 변환하는 함수
-                    const formatDate = (dateStr) => {
-                        const month = dateStr.slice(5, 7); // 'yyyy-MM-dd'에서 월 추출
-                        const day = dateStr.slice(8, 10);  // 'yyyy-MM-dd'에서 일 추출
-                        return `${month}.${day}`;
-                    };
-                    // 형식 변환
-                    const formattedDateRange = `${formatDate(firstDate)}~${formatDate(lastDate)}`;
-                    // id가 'weekPeriod'인 요소를 찾습니다.
-                    const weekPeriodElement = document.getElementById('weekPeriod');
+                    // Signout 데이터가 빈 배열인지 확인
+                    if (SignupOfWeek.length === 0) {
+                        // 빈 데이터일 경우 처리
+                        canvasElement1.style.display = 'none';  // 차트 숨기기
+                        noDataMessage1.style.display = 'flex';
+                        // id가 'weekPeriod'인 요소를 찾습니다.
+                        const weekPeriodElement = document.getElementById('weekPeriod');
 
-                    // 요소의 텍스트를 수정합니다.
-                    if (weekPeriodElement) {
-                        weekPeriodElement.textContent = `${formattedDateRange}(주간)`;
-                    }
-                    // 새로운 차트 데이터
-                    const SignupOfWeekData = {
-                        labels: DAY,
-                        datasets: [{
-                            data: CNT,
-                            backgroundColor: 'rgba(98, 178, 253, 0.5)',
-                            borderColor: 'rgba(98, 178, 253, 1)',
-                            borderWidth: 1
-                        }]
-                    };
-                    // 차트 생성 후 인스턴스를 data 속성에 저장
-                    $('#SignupOfWeek').data('chart', new Chart(ctxSignupOfWeek, {
-                        type: 'bar',
-                        data: SignupOfWeekData,
-                        options: {
-                            plugins: {
-                                legend: {
-                                    display: false // 범례 비활성화
-                                }
-                            },
-                            scales: {
-                                y: { beginAtZero: true }
-                            }
+                        // 요소의 텍스트를 수정합니다.
+                        if (weekPeriodElement) {
+                            weekPeriodElement.textContent = `가입자현황(주간)`;
                         }
-                    }));
+                    } else {
+                        noDataMessage1.style.display = 'none';
+                        // X축 레이블과 Y축 데이터 생성
+                        const DAY = SignupOfWeek.map(item => item.DAY);
+                        const CNT = SignupOfWeek.map(item => item.CNT);
+
+                        // mm.dd 형식으로 변환하는 함수
+                        const formatDate = (dateStr) => {
+                            const month = dateStr.slice(5, 7); // 'yyyy-MM-dd'에서 월 추출
+                            const day = dateStr.slice(8, 10);  // 'yyyy-MM-dd'에서 일 추출
+                            return `${month}.${day}`;
+                        };
+                        // 형식 변환
+                        const formattedDateRange = `${formatDate(firstDate)}~${formatDate(lastDate)}`;
+                        // id가 'weekPeriod'인 요소를 찾습니다.
+                        const weekPeriodElement = document.getElementById('weekPeriod');
+
+                        // 요소의 텍스트를 수정합니다.
+                        if (weekPeriodElement) {
+                            weekPeriodElement.textContent = `${formattedDateRange}(주간)`;
+                        }
+                        // 새로운 차트 데이터
+                        const SignupOfWeekData = {
+                            labels: DAY,
+                            datasets: [{
+                                data: CNT,
+                                backgroundColor: 'rgba(98, 178, 253, 0.5)',
+                                borderColor: 'rgba(98, 178, 253, 1)',
+                                borderWidth: 1
+                            }]
+                        };
+                        // 차트 생성 후 인스턴스를 data 속성에 저장
+                        $('#SignupOfWeek').data('chart', new Chart(ctxSignupOfWeek, {
+                            type: 'bar',
+                            data: SignupOfWeekData,
+                            options: {
+                                plugins: {
+                                    legend: {
+                                        display: false // 범례 비활성화
+                                    }
+                                },
+                                scales: {
+                                    y: {beginAtZero: true}
+                                }
+                            }
+                        }));
+                    }
                     // 차트 데이터 활용 카드 설정(금일 신규 사용자 카드)
                     // 조회된 데이터에서 오늘 날자의 데이터가 없을경우 당일 데이터 처리
                     // 오늘 날짜와 마지막 데이터의 DATE 비교
@@ -719,13 +752,16 @@
 
                     // 탈퇴 현황 데이터
                     let Signout = data2.Signout;
+                    const noDataMessage2 = document.getElementById('noDataMessage2');
+                    const canvasElement2 = document.getElementById('Signout');
 
                     // Signout 데이터가 빈 배열인지 확인
                     if (Signout.length === 0) {
                         // 빈 데이터일 경우 처리
-                        console.log("유출자 현황 데이터가 없습니다."); // 콘솔에 메시지 출력
-                        $('#Signout').text("유출자 현황 데이터가 없습니다."); // HTML 요소에 메시지 표시
+                        canvasElement2.style.display = 'none';  // 차트 숨기기
+                        noDataMessage2.style.display = 'flex';
                     } else {
+                        noDataMessage2.style.display = 'none';  // 텍스트 숨기기
                         // X축 레이블과 Y축 데이터 생성
                         const DAY2 = Signout.map(item => item.DAY);
                         const CNT2 = Signout.map(item => item.CNT);
@@ -760,36 +796,47 @@
 
                     // 등기열람건수 데이터
                     let CntOfRegister = data2.CntOfRegister;
-                    // X축 레이블과 Y축 데이터 생성
-                    const DAY3 = CntOfRegister.map(item => item.DAY);
-                    const CNT3 = CntOfRegister.map(item => item.CNT);
+                    const noDataMessage3 = document.getElementById('noDataMessage3');
+                    const canvasElement3 = document.getElementById('Signout');
                     const lastDate2 = data2.CntOfRegister[data2.CntOfRegister.length - 1].DATE;
+                    // Signout 데이터가 빈 배열인지 확인
+                    if (CntOfRegister.length === 0) {
+                        // 빈 데이터일 경우 처리
+                        canvasElement3.style.display = 'none';  // 차트 숨기기
+                        noDataMessage3.style.display = 'flex';
+                    } else {
+                        noDataMessage3.style.display = 'none';  // 텍스트 숨기기
+                        // X축 레이블과 Y축 데이터 생성
+                        const DAY3 = CntOfRegister.map(item => item.DAY);
+                        const CNT3 = CntOfRegister.map(item => item.CNT);
 
-                    // 새로운 차트 데이터
-                    const CntOfRegisterData = {
-                        labels: DAY3,
-                        datasets: [{
-                            data: CNT3,
-                            backgroundColor: 'rgba(98, 178, 253, 0.5)',
-                            borderColor: 'rgba(98, 178, 253, 1)',
-                            borderWidth: 1
-                        }]
-                    };
-                    // 차트 생성 후 인스턴스를 data 속성에 저장
-                    $('#CntOfRegister').data('chart', new Chart(ctxCntOfRegister, {
-                        type: 'bar',
-                        data: CntOfRegisterData,
-                        options: {
-                            plugins: {
-                                legend: {
-                                    display: false // 범례 비활성화
+
+                        // 새로운 차트 데이터
+                        const CntOfRegisterData = {
+                            labels: DAY3,
+                            datasets: [{
+                                data: CNT3,
+                                backgroundColor: 'rgba(98, 178, 253, 0.5)',
+                                borderColor: 'rgba(98, 178, 253, 1)',
+                                borderWidth: 1
+                            }]
+                        };
+                        // 차트 생성 후 인스턴스를 data 속성에 저장
+                        $('#CntOfRegister').data('chart', new Chart(ctxCntOfRegister, {
+                            type: 'bar',
+                            data: CntOfRegisterData,
+                            options: {
+                                plugins: {
+                                    legend: {
+                                        display: false // 범례 비활성화
+                                    }
+                                },
+                                scales: {
+                                    y: {beginAtZero: true}
                                 }
-                            },
-                            scales: {
-                                y: { beginAtZero: true }
                             }
-                        }
-                    }));
+                        }));
+                    }
                     // 차트 데이터 활용 카드 설정
                     // 조회된 데이터에서 오늘 날자의 데이터가 없을경우 당일 데이터 처리
                     // 오늘 날짜와 마지막 데이터의 DATE 비교
@@ -821,36 +868,49 @@
 
                     // 상위검색지역 데이터
                     let BestSearch = data2.BestSearch;
-                    // X축 레이블과 Y축 데이터 생성
-                    const REGUGUN = BestSearch.map(item => item.REGUGUN);
-                    const TotalSearches = BestSearch.map(item => item.TotalSearches);
-                    const YesterdaySearchCount = BestSearch.map(item => item.YesterdaySearchCount);
+                    const noDataMessage4 = document.getElementById('noDataMessage4');
+                    const canvasElement4 = document.getElementById('Signout');
 
-                    // 새로운 차트 데이터
-                    const BestSearchData = {
-                        labels: REGUGUN,
-                        datasets: [{
-                            data: TotalSearches,
-                            backgroundColor: 'rgba(98, 178, 253, 0.5)',
-                            borderColor: 'rgba(98, 178, 253, 1)',
-                            borderWidth: 1
-                        }]
-                    };
-                    // 차트 생성 후 인스턴스를 data 속성에 저장
-                    $('#BestSearch').data('chart', new Chart(ctxBestSearch, {
-                        type: 'bar',
-                        data: BestSearchData,
-                        options: {
-                            plugins: {
-                                legend: {
-                                    display: false // 범례 비활성화
+                    // Signout 데이터가 빈 배열인지 확인
+                    if (BestSearch.length === 0) {
+                        // 빈 데이터일 경우 처리
+                        canvasElement4.style.display = 'none';  // 차트 숨기기
+                        noDataMessage4.style.display = 'flex';
+                        // id가 'weekPeriod'인 요소를 찾습니다.
+                        const weekPeriodElement = document.getElementById('weekPeriod');
+                    } else {
+                        noDataMessage4.style.display = 'none';
+                        // X축 레이블과 Y축 데이터 생성
+                        const REGUGUN = BestSearch.map(item => item.REGUGUN);
+                        const TotalSearches = BestSearch.map(item => item.TotalSearches);
+                        const YesterdaySearchCount = BestSearch.map(item => item.YesterdaySearchCount);
+
+                        // 새로운 차트 데이터
+                        const BestSearchData = {
+                            labels: REGUGUN,
+                            datasets: [{
+                                data: TotalSearches,
+                                backgroundColor: 'rgba(98, 178, 253, 0.5)',
+                                borderColor: 'rgba(98, 178, 253, 1)',
+                                borderWidth: 1
+                            }]
+                        };
+                        // 차트 생성 후 인스턴스를 data 속성에 저장
+                        $('#BestSearch').data('chart', new Chart(ctxBestSearch, {
+                            type: 'bar',
+                            data: BestSearchData,
+                            options: {
+                                plugins: {
+                                    legend: {
+                                        display: false // 범례 비활성화
+                                    }
+                                },
+                                scales: {
+                                    y: {beginAtZero: true}
                                 }
-                            },
-                            scales: {
-                                y: { beginAtZero: true }
                             }
-                        }
-                    }));
+                        }));
+                    }
                     // 차트 데이터 활용 카드 설정
                     let LastDayCntOfSearch = data2.BestSearch[0].YesterdaySearchCount;
                     let ThisDayCntOfSearch = data2.BestSearch[0].TodaySearchCount;
