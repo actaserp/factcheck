@@ -412,6 +412,10 @@
         var theGrid3;
         var viewdata3;
 
+        // 오늘 날짜를 yyyy-MM-dd 형식으로 생성
+        const today = new Date();
+        const formatToday = today.toISOString().split('T')[0]; // 'yyyy-MM-dd' 형식
+
         document.readyState === 'complete' ? init() : window.onload = init;
 
         function init() {
@@ -682,10 +686,23 @@
                         }
                     }));
                     // 차트 데이터 활용 카드 설정(금일 신규 사용자 카드)
-                    // 전일 신규 데이터
-                    let LastDayCnt = data2.SignupOfWeek[data2.SignupOfWeek.length - 2].CNT;
-                    // 오늘 신규 데이터
-                    let ThisDayCnt = data2.SignupOfWeek[data2.SignupOfWeek.length - 1].CNT;
+                    // 조회된 데이터에서 오늘 날자의 데이터가 없을경우 당일 데이터 처리
+                    // 오늘 날짜와 마지막 데이터의 DATE 비교
+                    let LastDayCnt, ThisDayCnt;
+
+                    if (lastDate === formatToday) {
+                        // 마지막 데이터가 오늘 날짜인 경우
+                        LastDayCnt = data2.SignupOfWeek.length > 1
+                            ? data2.SignupOfWeek[data2.SignupOfWeek.length - 2].CNT
+                            : 0;
+                        ThisDayCnt = data2.SignupOfWeek[data2.SignupOfWeek.length - 1].CNT;
+                    } else {
+                        // 마지막 데이터가 오늘 날짜가 아닌 경우
+                        LastDayCnt = data2.SignupOfWeek.length > 0
+                            ? data2.SignupOfWeek[data2.SignupOfWeek.length - 1].CNT
+                            : 0;
+                        ThisDayCnt = 0; // 오늘 데이터가 없으므로 0으로 설정
+                    }
                     // 두 값의 차이 계산
                     const difference0 = ThisDayCnt - LastDayCnt;
                     const division0 = LastDayCnt !== 0 ? ((difference0 / LastDayCnt) * 100).toFixed(2) : 0; // 퍼센트 계산
@@ -853,7 +870,7 @@
                     const requestSectionOfSignup = document.querySelector('.ThisMonthSignupCard dl dd');
                     requestSectionOfSignup.innerHTML = `${ThisMonthCNT} <span class="unit">명</span>`;
                     const percentageSectionOfSignup = document.querySelector('.ThisMonthSignupCard dl:nth-of-type(2) dd');
-                    if(differenceOfSearch >= 0) {
+                    if(differenceOfSignup >= 0) {
                         percentageSectionOfSignup.innerHTML = `<span class="up"></span> ${divisionOfSignup} <span class="unit">%</span>`;
                     }else{
                         percentageSectionOfSignup.innerHTML = `<span class="down"></span> ${divisionOfSignup} <span class="unit">%</span>`;

@@ -240,7 +240,7 @@ public class FactCheckDashBoardService {
                FROM
                    TopRegions tr
                LEFT JOIN
-                   YesterdaySearches ys\s
+                   YesterdaySearches ys
                    ON tr.REGUGUN = ys.REGUGUN AND tr.RESIDO = ys.RESIDO
                ORDER BY
                    tr.TotalSearches DESC; -- 지난 7일간 검색 횟수 기준 내림차순 정렬
