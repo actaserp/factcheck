@@ -132,7 +132,7 @@
                     <div class="swiper-slide">
                         <section class="AnswerCard">
                             <div class="title">
-                                <h3>미답변문의건수</h3>
+                                <h3>금일 미답변문의건수</h3>
                                 <a href="#" title="더보기" class="btn-plus"></a>
                             </div>
                             <dl>
@@ -642,13 +642,13 @@
                     // X축 레이블과 Y축 데이터 생성
                     const DAY = SignupOfWeek.map(item => item.DAY);
                     const CNT = SignupOfWeek.map(item => item.CNT);
-                    const firstDate = new Date(data2.SignupOfWeek[0].DATE);
-                    const lastDate = new Date(data2.SignupOfWeek[data2.SignupOfWeek.length - 1].DATE);
+                    const firstDate = data2.SignupOfWeek[0].DATE;
+                    const lastDate = data2.SignupOfWeek[data2.SignupOfWeek.length - 1].DATE;
 
                     // mm.dd 형식으로 변환하는 함수
-                    const formatDate = (date) => {
-                        const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
-                        const day = String(date.getDate()).padStart(2, '0');
+                    const formatDate = (dateStr) => {
+                        const month = dateStr.slice(5, 7); // 'yyyy-MM-dd'에서 월 추출
+                        const day = dateStr.slice(8, 10);  // 'yyyy-MM-dd'에서 일 추출
                         return `${month}.${day}`;
                     };
                     // 형식 변환
@@ -717,7 +717,7 @@
                         percentageSection.innerHTML = `<span class="down"></span> ${division0} <span class="unit">%</span>`;
                     }
 
-                    // 유출자 현황 데이터
+                    // 탈퇴 현황 데이터
                     let Signout = data2.Signout;
 
                     // Signout 데이터가 빈 배열인지 확인
@@ -763,6 +763,7 @@
                     // X축 레이블과 Y축 데이터 생성
                     const DAY3 = CntOfRegister.map(item => item.DAY);
                     const CNT3 = CntOfRegister.map(item => item.CNT);
+                    const lastDate2 = data2.CntOfRegister[data2.CntOfRegister.length - 1].DATE;
 
                     // 새로운 차트 데이터
                     const CntOfRegisterData = {
@@ -790,8 +791,23 @@
                         }
                     }));
                     // 차트 데이터 활용 카드 설정
-                    let LastDayCnt2 = data2.CntOfRegister[data2.CntOfRegister.length - 2].CNT;
-                    let ThisDayCnt2 = data2.CntOfRegister[data2.CntOfRegister.length - 1].CNT;
+                    // 조회된 데이터에서 오늘 날자의 데이터가 없을경우 당일 데이터 처리
+                    // 오늘 날짜와 마지막 데이터의 DATE 비교
+                    let LastDayCnt2, ThisDayCnt2;
+
+                    if (lastDate2 === formatToday) {
+                        // 마지막 데이터가 오늘 날짜인 경우
+                        LastDayCnt2 = data2.CntOfRegister.length > 1
+                            ? data2.CntOfRegister[data2.CntOfRegister.length - 2].CNT
+                            : 0;
+                        ThisDayCnt2 = data2.CntOfRegister[data2.CntOfRegister.length - 1].CNT;
+                    } else {
+                        // 마지막 데이터가 오늘 날짜가 아닌 경우
+                        LastDayCnt2 = data2.CntOfRegister.length > 0
+                            ? data2.CntOfRegister[data2.CntOfRegister.length - 1].CNT
+                            : 0;
+                        ThisDayCnt2 = 0; // 오늘 데이터가 없으므로 0으로 설정
+                    }
                     const difference2 = ThisDayCnt2 - LastDayCnt2;
                     const division2 = LastDayCnt2 !== 0 ? ((difference2 / LastDayCnt2) * 100).toFixed(2) : 0; // 퍼센트 계산
                     const requestSection2 = document.querySelector('.CntOfRegisterCard dl dd');
@@ -837,7 +853,7 @@
                     }));
                     // 차트 데이터 활용 카드 설정
                     let LastDayCntOfSearch = data2.BestSearch[0].YesterdaySearchCount;
-                    let ThisDayCntOfSearch = data2.BestSearch[0].TotalSearches;
+                    let ThisDayCntOfSearch = data2.BestSearch[0].TodaySearchCount;
                     let BestGUGUN = data2.BestSearch[0].REGUGUN;
                     let BestSIDO = data2.BestSearch[0].RESIDO;
                     const differenceOfSearch = ThisDayCntOfSearch - LastDayCntOfSearch;

@@ -201,7 +201,7 @@ public class FactCheckDashBoardService {
 
         String sql = """
                WITH TopRegions AS (
-                   -- 지난 7일간 REGUGUN별 검색 횟수를 계산
+                   -- 지난 7일간 REGUGUN별 검색 횟수를 계산 (오늘 포함)
                    SELECT
                        r.REGUGUN,
                        r.RESIDO,
@@ -211,8 +211,23 @@ public class FactCheckDashBoardService {
                    LEFT JOIN
                        TB_SEARCHINFO s ON r.REALID = s.REALID
                    WHERE
-                       CAST(s.REQDATE AS DATE) >= CAST(GETDATE() - 7 AS DATE) -- 7일 전부터 오늘까지
-                       AND CAST(s.REQDATE AS DATE) < CAST(GETDATE() AS DATE) -- 오늘 제외
+                       CAST(s.REQDATE AS DATE) >= CAST(GETDATE() - 7 AS DATE) -- 7일 전부터
+                       AND CAST(s.REQDATE AS DATE) <= CAST(GETDATE() AS DATE) -- 오늘 포함
+                   GROUP BY
+                       r.REGUGUN, r.RESIDO
+               ),
+               TodaySearches AS (
+                   -- 오늘 날짜 기준 REGUGUN별 검색 횟수 계산
+                   SELECT
+                       r.REGUGUN,
+                       r.RESIDO,
+                       COUNT(s.REALID) AS TodaySearchCount
+                   FROM
+                       TB_REALINFO r
+                   LEFT JOIN
+                       TB_SEARCHINFO s ON r.REALID = s.REALID
+                   WHERE
+                       CAST(s.REQDATE AS DATE) = CAST(GETDATE() AS DATE) -- 오늘 날짜
                    GROUP BY
                        r.REGUGUN, r.RESIDO
                ),
@@ -231,19 +246,23 @@ public class FactCheckDashBoardService {
                    GROUP BY
                        r.REGUGUN, r.RESIDO
                )
-               -- REGUGUN별 지난 7일간 검색 횟수와 어제 검색 횟수를 조회
+               -- REGUGUN별 지난 7일간 검색 횟수와 어제, 오늘 검색 횟수를 조회
                SELECT
                    tr.REGUGUN,
                    tr.RESIDO,
                    tr.TotalSearches,
+                   ISNULL(ts.TodaySearchCount, 0) AS TodaySearchCount,
                    ISNULL(ys.YesterdaySearchCount, 0) AS YesterdaySearchCount
                FROM
                    TopRegions tr
                LEFT JOIN
+                   TodaySearches ts
+                   ON tr.REGUGUN = ts.REGUGUN AND tr.RESIDO = ts.RESIDO
+               LEFT JOIN
                    YesterdaySearches ys
                    ON tr.REGUGUN = ys.REGUGUN AND tr.RESIDO = ys.RESIDO
                ORDER BY
-                   tr.TotalSearches DESC; -- 지난 7일간 검색 횟수 기준 내림차순 정렬
+                   ts.TodaySearchCount DESC; -- 오늘 날짜의 검색 횟수 기준 내림차순 정렬
             """;
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql, null);
