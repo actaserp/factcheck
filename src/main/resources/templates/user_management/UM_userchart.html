@@ -35,12 +35,12 @@
                   <dd>
                     <ul class="date-box">
                       <li>
-                        <input class="tac w150 " type="date" id="date_from" name="date_from"/>
-                        <label for="date_from" class="hide">시작일</label>
+                        <input class="tac w150 " type="date" id="startDate" name="date_from"/>
+                        <label for="startDate" class="hide">시작일</label>
                       </li>
                       <li>
-                        <input class="tac w150" type="date" id="date_to" name="date_to"/>
-                        <label for="date_to" class="hide">종료일</label>
+                        <input class="tac w150" type="date" id="endDate" name="date_to"/>
+                        <label for="endDate" class="hide">종료일</label>
                       </li>
                     </ul>
                   </dd>
@@ -102,87 +102,155 @@
     var theGrid;
     var viewdata;
 
+
+
+    $(document).ready(function() {
+      // 현재 날짜 설정
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+
+      // 시작일
+      const startOfYear = new Date(year, 0, 1);
+      const startYearFormatted = `${startOfYear.getFullYear()}-${String(startOfYear.getMonth() + 1).padStart(2, '0')}-${String(startOfYear.getDate()).padStart(2, '0')}`;
+      $('#startDate').val(startYearFormatted);
+
+      // 종료일
+      const endOfMonth = new Date(year, month + 1, 0);
+      const endMonthFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
+      $('#endDate').val(endMonthFormatted);
+
+    });
     document.readyState === 'complete' ? init() : window.onload = init;
-
     function init() {
-      fetchListData();
+      fetchDynamicGridData();
     }
-    // 통계보고서 그리드
-    function fetchListData() {
-      let data2 = [
-        {"district" : "20대 이하" },
-        {"district" : "30대" },
-        {"district" : "40대" },
-        {"district" : "50대" },
-        {"district" : "60대 이상" },
-      ];
+    function fetchDynamicGridData() {
+      const params = {
+        startDate: $('#startDate').val(),
+        endDate: $('#endDate').val(),
+        searchUserNm: $('#searchUserNm').val(),
+      };
 
-      viewdata = new wijmo.collections.CollectionView(data2);
+      // Ajax 통신을 통해 데이터 가져오기
+      $.ajax({
+        url: '/api/MUserInfo/read', // 기존 API를 사용
+        type: 'GET',
+        data: params,
+        dataType: 'json',
+        success: function (response) {
+          if (response && response.data && Array.isArray(response.data)) {
+            const processedData = processResponseData(response.data);
+            renderFlexGrid(processedData);
+          } else {
+            console.warn('데이터가 없습니다.');
+          }
+        },
+        error: function (xhr, status, error) {
+          console.error('데이터를 가져오는 중 오류 발생:', error);
+        },
+      });
+    }
+
+    function processResponseData(data) {
+      // 데이터 가공
+      const ageGroups = ['20', '30', '40', '50', '60', '70+α']; // 나이대별 그룹
+      const gridData = {};
+
+      data.forEach((item) => {
+        const region = item.usersido || '기타';
+        const district = item.userGU || '알수없음';
+        const age = item.ageGroup || '미상';
+
+        if (!gridData[region]) {
+          gridData[region] = { districts: {}, regionTotal: 0 };
+        }
+        if (!gridData[region].districts[district]) {
+          gridData[region].districts[district] = { total: 0 };
+        }
+
+        gridData[region].districts[district].total += 1;
+
+        // 나이대별 데이터 추가
+        if (!gridData[region].districts[district][`age_${age}`]) {
+          gridData[region].districts[district][`age_${age}`] = 0;
+        }
+        gridData[region].districts[district][`age_${age}`] += 1;
+        gridData[region].regionTotal += 1;
+      });
+
+      // FlexGrid에 적합한 형식으로 변환
+      const formattedData = [];
+      for (const [region, regionData] of Object.entries(gridData)) {
+        for (const [district, districtData] of Object.entries(regionData.districts)) {
+          formattedData.push({
+            region,
+            district,
+            ...ageGroups.reduce((acc, age) => {
+              acc[`age_${age}`] = districtData[`age_${age}`] || 0;
+              return acc;
+            }, {}),
+            total: districtData.total,
+          });
+        }
+      }
+
+      return formattedData;
+    }
+
+    function renderFlexGrid(dynamicData) {
+      const ageGroups = ['20', '30', '40', '50', '60', '70+α'];
 
       if (!theGrid) {
         // FlexGrid 생성
         theGrid = new wijmo.grid.FlexGrid('#theGrid', {
-          allowMerging: 'ColumnHeaders', // 열 헤더 병합 활성화
-          autoGenerateColumns: false,    // 자동 열 생성 비활성화
-          showMarquee: true,
-          isReadOnly: true,
+          allowMerging: 'ColumnHeaders',
+          autoGenerateColumns: false,
           selectionMode: wijmo.grid.SelectionMode.Row,
+          isReadOnly: true,
           columns: [
-            { binding: 'district', header: '구군', width: 100, allowMerging: true }, // 구군 열 추가
-            { binding: 'gangnam', header: '강남', width: '*', minWidth: 100, align: 'center' },
-            { binding: 'songpa', header: '송파', width: '*', minWidth: 100, align: 'center' },
-            { binding: 'suwon', header: '수원', width: '*', minWidth: 100, align: 'center' },
-            { binding: 'seongnam', header: '성남', width: '*', minWidth: 100, align: 'center' },
-            { binding: 'gumjung', header: '금정', width: '*', minWidth: 100, align: 'center' },
-            { binding: 'sooyeong', header: '수영', width: '*', minWidth: 100, align: 'center' },
-            { binding: 'gyeyang', header: '계양', width: '*', minWidth: 100, align: 'center' },
-            { binding: 'yeonsoo', header: '연수', width: '*', minWidth: 100, align: 'center' }
+            { binding: 'region', header: '지역(시)', width: 120, allowMerging: true },
+            { binding: 'district', header: '구군', width: 120 },
+            ...ageGroups.map((age) => ({
+              binding: `age_${age}`,
+              header: age,
+              width: '*',
+              align: 'center',
+            })),
+            { binding: 'total', header: '합계', width: 100, align: 'center' },
           ],
-          itemsSource: viewdata // 데이터 소스 바인딩
         });
 
-        // 상위 헤더 행 추가
-        const extraRow = new wijmo.grid.Row();
-        extraRow.allowMerging = true; // 병합 활성화
-        theGrid.columnHeaders.rows.splice(0, 0, extraRow); // 첫 번째 행에 추가
+        // 상위 헤더 병합 및 스타일 설정
+        const headerRow = new wijmo.grid.Row();
+        headerRow.allowMerging = true;
+        theGrid.columnHeaders.rows.splice(0, 0, headerRow);
 
-        // 상위 헤더 데이터 설정
         const panel = theGrid.columnHeaders;
-        panel.setCellData(0, 0, '지역');   // 상위 헤더에 "지역" 추가
-        panel.setCellData(0, 1, '서울'); // '서울' 병합 헤더
-        panel.setCellData(0, 2, '서울'); // '서울' 병합 헤더
-        panel.setCellData(0, 3, '경기'); // '경기' 병합 헤더
-        panel.setCellData(0, 4, '경기'); // '경기' 병합 헤더
-        panel.setCellData(0, 5, '부산'); // '부산' 병합 헤더
-        panel.setCellData(0, 6, '부산'); // '부산' 병합 헤더
-        panel.setCellData(0, 7, '인천'); // '인천' 병합 헤더
-        panel.setCellData(0, 8, '인천'); // '인천' 병합 헤더
+        panel.setCellData(0, 0, '나이');
+        panel.setCellData(0, 1, '지역 및 구군');
 
-        // 셀 중앙 정렬 및 병합 처리
-        theGrid.formatItem.addHandler(function (s, e) {
+
+        theGrid.formatItem.addHandler((s, e) => {
           if (e.panel === s.columnHeaders && e.range.rowSpan > 1) {
-            const html = e.cell.innerHTML;
-            e.cell.innerHTML = '<div class="v-center">' + html + '</div>';
             e.cell.style.textAlign = 'center';
             e.cell.style.verticalAlign = 'middle';
-            e.cell.style.backgroundColor = '#d0e1eb'; // 병합된 셀 스타일
-          }
-          if (e.panel === s.cells) {
-            const col = s.columns[e.col];
-            if (col.binding === 'district') {
-              e.cell.style.fontWeight = 'bold'; // 글씨 굵게
-              e.cell.style.backgroundColor = '#EDEFF5'; // 원하는 배경색
-              e.cell.style.color = '#000'; // 텍스트 색상 (선택 사항)
-            }
+            e.cell.style.backgroundColor = '#d0e1eb';
+            e.cell.style.fontWeight = 'bold';
           }
         });
-        theGrid.rowHeaders.columns.splice(0, 1);  //맨 앞에 헤더부분 없애기
-        new FlexGridContextMenu(theGrid);
-      } else {
-        // 이미 FlexGrid가 존재하는 경우 데이터 업데이트
-        theGrid.itemsSource = viewdata;
       }
+      theGrid.rowHeaders.columns.splice(0, 1);
+      new FlexGridContextMenu(theGrid);
+      window.downloadFileName = '통계보고서';
+
+      // 데이터 바인딩
+      theGrid.itemsSource = dynamicData;
     }
+
+
+
+
   </script>
 </th:block>
 
