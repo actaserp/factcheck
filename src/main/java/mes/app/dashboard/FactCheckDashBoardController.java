@@ -122,18 +122,15 @@ public class FactCheckDashBoardController {
     private AjaxResult cardDatas() {
         AjaxResult result = new AjaxResult();
         try{
+            // 이번달 총 가입자수 집계
             List<Map<String, Object>> CardList = factService.cardDatas();
-            // 금일 신규사용자 집계
+            // 미답변 문의건 수 집계(YESTERDAY_UNANSWERED_COUNT = YUC ..)
+            List<Map<String, Object>> NotAnswerQnAList = factService.NotAnswerQnAList();
 
-            // 금일 상위 검색지역 집계
-
-            // 총 가입자수 집계
-
-            // 금일 등기 열람건 수 집계
-
-            // 미답변 문의건 수 집계
-
-            result.data = CardList;
+            Map<String, Object> items = new HashMap<String, Object>();
+            items.put("CardList", CardList);
+            items.put("NotAnswerQnAList", NotAnswerQnAList);
+            result.data = items;
             result.message = "신규 사용자 조회에 성공했습니다.";
         }catch (Exception e){
             e.printStackTrace();

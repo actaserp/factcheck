@@ -181,7 +181,7 @@ public class FactCheckDashBoardService {
                     DATENAME(WEEKDAY, REQDATE) AS DAY,
                     COUNT(*) AS CNT
                 FROM
-                    MOB_FACTCHK.dbo.TB_SEARCHINFO
+                    TB_SEARCHINFO
                 WHERE
                     REQDATE >= CAST(GETDATE() - 6 AS DATE)
                     AND REQDATE < CAST(GETDATE() + 1 AS DATE)
@@ -200,21 +200,102 @@ public class FactCheckDashBoardService {
     public List<Map<String, Object>> BestSearch() {
 
         String sql = """
+               WITH TopRegions AS (
+                   -- 지난 7일간 REGUGUN별 검색 횟수를 계산
+                   SELECT
+                       r.REGUGUN,
+                       r.RESIDO,
+                       COUNT(s.REALID) AS TotalSearches
+                   FROM
+                       TB_REALINFO r
+                   LEFT JOIN
+                       TB_SEARCHINFO s ON r.REALID = s.REALID
+                   WHERE
+                       CAST(s.REQDATE AS DATE) >= CAST(GETDATE() - 7 AS DATE) -- 7일 전부터 오늘까지
+                       AND CAST(s.REQDATE AS DATE) < CAST(GETDATE() AS DATE) -- 오늘 제외
+                   GROUP BY
+                       r.REGUGUN, r.RESIDO
+               ),
+               YesterdaySearches AS (
+                   -- 어제 날짜 기준 REGUGUN별 검색 횟수 계산
+                   SELECT
+                       r.REGUGUN,
+                       r.RESIDO,
+                       COUNT(s.REALID) AS YesterdaySearchCount
+                   FROM
+                       TB_REALINFO r
+                   LEFT JOIN
+                       TB_SEARCHINFO s ON r.REALID = s.REALID
+                   WHERE
+                       CAST(s.REQDATE AS DATE) = CAST(GETDATE() - 1 AS DATE) -- 어제 날짜
+                   GROUP BY
+                       r.REGUGUN, r.RESIDO
+               )
+               -- REGUGUN별 지난 7일간 검색 횟수와 어제 검색 횟수를 조회
+               SELECT
+                   tr.REGUGUN,
+                   tr.RESIDO,
+                   tr.TotalSearches,
+                   ISNULL(ys.YesterdaySearchCount, 0) AS YesterdaySearchCount
+               FROM
+                   TopRegions tr
+               LEFT JOIN
+                   YesterdaySearches ys\s
+                   ON tr.REGUGUN = ys.REGUGUN AND tr.RESIDO = ys.RESIDO
+               ORDER BY
+                   tr.TotalSearches DESC; -- 지난 7일간 검색 횟수 기준 내림차순 정렬
             """;
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql, null);
 
         return items;
     }
-    // 카드 데이터(집계 총가입자, 미답변 문의건수, 금일 상위 검색지역)
+    // 카드 데이터(집계 총가입자)
     public List<Map<String, Object>> cardDatas() {
 
         String sql = """
-            SELECT
-                SUM(CASE WHEN CONVERT(DATE, INDATEM) = CONVERT(DATE, GETDATE()) THEN 1 ELSE 0 END) AS TODAY_COUNT,
-                SUM(CASE WHEN CONVERT(DATE, INDATEM) = CONVERT(DATE, DATEADD(DAY, -1, GETDATE())) THEN 1 ELSE 0 END) AS YESTERDAY_COUNT
-            FROM
-                TB_USERINFO;
+                SELECT
+                    SUM(CASE
+                            WHEN YEAR(INDATEM) = YEAR(DATEADD(MONTH, -1, GETDATE()))
+                                 AND MONTH(INDATEM) = MONTH(DATEADD(MONTH, -1, GETDATE()))
+                            THEN 1 ELSE 0
+                        END) AS LAST_MONTH_COUNT,
+                    SUM(CASE
+                            WHEN YEAR(INDATEM) = YEAR(GETDATE())
+                                 AND MONTH(INDATEM) = MONTH(GETDATE())
+                            THEN 1 ELSE 0
+                        END) AS THIS_MONTH_COUNT
+                FROM
+                    TB_USERINFO;
+            """;
+
+        List<Map<String,Object>> items = this.sqlRunner.getRows(sql, null);
+
+        return items;
+    }
+    // 카드 데이터(미답변 문의건수)
+    public List<Map<String, Object>> NotAnswerQnAList() {
+
+        String sql = """
+                SELECT
+                    SUM(CASE
+                            WHEN CONVERT(DATE, Q1.INDATEM) = CONVERT(DATE, GETDATE() - 1) THEN 1
+                            ELSE 0
+                        END) AS YUC,
+                    SUM(CASE
+                            WHEN CONVERT(DATE, Q1.INDATEM) = CONVERT(DATE, GETDATE()) THEN 1
+                            ELSE 0
+                        END) AS TUC
+                FROM
+                    TB_USERQST Q1
+                WHERE
+                    Q1.FLAG = '0' -- 문의글
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM TB_USERQST Q2
+                        WHERE Q2.FLAG = '1' -- 답변글
+                          AND Q2.CHSEQ = Q1.QSTSEQ
+                );
             """;
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql, null);
