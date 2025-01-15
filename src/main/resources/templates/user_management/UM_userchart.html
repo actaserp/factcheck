@@ -99,7 +99,7 @@
   <th:block th:replace="/common/ax5_uploader :: ax5_uploader"></th:block>
   <th:block th:replace="/common/upload_one_image_box :: upload_one_image_box"></th:block>
   <th:block th:replace="/common/popup_select_user_code :: popup_select_user_code"></th:block>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
       // 현재 날짜 설정
@@ -212,6 +212,34 @@
               itemsSource: viewdata,
               allowMerging: 'Cells',
             });
+
+            // hostElement에 클릭 이벤트 추가
+            theGrid.hostElement.addEventListener('click', (e) => {
+              const ht = theGrid.hitTest(e);
+              if (ht.cellType === wijmo.grid.CellType.Cell) {
+                const rowIndex = ht.row;
+                const colIndex = ht.col;
+                const item = theGrid.rows[rowIndex].dataItem;
+                const columnName = theGrid.columns[colIndex].header; // 클릭한 열의 이름 (예: 30대)
+
+                console.log(`클릭한 셀: Row ${rowIndex}, Column ${colIndex}`);
+                console.log("클릭한 데이터:", item);
+                console.log("클릭한 열 이름:", columnName);
+
+                // 서버에 필요한 정보 추출
+                const params = {
+                  startDate: $('#startDate').val(),
+                  endDate: $('#endDate').val(),
+                  region: item.region,        // 경기
+                  district: item.district,    // 고양시
+                  ageGroup: columnName        // 30대
+                };
+
+                // 비동기 호출로 데이터 가져오기
+                fetchCellData(params);
+              }
+            });
+
             const headerRow = new wijmo.grid.Row();
             headerRow.allowMerging = true;
             theGrid.columnHeaders.rows.splice(0, 0, headerRow);
@@ -234,6 +262,58 @@
       });
     }
 
+    function fetchCellData(params) {
+      $.ajax({
+        url: '/api/report/getUserInfo', // 서버에서 데이터를 제공할 엔드포인트
+        type: 'GET',
+        data: params,            // 서버에 전달할 데이터
+        success: function (response) {
+          console.log("클릭된 셀의 세부 데이터:", response);
+
+          // 데이터를 처리하거나 UI에 표시
+          downloadExcel(response);
+        },
+        error: function () {
+          console.error("셀 데이터를 가져오는 중 오류가 발생했습니다.");
+        }
+      });
+    }
+    function downloadExcel(data) {
+      if (!Array.isArray(data)) {
+        console.error("데이터가 배열 형식이 아닙니다:", data);
+        return;
+      }
+
+      // 헤더 생성 (첫 번째 객체의 키 사용)
+      const headers = Object.keys(data[0]);
+
+      // 데이터 생성 (배열의 각 객체 값을 2차원 배열로 변환)
+      const worksheetData = [headers]; // 첫 번째 행에 헤더 추가
+      data.forEach(item => {
+        worksheetData.push(Object.values(item));
+      });
+
+      // SheetJS를 사용하여 워크시트 생성
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+      // 워크북 생성 및 워크시트 추가
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "통계보고서");
+
+      // 엑셀 파일 다운로드
+      // 현재 날짜 가져오기
+      const now = new Date();
+      const formattedDate =
+              now.getFullYear() +
+              "-" +
+              String(now.getMonth() + 1).padStart(2, "0") +
+              "-" +
+              String(now.getDate()).padStart(2, "0");
+
+      // 파일 이름 생성
+      const excelFileName = "통계보고서_"+ formattedDate + ".xlsx";
+      XLSX.writeFile(wb, excelFileName);
+    }
 
   </script>
 </th:block>

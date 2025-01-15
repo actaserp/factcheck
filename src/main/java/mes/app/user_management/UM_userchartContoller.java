@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mes.app.user_management.service.UM_userchartService;
 import mes.domain.model.AjaxResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,6 +43,19 @@ public class UM_userchartContoller {
         }
 
         return result;
+    }
+
+    @GetMapping("/getUserInfo")
+    public ResponseEntity<List<Map<String, Object>>> getUserInfo(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam String region,
+            @RequestParam String district,
+            @RequestParam String ageGroup) {
+
+        List<Map<String, Object>> userInfo = userchartService.getUserInfo(startDate, endDate, region, district, ageGroup);
+
+        return ResponseEntity.ok(userInfo);
     }
 }
 

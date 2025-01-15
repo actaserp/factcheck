@@ -65,4 +65,77 @@ public class UM_userchartService {
         return sqlRunner.getRows(sql.toString(), params);
     }
 
+    public List<Map<String, Object>> getUserInfo(String startDate, String endDate, String region, String district, String ageGroup) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        StringBuilder sql = new StringBuilder("""
+        SELECT
+            USERNM AS 이름,
+            AGENUM AS 연령,
+            USERSIDO AS 지역,
+            USERGU AS 구군,
+            USERMAIL AS 이메일,
+            CASE SEXYN
+               WHEN 1 THEN '남자'
+               WHEN 2 THEN '여자'
+               ELSE '알 수 없음'
+           END AS 성별
+        FROM TB_USERINFO
+        WHERE
+            USERSIDO = :region 
+            AND USERGU = :district                 
+            AND AGENUM BETWEEN :minAge AND :maxAge -- 나이 그룹 필터링
+            AND (:startDate IS NULL OR INDATEM >= :startDate) -- 날짜 조건 
+            AND (:endDate IS NULL OR INDATEM <= :endDate)     -- 날짜 조건 
+        ORDER BY INDATEM;
+    """);
+
+        // 나이 그룹 매핑
+        int minAge = 0, maxAge = 0;
+        if (ageGroup != null) {
+            switch (ageGroup) {
+                case "10대 이하":
+                    minAge = 0;
+                    maxAge = 19;
+                    break;
+                case "20대":
+                    minAge = 20;
+                    maxAge = 29;
+                    break;
+                case "30대":
+                    minAge = 30;
+                    maxAge = 39;
+                    break;
+                case "40대":
+                    minAge = 40;
+                    maxAge = 49;
+                    break;
+                case "50대":
+                    minAge = 50;
+                    maxAge = 59;
+                    break;
+                case "60대":
+                    minAge = 60;
+                    maxAge = 69;
+                    break;
+                case "70대 이상":
+                    minAge = 70;
+                    maxAge = 150; // 상한 값 설정
+                    break;
+            }
+        }
+
+        // 매개변수 설정
+        params.addValue("region", region);
+        params.addValue("district", district);
+        params.addValue("minAge", minAge);
+        params.addValue("maxAge", maxAge);
+        params.addValue("startDate", startDate);
+        params.addValue("endDate", endDate);
+
+        // SQL 실행
+        log.info("Generated SQL: {}", sql.toString());
+        log.info("SQL Parameters: {}", params.getValues());
+        return sqlRunner.getRows(sql.toString(), params);
+    }
+
 }
