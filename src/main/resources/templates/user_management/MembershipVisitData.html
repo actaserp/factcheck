@@ -157,7 +157,7 @@
                 </span>
                             </div>
                             <div class="tab-item-sub" id="tab4-theGrid2" style="display: none;">
-                                <!-- 그리드 --> <h1>조회 건수</h1>
+                                <!-- 그리드 --> <h1>발급 건수</h1>
                                 <div id="theGrid2" style="width: 100%; height: 550px; margin-top:20px "></div>
                             </div>
                         </div>
@@ -232,67 +232,83 @@
         const ctx1 = document.getElementById('chart1').getContext('2d');
         const ctx2 = document.getElementById('chart2').getContext('2d');
 
+        const predefinedColors = [
+            { backgroundColor: 'rgba(54, 162, 235, 0.5)', borderColor: 'rgba(54, 162, 235, 1)' }, // 파랑
+            { backgroundColor: 'rgba(255, 99, 132, 0.5)', borderColor: 'rgba(255, 99, 132, 1)' }, // 빨강
+            { backgroundColor: 'rgba(75, 192, 192, 0.5)', borderColor: 'rgba(75, 192, 192, 1)' }, // 초록
+            { backgroundColor: 'rgba(153, 102, 255, 0.5)', borderColor: 'rgba(153, 102, 255, 1)' }, // 보라
+            { backgroundColor: 'rgba(255, 206, 86, 0.5)', borderColor: 'rgba(255, 206, 86, 1)' }, // 노랑
+            { backgroundColor: 'rgba(231, 233, 237, 0.5)', borderColor: 'rgba(231, 233, 237, 1)' }, // 회색
+            { backgroundColor: 'rgba(255, 159, 64, 0.5)', borderColor: 'rgba(255, 159, 64, 1)' },  // 주황
+        ];
+
+
         // 첫 번째 차트 생성
         let chart1 = new Chart(ctx1, {
             type: 'bar',
             data: {
                 labels: Array.from({ length: 12 }, (_, i) => `${i + 1}월`),
-                datasets: [{
-                    label: `데이터`,
-                    data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 200)), // 초기값
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1,
-                }],
+                datasets: [] // 데이터셋은 이후 동적으로 추가
             },
             options: {
                 plugins: {
                     legend: {
-                        display: false, // 범례 숨기기
+                        display: true // 범례 표시
                     },
                     title: {
                         display: true,
                         text: '회원 등록',
                         font: {
-                            size: 24, // 글씨 크기 (기본값: 12)
+                            size: 24
                         },
-                        align: 'start', //글씨 위치
+                        align: 'start'
                     },
                 },
                 responsive: true,
                 scales: {
                     y: {
+                        beginAtZero: true,
                         min: 0, // Y축 최소값
                         max: 300, // Y축 최대값
                         ticks: {
-                            stepSize: 20, // 10 단위로 눈금 표시
-                        },
-                    },
-                },
-            },
+                            stepSize: 50 // 50 단위로 눈금 표시
+                        }
+                    }
+                }
+            }
         });
 
         // 데이터 로드 및 차트 업데이트
         function loadStatsData1() {
             showTab('tab1-chart1', 'tabGroup1');
-            // 입력된 날짜를 가져옵니다.
             const params = {
                 startDate: $('#startDate').val(),
                 endDate: $('#endDate').val(),
             };
 
             $.ajax({
-                url: '/api/userStatistics/chart1', // API 엔드포인트
+                url: '/api/userStatistics/chart1',
                 type: 'GET',
-                data: params, // GET 요청의 파라미터
-                async: false, // 동기 요청
+                data: params,
                 success: function (response) {
-                    // 응답이 올바르게 도착했는지 확인
                     if (response && response.success && response.data) {
-                        // 서버에서 받은 데이터를 차트에 반영
-                        chart1.data.labels = response.data.labels || chart1.data.labels; // X축 레이블
-                        chart1.data.datasets[0].data = response.data.values || []; // Y축 데이터
-                        chart1.update(); // 차트 업데이트
+                        // X축 레이블 업데이트
+                        chart1.data.labels = response.data.labels || chart1.data.labels;
+
+                        // 데이터셋 업데이트
+                        chart1.data.datasets = response.data.datasets.map((dataset, index) => {
+                            const color = predefinedColors[index % predefinedColors.length]; // 고정 색상 순환
+                            return {
+                                label: `${dataset.year}년`, // 데이터셋 레이블
+                                data: dataset.values, // Y축 데이터
+                                backgroundColor: color.backgroundColor, // 막대 배경색
+                                borderColor: color.borderColor, // 막대 테두리색
+                                borderWidth: 1, // 테두리 두께
+                            };
+                        });
+
+                        // 차트 업데이트
+                        chart1.update();
                     } else {
                         console.error("서버에서 유효한 데이터를 받지 못했습니다.");
                     }
@@ -303,27 +319,21 @@
             });
         }
 
-        // 차트 초기화
+        // 두번째 차트 초기화
         let chart2 = new Chart(ctx2, {
             type: 'bar',
             data: {
-                labels: Array.from({ length: 12 }, (_, i) => `${i + 1}월`), // 1월 ~ 12월
-                datasets: [{
-                    label: '통계 데이터',
-                    data: Array(12).fill(0), // 초기 값
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1,
-                }],
+                labels: Array.from({ length: 12 }, (_, i) => `${i + 1}월`), // X축 레이블
+                datasets: [] // 데이터셋은 이후 동적으로 추가
             },
             options: {
                 plugins: {
                     legend: {
-                        display: false, // 범례 숨기기
+                        display: true, // 범례 표시
                     },
                     title: {
                         display: true,
-                        text: '조회 건수',
+                        text: '발급 건수',
                         font: {
                             size: 24,
                         },
@@ -333,34 +343,48 @@
                 responsive: true,
                 scales: {
                     y: {
+                        beginAtZero: true,
                         min: 0, // Y축 최소값
-                        max: 100,
+                        max: 100, // Y축 최대값
                         ticks: {
-                            stepSize: 10,
-                        },
-                    },
-                },
+                            stepSize: 10
+                        }
+                    }
+                }
             },
         });
 
         // 차트 업데이트 함수
         function loadStatsData2() {
-            showTab('tab3-chart2', 'tabGroup2');
+            showTab('tab3-chart2', 'tabGroup2'); // 탭 활성화
             const params = {
                 startDate: $('#startDate').val(),
                 endDate: $('#endDate').val(),
             };
 
             $.ajax({
-                url: '/api/userStatistics/chart2',
+                url: '/api/userStatistics/chart2', // API 엔드포인트
                 type: 'GET',
-                data: params,
+                data: params, // GET 요청의 파라미터
                 success: function (response) {
                     if (response && response.success && response.data) {
-                        // 서버 응답 데이터를 차트에 반영
+                        // X축 레이블 업데이트
                         chart2.data.labels = response.data.labels || chart2.data.labels;
-                        chart2.data.datasets[0].data = response.data.values || [];
-                        chart2.update(); // 차트 업데이트
+
+                        // 데이터셋 업데이트
+                        chart2.data.datasets = response.data.datasets.map((dataset, index) => {
+                            const color = predefinedColors[index % predefinedColors.length]; // 색상 순환 적용
+                            return {
+                                label: `${dataset.year}년`, // 데이터셋 레이블
+                                data: dataset.values, // Y축 데이터
+                                backgroundColor: color.backgroundColor, // 막대 배경색
+                                borderColor: color.borderColor, // 막대 테두리색
+                                borderWidth: 1, // 테두리 두께
+                            };
+                        });
+
+                        // 차트 업데이트
+                        chart2.update();
                     } else {
                         console.error("서버에서 유효한 데이터를 받지 못했습니다.");
                     }
@@ -370,7 +394,6 @@
                 }
             });
         }
-
 
         function showGrid1(){
             showTab('tab2-theGrid1', 'tabGroup1');
@@ -427,8 +450,8 @@
                     columns: [
                         { binding: 'rownum', header: '순번', width: 70, align: 'center' },
                         { binding: 'USERID', header:'유저아이디', visible: false},
-                        { binding: 'userNm', header: '사용자명', width: 110, minWidth: 100, align: 'center' },
                         { binding: 'indatem', header: '등록일자', width: 150, minWidth: 100, align: 'center'},
+                        { binding: 'userNm', header: '사용자명', width: 110, minWidth: 100, align: 'center' },
                         { binding: 'userAddr', header: '주소', width: '*', minWidth: 230, align: 'left' },
                         { binding: 'InquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
                         // { binding: 'remark', header: '비고', width: 100, align: 'center', minWidth: 150 }
@@ -465,10 +488,9 @@
                             rownum: index + 1,
                             USERID: item.USERID ||'',
                             userNm: item.userNm ||'',
-                            YearMonthDay :item.YearMonthDay || '' ,
+                            issueDate :item.issueDate || '' ,
                             userAddr: item.userAddr || '',
-                            TotalInquiryCount: item.TotalInquiryCount ||'',
-                            remark:item.remark || '',
+                            TotalCount: item.TotalCount ||'',
                         }));
                     }
                 },
@@ -483,8 +505,8 @@
                     USERID:'',
                     userNm: '',
                     userAddr: '',
-                    YearMonthDay: '',
-                    TotalInquiryCount: '',
+                    issueDate: '',
+                    TotalCount: '',
                 });
             }
 
@@ -498,16 +520,16 @@
                     columns: [
                         { binding: 'rownum', header: '순번', width: 70, align: 'center' },
                         { binding: 'USERID', header:'유저아이디', visible: false},
+                        { binding: 'issueDate', header: '발급일자', width: 150, minWidth: 100, align: 'center'},
                         { binding: 'userNm', header: '사용자명', width: 110, minWidth: 100, align: 'center' },
-                        { binding: 'YearMonthDay', header: '조회일자', width: 150, minWidth: 100, align: 'center'},
                         { binding: 'userAddr', header: '주소', width: '*', minWidth: 230, align: 'left' },
-                        { binding: 'TotalInquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
+                        { binding: 'TotalCount', header: '발급건수', width: 80, align: 'center', minWidth: 100},
                     ],
                     itemsSource: viewdata
                 });
 
                 theGrid2.rowHeaders.columns.splice(0, 1);
-                new FlexGridContextMenu(theGrid);
+                new FlexGridContextMenu(theGrid2);
                 window.downloadFileName = '조회건수_현황';
             } else {
                 theGrid2.itemsSource = viewdata;

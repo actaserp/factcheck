@@ -77,36 +77,37 @@ public class MembershipVisitDataService {
 
 
     public List<Map<String, Object>> getGridList(String startDate, String endDate) {
-
         MapSqlParameterSource params = new MapSqlParameterSource();
-        StringBuilder sql = new StringBuilder("""
-        SELECT
-            tu.USERID,
-            tu.USERNM AS userNm,
-            tu.USERADDR AS userAddr,
-            tu.INDATEM as indatem,
-            se.REQDATE,
-            COALESCE(req.InquiryCount, 0) AS InquiryCount
-        FROM
-            TB_USERINFO tu
-        LEFT JOIN
-            TB_SEARCHINFO se
-            ON se.USERID = tu.USERID
-        LEFT JOIN
-            (SELECT
-                USERID,
-                COUNT(*) AS InquiryCount
-             FROM
-                TB_SEARCHINFO
-             WHERE
-                CONVERT(DATETIME, REQDATE, 120) BETWEEN :startDate AND :endDate
-             GROUP BY
-                USERID) req
-            ON tu.USERID = req.USERID
-        WHERE 1=1
-        """);
 
-        // 조건에 따라 동적으로 SQL 추가
+        // SQL 기본 쿼리
+        StringBuilder sql = new StringBuilder("""
+            SELECT
+                tu.USERID,
+                tu.USERNM AS userNm,
+                tu.USERADDR AS userAddr,
+                tu.INDATEM AS indatem,
+                COUNT(se.REQDATE) AS RequestCount,
+                COALESCE(req.InquiryCount, 0) AS InquiryCount
+            FROM
+                TB_USERINFO tu
+            LEFT JOIN
+                TB_SEARCHINFO se
+                ON se.USERID = tu.USERID
+            LEFT JOIN
+                (SELECT
+                     USERID,
+                     COUNT(*) AS InquiryCount
+                 FROM
+                     TB_SEARCHINFO
+                 WHERE
+                     REQDATE BETWEEN :startDate AND :endDate
+                 GROUP BY
+                     USERID) req
+                ON tu.USERID = req.USERID
+            WHERE 1=1
+    """);
+
+        // 동적 조건 추가
         if (startDate != null && !startDate.isEmpty()) {
             sql.append(" AND tu.INDATEM >= :startDate");
             params.addValue("startDate", startDate);
@@ -116,11 +117,22 @@ public class MembershipVisitDataService {
             params.addValue("endDate", endDate);
         }
 
-//        log.info("회원등록 현황 그리드 SQL: {}", sql);
-//        log.info("SQL Parameters: {}", params.getValues());
+        // 그룹화 및 정렬 추가
+        sql.append("""
+            GROUP BY
+                tu.USERID, tu.USERNM, tu.USERADDR, tu.INDATEM, req.InquiryCount
+            ORDER BY
+                INDATEM ASC
+    """);
+
+        // 로깅 활성화
+        //log.info("회원등록 현황 그리드 SQL: {}", sql);
+        //log.info("SQL Parameters: {}", params.getValues());
+
         // 결과 반환
         return sqlRunner.getRows(sql.toString(), params);
     }
+
 
     //조회 건수
     public List<Map<String, Object>> getGridList2(String startDate, String endDate) {
@@ -129,41 +141,40 @@ public class MembershipVisitDataService {
         SELECT
             tu.USERID,
             tu.USERNM AS userNm,
-            tu.USERADDR AS userAddr,
-            FORMAT(se.REQDATE, 'yyyy-MM-dd') AS YearMonthDay, -- 연월일
-            COUNT(se.REQDATE) AS TotalInquiryCount -- 총 조회 건수
+            ri.REALADD AS userAddr,
+            ri.REQDATE AS issueDate,
+            COUNT(ri.REQDATE) AS TotalCount
         FROM TB_USERINFO tu
-        LEFT JOIN TB_SEARCHINFO se ON tu.USERID = se.USERID
+        LEFT JOIN TB_REALINFO ri
+            ON tu.USERID = ri.USERID
         WHERE 1 = 1
-        """);
+    """);
 
         // 동적 조건 추가
         if (startDate != null && !startDate.isEmpty()) {
-            sql.append(" AND se.REQDATE >= :startDate ");
+            sql.append(" AND ri.REQDATE >= :startDate ");
             params.addValue("startDate", startDate);
         }
         if (endDate != null && !endDate.isEmpty()) {
-            sql.append(" AND se.REQDATE < :endDate ");
+            sql.append(" AND ri.REQDATE <= :endDate ");
             params.addValue("endDate", endDate);
         }
 
         // GROUP BY 및 ORDER BY 추가
         sql.append("""
-        GROUP BY 
+        GROUP BY
             tu.USERID,
             tu.USERNM,
-            tu.USERADDR,
-            FORMAT(se.REQDATE, 'yyyy-MM-dd')
-        ORDER BY YearMonthDay, tu.USERID
+            ri.REALADD,
+            ri.REQDATE
+        ORDER BY ri.REQDATE, tu.USERID
     """);
 
         // SQL 디버깅용 로그 (필요시 활성화)
-         //log.info("조회건수 현황 그리드 SQL: {}", sql);
+         //log.info("발급 건수 현황 그리드 SQL: {}", sql);
          //log.info("SQL Parameters: {}", params.getValues());
 
         // 결과 반환
         return sqlRunner.getRows(sql.toString(), params);
     }
-
-
 }
