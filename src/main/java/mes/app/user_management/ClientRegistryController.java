@@ -88,4 +88,48 @@ public class ClientRegistryController {
 
         return result;
     }
+
+    @GetMapping("/ModalRead")
+    public AjaxResult getModalReadList(@RequestParam(value = "startDate", required = false, defaultValue = "") String startDate,
+                                   @RequestParam(value = "endDate", required = false, defaultValue = "") String endDate,
+                                   @RequestParam(value = "searchUserNm") String searchUserNm) {
+        AjaxResult result = new AjaxResult();
+        //log.info("들어온 데이터: startDate={}, endDate={}, searchUserNm={}", startDate, endDate, searchUserNm);
+
+        try {
+            // 데이터 조회
+            List<Map<String, Object>> getMUserInfoList = clientRegistryService.getModalReadList(startDate, endDate, searchUserNm);
+
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+
+            for (Map<String, Object> user : getMUserInfoList) {
+                // 날짜 포맷 처리
+                Object REQDATEValue = user.get("REQDATE");
+                if (REQDATEValue != null) {
+                    try {
+                        // 날짜를 포맷하여 다시 user 맵에 저장
+                        String formattedDate = dateFormatter.format(REQDATEValue);
+                        user.put("REQDATE", formattedDate);
+                    } catch (Exception ex) {
+                        // 포맷 오류 처리
+                        log.error("날짜 포맷 중 오류 발생: {}", ex.getMessage());
+                        user.put("REQDATE", "잘못된 날짜 형식");
+                    }
+                }
+            }
+
+            // 데이터가 있을 경우 성공 메시지
+            result.success = true;
+            result.message = "데이터 조회 성공";
+            result.data = getMUserInfoList;
+
+        } catch (Exception e) {
+            // 예외 처리
+            result.success = false;
+            result.message = "데이터 조회 중 오류 발생: " + e.getMessage();
+        }
+
+
+        return result;
+    }
 }

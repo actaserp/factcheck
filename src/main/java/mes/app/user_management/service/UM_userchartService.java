@@ -58,8 +58,8 @@ public class UM_userchartService {
     """);
 
         // 로그로 SQL과 매개변수 확인
-        log.info("Generated SQL: {}", sql.toString());
-        log.info("SQL Parameters: {}", params.getValues());
+//        log.info("Generated SQL: {}", sql.toString());
+//        log.info("SQL Parameters: {}", params.getValues());
 
         // 쿼리 실행 및 결과 반환
         return sqlRunner.getRows(sql.toString(), params);
@@ -133,8 +133,6 @@ public class UM_userchartService {
         params.addValue("endDate", endDate);
 
         // SQL 실행
-        log.info("Generated SQL: {}", sql.toString());
-        log.info("SQL Parameters: {}", params.getValues());
         return sqlRunner.getRows(sql.toString(), params);
     }
 

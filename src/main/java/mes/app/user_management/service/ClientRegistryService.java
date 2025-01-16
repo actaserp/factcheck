@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -79,10 +80,57 @@ public class ClientRegistryService {
           tu.USERNM ASC
         """);
 
-      log.info("회원관리List SQL: {}", sql);
-      log.info("SQL Parameters: {}", params.getValues());
+//      log.info("회원관리List SQL: {}", sql);
+//      log.info("SQL Parameters: {}", params.getValues());
 
       return sqlRunner.getRows(sql.toString(), params);
   }
+
+    public List<Map<String, Object>> getModalReadList(String startDate, String endDate, String searchUserNm) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        StringBuilder sql = new StringBuilder("""
+        SELECT
+         ts.USERID,
+         ts.REQDATE,
+         re.REALADD
+        FROM TB_SEARCHINFO ts
+        JOIN TB_REALINFO re ON re.USERID = ts.USERID
+        WHERE 1=1
+        """);
+
+        // 날짜 조건 처리
+        if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
+            sql.append(" AND ts.REQDATE BETWEEN :startDate AND :endDate ");
+            params.addValue("startDate", startDate);
+            params.addValue("endDate", endDate);
+        } else {
+            if (startDate != null && !startDate.isEmpty()) {
+                sql.append(" AND ts.REQDATE >= :startDate ");
+                params.addValue("startDate", startDate);
+            }
+            if (endDate != null && !endDate.isEmpty()) {
+                sql.append(" AND ts.REQDATE <= :endDate ");
+                params.addValue("endDate", endDate);
+            }
+        }
+
+        // USERID 조건 처리
+        if (searchUserNm != null && !searchUserNm.isEmpty()) {
+            sql.append(" AND ts.USERID = :searchUserNm ");
+            params.addValue("searchUserNm", searchUserNm);
+        }
+
+        sql.append("""
+        GROUP BY ts.USERID, ts.REQDATE, re.REALADD
+        """);
+
+        // 디버깅용 로그 출력
+//        log.info("모달 조회 리스트 SQL: {}", sql);
+//        log.info("SQL Parameters: {}", params.getValues());
+
+        // SQL 실행
+        return sqlRunner.getRows(sql.toString(), params);
+    }
+
 
 }

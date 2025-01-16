@@ -1,7 +1,35 @@
 <html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <style>
-  .text-left {
-    text-align: left;
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999; /* z-index를 더 높임 */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  /* 공통 Modal 컨텐츠 스타일 */
+  .modal-content {
+    background: white;
+    border-radius: 8px;
+    margin: 10% auto;
+    padding: 20px;
+    width: 600px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    top: 15%;
+  }
+  .btn-popup-close img {
+    float: right;
+  }
+  #theGrid2 {
+    height: 350px;
+    width: 100%;
+    display: block;
   }
 
 </style>
@@ -81,6 +109,21 @@
   <footer>
     <p>Copyrightⓒ factCheck corp. All rights reserved.</p>
   </footer>
+
+  <div class="modal">
+    <div id="InquiryCountModal" style="display: none;">
+      <div class="modal-content">
+        <h2 style="text-align: center;">등기부 조회 목록</h2>
+        <a title="팝업닫기" onclick="closePopup('InquiryCountModal')" class="btn-popup-close">
+          <img src="/images/icon/btn-popup-close.svg" style="float: right; right: 30px;" alt="닫기">
+        </a>
+        <form id="InquiryCountForm">
+          <div id="theGrid2" style="height: 350px;width: 100%; margin-right:0px;  margin-top: 20px;"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 </th:block>
 <th:block layout:fragment="scripts">
   <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
@@ -196,7 +239,24 @@
             //{ binding: 'userEmail', header: '이메일', width: 180, minWidth: 100, align: 'center' },
 
           ],
-          itemsSource: viewdata
+          itemsSource: viewdata,
+        });
+
+        theGrid.hostElement.addEventListener('click', (e) => {
+          const ht = theGrid.hitTest(e);
+
+          // 셀이 클릭된 경우만 처리
+          if (ht.cellType === wijmo.grid.CellType.Cell) {
+            const item = theGrid.rows[ht.row].dataItem; // 선택한 행 데이터
+            const columnName = theGrid.columns[ht.col].binding; // 클릭한 열의 바인딩 이름
+            console.log(`클릭된 열: ${columnName}, 클릭된 데이터:`, item);
+            // 'InquiryCount' 열 클릭 시 모달 열기
+            if (columnName === 'InquiryCount') {
+              const USERID = item.USERID || '';
+              console.log("선택한 사용자 이름:", USERID);
+              showPopupById('InquiryCountModal', USERID)
+            }
+          }
         });
 
         theGrid.rowHeaders.columns.splice(0, 1);
@@ -207,6 +267,127 @@
         theGrid.itemsSource = viewdata;
       }
     }
+
+    /*==============모달*/
+
+    function closePopup(popupId) {
+      const popup = document.getElementById(popupId);
+      if (popup) {
+        const modal = popup.closest('.modal');
+        if (modal) {
+          modal.style.display = 'none';
+          modal.classList.remove('show');
+        }
+        popup.style.display = 'none';
+        popup.classList.remove('show');
+        console.log(`Closing modal with ID: ${popupId}`);
+      }
+    }
+
+    function showPopupById(popupId,USERID = '') {
+      const popup = document.getElementById(popupId);
+      if (popup) {
+        const modal = popup.closest('.modal');
+        if (modal) {
+          modal.style.display = 'block';
+          requestAnimationFrame(() => {
+            modal.classList.add('show');
+            if (popupId === 'InquiryCountModal') {
+              modalData(USERID); // 데이터 로드 및 FlexGrid 초기화
+            }
+          });
+        }
+        popup.style.display = 'block';
+      }
+    }
+
+    function modalData(searchUSERID = '') {
+      console.log('Initializing modal grid...');
+      let data = [];
+
+      const params = {
+        startDate: $('#startDate').val(),
+        endDate: $('#endDate').val(),
+        searchUserNm: searchUSERID
+      };
+
+      $.ajax({
+        url: '/api/MUserInfo/ModalRead',
+        type: 'GET',
+        data: params,
+        async: false,
+        success: function (response) {
+          if (response && Array.isArray(response.data)) {
+           //console.log("데이터 로드 성공(모달그리드):", response.data);
+            data = response.data.map((item, index) => ({
+              rownum: index + 1,
+              USERID: item.USERID || '',
+              REQDATE: item.REQDATE || '',
+              REALADD: item.REALADD || '',
+            }));
+          } else {
+            console.error("올바르지 않은 데이터 형식입니다:", response);
+          }
+        },
+        error: function () {
+          console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+        }
+      });
+
+      //console.log("FlexGrid에 바인딩할 데이터:", data);
+      while (data.length < 8) {
+        data.push({
+          rownum: data.length + 1,
+          USERID:'',
+          REQDATE:'',
+          REALADD:''
+        });
+      }
+      // Wijmo CollectionView 설정
+      viewdata = new wijmo.collections.CollectionView(data);
+
+      const gridElement = document.querySelector("#theGrid2");
+      if (!gridElement) {
+        console.error("#theGrid2 DOM 요소가 존재하지 않습니다. FlexGrid를 초기화할 수 없습니다.");
+        return;
+      }
+
+      // FlexGrid 초기화
+      if (!theGrid2 || !(theGrid2 instanceof wijmo.grid.FlexGrid)) {
+        console.log("FlexGrid 초기화 시작...");
+        theGrid2 = new wijmo.grid.FlexGrid('#theGrid2', {
+          autoGenerateColumns: false,
+          showMarquee: true,
+          isReadOnly: true,
+          columns: [
+            { binding: 'rownum', header: '순번', width: 70, align: 'center' },
+            { binding: 'USERID', header: '유저아이디', width: 180, minWidth: 100, align: 'center' },
+            { binding: 'REQDATE', header: '조회 일자', width: 150, minWidth: 100, align: 'center' },
+            { binding: 'REALADD', header: '주소', width: '*', minWidth: 230, align: 'left' },
+          ],
+          itemsSource: viewdata
+        });
+
+        if (theGrid2.hostElement) {
+          console.log("FlexGrid가 렌더링되었습니다. Host element:", theGrid2.hostElement);
+        } else {
+          console.error("FlexGrid가 렌더링되지 않았습니다.");
+        }
+
+        theGrid2.rowHeaders.columns.splice(0, 1);
+        new FlexGridContextMenu(theGrid2);
+        window.downloadFileName = '등기부 조회 목록';
+      } else {
+        console.log("FlexGrid 이미 초기화됨. 데이터 업데이트 중...");
+        theGrid2.itemsSource = viewdata;
+        if (typeof theGrid2.refresh === "function") {
+          theGrid2.refresh();
+        } else {
+          console.error("theGrid2는 FlexGrid 객체가 아닙니다. 현재 상태:", theGrid2);
+        }
+      }
+    }
+
 
   </script>
 </th:block>

@@ -28,7 +28,7 @@ public class UM_userchartContoller {
                                     @RequestParam(value = "endDate",  required = false) String endDate,
                                     @RequestParam(value = "searchUserNm", required = false) String searchUserNm){
         AjaxResult result = new AjaxResult();
-        log.info("들어온 데이터: startDate={}, endDate={}, searchUserNm={}", startDate, endDate, searchUserNm);
+        //log.info("들어온 데이터: startDate={}, endDate={}, searchUserNm={}", startDate, endDate, searchUserNm);
         try {
 
             List<Map<String, Object>> getReportList = userchartService.getGridList(startDate, endDate, searchUserNm);
