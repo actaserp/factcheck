@@ -77,85 +77,85 @@ public class LoginLogService {
         // SQL 생성
         StringBuilder sql = new StringBuilder("""
         WITH DailyUsage AS (
-             SELECT
-                 ll."User_id",
-                 COALESCE(up."Name", 'Unknown') AS name,
-                 COALESCE(au.username, 'Unknown') AS login_id,
-                 au.email AS email,
-                 CONVERT(VARCHAR(10), ll._created, 120) AS 날짜,
-                 MIN(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) AS login_time,
-                 MAX(CASE WHEN ll."Type" = 'LOGOUT' THEN ll._created ELSE NULL END) AS logout_time,
-                 CASE
-                     WHEN MAX(CASE WHEN ll."Type" = 'LOGOUT' THEN ll._created ELSE NULL END) IS NOT NULL
-                          AND MAX(CASE WHEN ll."Type" = 'LOGOUT' THEN ll._created ELSE NULL END) <
-                              MAX(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) THEN 'LOGIN'
-                     WHEN MIN(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) IS NOT NULL
-                          AND MAX(CASE WHEN ll."Type" = 'LOGOUT' THEN ll._created ELSE NULL END) IS NOT NULL THEN 'LOGOUT'
-                     WHEN MIN(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) IS NOT NULL THEN 'LOGIN'
-                     ELSE '로그아웃 중'
-                 END AS state
-             FROM
-                 login_log ll
-             LEFT JOIN user_profile up
-                 ON up."User_id" = ll."User_id"
-             LEFT JOIN auth_user au
-                 ON au.id = ll."User_id"
-             WHERE
-                 ll._created BETWEEN :start AND :end
-             GROUP BY
-                 ll."User_id",
-                 up."Name",
-                 au.username,
-                 au.email,
-                 CONVERT(VARCHAR(10), ll._created, 120)
-         ),
-        UsageWithCounts AS (
             SELECT
-                du.User_id,
-                du.name,
-                du.login_id,
-                du.email,
-                du.날짜,
-                du.login_time,
-                du.logout_time,
-                du.state,
-                COUNT(si.REQDATE) AS views -- TB_SEARCHINFO 테이블을 기반으로 조회 건수 계산
+                ll."User_id",
+                COALESCE(up."Name", 'Unknown') AS name,
+                COALESCE(au.username, 'Unknown') AS login_id,
+                au.email AS email,
+                CONVERT(VARCHAR(10), ll._created, 120) AS 날짜,
+                MIN(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) AS login_time,
+                MAX(CASE WHEN ll."Type" = 'LOGOUT' THEN ll._created ELSE NULL END) AS logout_time,
+                CASE
+                    WHEN MAX(CASE WHEN ll."Type" = 'LOGOUT' THEN ll._created ELSE NULL END) IS NOT NULL
+                         AND MAX(CASE WHEN ll."Type" = 'LOGOUT' THEN ll._created ELSE NULL END) <
+                             MAX(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) THEN 'LOGIN'
+                    WHEN MIN(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) IS NOT NULL
+                         AND MAX(CASE WHEN ll."Type" = 'LOGOUT' THEN ll._created ELSE NULL END) IS NOT NULL THEN 'LOGOUT'
+                    WHEN MIN(CASE WHEN ll."Type" = 'LOGIN' THEN ll._created ELSE NULL END) IS NOT NULL THEN 'LOGIN'
+                    ELSE '로그아웃 중'
+                END AS state
             FROM
-                DailyUsage du
-            LEFT JOIN MOB_FACTCHK.dbo.TB_SEARCHINFO si
-                ON si.USERID = du.User_id
-                AND si.REQDATE BETWEEN du.login_time AND du.logout_time
+                login_log ll
+            LEFT JOIN user_profile up
+                ON up."User_id" = ll."User_id"
+            LEFT JOIN auth_user au
+                ON au.id = ll."User_id"
+            WHERE
+                ll._created BETWEEN :start AND :end
             GROUP BY
-                du.User_id,
-                du.name,
-                du.login_id,
-                du.email,
-                du.날짜,
-                du.login_time,
-                du.logout_time,
-                du.state
-        )
-        SELECT
-            User_id,
-            name,
-            login_id,
-            email,
-            날짜,
-            state,
-            views,
-            CONVERT(VARCHAR, login_time, 120) AS login_time,
-            CASE
-                WHEN logout_time IS NULL THEN '로그아웃 없음'
-                ELSE CONVERT(VARCHAR, logout_time, 120)
-            END AS logout_time,
-            CASE
-                WHEN logout_time IS NULL THEN NULL
-                ELSE CAST(DATEDIFF(MINUTE, login_time, logout_time) / 60.0 AS DECIMAL(10, 2))
-            END AS useTime
-        FROM
-            UsageWithCounts
-        ORDER BY
-            login_time DESC
+                ll."User_id",
+                up."Name",
+                au.username,
+                au.email,
+                CONVERT(VARCHAR(10), ll._created, 120)
+        ),
+       UsageWithCounts AS (
+           SELECT
+               du.User_id,
+               du.name,
+               du.login_id,
+               du.email,
+               du.날짜,
+               du.login_time,
+               du.logout_time,
+               du.state,
+               COUNT(si.REQDATE) AS views -- TB_SEARCHINFO 테이블을 기반으로 조회 건수 계산
+           FROM
+               DailyUsage du
+           LEFT JOIN TB_SEARCHINFO si
+               ON si.USERID = du.email
+               AND si.REQDATE BETWEEN du.login_time AND du.logout_time
+           GROUP BY
+               du.User_id,
+               du.name,
+               du.login_id,
+               du.email,
+               du.날짜,
+               du.login_time,
+               du.logout_time,
+               du.state
+       )
+       SELECT
+           User_id,
+           name,
+           login_id,
+           email,
+           날짜,
+           state,
+           views,
+           CONVERT(VARCHAR, login_time, 120) AS login_time,
+           CASE
+               WHEN logout_time IS NULL THEN '로그아웃 없음'
+               ELSE CONVERT(VARCHAR, logout_time, 120)
+           END AS logout_time,
+           CASE
+               WHEN logout_time IS NULL THEN NULL
+               ELSE CAST(DATEDIFF(MINUTE, login_time, logout_time) / 60.0 AS DECIMAL(10, 2))
+           END AS useTime
+       FROM
+           UsageWithCounts
+       ORDER BY
+           login_time DESC
     """);
 
         // 키워드 검색 조건 추가
