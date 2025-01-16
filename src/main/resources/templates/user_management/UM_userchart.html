@@ -222,10 +222,6 @@
                 const item = theGrid.rows[rowIndex].dataItem;
                 const columnName = theGrid.columns[colIndex].header; // 클릭한 열의 이름 (예: 30대)
 
-                console.log(`클릭한 셀: Row ${rowIndex}, Column ${colIndex}`);
-                console.log("클릭한 데이터:", item);
-                console.log("클릭한 열 이름:", columnName);
-
                 // 서버에 필요한 정보 추출
                 const params = {
                   startDate: $('#startDate').val(),

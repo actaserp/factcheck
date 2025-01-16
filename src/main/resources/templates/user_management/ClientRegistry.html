@@ -296,94 +296,97 @@
               modalData(USERID); // 데이터 로드 및 FlexGrid 초기화
             }
           });
+          // }
+          popup.style.display = 'block';
         }
-        popup.style.display = 'block';
       }
-    }
 
-    function modalData(searchUSERID = '') {
-      console.log('Initializing modal grid...');
-      let data = [];
+      function modalData(searchUSERID = '') {
+        let data = [];
 
-      const params = {
-        startDate: $('#startDate').val(),
-        endDate: $('#endDate').val(),
-        searchUserNm: searchUSERID
-      };
+        const params = {
+          startDate: $('#startDate').val(),
+          endDate: $('#endDate').val(),
+          searchUserNm: searchUSERID
+        };
 
-      $.ajax({
-        url: '/api/MUserInfo/ModalRead',
-        type: 'GET',
-        data: params,
-        async: false,
-        success: function (response) {
-          if (response && Array.isArray(response.data)) {
-           //console.log("데이터 로드 성공(모달그리드):", response.data);
-            data = response.data.map((item, index) => ({
-              rownum: index + 1,
-              USERID: item.USERID || '',
-              REQDATE: item.REQDATE || '',
-              REALADD: item.REALADD || '',
-            }));
-          } else {
-            console.error("올바르지 않은 데이터 형식입니다:", response);
+        $.ajax({
+          url: '/api/MUserInfo/ModalRead',
+          type: 'GET',
+          data: params,
+          async: false,
+          success: function (response) {
+            if (response && Array.isArray(response.data)) {
+              //console.log("데이터 로드 성공(모달그리드):", response.data);
+              data = response.data.map((item, index) => ({
+                rownum: index + 1,
+                USERID: item.USERID || '',
+                REQDATE: item.REQDATE || '',
+                USERNM: item.USERNM || '',
+                REALADD: item.REALADD || '',
+              }));
+            } else {
+              console.error("올바르지 않은 데이터 형식입니다:", response);
+            }
+          },
+          error: function () {
+            console.error("데이터를 가져오는 중 오류가 발생했습니다.");
           }
-        },
-        error: function () {
-          console.error("데이터를 가져오는 중 오류가 발생했습니다.");
-        }
-      });
-
-      //console.log("FlexGrid에 바인딩할 데이터:", data);
-      while (data.length < 8) {
-        data.push({
-          rownum: data.length + 1,
-          USERID:'',
-          REQDATE:'',
-          REALADD:''
-        });
-      }
-      // Wijmo CollectionView 설정
-      viewdata = new wijmo.collections.CollectionView(data);
-
-      const gridElement = document.querySelector("#theGrid2");
-      if (!gridElement) {
-        console.error("#theGrid2 DOM 요소가 존재하지 않습니다. FlexGrid를 초기화할 수 없습니다.");
-        return;
-      }
-
-      // FlexGrid 초기화
-      if (!theGrid2 || !(theGrid2 instanceof wijmo.grid.FlexGrid)) {
-        console.log("FlexGrid 초기화 시작...");
-        theGrid2 = new wijmo.grid.FlexGrid('#theGrid2', {
-          autoGenerateColumns: false,
-          showMarquee: true,
-          isReadOnly: true,
-          columns: [
-            { binding: 'rownum', header: 'NO', width: 70, align: 'center' },
-            { binding: 'USERID', header: '유저아이디', width: 180, minWidth: 100, align: 'center' },
-            { binding: 'REQDATE', header: '조회 일자', width: 150, minWidth: 100, align: 'center' },
-            { binding: 'REALADD', header: '주소', width: '*', minWidth: 230, align: 'left' },
-          ],
-          itemsSource: viewdata
         });
 
-        if (theGrid2.hostElement) {
-          console.log("FlexGrid가 렌더링되었습니다. Host element:", theGrid2.hostElement);
-        } else {
-          console.error("FlexGrid가 렌더링되지 않았습니다.");
+        //console.log("FlexGrid에 바인딩할 데이터:", data);
+        while (data.length < 8) {
+          data.push({
+            rownum: data.length + 1,
+            USERID: '',
+            REQDATE: '',
+            USERNM: '',
+            REALADD: ''
+          });
+        }
+        // Wijmo CollectionView 설정
+        viewdata = new wijmo.collections.CollectionView(data);
+
+        const gridElement = document.querySelector("#theGrid2");
+        if (!gridElement) {
+          console.error("#theGrid2 DOM 요소가 존재하지 않습니다. FlexGrid를 초기화할 수 없습니다.");
+          return;
         }
 
-        theGrid2.rowHeaders.columns.splice(0, 1);
-        new FlexGridContextMenu(theGrid2);
-        window.downloadFileName = '등기부 조회 목록';
-      } else {
-        console.log("FlexGrid 이미 초기화됨. 데이터 업데이트 중...");
-        theGrid2.itemsSource = viewdata;
-        if (typeof theGrid2.refresh === "function") {
-          theGrid2.refresh();
+        // FlexGrid 초기화
+        if (!theGrid2 || !(theGrid2 instanceof wijmo.grid.FlexGrid)) {
+          console.log("FlexGrid 초기화 시작...");
+          theGrid2 = new wijmo.grid.FlexGrid('#theGrid2', {
+            autoGenerateColumns: false,
+            showMarquee: true,
+            isReadOnly: true,
+            columns: [
+              {binding: 'rownum', header: 'NO', width: 70, align: 'center'},
+              {binding: 'USERID', header: '유저아이디', width: 180, minWidth: 100, align: 'center'},
+              {binding: 'USERNM', header: '사용자명', width: 110, minWidth: 100, align: 'center'},
+              {binding: 'REQDATE', header: '조회 일자', width: 150, minWidth: 100, align: 'center'},
+              {binding: 'REALADD', header: '주소', width: '*', minWidth: 230, align: 'left'},
+            ],
+            itemsSource: viewdata
+          });
+
+          if (theGrid2.hostElement) {
+            console.log("FlexGrid가 렌더링되었습니다. Host element:", theGrid2.hostElement);
+          } else {
+            console.error("FlexGrid가 렌더링되지 않았습니다.");
+          }
+
+          theGrid2.rowHeaders.columns.splice(0, 1);
+          new FlexGridContextMenu(theGrid2);
+          window.downloadFileName = '등기부 조회 목록';
         } else {
-          console.error("theGrid2는 FlexGrid 객체가 아닙니다. 현재 상태:", theGrid2);
+          console.log("FlexGrid 이미 초기화됨. 데이터 업데이트 중...");
+          theGrid2.itemsSource = viewdata;
+          if (typeof theGrid2.refresh === "function") {
+            theGrid2.refresh();
+          } else {
+            console.error("theGrid2는 FlexGrid 객체가 아닙니다. 현재 상태:", theGrid2);
+          }
         }
       }
     }
