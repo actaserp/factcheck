@@ -431,6 +431,9 @@
         // 오늘 날짜를 yyyy-MM-dd 형식으로 생성
         const today = new Date();
         const formatToday = today.toISOString().split('T')[0]; // 'yyyy-MM-dd' 형식
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const formatYesterday = yesterday.toISOString().slice(0, 10); // yyyy-MM-dd 형식
 
         document.readyState === 'complete' ? init() : window.onload = init;
 
@@ -723,22 +726,32 @@
                     // 오늘 날짜와 마지막 데이터의 DATE 비교
                     let LastDayCnt, ThisDayCnt;
 
-                    if (lastDate === formatToday) {
-                        // 마지막 데이터가 오늘 날짜인 경우
-                        LastDayCnt = data2.SignupOfWeek.length > 1
-                            ? data2.SignupOfWeek[data2.SignupOfWeek.length - 2].CNT
-                            : 0;
-                        ThisDayCnt = data2.SignupOfWeek[data2.SignupOfWeek.length - 1].CNT;
+                    if (data2.SignupOfWeek.length > 0) {
+                        // 어제 데이터 찾기
+                        const yesterdayData = data2.SignupOfWeek.find(item => item.DATE === formatYesterday);
+                        const todayData = data2.SignupOfWeek.find(item => item.DATE === formatToday);
+
+                        if (todayData) {
+                            // 오늘 데이터가 있는 경우
+                            ThisDayCnt = todayData.CNT;
+                            LastDayCnt = yesterdayData ? yesterdayData.CNT : 0; // 어제 데이터가 있으면 사용, 없으면 0
+                        } else if (yesterdayData) {
+                            // 오늘 데이터가 없고 어제 데이터가 있는 경우
+                            ThisDayCnt = 0;
+                            LastDayCnt = yesterdayData.CNT;
+                        } else {
+                            // 어제와 오늘 데이터 모두 없는 경우
+                            ThisDayCnt = 0;
+                            LastDayCnt = 0;
+                        }
                     } else {
-                        // 마지막 데이터가 오늘 날짜가 아닌 경우
-                        LastDayCnt = data2.SignupOfWeek.length > 0
-                            ? data2.SignupOfWeek[data2.SignupOfWeek.length - 1].CNT
-                            : 0;
-                        ThisDayCnt = 0; // 오늘 데이터가 없으므로 0으로 설정
+                        // 조회된 데이터가 아예 없는 경우
+                        LastDayCnt = 0;
+                        ThisDayCnt = 0;
                     }
                     // 두 값의 차이 계산
                     const difference0 = ThisDayCnt - LastDayCnt;
-                    const division0 = LastDayCnt !== 0 ? ((difference0 / LastDayCnt) * 100).toFixed(2) : 0; // 퍼센트 계산
+                    const division0 = LastDayCnt !== 0 ? ((difference0 / LastDayCnt) * 100).toFixed(2) : '전일 0건'; // 퍼센트 계산
                     // 결과를 HTML에 업데이트
                     const requestSection = document.querySelector('.singupCard dl dd');
                         requestSection.innerHTML = `${ThisDayCnt} <span class="unit">명</span>`;
@@ -842,21 +855,31 @@
                     // 오늘 날짜와 마지막 데이터의 DATE 비교
                     let LastDayCnt2, ThisDayCnt2;
 
-                    if (lastDate2 === formatToday) {
-                        // 마지막 데이터가 오늘 날짜인 경우
-                        LastDayCnt2 = data2.CntOfRegister.length > 1
-                            ? data2.CntOfRegister[data2.CntOfRegister.length - 2].CNT
-                            : 0;
-                        ThisDayCnt2 = data2.CntOfRegister[data2.CntOfRegister.length - 1].CNT;
+                    if (data2.CntOfRegister.length > 0) {
+                        // 어제 데이터 찾기
+                        const yesterdayData2 = data2.CntOfRegister.find(item => item.DATE === formatYesterday);
+                        const todayData2 = data2.CntOfRegister.find(item => item.DATE === formatToday);
+
+                        if (todayData2) {
+                            // 오늘 데이터가 있는 경우
+                            ThisDayCnt2 = todayData2.CNT;
+                            LastDayCnt2 = yesterdayData2 ? yesterdayData2.CNT : 0; // 어제 데이터가 있으면 사용, 없으면 0
+                        } else if (yesterdayData2) {
+                            // 오늘 데이터가 없고 어제 데이터가 있는 경우
+                            ThisDayCnt2 = 0;
+                            LastDayCnt2 = yesterdayData.CNT;
+                        } else {
+                            // 어제와 오늘 데이터 모두 없는 경우
+                            ThisDayCnt2 = 0;
+                            LastDayCnt2 = 0;
+                        }
                     } else {
-                        // 마지막 데이터가 오늘 날짜가 아닌 경우
-                        LastDayCnt2 = data2.CntOfRegister.length > 0
-                            ? data2.CntOfRegister[data2.CntOfRegister.length - 1].CNT
-                            : 0;
-                        ThisDayCnt2 = 0; // 오늘 데이터가 없으므로 0으로 설정
+                        // 조회된 데이터가 아예 없는 경우
+                        LastDayCnt2 = 0;
+                        ThisDayCnt2 = 0;
                     }
                     const difference2 = ThisDayCnt2 - LastDayCnt2;
-                    const division2 = LastDayCnt2 !== 0 ? ((difference2 / LastDayCnt2) * 100).toFixed(2) : 0; // 퍼센트 계산
+                    const division2 = LastDayCnt2 !== 0 ? ((difference2 / LastDayCnt2) * 100).toFixed(2) : '전일 0건'; // 퍼센트 계산
                     const requestSection2 = document.querySelector('.CntOfRegisterCard dl dd');
                     requestSection2.innerHTML = `${ThisDayCnt2} <span class="unit">건</span>`;
                     const percentageSection2 = document.querySelector('.CntOfRegisterCard dl:nth-of-type(2) dd');
@@ -912,20 +935,31 @@
                         }));
                     }
                     // 차트 데이터 활용 카드 설정
-                    let LastDayCntOfSearch = data2.BestSearch[0].YesterdaySearchCount;
-                    let ThisDayCntOfSearch = data2.BestSearch[0].TodaySearchCount;
-                    let BestGUGUN = data2.BestSearch[0].REGUGUN;
-                    let BestSIDO = data2.BestSearch[0].RESIDO;
+                    let LastDayCntOfSearch = data2.BestSearch[0]?.YesterdaySearchCount || 0; // 어제 데이터가 없으면 0으로 설정
+                    let ThisDayCntOfSearch = data2.BestSearch[0]?.TodaySearchCount || 0; // 오늘 데이터가 없으면 0으로 설정
+                    let BestGUGUN = data2.BestSearch[0]?.REGUGUN || "데이터 없음"; // GUGUN이 없으면 기본값 설정
+                    let BestSIDO = data2.BestSearch[0]?.RESIDO || "데이터 없음"; // SIDO가 없으면 기본값 설정
+
+                    // 차이 계산
                     const differenceOfSearch = ThisDayCntOfSearch - LastDayCntOfSearch;
-                    const divisionOfSearch = LastDayCntOfSearch !== 0 ? ((differenceOfSearch / LastDayCntOfSearch) * 100).toFixed(2) : 0; // 퍼센트 계산
+
+                    // 변화율 계산 (어제 데이터가 0이면 0으로 설정)
+                    const divisionOfSearch = LastDayCntOfSearch !== 0
+                        ? ((differenceOfSearch / LastDayCntOfSearch) * 100).toFixed(2)
+                        : '전일 0건';
+
+                    // 카드 내용 업데이트
                     const requestSectionOfSearch = document.querySelector('.BestSearchCard dl dd');
                     requestSectionOfSearch.innerHTML = `${BestGUGUN} <span class="unit">${BestSIDO}</span>`;
-                    const percentageSectionOfSearch = document.querySelector('.CntOfRegisterCard dl:nth-of-type(2) dd');
-                    if(differenceOfSearch >= 0) {
+
+                    // 전일 대비 퍼센테이지 업데이트
+                    const percentageSectionOfSearch = document.querySelector('.BestSearchCard dl:nth-of-type(2) dd');
+                    if (differenceOfSearch >= 0) {
                         percentageSectionOfSearch.innerHTML = `<span class="up"></span> ${divisionOfSearch} <span class="unit">%</span>`;
-                    }else{
+                    } else {
                         percentageSectionOfSearch.innerHTML = `<span class="down"></span> ${divisionOfSearch} <span class="unit">%</span>`;
                     }
+
                 }
             })
         }
@@ -942,7 +976,7 @@
                     let LastMonthCNT = data2.CardList[0].LAST_MONTH_COUNT;
                     let ThisMonthCNT = data2.CardList[0].THIS_MONTH_COUNT;
                     const differenceOfSignup = ThisMonthCNT - LastMonthCNT;
-                    const divisionOfSignup = LastMonthCNT !== 0 ? ((differenceOfSignup / LastMonthCNT) * 100).toFixed(2) : 0; // 퍼센트 계산
+                    const divisionOfSignup = LastMonthCNT !== 0 ? ((differenceOfSignup / LastMonthCNT) * 100).toFixed(2) : '전월 0건'; // 퍼센트 계산
                     const requestSectionOfSignup = document.querySelector('.ThisMonthSignupCard dl dd');
                     requestSectionOfSignup.innerHTML = `${ThisMonthCNT} <span class="unit">명</span>`;
                     const percentageSectionOfSignup = document.querySelector('.ThisMonthSignupCard dl:nth-of-type(2) dd');
@@ -956,7 +990,7 @@
                     let YUC = data2.NotAnswerQnAList[0].YUC;
                     let TUC = data2.NotAnswerQnAList[0].TUC;
                     const differenceA = TUC - YUC;
-                    const divisionA = YUC !== 0 ? ((differenceA / YUC) * 100).toFixed(2) : 0; // 퍼센트 계산
+                    const divisionA = YUC !== 0 ? ((differenceA / YUC) * 100).toFixed(2) : '전일 0건'; // 퍼센트 계산
                     const requestSectionA = document.querySelector('.AnswerCard dl dd');
                     requestSectionA.innerHTML = `${TUC} <span class="unit">건</span>`;
                     const percentageSectionA = document.querySelector('.AnswerCard dl:nth-of-type(2) dd');
