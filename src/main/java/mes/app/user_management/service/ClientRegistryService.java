@@ -89,11 +89,13 @@ public class ClientRegistryService {
     public List<Map<String, Object>> getModalReadList(String startDate, String endDate, String searchUserNm) {
         MapSqlParameterSource params = new MapSqlParameterSource();
         StringBuilder sql = new StringBuilder("""
-        SELECT
+         SELECT
          ts.USERID,
          ts.REQDATE,
-         re.REALADD
+         re.REALADD,
+         tu.USERNM
         FROM TB_SEARCHINFO ts
+        join TB_USERINFO tu ON tu.USERID = ts.USERID
         JOIN TB_REALINFO re ON re.USERID = ts.USERID
         WHERE 1=1
         """);
@@ -121,7 +123,8 @@ public class ClientRegistryService {
         }
 
         sql.append("""
-        GROUP BY ts.USERID, ts.REQDATE, re.REALADD
+        GROUP BY ts.USERID, ts.REQDATE, re.REALADD, tu.USERNM
+         ORDER BY REQDATE ASC
         """);
 
         // 디버깅용 로그 출력
