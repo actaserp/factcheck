@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[KTFOMS] AI 기반 연료전지 인프라 구축 - 모바일</title>
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" /> <!-- Slide css -->
+
+    <link rel="stylesheet" type="text/css" href="/assets_mobile/css/import.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+
+    <script src="/assets_mobile/js/ui.js"></script> <!-- Common js -->
+    <script src="/js/Mobile.js"></script>
+</head>
+
+<body>
+    <div class="mobile-wrapper page-ticket-list"><!-- ★페이지 Class명 -->
+        
+        <!-- [대시보드] 팝업  -->
+        <div class="mobile-layout-popup">
+            
+            <div class="popup-overlay" style="display: block;"></div> <!-- ★ 개발 적용시 style 제거 -->
+            <div class="popup-wrapper active" id="popup1"> <!-- ★ 개발 적용시 class="active" 제거-->
+                <div class="popup-title">
+                    <h3>작업이력</h3>
+                    <a href="#" title="팝업닫기" class="btn-popup-close">
+                        <img src="/assets_mobile/images/icon/btn-popup-close.svg" alt="닫기">
+                    </a>
+                </div>
+                <div class="popup-contents">
+                    <div class="ticket-tit">
+                        <dl>
+                            <dt>티켓명</dt>
+                            <dd>전지부품교체</dd>
+                        </dl>
+                    </div>
+                    
+                    <div class="list-card-wrap">
+                        <!-- ★ 상태배지 : green(생성) / blue(진행) / black(완료) / red(취소) -->
+                        <div class="card-box card-green"> 
+                            <div class="card-cont">
+                                <dl>
+                                    <dt>상태</dt>
+                                    <dd><span class="sta-green">생성</span></dd>
+                                </dl>
+                                <dl>
+                                    <dt>발생일자</dt>
+                                    <dd>24.11.01</dd>
+                                </dl>
+                                <dl>
+                                    <dt>요청자</dt>
+                                    <dd>홍길동</dd>
+                                </dl>
+                                <dl>
+                                    <dt>티켓내용</dt>
+                                    <dd>
+                                        연료전지부품교체작업
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div> <!--//card-box end -->
+                        <div class="card-box card-blue"> 
+                            <div class="card-cont">
+                                <dl>
+                                    <dt>상태</dt>
+                                    <dd><span class="sta-blue">진행</span></dd>
+                                </dl>
+                                <dl>
+                                    <dt>발생일자</dt>
+                                    <dd>24.11.01</dd>
+                                </dl>
+                                <dl>
+                                    <dt>요청자</dt>
+                                    <dd>홍길동</dd>
+                                </dl>
+                                <dl>
+                                    <dt>티켓내용</dt>
+                                    <dd>
+                                        연료전지부품교체작업
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div> <!--//card-box end -->
+                        <div class="card-box card-black"> 
+                            <div class="card-cont">
+                                <dl>
+                                    <dt>상태</dt>
+                                    <dd><span class="sta-black">완료</span></dd>
+                                </dl>
+                                <dl>
+                                    <dt>발생일자</dt>
+                                    <dd>24.11.01</dd>
+                                </dl>
+                                <dl>
+                                    <dt>요청자</dt>
+                                    <dd>홍길동</dd>
+                                </dl>
+                                <dl>
+                                    <dt>티켓내용</dt>
+                                    <dd>
+                                        연료전지부품교체작업
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div> <!--//card-box end -->
+                        <div class="card-box card-red"> 
+                            <div class="card-cont">
+                                <dl>
+                                    <dt>상태</dt>
+                                    <dd><span class="sta-red">취소</span></dd>
+                                </dl>
+                                <dl>
+                                    <dt>발생일자</dt>
+                                    <dd>24.11.01</dd>
+                                </dl>
+                                <dl>
+                                    <dt>요청자</dt>
+                                    <dd>홍길동</dd>
+                                </dl>
+                                <dl>
+                                    <dt>티켓내용</dt>
+                                    <dd>
+                                        연료전지부품교체작업
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div> <!--//card-box end -->
+                    </div> <!--//card-wrap end-->
+                </div>
+                <div class="popup-button">
+                    <button class="btn-popup-close btn-navy">확인</button>
+                </div>
+            </div>
+        </div> <!-- //dashboard-layout-popup end -->
+
+    </div> <!-- //page-wrapper end-->
+
+    <script>
+        
+    </script>
+</body>
+
+</html>

@@ -73,7 +73,7 @@ public class UserController {
 								  @RequestParam(value = "username", required = false) String username,
 								  @RequestParam(value = "email", required = false) String email,
 								  Authentication auth) {
-		log.info("Received Parameters - group: {}, keyword: {}, username: {}", userGroupId, pernm, username);
+		//log.info("Received Parameters - group: {}, keyword: {}, username: {}", userGroupId, pernm, username);
 
 		AjaxResult result = new AjaxResult();
 		User user = (User) auth.getPrincipal();
@@ -93,7 +93,7 @@ public class UserController {
 	@GetMapping("/detail")
 	public AjaxResult getUserDetail(@RequestParam(value = "id", required = false) String id) {
 		AjaxResult result = new AjaxResult();
-		log.info("id: {}", id);
+		//log.info("id: {}", id);
 
 		try {
 			if (id != null && !id.isEmpty()) {
@@ -157,7 +157,7 @@ public class UserController {
 
 		try {
 			// 요청 데이터 로그
-			log.info("Received Request Data: {}", requestData);
+			//log.info("Received Request Data: {}", requestData);
 
 			// 데이터 매핑
 			Integer id = (requestData.get("id") != null && !requestData.get("id").toString().isEmpty()) ? Integer.valueOf(requestData.get("id").toString()) : null;

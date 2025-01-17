@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<style>
+    .btn-clear {
+        display: none !important; /* 강제로 숨김 */
+    }
+    .btn-close {
+        display: none !important; /* 강제로 숨김 */
+    }
+</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연습용 프로젝트</title>
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/> <!-- Slide css -->
+    <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css">
+    <link rel="stylesheet" type="text/css" href="/assets_mobile/css/import.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script src="/assets_mobile/js/ui.js"></script> <!-- Common js -->
+    <script th:inline="javascript">
+        var sandanData = /*[[${session.sandanList}]]*/ [];
+    </script>
+
+
+    <script type="text/javascript" src="/resource/ax5ui/ax5ui.all.min.js?v=1000"></script>
+
+    <script type="text/javascript" src="/js/ax5commUtil.js?v=1070"></script>
+
+    <script src="/js/common.js?v=1060"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+    <script src="/js/Mobile.js"></script>
+</head>
+<div class="mobile-wrapper page-kakaoMap2"><!-- ★페이지 Class명 -->
+    <!-- [모바일] 헤더  -->
+    <div class="mobile-layout-header">
+        <header>
+            <div class="left">
+                <a href="#" title="전체메뉴" class="logo">
+                </a>
+            </div>
+            <div class="center" style="margin-left:10px;">
+                <h2>카카오 지도2</h2>
+            </div>
+            <div class="right">
+                <a href="#" title="전체메뉴" class="btn-menu">
+                    <img src="/assets_mobile/images/icon/btn-menu.svg" alt="전체메뉴 아이콘">
+                </a>
+            </div>
+        </header>
+    </div> <!-- //mobile-layout-header end-->
+
+    <!-- [모바일] 메뉴  -->
+    <div th:insert="~{mobile/mobile_menu :: mobile_menu}"></div>
+    <!-- [모바일] 컨덴츠  -->
+    <div class="mobile-layout-contents">
+        <!--- (레이아웃) Contents 영역 -->
+        <div class="layout-contents" style="width:100%;height:500px;">
+            <!-- 컨텐츠 영역  -->
+            <div class="contents-wrap">
+                <div id="map" style="width:1000px;height:500px;"></div>
+            </div>  <!--// contents-wrap end-->
+        </div> <!--//layout-contents end -->
+    </div> <!-- //mobile-layout-contents end-->
+</div> <!-- //page-wrapper end-->
+<body>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=2639a2048f51dd39b6092e55973eabeb"></script>
+<script type="text/javascript">
+    var mapContainer = document.getElementById('map'), // 지도를 표시할 div
+        mapOption = {
+            center: new kakao.maps.LatLng(37.56672, 126.97752), // 지도의 중심좌표
+            level: 3, // 지도의 확대 레벨
+            mapTypeId : kakao.maps.MapTypeId.ROADMAP // 지도종류
+        };
+
+    // 지도를 생성한다
+    var map = new kakao.maps.Map(mapContainer, mapOption);
+
+    // 지도 타입 변경 컨트롤을 생성한다
+    var mapTypeControl = new kakao.maps.MapTypeControl();
+
+    // 지도의 상단 우측에 지도 타입 변경 컨트롤을 추가한다
+    map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+
+    // 지도에 확대 축소 컨트롤을 생성한다
+    var zoomControl = new kakao.maps.ZoomControl();
+
+    // 지도의 우측에 확대 축소 컨트롤을 추가한다
+    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+    // 지도 중심 좌표 변화 이벤트를 등록한다
+    kakao.maps.event.addListener(map, 'center_changed', function () {
+        console.log('지도의 중심 좌표는 ' + map.getCenter().toString() +' 입니다.');
+    });
+
+    // 지도 확대 레벨 변화 이벤트를 등록한다
+    kakao.maps.event.addListener(map, 'zoom_changed', function () {
+        console.log('지도의 현재 확대레벨은 ' + map.getLevel() +'레벨 입니다.');
+    });
+
+    // 지도 영역 변화 이벤트를 등록한다
+    kakao.maps.event.addListener(map, 'bounds_changed', function () {
+        var mapBounds = map.getBounds(),
+            message = '지도의 남서쪽, 북동쪽 영역좌표는 ' +
+                mapBounds.toString() + '입니다.';
+
+        console.log(message);
+    });
+
+    // 지도 시점 변화 완료 이벤트를 등록한다
+    kakao.maps.event.addListener(map, 'idle', function () {
+        var message = '지도의 중심좌표는 ' + map.getCenter().toString() + ' 이고,' +
+            '확대 레벨은 ' + map.getLevel() + ' 레벨 입니다.';
+        console.log(message);
+    });
+
+    // 지도 클릭 이벤트를 등록한다 (좌클릭 : click, 우클릭 : rightclick, 더블클릭 : dblclick)
+    kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
+        console.log('지도에서 클릭한 위치의 좌표는 ' + mouseEvent.latLng.toString() + ' 입니다.');
+    });
+
+    // 지도 드래깅 이벤트를 등록한다 (드래그 시작 : dragstart, 드래그 종료 : dragend)
+    kakao.maps.event.addListener(map, 'drag', function () {
+        var message = '지도를 드래그 하고 있습니다. ' +
+            '지도의 중심 좌표는 ' + map.getCenter().toString() +' 입니다.';
+        console.log(message);
+    });
+
+    // 지도에 마커를 생성하고 표시한다
+    var marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(37.56672, 126.97752), // 마커의 좌표
+        map: map // 마커를 표시할 지도 객체
+    });
+
+    // 마커 위에 표시할 인포윈도우를 생성한다
+    var infowindow = new kakao.maps.InfoWindow({
+        content : '<div style="padding:5px;">인포윈도우 :D</div>' // 인포윈도우에 표시할 내용
+    });
+
+    // 인포윈도우를 지도에 표시한다
+    infowindow.open(map, marker);
+
+    // 커스텀 오버레이를 생성하고 지도에 표시한다
+    var customOverlay = new kakao.maps.CustomOverlay({
+        map: map,
+        content: '<div style="padding:0 5px;background:#fff;">HTML코드를 입력해주세요 :D</div>',
+        position: new kakao.maps.LatLng(37.56672, 126.97752), // 커스텀 오버레이를 표시할 좌표
+        xAnchor: 0.5, // 컨텐츠의 x 위치
+        yAnchor: 0 // 컨텐츠의 y 위치
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[KTFOMS] AI 기반 연료전지 인프라 구축 - 모바일</title>
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/> <!-- Slide css -->
+
+    <link rel="stylesheet" type="text/css" href="/assets_mobile/css/import.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+
+    <script src="/assets_mobile/js/ui.js"></script> <!-- Common js -->
+    <script src="/js/Mobile.js"></script>
+</head>
+
+<body>
+<div class="mobile-wrapper page-ticket-register"><!-- ★페이지 Class명 -->
+    <!-- [모바일] 헤더  -->
+    <div class="mobile-layout-header">
+        <header>
+            <div class="left">
+                <!-- btn -->
+                <div class="hd-btn">
+                    <a href="javascript:void(0);" onclick="history.back();" title="뒤로가기">
+                        <img src="/images/icon/btn-prev.svg" alt="뒤로가기 아이콘">
+                    </a>
+                </div>
+            </div>
+            <div class="center">
+                <h2>티켓등록</h2>
+            </div>
+            <div class="right">
+                <a href="#" title="전체메뉴" class="btn-menu">
+                    <img src="/images/icon/btn-menu.svg" alt="전체메뉴 아이콘">
+                </a>
+            </div>
+        </header>
+    </div> <!-- //mobile-layout-header end-->
+
+    <!-- [모바일] 메뉴  -->
+    <div th:insert="~{mobile/mobile_menu :: mobile_menu}"></div>
+
+    <!-- [모바일] 컨덴츠  -->
+    <div class="mobile-layout-contents">
+        <!--- (레이아웃) Contents 영역 -->
+        <div class="layout-contents">
+            <!-- 컨텐츠 영역  -->
+            <div class="contents-wrap">
+                <div class="write-wrap">
+                    <dl>
+                        <dt>
+                            <label for="">
+                                요청자
+                            </label>
+                        </dt>
+                        <dd>
+                            <div class="input-clear">
+                                <input type="text" id="" name="">
+                            </div>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            <label for="">
+                                발생일자
+                            </label>
+                        </dt>
+                        <dd>
+                            <input type="date" id="date1" name="">
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            <label for="">
+                                요청유형
+                            </label>
+                        </dt>
+                        <dd>
+                            <select title="전체">
+                                <option>전체</option>
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            <label for="">
+                                티켓명
+                            </label>
+                        </dt>
+                        <dd>
+                            <div class="input-clear">
+                                <input type="text" id="" name="">
+                            </div>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            <label for="">
+                                연락처
+                            </label>
+                        </dt>
+                        <dd>
+                            <div class="input-clear">
+                                <input type="text" id="" name="">
+                            </div>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            <label for="">
+                                소속사
+                            </label>
+                        </dt>
+                        <dd>
+                            <div class="input-clear">
+                                <input type="text" id="" name="">
+                            </div>
+                            <a href="#" class="btn" title="코드발급">코드발급</a>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            <label for="">
+                                담당자
+                            </label>
+                        </dt>
+                        <dd>
+                            <select title="전체">
+                                <option>전체</option>
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            <label for="">
+                                내용
+                            </label>
+                        </dt>
+                        <dd>
+                            <div class="input-clear">
+                                <input type="text" id="" name="">
+                            </div>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            <label for="">
+                                파일첨부
+                            </label>
+                        </dt>
+                        <dd>
+                            <div id="uploadComponent1" class="upload-component">
+                                <div class="upload-filebox">
+                                    <img src="/images/icon/ico-fileupload.svg" alt="업로드아이콘">
+                                    <a href="#" class="btn" title="파일업로드">파일업로드</a>
+                                    <input type="file" id="fileInput1" class="fileInput" multiple="">
+                                    <p>Maximun upload file size <span>1GiB</span></p>
+                                </div>
+                                <div class="upload-filelist">
+                                    <div class="title">
+                                        <h5>Files (0)</h5>
+                                        <a href="#" title="Delete all" class="btn-file-deleteall">Delete all</a>
+                                    </div>
+                                    <ul class="filelist">
+                                    </ul>
+                                </div>
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+            </div> <!--// contents-wrap end-->
+            <div class="button-wrap">
+                <button class="btn-navy">권한신청</button>
+            </div>
+        </div> <!--//layout-contents end -->
+
+    </div> <!-- //mobile-layout-contents end-->
+
+</div> <!-- //page-wrapper end-->
+
+<script>
+
+</script>
+</body>
+
+</html>

@@ -81,7 +81,7 @@ public class SecurityConfiguration {
     }
     */
     
-    @Bean
+    /*@Bean
     @Order(0)
     SecurityFilterChain exceptResources(HttpSecurity http) throws Exception {
     	http.requestMatchers(matchers -> matchers.antMatchers("/resource/**","/img/**","/images/**", "/js/**","/css/**","/font/**","/robots.txt","/favicon.ico","/intro", "/error", "/alive", "/api/das_device"))
@@ -92,7 +92,24 @@ public class SecurityConfiguration {
     	
     	http.headers().frameOptions().disable();
         return http.build();
-    }     
-    
+    } */
+	@Bean
+	@Order(0)
+	SecurityFilterChain exceptResources(HttpSecurity http) throws Exception {
+		http.requestMatchers(matchers -> matchers.antMatchers(
+						"/resource/**", "/img/**", "/images/**", "/js/**","/assets_mobile/**",
+						"/css/**", "/font/**", "/robots.txt", "/favicon.ico",
+						"/static/**", "/webjars/**", "/intro", "/error",
+						"/alive", "/api/das_device", "/import.css"))
+				.authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
+				.requestCache(RequestCacheConfigurer::disable)
+				.securityContext(AbstractHttpConfigurer::disable)
+				.sessionManagement(AbstractHttpConfigurer::disable);
+
+		http.headers().frameOptions().disable();
+		return http.build();
+	}
+
+
 }
 

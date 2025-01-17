@@ -1,0 +1,48 @@
+
+
+<div th:fragment="mobile_menu">
+    <!-- [모바일] 메뉴  -->
+    <div class="mobile-layout-menu">
+        <div class="menu-wrapper" id="gnb">
+            <div class="menu-top">
+                <div class="left">
+                    <img src="/assets_mobile/images/icon/ico-user.svg" alt="사용자 아이콘">
+                    <p class="user-name">
+                        <span id="userName"></span>
+                    </p>
+                    <h5 id="groupname"></h5>
+                </div>
+                <div class="right">
+                    <a id="logout" title="로그아웃">
+                        <img src="/assets_mobile/images/icon/btn-logout.svg" alt="로그아웃">
+                    </a>
+                    <a href="#" title="팝업닫기" class="btn-menu-close">
+                        <img src="/assets_mobile/images/icon/btn-popup-close.svg" alt="닫기">
+                    </a>
+                </div>
+            </div> <!--//menu-top end-->
+            <nav>
+                <ul class="dep1">
+                    <li>전체메뉴</li>
+                </ul>
+                <ul class="dep2">
+                    <li>
+                        <a href="/mobile/kakaoMap" title="카카오 지도" th:classappend="${currentPage == 'kakaoMap' ? 'on' : ''}">카카오 지도</a>
+                    </li>
+                    <li >
+                        <a href="/mobile/kakaoMap2" title="카카오 지도 2" th:classappend="${currentPage == 'kakaoMap2' ? 'on' : ''}" >카카오 지도 2</a>
+                    </li>
+                    <li >
+                        <a href="/mobile/ticket-list" title="티켓목록" th:classappend="${currentPage == 'ticket-list' ? 'on' : ''}" >티켓목록</a>
+                    </li>
+                    <li th:classappend="${currentPage == 'fsr-search' ? 'active' : ''}">
+                        <a href="#" title="FSR조회">FSR조회</a>
+                    </li>
+                    <li  th:classappend="${currentPage == 'user-info' ? 'active' : ''}">
+                        <a href="/mobile/user-info" title="사용자정보">사용자정보</a>
+                    </li>
+                </ul>
+            </nav>
+        </div> <!--//menu-wrapper end-->
+    </div> <!--//mobile-layout-menu end-->
+</div>

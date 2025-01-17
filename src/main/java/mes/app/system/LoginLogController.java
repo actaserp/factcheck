@@ -105,7 +105,7 @@ public class LoginLogController {
 							item.put("state", "LOGOUT");
 						}
 					} catch (Exception e) {
-						log.error("로그아웃 시간 처리 중 오류 발생: {}", e.getMessage());
+						//log.error("로그아웃 시간 처리 중 오류 발생: {}", e.getMessage());
 					}
 				}
 
