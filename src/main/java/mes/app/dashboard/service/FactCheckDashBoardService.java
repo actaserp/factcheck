@@ -32,7 +32,7 @@ public class FactCheckDashBoardService {
 
         return items;
     }
-    // 금일 상위 검색지역
+    // 금일 상위 검색매물
     public List<Map<String, Object>> todayAddress() {
 
         String sql = """

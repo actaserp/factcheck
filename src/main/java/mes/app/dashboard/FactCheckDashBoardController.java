@@ -46,7 +46,7 @@ public class FactCheckDashBoardController {
         }
         return result;
     }
-    // 금일 상위 검색지역
+    // 금일 상위 검색매물
     @GetMapping("/todayAddress")
     private AjaxResult todayAddress() {
         AjaxResult result = new AjaxResult();
