@@ -1,6 +1,9 @@
 package mes.app.tilko;
 
+import mes.domain.model.AjaxResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.crypto.Cipher;
@@ -19,15 +22,37 @@ import java.util.Base64;
 @RestController
 @RequestMapping("api/tilko")
 public class TilkoController {
-    String apiHost	= "https://api.tilko.net/";
-    String apiKey	= "a2768417999c45978d5cefdc12adf588";
 
+    private static final String apiHostSUB = "https://dev.tilko.net";
+
+    private static final String apiHost	= "https://api.tilko.net/";
+    private static final String apiKey	= "a2768417999c45978d5cefdc12adf588";
     // 주소 고유번호 조회 api 통신
+    @GetMapping("/searchGoyuList")
+    public AjaxResult getGoyuNUM(@RequestParam(value = "address1")String address){
+        AjaxResult result = new AjaxResult();
+        // 고유번호 조회 엔드포인트
+        String url = apiHostSUB + "api/v2.0/irosidlogin/risuconfirmsimplec";
+
+        String GoyuNUM = "";
+        result.data = GoyuNUM;
+        return result;
+    }
+
 
 
     // 등기부등본 xml데이터 api 통신
+    @GetMapping("/searchaddress")
+    public AjaxResult main(@RequestParam(value = "GoyuNUM")String GoyuNUM) {
+        AjaxResult result = new AjaxResult();
+        // 인터넷 등기소 정보
+        String irosID = "aarmani";
+        String irosPWD = "jky@6400";
+        String irosNUM1 = "O3275071";
+        String irosNUM2 = "3112";
+        String irosNUM3 = "min@0727#@!";
 
-    public static void main(String[] args) {
+
         try {
             // 1. RSA 공개키 가져오기
             String rsaPublicKey = getPublicKeyFromServer();
@@ -52,11 +77,12 @@ public class TilkoController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return result;
     }
 
     // RSA 공개키 가져오기
     private static String getPublicKeyFromServer() throws Exception {
-        URL url = new URL("https://example.com/api/Auth/GetPublicKey");
+        URL url = new URL(apiHost + "/api/Auth/GetPublicKey?APIkey=" + apiKey);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
 

@@ -25,7 +25,6 @@ public class TilkoController3 {
     String apiHost	= "https://api.tilko.net/";
     String apiKey	= "a2768417999c45978d5cefdc12adf588";
 
-
     // RSA 암호화 함수
     public static String rsaEncrypt(String rsaPublicKey, byte[] aesKey) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         String encryptedData				= null;
@@ -92,7 +91,7 @@ public class TilkoController3 {
 
 
         // API URL 설정(인터넷 등기소 등기물건 주소검색: https://tilko.net/Help/Api/POST-api-apiVersion-Iros-RISUConfirmSimpleC)
-        String url				= tc.apiHost + "api/v1.0/Iros/RISUConfirmSimpleC";
+        String url				= tc.apiHost + "api/v2.0/irosidlogin/risuconfirmsimplec";
 
 
         // API 요청 파라미터 설정
@@ -115,6 +114,7 @@ public class TilkoController3 {
 
         Response response		= client.newCall(request).execute();
         String responseStr		= response.body().string();
+
         System.out.println("responseStr: " + responseStr);
         }
 }

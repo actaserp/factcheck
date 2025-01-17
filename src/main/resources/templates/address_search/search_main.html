@@ -89,7 +89,7 @@
                         <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
                     </form>
 
-                    <button onclick="searchAddress()" style="margin-top: 10px">등기부 확인</button>
+                    <button onclick="searchGoyuList()" style="margin-top: 10px">등기부 확인</button>
                 </dl>
             </div> <!--// contents-wrap end-->
         </div> <!--//layout-contents end -->
@@ -168,10 +168,10 @@
 </script>
 <script type="text/javascript">
 
-    function searchAddress() {
+    function searchGoyuList() {
         let data2 = [];
         $.ajax({
-            url: '/api/tilko/todayGrid',
+            url: '/api/tilko/searchGoyuList',
             type: 'GET',
             data: {
                 'address1': $('#address1').val()
@@ -184,6 +184,21 @@
         });
     }
 
+    function searchaddress() {
+        let data2 = [];
+        $.ajax({
+            url: '/api/tilko/searchaddress',
+            type: 'GET',
+            data: {
+                'GoyuNUM': $('#GoyuNUM').val()
+            },
+            async: false,
+            success: function (data) {
+                data2 = data.data;
+                console.log("data2", data2);
+            }
+        });
+    }
 
 </script>
 </body>
