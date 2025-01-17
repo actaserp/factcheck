@@ -88,6 +88,8 @@
                         <input type="text" id="address1" readonly><br><br>
                         <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
                     </form>
+
+                    <button onclick="searchAddress()" style="margin-top: 10px">등기부 확인</button>
                 </dl>
             </div> <!--// contents-wrap end-->
         </div> <!--//layout-contents end -->
@@ -166,6 +168,21 @@
 </script>
 <script type="text/javascript">
 
+    function searchAddress() {
+        let data2 = [];
+        $.ajax({
+            url: '/api/tilko/todayGrid',
+            type: 'GET',
+            data: {
+                'address1': $('#address1').val()
+            },
+            async: false,
+            success: function (data) {
+                data2 = data.data;
+                console.log("data2", data2);
+            }
+        });
+    }
 
 
 </script>

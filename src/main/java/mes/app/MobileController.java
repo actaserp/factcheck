@@ -57,4 +57,9 @@ public class MobileController {
     public String searchCard() {
         return "address_search/search_card"; // "address_search/search_card.html"로 매핑 }
     }
+
+    @GetMapping("/search_sub")
+    public String searchSub() {
+        return "address_search/search_sub"; // "address_search/search_sub.html"로 매핑 }
+    }
 }

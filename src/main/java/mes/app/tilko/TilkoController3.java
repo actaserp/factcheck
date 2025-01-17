@@ -20,8 +20,6 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Random;
 
-@RestController
-@RequestMapping("api/tilko")
 public class TilkoController3 {
 
     String apiHost	= "https://api.tilko.net/";
