@@ -32,13 +32,13 @@ public class TB_USERINFO {
     private String sexYn;       //성별
 
     @Column(name = "BIRTHYEAR")
-    private int birthYear;      //생년
+    private String  birthYear;      //생년
 
     @Column(name = "USERHP")
     private String userHp;      //핸드폰 번호
 
     @Column(name = "POSTCD")
-    private String postCd;      //
+    private String postCd;      //우편번호
 
     @Column(name = "USERADDR")
     private String userAddr;    //주소

@@ -19,9 +19,6 @@
 
 </head>
 <style>
-.btn-close {
-    display: none !important; /* 강제로 숨김 */
-}
 .social-login {
     margin-top: 20px;
     margin-bottom: 20px;
@@ -62,12 +59,22 @@
         width: 85%; /* 도로명주소의 비율 설정 */
         margin-inline-start: 10px;
     }
-    #address2 {
-        width: 100%; /* 상세주소는 항상 한 줄을 차지 */
-        margin-top: 5px;
-    }
 }
 
+#postcodeLayer {
+    width: 100%;
+    height: 400px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+}
+#searchPage {
+    display: none;
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background-color: #f9f9f9;
+    z-index: 1000;
+}
 
 </style>
 <body>
@@ -169,14 +176,27 @@
                                     </dt>
                                     <dd>
                                         <div class="input-clear">
-                                            <input type="text" id="id" name="id" placeholder="아이디" autocomplete="off">
+                                            <input type="text" id="id" name="id" placeholder="아이디" autocomplete="off" oninput="validateEmail()">
                                             <input type="hidden" id="isSocialUser" name="isSocialUser" value="true">
-
+                                            <p id="emailError" style="color: red; display: none;">올바른 이메일 형식을 입력해주세요.</p>
                                         </div>
                                         <a href="#" class="btn" id="btnDuplicate" title="중복확인">중복확인</a>
+
                                     </dd>
                                 </dl>
                             </div>
+                            <dl>
+                                <dt>
+                                    <label for="">
+                                        성명<span class="eq">*</span>
+                                    </label>
+                                </dt>
+                                <dd>
+                                    <div class="input-clear">
+                                        <input type="text" id="name" name="name" placeholder="성명">
+                                    </div>
+                                </dd>
+                            </dl>
                             <dl>
                                 <dt>
                                     <label for="">
@@ -233,18 +253,6 @@
                             </dl>
                             <dl>
                                 <dt>
-                                    <label for="">
-                                        성명<span class="eq">*</span>
-                                    </label>
-                                </dt>
-                                <dd>
-                                    <div class="input-clear">
-                                        <input type="text" id="name" name="name" placeholder="성명">
-                                    </div>
-                                </dd>
-                            </dl>
-                            <dl>
-                                <dt>
                                     <label for="birthYear">
                                         생년월일<span class="eq">*</span>
                                     </label>
@@ -265,8 +273,8 @@
                                     <div class="input-clear">
                                         <select id="sexYn" name="sexYn">
                                             <option value="0">선택하세요</option>
-                                            <option value="M">남성</option>
-                                            <option value="F">여성</option>
+                                            <option value="1">남성</option>
+                                            <option value="2">여성</option>
                                         </select>
                                     </div>
                                 </dd>
@@ -285,22 +293,24 @@
                             </dl>
                             <dl>
                                 <dt>
-                                    <label for="postno">
-                                        주소<span class="eq">*</span>
-                                    </label>
+                                    <label for="postno">주소<span class="eq">*</span></label>
                                 </dt>
                                 <dd>
                                     <div class="flex-row">
-                                        <input type="text" id="postno" name="postno" placeholder="우편번호" onclick="sample4_execDaumPostcode()" style="width: 85px;">
-                                        <input type="text" id="address1" name="address1" placeholder="도로명주소"  readonly>
+                                        <input type="text" id="postno" name="postno" placeholder="우편번호" onclick="openAddressSearch()" style="width: 85px;">
+                                        <input type="text" id="address1" name="address1" placeholder="도로명주소" readonly>
                                     </div>
                                 </dd>
                             </dl>
+                            <div id="searchPage" style="display:none;">
+                                <div id="postcodeLayer" style="width:100%; height:400px;"></div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
                 <div class="popup-button">
-                    <button class="btn-navy" id="btnSaveAuth">사용자 등록</button>
+                    <button class="btn-navy" id="btnSaveAuth" onclick="UserInfoSave()">사용자 등록</button>
                 </div>
             </form>
         </div>
@@ -481,48 +491,67 @@
 <script type="text/javascript" src="/js/ax5commUtil.js?v=1050"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
-    var popupWindow;
+    function openAddressSearch() {
+        const postcodeLayer = document.getElementById('postcodeLayer');
+        const searchPage = document.getElementById('searchPage');
 
-    function sample4_execDaumPostcode() {
-        popupWindow = window.open('', 'postcodePopup', 'width=530,height=530');
+        if (!postcodeLayer || !searchPage) {
+            console.error("postcodeLayer 또는 searchPage를 찾을 수 없습니다.");
+            return;
+        }
+
+        // 주소 검색 화면 표시
+        searchPage.style.display = 'block';
+
+        // Daum Postcode API 실행
         new daum.Postcode({
-            oncomplete: function(data) {
-                // 검색 결과 선택 시 실행할 코드
-                var roadAddr = data.roadAddress;
+            oncomplete: function (data) {
+                var roadAddr = data.roadAddress; // 도로명 주소
                 var extraRoadAddr = '';
 
+                // 법정동 정보 추가
                 if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
                     extraRoadAddr += data.bname;
                 }
+                // 건물명 정보 추가
                 if (data.buildingName !== '' && data.apartment === 'Y') {
                     extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
                 }
+                // 괄호로 감싸기
                 if (extraRoadAddr !== '') {
                     extraRoadAddr = ' (' + extraRoadAddr + ')';
                 }
 
+                // 우편번호와 주소 업데이트
                 document.getElementById('postno').value = data.zonecode;
-                document.getElementById('address1').value = roadAddr;
+                document.getElementById('address1').value = roadAddr + extraRoadAddr;
 
-                var guideTextBox = document.getElementById("guide");
-                if (data.autoRoadAddress) {
-                    var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
-                    guideTextBox.innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
-                    guideTextBox.style.display = 'block';
-                } else if (data.autoJibunAddress) {
-                    var expJibunAddr = data.autoJibunAddress;
-                    guideTextBox.innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
-                    guideTextBox.style.display = 'block';
-                } else {
-                    guideTextBox.innerHTML = '';
-                    guideTextBox.style.display = 'none';
-                }
-
-                // 검색 완료 후 팝업 닫기
-                popupWindow.close();
+                // 검색 완료 후 레이어 숨기기
+                closeAddressSearch();
+            },
+            onresize: function(size) {
+                // 동적 스타일 적용
+                const layers = document.querySelectorAll('[id^="__daum__layer_"]');
+                layers.forEach(layer => {
+                    layer.style.width = '100%';
+                    layer.style.height = '500px';
+                    layer.style.overflow = 'hidden';
+                    layer.style.backgroundColor = '#fff';
+                });
             }
-        }).embed(popupWindow.document.body);
+        }).embed(postcodeLayer);
     }
+
+    function closeAddressSearch() {
+        const searchPage = document.getElementById('searchPage');
+
+        if (searchPage) {
+            // 검색 레이어 숨기기
+            searchPage.style.display = 'none';
+        }
+    }
+
+
 </script>
 
 <script type="text/javascript">
@@ -625,6 +654,16 @@
 
             // 오버레이 숨기기
             overlay.style.display = 'none';
+            let IDInput = document.getElementById('id'); // 이메일 입력 필드
+            let emailError = document.getElementById('emailError'); // 오류 메시지 필드
+            if (IDInput) {
+                IDInput.readOnly = false; // readOnly 해제
+                IDInput.value = ''; // 이메일 값 초기화
+                IDInput.style.borderColor = ''; // 입력 필드 스타일 초기화
+            }
+            if (emailError) {
+                emailError.style.display = 'none'; // 오류 메시지 숨기기
+            }
 
             // 입력 폼 초기화
             const inputs = popup.querySelectorAll('input'); // popup 내부의 모든 input 태그 선택
@@ -637,12 +676,43 @@
             });
             // 타이머 숨기기
             document.getElementById('timer2').style.display = 'none';
+
+            // 주소 검색 화면 초기화 (숨기기)
+            let searchPage = document.getElementById('searchPage');
+            if (searchPage) {
+                searchPage.style.display = 'none';
+            }
         } else {
             console.error('popup1 또는 popup-overlay 요소를 찾을 수 없습니다.');
         }
     }
 
     //##############################################  사용자 등록 끝
+
+    //이메일 형식인지 확인
+    function validateEmail() {
+        const emailInput = document.getElementById('id'); // 이메일 입력 필드
+        const emailError = document.getElementById('emailError'); // 오류 메시지 표시 필드
+        const emailValue = emailInput.value.trim(); // 입력값 공백 제거
+
+        // 이메일 형식 정규식
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (emailValue === '') {
+            // 입력 필드가 비어 있으면 메시지 숨기기
+            emailError.style.display = 'none';
+            emailInput.style.borderColor = ''; // 테두리 색상 초기화
+        } else if (emailRegex.test(emailValue)) {
+            // 올바른 형식이면 메시지 숨기기
+            emailError.style.display = 'none';
+            emailInput.style.borderColor = ''; // 테두리 색상 초기화
+        } else {
+            // 올바르지 않은 형식이면 메시지 표시
+            emailError.style.display = 'block';
+            emailInput.style.borderColor = 'red'; // 테두리 강조
+        }
+    }
+
 
     //사용자 등록(유효성 검사용)
     const userSave = [
@@ -862,7 +932,7 @@
                 }
             };
 
-            AjaxUtil.postAsyncData("/user-auth/SaveAuthenticationEmail", data, fnSuccess, function () {
+            AjaxUtil.postAsyncData("/user-auth/mobile/SaveAuthenticationEmail", data, fnSuccess, function () {
                 hideLoader();
                 Alert.alert('', '서버통신 실패');
             });
@@ -1067,7 +1137,8 @@
 
     let AuthCode = false; // 전역 변수로 선언
 
-    //사용자등록 버튼 클릭
+
+   /* //사용자등록 버튼 클릭
     let btnRegistersend = $('#btnSaveAuth');
 
     btnRegistersend.click(function (e) {
@@ -1113,12 +1184,11 @@
             password: $('#password').val().trim(),
             name: $('#name').val().trim(),
             birthYear: $('#birthYear').val(),
-            phone: $('#Phone').val().trim(),
+            userHP: $('#Phone').val().trim(),
             sexYn: $('#sexYn').val(),
             email: $('#email').val().trim(),
             postno:$('#postno').val().trim(),
             address1:$('#address1').val().trim(),
-            address2:$('#address2').val().trim(),
             AuthenticationCode: $('#AuthenticationCodeRegister').val().trim(),
             _csrf: $('input[name="_csrf"]').val() // CSRF 토큰
         };
@@ -1134,12 +1204,96 @@
         };
 
         // AJAX 요청
-       AjaxUtil.postAsyncData("/Register/save", data, fnSuccess);
+       AjaxUtil.postAsyncData("/mobile/save", data, fnSuccess);
 
         // 폼 필드 초기화
         AuthCode = false;
-        clearFieldList.forEach(field => clearForm(field));
-    });//사용자등록
+        RegisterUserClose();
+        //clearFieldList.forEach(field => clearForm(field));
+    });//사용자등록*/
+
+    function UserInfoSave() {
+        // 기본 버튼 클릭 동작 방지
+        event.preventDefault(); // 전역 `event` 객체로 기본 동작 방지
+
+        // 인증 코드 확인
+        const authCode = $('#AuthenticationCodeRegister').val().trim();
+        if (!authCode) {
+            Alert.alert('', '인증코드를 입력해주세요.');
+            $('#AuthenticationCodeRegister').focus();
+            return;
+        }
+
+        // 필수 필드 유효성 검사
+        if (!validateFields()) {
+            return false;
+        }
+
+        // 중복 확인 여부 체크
+        if (!AuthCode) {
+            Alert.alert('', '아이디 중복 확인을 하지 않으셨습니다.');
+            return;
+        }
+
+        // 비밀번호 검사
+        let password = document.getElementById('password').value;
+        let password2 = document.getElementById('password2').value;
+
+        if (password !== password2) {
+            Alert.alert('', '비밀번호가 맞지 않습니다.');
+            return;
+        }
+
+        const emailInput = document.getElementById('email');
+        const emailValue = emailInput.value.trim();
+
+        // 이메일 유효성 검사
+        if (!emailValidate(emailValue)) {
+            Alert.alert('', '유효한 이메일 형식을 입력하세요.');
+            return false;
+        }
+
+        let data = {
+            id: $('#id').val().trim(),
+            password: $('#password').val().trim(),
+            name: $('#name').val().trim(),
+            birthYear: $('#birthYear').val(),
+            userHP: $('#Phone').val().trim(),
+            sexYn: $('#sexYn').val(),
+            email: $('#email').val().trim(),
+            postno: $('#postno').val().trim(),
+            address1: $('#address1').val().trim(),
+            AuthenticationCode: $('#AuthenticationCodeRegister').val().trim(),
+            _csrf: $('input[name="_csrf"]').val() // CSRF 토큰
+        };
+        console.log("직접 수집한 데이터: ", data);
+
+        // AJAX 요청
+        $.ajax({
+            url: "http://localhost:8040/mobile/save", // 요청 URL
+            type: "POST", // HTTP 메서드
+            data: data, // 요청 데이터
+            success: function (res) {
+                if (res.success) {
+                    Alert.alert('', res.message);
+                    RegisterUserClose();
+                } else {
+                    Alert.alert('', res.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("요청 실패:", xhr.responseText);
+                Alert.alert('', '서버와의 통신 중 오류가 발생했습니다.');
+            }
+        });
+
+        // 폼 필드 초기화
+        AuthCode = false;
+        RegisterUserClose();
+    }
+
+
+
 
     //초기화
     function clearForm(param) {

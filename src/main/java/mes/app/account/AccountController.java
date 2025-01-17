@@ -1,36 +1,28 @@
 package mes.app.account;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.transaction.Transactional;
-
 import lombok.extern.slf4j.Slf4j;
 import mes.app.MailService;
+import mes.app.account.service.TB_USERINFOService;
 import mes.app.account.service.TB_xuserService;
 import mes.app.system.service.UserService;
-
 import mes.domain.DTO.UserCodeDto;
+import mes.domain.entity.User;
 import mes.domain.entity.UserCode;
 import mes.domain.entity.UserGroup;
+import mes.domain.entity.actasEntity.TB_USERINFO;
 import mes.domain.entity.actasEntity.TB_XUSERS;
 import mes.domain.entity.actasEntity.TB_XUSERSId;
-import mes.domain.repository.*;
+import mes.domain.model.AjaxResult;
+import mes.domain.repository.UserCodeRepository;
+import mes.domain.repository.UserGroupRepository;
+import mes.domain.repository.UserRepository;
 import mes.domain.repository.actasRepository.TB_XuserRepository;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.bind.annotation.*;
-
+import mes.domain.security.CustomAuthenticationToken;
+import mes.domain.security.Pbkdf2Sha256;
+import mes.domain.services.AccountService;
+import mes.domain.services.SqlRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,15 +31,24 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.util.StringUtils;
-
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import mes.domain.entity.User;
-import mes.domain.model.AjaxResult;
-import mes.domain.security.CustomAuthenticationToken;
-import mes.domain.security.Pbkdf2Sha256;
-import mes.domain.services.AccountService;
-import mes.domain.services.SqlRunner;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
@@ -70,8 +71,10 @@ public class AccountController {
 
 	@Autowired
 	TB_xuserService XusersService;
+
 	@Autowired
-	TB_XuserRepository xuserstRepository;
+	TB_USERINFOService userInfoService;
+
 	@Autowired
 	private UserService userService;
 
@@ -497,6 +500,147 @@ public class AccountController {
 		}
 
 	}
+	/**사용자등록(모바일)**/
+	@PostMapping("/mobile/save")
+	@Transactional
+	public AjaxResult mobileUser(
+			@RequestParam(value = "id") String id,
+			@RequestParam(value = "password") String password,
+			@RequestParam(value = "name") String name, // 필수
+			@RequestParam(value = "userHP") String userHP, // 필수
+			@RequestParam(value = "email") String email, // 필수
+			@RequestParam(value = "birthYear") String birthYear, // 필수
+			@RequestParam(value = "sexYn") String sexYn, // 필수
+			@RequestParam(value = "postno") String postno, // 필수
+			@RequestParam(value = "address1") String address, // 필수
+			@RequestParam(value = "AuthenticationCode") String AuthenticationCode // 필수
+	){
+		AjaxResult result = new AjaxResult();
+		log.info("모바일 사용자 등록 요청 시작");
+		log.info("받은 데이터 - id: {}, name: {}, email: {}, birthYear: {}, sexYn: {}, postno: {}",id, name, email, birthYear, sexYn, postno);
+		try {
+			result = verifyAuthenticationCode(AuthenticationCode, email);
+			if(result.success){
+				// "ZZ" 값을 전달하여 호출
+				List<Map<String, Object>> results = userService.getCustcdAndSpjangcd("ZZ");
+
+				if (results.isEmpty()) {
+					System.out.println("No data found for spjangcd = 'ZZ'");
+				} else {
+					results.forEach(row -> {
+						System.out.println("custcd: " + row.get("custcd"));
+						System.out.println("spjangcd: " + row.get("spjangcd"));
+					});
+				}
+				// 첫 번째 조회된 데이터 사용
+				Map<String, Object> firstRow = results.get(0);
+				String custcd = (String) firstRow.get("custcd");
+				String spjangcd = (String) firstRow.get("spjangcd");
+
+				User user = User.builder()	//auth_user
+						.username(id)
+						.password(Pbkdf2Sha256.encode(password))
+						.phone(userHP)
+						.email(email)
+						.first_name(name)
+						.last_name(name)
+						.tel("")
+						.spjangcd(spjangcd)
+						.active(true)
+						.is_staff(false)
+						.date_joined(new Timestamp(System.currentTimeMillis()))
+						.superUser(false)
+						.build();
+
+				userService.save(user);
+
+				jdbcTemplate.execute("SET IDENTITY_INSERT user_profile ON");
+				// UserProfile 저장 (JDBC 사용)
+				String sql = "INSERT INTO user_profile (_created, lang_code, Name, UserGroup_id, User_id) VALUES (?,?, ?, ?, ?)";
+				jdbcTemplate.update(sql,
+						new Timestamp(System.currentTimeMillis()), // 현재 시간
+						"ko-KR", // lang_code (예: 한국어)
+						name, // Name (사용자 이름)
+						36 ,// marketing_manager (마케팅 관리자)
+						user.getId() // User_id
+				);
+				jdbcTemplate.execute("SET IDENTITY_INSERT user_profile OFF");
+
+				int ageNum = 0;
+				if (birthYear != null && !birthYear.isEmpty()) {
+					try {
+						LocalDate birthDate;
+						// 먼저 yyyy-MM-DD 형식으로 파싱 시도
+						if (birthYear.length() == 10) {
+							DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+							birthDate = LocalDate.parse(birthYear, formatter);
+						}
+						// yyyy-MM 형식으로 파싱 시도
+						else if (birthYear.length() == 7) {
+							DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+							birthDate = LocalDate.parse(birthYear, formatter);
+						} else {
+							throw new IllegalArgumentException("유효하지 않은 birthYear 형식: " + birthYear);
+						}
+
+						// 나이 계산
+						LocalDate currentDate = LocalDate.now();
+						ageNum = Period.between(birthDate, currentDate).getYears();
+					} catch (Exception e) {
+						log.error("생년월일 처리 중 오류 발생 - birthYear: {}", birthYear, e);
+						throw e;
+					}
+				}
+				if (birthYear != null && !birthYear.isEmpty()) {
+					try {
+						// yyyy-MM-dd 형식을 LocalDate로 변환
+						DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+						LocalDate birthDate = LocalDate.parse(birthYear, inputFormatter);
+
+						// yyyyMM 형식으로 변환
+						DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyyMM");
+						birthYear = birthDate.format(outputFormatter);
+
+						log.info("가공된 birthYear: {}", birthYear); // 결과 확인용 로그
+					} catch (Exception e) {
+						log.error("birthYear 가공 중 오류 발생 - 입력값: {}", birthYear, e);
+						throw e; // 필요한 경우 예외 처리
+					}
+				}
+
+				TB_USERINFO tbUserinfo = TB_USERINFO.builder()
+						.userId(id)
+						.userNm(name)
+						.ageNum(ageNum)
+						.sexYn(sexYn)
+						.birthYear(birthYear)
+						.userHp(userHP)
+						.postCd(postno)
+						.userAddr(address)
+						.userMail(email)
+						.loginPw(password)
+						.useYn("1")	//1:사용 0:미사용
+						.inDatem(LocalDateTime.now())
+						.build();
+
+				userInfoService.save(tbUserinfo);
+
+
+					result.success = true;
+					result.message = "등록이 완료되었습니다.";
+					return result;
+				}else{
+					return result;
+				}
+			} catch(Exception e){
+				System.out.println(e);
+
+				result.success = false;
+				result.message = "에러가발생하였습니다.";
+				return result;
+			}
+
+		}
 
 	@PostMapping("/user-auth/searchAccount")
 	public AjaxResult IdSearch(@RequestParam("usernm") final String usernm,
@@ -559,6 +703,36 @@ public class AccountController {
 
 	}
 
+	@PostMapping("/user-auth/mobile/SaveAuthenticationEmail")
+	public AjaxResult MobilesaveMail(@RequestParam("usernm") final String usernm,
+							   @RequestParam("name") final String saveName,
+							   @RequestParam("mail") final String mail) {
+
+		AjaxResult result = new AjaxResult();
+
+		if (usernm.equals("empty")) {
+			saveEmailLogic(mail, saveName);
+
+			result.success = true;
+			result.message = "인증 메일이 발송되었습니다.";
+			return result;
+		}
+
+		int exists = userRepository.existsByUsernameAndEmail(usernm, mail);
+		boolean flag = exists > 0;
+
+		if (flag) {
+			saveEmailLogic(mail, usernm);
+
+			result.success = true;
+			result.message = "인증 메일이 발송되었습니다.";
+		} else {
+			result.success = false;
+			result.message = "해당 사용자가 존재하지 않습니다.";
+		}
+
+		return result;
+	}
 	@PostMapping("/user-auth/SaveAuthenticationEmail")
 	public AjaxResult saveMail(@RequestParam("usernm") final String usernm,
 							   @RequestParam("saveName") final String saveName,
