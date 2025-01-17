@@ -50,11 +50,11 @@ public class MobileController {
 
     @GetMapping("/search_main")
     public String searchMain() {
-        return "mobile/search_main"; // "mobile/search_main.html"로 매핑
+        return "address_search/search_main"; // "address_search/search_main.html"로 매핑
     }
 
     @GetMapping("/search_card")
     public String searchCard() {
-        return "mobile/search_card"; // "mobile/search_card.html"로 매핑 }
+        return "address_search/search_card"; // "address_search/search_card.html"로 매핑 }
     }
 }
