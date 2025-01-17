@@ -90,26 +90,7 @@ public class AccountController {
     @Autowired
     private TB_XuserRepository tB_XuserRepository;
 
-	/*@GetMapping("/login")
-	public ModelAndView loginPage(
-			HttpServletRequest request,
-			HttpServletResponse response,
-			HttpSession session, Authentication auth) {
-		ModelAndView mv = new ModelAndView("login");
 
-		Map<String, Object> userInfo = new HashMap<String, Object>();
-		Map<String, Object> gui = new HashMap<String, Object>();
-
-		mv.addObject("userinfo", userInfo);
-
-		mv.addObject("gui", gui);
-		if(auth!=null) {
-			SecurityContextLogoutHandler handler =  new SecurityContextLogoutHandler();
-			handler.logout(request, response, auth);
-		}
-
-		return mv;
-	}*/
 	@GetMapping("/login")
 	public ModelAndView loginPage(
 			HttpServletRequest request,
@@ -152,53 +133,6 @@ public class AccountController {
 		response.sendRedirect("/login");
 	}
 
-	/*@PostMapping("/login")
-	public AjaxResult postLogin(
-			@RequestParam("username") final String username,
-			@RequestParam("password") final String password,
-			final HttpServletRequest request) throws UnknownHostException {
-
-		//System.out.println("로그인 데이터: " + username + " / " + password);
-
-		AjaxResult result = new AjaxResult();
-
-		HashMap<String, Object> data = new HashMap<String, Object>();
-		result.data = data;
-
-		UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(username, password);
-		CustomAuthenticationToken auth = null;
-		try{
-			auth = (CustomAuthenticationToken)authManager.authenticate(authReq);
-		}catch (AuthenticationException e){
-			//e.printStackTrace();
-			data.put("code", "NOUSER");
-			return result;
-		}
-
-		if(auth!=null) {
-			User user = (User)auth.getPrincipal();
-			user.getActive();
-			data.put("code", "OK");
-
-			try {
-				this.accountService.saveLoginLog("login", auth);
-			} catch (UnknownHostException e) {
-				// Handle the exception (e.g., log it)
-				e.printStackTrace();
-			}
-		} else {
-			result.success=false;
-			data.put("code", "NOID");
-		}
-
-		SecurityContext sc = SecurityContextHolder.getContext();
-		sc.setAuthentication(auth);
-
-		HttpSession session = request.getSession(true);
-		session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
-
-		return result;
-	}*/
 	@PostMapping("/login")
 	public AjaxResult postLogin(
 			@RequestParam("username") final String username,
@@ -779,6 +713,28 @@ public class AccountController {
 		}
 
 		return result;
+	}
+
+	@GetMapping("/account/userinfo")
+	@ResponseBody
+	public AjaxResult getUserInfos(Authentication auth) {
+		AjaxResult result = new AjaxResult();
+
+		try {
+			User user = (User) auth.getPrincipal();
+			String username = user.getFirst_name();
+
+			Map<String, String> data = new HashMap<>();
+			data.put("username", username);
+
+			result.success=(true);
+			result.data = (data);
+		} catch (Exception e) {
+			result.success = (false);
+			result.message = ("사용자 정보를 가져오는 중 오류가 발생했습니다.");
+		}
+
+		return result; // JSON 형식으로 반환
 	}
 
 }
