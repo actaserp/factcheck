@@ -111,6 +111,7 @@
 <script>
     function openModal() {
         document.getElementById('postcodeModal').style.display= 'block';
+
         new daum.Postcode({
             oncomplete: function(data) {
                 var roadAddr = data.roadAddress;
@@ -147,14 +148,15 @@
             },
             onresize: function(size) {
                 // 동적 스타일 적용
-                const layer = document.querySelector('#__daum__layer_1');
-                if (layer) {
+                const layers = document.querySelectorAll('[id^="__daum__layer_"]');
+                layers.forEach(layer => {
                     layer.style.width = '100%';
                     layer.style.height = '500px';
                     layer.style.overflow = 'hidden';
                     layer.style.backgroundColor = '#fff';
-                }
+                });
             }
+
         }).embed(document.getElementById('postcodeContainer'));
     }
 
