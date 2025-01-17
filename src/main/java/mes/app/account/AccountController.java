@@ -516,22 +516,14 @@ public class AccountController {
 			@RequestParam(value = "AuthenticationCode") String AuthenticationCode // 필수
 	){
 		AjaxResult result = new AjaxResult();
-		log.info("모바일 사용자 등록 요청 시작");
-		log.info("받은 데이터 - id: {}, name: {}, email: {}, birthYear: {}, sexYn: {}, postno: {}",id, name, email, birthYear, sexYn, postno);
+//		log.info("모바일 사용자 등록 요청 시작");
+//		log.info("받은 데이터 - id: {}, name: {}, email: {}, birthYear: {}, sexYn: {}, postno: {}",id, name, email, birthYear, sexYn, postno);
 		try {
 			result = verifyAuthenticationCode(AuthenticationCode, email);
 			if(result.success){
 				// "ZZ" 값을 전달하여 호출
 				List<Map<String, Object>> results = userService.getCustcdAndSpjangcd("ZZ");
 
-				if (results.isEmpty()) {
-					System.out.println("No data found for spjangcd = 'ZZ'");
-				} else {
-					results.forEach(row -> {
-						System.out.println("custcd: " + row.get("custcd"));
-						System.out.println("spjangcd: " + row.get("spjangcd"));
-					});
-				}
 				// 첫 번째 조회된 데이터 사용
 				Map<String, Object> firstRow = results.get(0);
 				String custcd = (String) firstRow.get("custcd");
@@ -601,11 +593,25 @@ public class AccountController {
 						DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyyMM");
 						birthYear = birthDate.format(outputFormatter);
 
-						log.info("가공된 birthYear: {}", birthYear); // 결과 확인용 로그
 					} catch (Exception e) {
 						log.error("birthYear 가공 중 오류 발생 - 입력값: {}", birthYear, e);
 						throw e; // 필요한 경우 예외 처리
 					}
+				}
+				if (address != null && !address.isEmpty()) {
+					// 주소를 파싱하여 시도와 구군 추출
+					Map<String, String> addressParts = parseAddress(address);
+					String userIDO = addressParts.getOrDefault("userIDO", ""); // 시도
+					String userGU = addressParts.getOrDefault("userGU", "");   // 구군
+				}
+
+				// 주소에서 시도와 구군 추출
+				String userIDO = "";
+				String userGU = "";
+				if (address != null && !address.isEmpty()) {
+					Map<String, String> addressParts = parseAddress(address);
+					userIDO = addressParts.getOrDefault("userIDO", ""); // 시도
+					userGU = addressParts.getOrDefault("userGU", "");   // 구군
 				}
 
 				TB_USERINFO tbUserinfo = TB_USERINFO.builder()
@@ -621,26 +627,50 @@ public class AccountController {
 						.loginPw(password)
 						.useYn("1")	//1:사용 0:미사용
 						.inDatem(LocalDateTime.now())
+						.userIDO(userIDO) // 시도
+						.userGU(userGU)   // 구군
 						.build();
 
 				userInfoService.save(tbUserinfo);
 
 
-					result.success = true;
-					result.message = "등록이 완료되었습니다.";
-					return result;
-				}else{
-					return result;
-				}
-			} catch(Exception e){
-				System.out.println(e);
-
-				result.success = false;
-				result.message = "에러가발생하였습니다.";
+				result.success = true;
+				result.message = "등록이 완료되었습니다.";
+				return result;
+			}else{
 				return result;
 			}
+		} catch(Exception e){
+			System.out.println(e);
 
+			result.success = false;
+			result.message = "에러가발생하였습니다.";
+			return result;
 		}
+
+	}
+	// address를 시도와 구군으로 분리하는 메서드
+	private Map<String, String> parseAddress(String address) {
+		Map<String, String> result = new HashMap<>();
+
+		if (address != null && !address.isEmpty()) {
+			// 공백 기준으로 분리
+			String[] parts = address.split("\\s+");
+
+			if (parts.length >= 2) {
+				// 첫 번째는 시도
+				result.put("userIDO", parts[0].trim());
+				// 두 번째는 구군
+				result.put("userGU", parts[1].trim());
+			}
+		}
+
+		// 기본값 설정
+		result.putIfAbsent("userIDO", ""); // 시도가 없을 경우 빈 값
+		result.putIfAbsent("userGU", ""); // 구군이 없을 경우 빈 값
+
+		return result;
+	}
 
 	@PostMapping("/user-auth/searchAccount")
 	public AjaxResult IdSearch(@RequestParam("usernm") final String usernm,
