@@ -1,6 +1,10 @@
 package mes.app.tilko;
 
 import mes.domain.model.AjaxResult;
+import okhttp3.*;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,6 +15,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -30,12 +35,60 @@ public class TilkoController {
     // 주소 고유번호 조회 api 통신
     @GetMapping("/searchGoyuList")
     public AjaxResult getGoyuNUM(@RequestParam(value = "address1")String address){
+        TilkoController tc = new TilkoController();
         AjaxResult result = new AjaxResult();
-        // 고유번호 조회 엔드포인트
-        String url = apiHostSUB + "api/v2.0/irosidlogin/risuconfirmsimplec";
 
-        String GoyuNUM = "";
-        result.data = GoyuNUM;
+
+        try {
+            //RSA Public Key 조회
+            String rsaPublicKey = getPublicKey();
+            // AES Secret Key 및 IV 생성
+            // 2. AES 키와 IV 생성
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+            keyGen.init(128); // AES 128비트 키 생성
+            SecretKey aesKey = keyGen.generateKey();
+            byte[] iv = new byte[16]; // IV는 16바이트
+            new java.security.SecureRandom().nextBytes(iv);
+
+            // AES Key를 RSA Public Key로 암호화
+            byte[] encryptedAesKey = encryptAesKeyWithRsa(aesKey.getEncoded(), rsaPublicKey);
+
+            // API URL 설정(인터넷 등기소 등기물건 주소검색: https://tilko.net/Help/Api/POST-api-apiVersion-Iros-RISUConfirmSimpleC)
+            // 고유번호 조회 엔드포인트
+            String url = apiHostSUB + "api/v2.0/irosidlogin/risuconfirmsimplec";
+
+            // API 요청 파라미터 설정
+            JSONObject json			= new JSONObject();
+            json.put("Address"				, address);
+            json.put("Sangtae"				, "2");
+            json.put("KindClsFlag"			, "0");
+            json.put("Region"				, "0");
+            json.put("Page"					, "1");
+
+            // API 호출
+            OkHttpClient client		= new OkHttpClient();
+
+            Request request			= new Request.Builder()
+                    .url(url)
+                    .addHeader("API-KEY"			, tc.apiKey)
+                    .addHeader("ENC-KEY"			, Base64.getEncoder().encodeToString(encryptedAesKey))
+                    .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toJSONString())).build();
+
+            Response response		= client.newCall(request).execute();
+            String responseStr		= response.body().string();
+
+//            // JSON 파싱
+//            JSONObject responseJson = new JSONObject(responseStr);
+//
+//            // Result 섹션 가져오기
+//            JSONObject result = responseJson.getJSONObject("Result");
+//            JSONArray resultArray = result.getJSONArray("Result");
+//
+//            System.out.println("responseStr: " + resultArray);
+
+        } catch (Exception e) {
+        e.printStackTrace();
+        }
         return result;
     }
 
@@ -52,10 +105,22 @@ public class TilkoController {
         String irosNUM2 = "3112";
         String irosNUM3 = "min@0727#@!";
 
+        String irosID2 = "1111111";
+        String irosPWD2 = "2222222";
+        String irosNUM12 = "3333333";
+        String irosNUM22 = "4444";
+        String irosNUM32 = "5555555";
+        // 등기물건 고유번호(GoyuNUM)
+        // 기타 데이터 (공백일경우 기본값 IsSummary제외 "N")
+        String JoinYn = "";
+        String CostsYn = "";
+        String DataYn = "";
+        String ValidYn = "";
+        String IsSummary = "";
 
         try {
             // 1. RSA 공개키 가져오기
-            String rsaPublicKey = getPublicKeyFromServer();
+            String rsaPublicKey = getPublicKey();
 
             // 2. AES 키와 IV 생성
             KeyGenerator keyGen = KeyGenerator.getInstance("AES");
@@ -80,19 +145,23 @@ public class TilkoController {
         return result;
     }
 
-    // RSA 공개키 가져오기
-    private static String getPublicKeyFromServer() throws Exception {
-        URL url = new URL(apiHost + "/api/Auth/GetPublicKey?APIkey=" + apiKey);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
+    // RSA 공개키(Public Key) 조회 함수
+    public String getPublicKey() throws IOException, ParseException {
+        OkHttpClient client		= new OkHttpClient();
 
-        if (conn.getResponseCode() == 200) {
-            try (java.util.Scanner scanner = new java.util.Scanner(conn.getInputStream())) {
-                return scanner.useDelimiter("\\A").next();
-            }
-        } else {
-            throw new Exception("RSA 공개키를 가져오는 데 실패했습니다.");
-        }
+        Request request			= new Request.Builder()
+                .url(apiHost + "/api/Auth/GetPublicKey?APIkey=" + apiKey)
+                .header("Content-Type", "application/json").build();
+
+        Response response		= client.newCall(request).execute();
+        String responseStr		= response.body().string();
+
+        JSONParser jsonParser	= new JSONParser();
+        JSONObject jsonObject	= (JSONObject) jsonParser.parse(responseStr);
+
+        String rsaPublicKey		= (String) jsonObject.get("PublicKey");
+
+        return rsaPublicKey;
     }
 
     // AES 키를 RSA 공개키로 암호화
