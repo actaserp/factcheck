@@ -7,7 +7,6 @@
   .btn-close {
     display: none !important; /* 강제로 숨김 */
   }
-
 </style>
 <head>
   <meta charset="UTF-8">
@@ -69,34 +68,22 @@
       <!-- 컨텐츠 영역  -->
       <div class="contents-wrap">
         <dl style="margin-bottom: 10px">
-          <button onclick="openModal()" style="margin-bottom: 10px">주소 검색</button>
-
-          <div id="postcodeModal" class="modal" style="display: none">
-            <div class="modal-content">
-              <div style="display: flex">
-                <div class="modal-header">주소 검색</div>
-                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto">×</button>
-              </div>
-              <div id="postcodeContainer" style="width: 100%;"></div>
-            </div>
+          <div>
+            <label for="address">발급조회:</label>
+            <input type="text" id="address"><br>
           </div>
-
-          <form>
-            <label for="postno">우편번호:</label>
-            <input type="text" id="postno" readonly><br><br>
-            <label for="address1">도로명 주소:</label>
-            <input type="text" id="address1" readonly><br><br>
-            <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
-          </form>
-
-          <button onclick="searchAddress()" style="margin-top: 10px">등기부 확인</button>
+          <button onclick="searchHistory()" style="margin-top: 10px">검색</button>
         </dl>
       </div> <!--// contents-wrap end-->
+      <div id="addressWrap" class="contents-wrap">
+
+      </div>
+      <a href="search_card" style="margin-top: 10px">페이지 이동 테스트</a>
     </div> <!--//layout-contents end -->
 
   </div> <!-- //mobile-layout-contents end-->
 </div> <!-- //page-wrapper end-->
-<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
 <script th:inline="javascript">
   // // Thymeleaf에서 값 설정: Null 체크와 기본값 처리
   // var groupid = [[${session.groupid != null ? session.groupid : 'null'}]];
@@ -110,80 +97,78 @@
   // if (username && username !== 'null') localStorage.setItem('username', username);
   // if (groupname && groupname !== 'null') localStorage.setItem('groupname', groupname);
 </script>
-<script>
-  function openModal() {
-    document.getElementById('postcodeModal').style.display= 'block';
 
-    new daum.Postcode({
-      oncomplete: function(data) {
-        var roadAddr = data.roadAddress;
-        var extraRoadAddr = '';
 
-        if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
-          extraRoadAddr += data.bname;
-        }
-        if (data.buildingName !== '' && data.apartment === 'Y') {
-          extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-        }
-        if (extraRoadAddr !== '') {
-          extraRoadAddr = ' (' + extraRoadAddr + ')';
-        }
-
-        document.getElementById('postno').value = data.zonecode;
-        document.getElementById('address1').value = roadAddr;
-
-        var guideTextBox = document.getElementById("guide");
-        if (data.autoRoadAddress) {
-          var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
-          guideTextBox.innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
-          guideTextBox.style.display = 'block';
-        } else if (data.autoJibunAddress) {
-          var expJibunAddr = data.autoJibunAddress;
-          guideTextBox.innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
-          guideTextBox.style.display = 'block';
-        } else {
-          guideTextBox.innerHTML = '';
-          guideTextBox.style.display = 'none';
-        }
-
-        closeModal();
-      },
-      onresize: function(size) {
-        // 동적 스타일 적용
-        const layers = document.querySelectorAll('[id^="__daum__layer_"]');
-        layers.forEach(layer => {
-          layer.style.width = '100%';
-          layer.style.height = '500px';
-          layer.style.overflow = 'hidden';
-          layer.style.backgroundColor = '#fff';
-        });
-      }
-
-    }).embed(document.getElementById('postcodeContainer'));
-  }
-
-  function closeModal() {
-    document.getElementById('postcodeModal').style.display= 'none';
-  }
-</script>
 <script type="text/javascript">
-
-  function searchAddress() {
+  document.readyState === 'complete' ? init() : window.onload = init;
+  function init() {
+    searchHistory();
+  }
+  // 주소값 기반 조회기록 리스트 출력
+  function searchHistory() {
     let data2 = [];
     $.ajax({
-      url: '/api/tilko/todayGrid',
+      url: '/api/address/searchHistory',
       type: 'GET',
       data: {
-        'address1': $('#address1').val()
+        'address': $('#address').val()
       },
       async: false,
       success: function (data) {
         data2 = data.data;
         console.log("data2", data2);
+        const listAddressWrap = document.getElementById('addressWrap');
+        const availableColors = ['card-blue', 'card-green', 'card-black', 'card-red', 'card-yellow', 'card-purple'];
+        listAddressWrap.innerHTML = ''; // 기존 내용을 초기화
+        // 색상을 순환적으로 할당하기 위한 인덱스
+        let colorIndex = 0;
+        let htmlContent = '';
+
+        // Gubun 데이터에서 '토지' 데이터 제외 화면에 출력
+        data2.forEach(data => {
+          const cardColor = availableColors[colorIndex];
+          colorIndex = (colorIndex + 1) % availableColors.length;
+            // 버튼 처리
+            let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="작업이력">
+                            등기부 조회
+                        </button>`;
+
+            htmlContent += `
+                        <div class="card-box ${cardColor}" data-Goyu="${data.BudongsanGoyubeonho}">
+                            <div class="card-cont">
+                                <dl>
+                                    <dt>고유번호</dt>
+                                    <dd>${data.BudongsanGoyubeonho}</dd>
+                                </dl>
+                                <dl>
+                                    <dt>주소</dt>
+                                    <dd>${data.BudongsanSojaejibeon}</dd>
+                                </dl>
+                            </div>
+                                ${buttonsHtml}
+                        </div>
+                        `;
+
+        })
+        listAddressWrap.insertAdjacentHTML('beforeend', htmlContent);
+
+        // 이벤트 위임 추가
+        listAddressWrap.addEventListener('click', (event) => {
+          const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+          if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
+
+          const cardBox = button.closest('.card-box');
+          const goyuNum = cardBox.getAttribute('data-Goyu');
+
+          // 데이터 찾기
+          const item = data2.find(d => d.BudongsanGoyubeonho === goyuNum);
+          if (item) {
+            searchaddress(item);
+          }
+        });
       }
     });
   }
-
 
 </script>
 </body>
