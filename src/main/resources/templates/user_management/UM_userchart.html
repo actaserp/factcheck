@@ -267,14 +267,14 @@
           console.log("클릭된 셀의 세부 데이터:", response);
 
           // 데이터를 처리하거나 UI에 표시
-          downloadExcel(response);
+          downloadExcel(response, params);
         },
         error: function () {
           console.error("셀 데이터를 가져오는 중 오류가 발생했습니다.");
         }
       });
     }
-    function downloadExcel(data) {
+    function downloadExcel(data, params) {
       if (!Array.isArray(data)) {
         console.error("데이터가 배열 형식이 아닙니다:", data);
         return;
@@ -307,7 +307,7 @@
               String(now.getDate()).padStart(2, "0");
 
       // 파일 이름 생성
-      const excelFileName = "통계보고서_"+ formattedDate + ".xlsx";
+      const excelFileName = `통계보고서_${params.region}_${params.district}_${params.ageGroup}_${formattedDate}.xlsx`;
       XLSX.writeFile(wb, excelFileName);
     }
 
