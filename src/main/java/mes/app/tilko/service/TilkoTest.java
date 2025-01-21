@@ -17,6 +17,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -105,7 +106,7 @@ public class TilkoTest {
 
         // API 요청 파라미터 설정
         JSONObject json			= new JSONObject();
-        json.put("Address"				, "서울 금천구 벚꽃로 286 101호");
+        json.put("Address"				, "충북 청주시 상당구 호미로 2 1602 호");
         json.put("Sangtae"				, "2");
         json.put("KindClsFlag"			, "0");
         json.put("Region"				, "0");
@@ -124,6 +125,14 @@ public class TilkoTest {
         Response response		= client.newCall(request).execute();
         String responseStr		= response.body().string();
         System.out.println("responseStr: " + responseStr);
+
+        // JSON 파싱
+        org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
+
+        // "ResultList" 섹션 가져오기
+        JSONArray resultArray = (JSONArray) responseJson.get("ResultList");
+        System.out.println("resultArray: " + resultArray);
+
     }
 
 }

@@ -193,6 +193,7 @@
             async: false,
             success: function (data) {
                 data2 = data.data;
+                console.log("data2", data);
                 console.log("data2", data2);
                 const listAddressWrap = document.getElementById('addressWrap');
                 const availableColors = ['card-blue', 'card-green', 'card-black', 'card-red', 'card-yellow', 'card-purple'];
@@ -212,11 +213,11 @@
                         </button>`;
 
                         htmlContent += `
-                        <div class="card-box ${cardColor}" data-Goyu="${data.BudongsanGoyubeonho}">
+                        <div class="card-box ${cardColor}" data-Goyu="${data.UniqueNo}">
                             <div class="card-cont">
                                 <dl>
                                     <dt>고유번호</dt>
-                                    <dd>${data.BudongsanGoyubeonho}</dd>
+                                    <dd>${data.UniqueNo}</dd>
                                 </dl>
                                 <dl>
                                     <dt>주소</dt>
@@ -250,7 +251,7 @@
                     const goyuNum = cardBox.getAttribute('data-Goyu');
 
                     // 데이터 찾기
-                    const item = data2.find(d => d.BudongsanGoyubeonho === goyuNum);
+                    const item = data2.find(d => d.UniqueNo === goyuNum);
                     if (item) {
                         searchaddress(item);
                     }
@@ -265,7 +266,7 @@
             url: '/api/tilko/searchaddress',
             type: 'GET',
             data: {
-                "GoyuNUM" : data.BudongsanGoyubeonho
+                "GoyuNUM" : data.UniqueNo
             },
             async: false,
             success: function (data) {

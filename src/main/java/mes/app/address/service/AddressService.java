@@ -13,14 +13,13 @@ public class AddressService {
     @Autowired
     SqlRunner sqlRunner;
 
-    // QnA delete
+    // 등기부등본 발급내역 조회
     public List<Map<String, Object>> searchHistory(String address, String ID) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
 
         String sql = """
-                DELETE FROM TB_USERQST
-                WHERE QSTSEQ = :qstseq
+                SELECT FROM 
                 """;
 
         List<Map<String, Object>> result = this.sqlRunner.getRows(sql,params);
