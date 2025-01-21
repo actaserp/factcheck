@@ -23,6 +23,7 @@ public class UM_userchartService {
        SELECT
             USERSIDO AS region,
             USERGU AS district,
+            INDATEM,
             SUM(CASE WHEN AGENUM <= 19 THEN 1 ELSE 0 END) AS age_10,
             SUM(CASE WHEN AGENUM BETWEEN 20 AND 29 THEN 1 ELSE 0 END) AS age_20,
             SUM(CASE WHEN AGENUM BETWEEN 30 AND 39 THEN 1 ELSE 0 END) AS age_30,
@@ -53,7 +54,8 @@ public class UM_userchartService {
         sql.append("""
      GROUP BY
             USERSIDO,
-            USERGU
+            USERGU,
+            INDATEM
         ORDER BY region, district
     """);
 

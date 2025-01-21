@@ -97,7 +97,7 @@ public class SecurityConfiguration {
 	@Order(0)
 	SecurityFilterChain exceptResources(HttpSecurity http) throws Exception {
 		http.requestMatchers(matchers -> matchers.antMatchers(
-						"/resource/**", "/img/**", "/images/**", "/js/**","/assets_mobile/**",
+						"/resource/**", "/img/**", "/images/**", "/js/**","/assets_mobile/**", "/auth/**",
 						"/css/**", "/font/**", "/robots.txt", "/favicon.ico",
 						"/static/**", "/webjars/**", "/intro", "/error",
 						"/alive", "/api/das_device", "/import.css"))
