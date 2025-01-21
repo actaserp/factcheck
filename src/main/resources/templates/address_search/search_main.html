@@ -81,17 +81,23 @@
                         </div>
                     </div>
 
-                    <form>
-                        <label for="postno">우편번호:</label>
-                        <input type="text" id="postno" readonly><br><br>
+                    <div>
+                        <input type="hidden" id="postno" readonly>
                         <label for="address1">도로명 주소:</label>
-                        <input type="text" id="address1" readonly><br><br>
+                        <input type="text" id="address1" readonly><br>
                         <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
-                    </form>
-
-                    <button onclick="searchGoyuList()" style="margin-top: 10px">등기부 확인</button>
+                    </div>
+                    <div>
+                        <label for="address2">상세 주소:</label>
+                        <input type="text" id="address2"><br>
+                    </div>
+                    <button onclick="searchGoyuList()" style="margin-top: 10px">고유번호 확인</button>
                 </dl>
             </div> <!--// contents-wrap end-->
+            <div id="addressWrap" class="contents-wrap">
+
+            </div>
+            <a href="search_card" style="margin-top: 10px">페이지 이동 테스트</a>
         </div> <!--//layout-contents end -->
 
     </div> <!-- //mobile-layout-contents end-->
@@ -171,32 +177,110 @@
     // 고유번호 조회
     function searchGoyuList() {
         let data2 = [];
+        if (document.getElementById('address1').value === "") {
+            Alert.alert('', '주소를 선택해주세요');
+            return false;
+        } else if(document.getElementById('address2').value === ""){
+            Alert.alert('', '상세주소를 입력해주세요');
+            return false;
+        }
         $.ajax({
             url: '/api/tilko/searchGoyuList',
             type: 'GET',
             data: {
-                'address1': $('#address1').val()
+                'address1': $('#address1').val() + " " + $('#address2').val()
             },
             async: false,
             success: function (data) {
                 data2 = data.data;
                 console.log("data2", data2);
+                const listAddressWrap = document.getElementById('addressWrap');
+                const availableColors = ['card-blue', 'card-green', 'card-black', 'card-red', 'card-yellow', 'card-purple'];
+                listAddressWrap.innerHTML = ''; // 기존 내용을 초기화
+                // 색상을 순환적으로 할당하기 위한 인덱스
+                let colorIndex = 0;
+                let htmlContent = '';
+
+                // Gubun 데이터에서 '토지' 데이터 제외 화면에 출력
+                data2.forEach(data => {
+                    const cardColor = availableColors[colorIndex];
+                    colorIndex = (colorIndex + 1) % availableColors.length;
+                    if(data.Gubun !== '토지') {
+                        // 버튼 처리
+                        let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="작업이력">
+                            등기부 조회
+                        </button>`;
+
+                        htmlContent += `
+                        <div class="card-box ${cardColor}" data-Goyu="${data.BudongsanGoyubeonho}">
+                            <div class="card-cont">
+                                <dl>
+                                    <dt>고유번호</dt>
+                                    <dd>${data.BudongsanGoyubeonho}</dd>
+                                </dl>
+                                <dl>
+                                    <dt>주소</dt>
+                                    <dd>${data.BudongsanSojaejibeon}</dd>
+                                </dl>
+                                <dl>
+                                    <dt>구분</dt>
+                                    <dd>${data.Gubun}</dd>
+                                </dl>
+                                <dl>
+                                    <dt>상태</dt>
+                                    <dd>${data.Sangtae}</dd>
+                                </dl>
+                            </div>
+                                ${buttonsHtml}
+                        </div>
+                        `;
+
+                    }else{
+                        console.log("토지데이터")
+                    }
+                })
+                listAddressWrap.insertAdjacentHTML('beforeend', htmlContent);
+
+                // 이벤트 위임 추가
+                listAddressWrap.addEventListener('click', (event) => {
+                    const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+                    if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
+
+                    const cardBox = button.closest('.card-box');
+                    const goyuNum = cardBox.getAttribute('data-Goyu');
+
+                    // 데이터 찾기
+                    const item = data2.find(d => d.BudongsanGoyubeonho === goyuNum);
+                    if (item) {
+                        searchaddress(item);
+                    }
+                });
             }
         });
     }
 
-    function searchaddress() {
-        let data2 = [];
+    function searchaddress(data) {
+        console.log("data : ", data)
         $.ajax({
             url: '/api/tilko/searchaddress',
             type: 'GET',
             data: {
-                'GoyuNUM': $('#GoyuNUM').val()
+                "GoyuNUM" : data.BudongsanGoyubeonho
             },
             async: false,
             success: function (data) {
                 data2 = data.data;
                 console.log("data2", data2);
+
+                // 데이터를 sessionStorage에 저장
+                sessionStorage.setItem("data2", JSON.stringify(data2));
+
+                // 페이지 이동
+                // window.location.href ="search_card";
+
+            },
+            error: function (error) {
+                console.error("Error in API call:", error);
             }
         });
     }
