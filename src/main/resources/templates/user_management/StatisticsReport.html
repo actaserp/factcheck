@@ -93,7 +93,7 @@
                                     <dd>
                                         <li>
                                             <a class="btn btn-delete" title="검색" id="btnSearch1"
-                                               onclick="fetchListData()">
+                                               onclick="DefaultData()">
                                                 <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
                                                 검색
                                             </a>
@@ -102,55 +102,114 @@
                                 </dl>
                             </div>
                         </form>
-
                     </div> <!--//section-top end -->
                     <div class="container-fluid">
-                        <div id="selection-container" style=" display: flex; gap: 20px; margin-bottom: 10px; ">
-                          <dl style="display: flex; flex-direction: column; gap: 4px;">
-                            <dt>
-                              <label for="columnSelect">
-                                열 선택<span class="eq"></span>
-                              </label>
-                            </dt>
-                            <dd style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: -8px;">
-                              <div class="form-check" style="display: flex; align-items: center;">
-                                <input class="form-check-input" type="checkbox" value="region" id="region" style="margin-right: 8px;">
-                                <label class="form-check-label" for="region">
-                                  지역(시)
-                                </label>
-                              </div>
-                              <div class="form-check" style="display: flex; align-items: center;">
-                                <input class="form-check-input" type="checkbox" value="district" id="district" style="margin-right: 8px;">
-                                <label class="form-check-label" for="district">
-                                  구군
-                                </label>
-                              </div>
-                              <div class="form-check" style="display: flex; align-items: center;">
-                                <input class="form-check-input" type="checkbox" value="inDatem" id="inDatem" style="margin-right: 8px;">
-                                <label class="form-check-label" for="inDatem">
-                                  등록 일자
-                                </label>
-                              </div>
-                              <div class="form-check" style="display: flex; align-items: center;">
-                                <input class="form-check-input" type="checkbox" value="sexYn" id="sexYn" style="margin-right: 8px;">
-                                <label class="form-check-label" for="sexYn">
-                                  성별
-                                </label>
-                              </div>
+                        <div id="selection-Row" style="display: flex; gap: 20px; margin-bottom: 10px;">
+                            <dl style="display: flex; flex-direction: column; gap: 4px;">
+                                <dt>
+                                    <label for="RowSelect">행 선택<span class="eq"></span></label>
+                                </dt>
+                                <dd style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: -8px;">
+                                    <div class="form-check" style="display: flex; align-items: center;">
+                                        <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="rowSelect"
+                                                value="ageNum"
+                                                id="ageNum"
+                                                style="margin-right: 8px;"
+                                        />
+                                        <label class="form-check-label" for="ageNum">나이</label>
+                                    </div>
+                                    <div class="form-check" style="display: flex; align-items: center;">
+                                        <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="rowSelect"
+                                                value="region"
+                                                id="RowRegion"
+                                                style="margin-right: 8px;"
+                                        />
+                                        <label class="form-check-label" for="RowRegion">지역(시)</label>
+                                    </div>
+                                    <div class="form-check" style="display: flex; align-items: center;">
+                                        <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="rowSelect"
+                                                value="district"
+                                                id="RowDistrict"
+                                                style="margin-right: 8px;"
+                                        />
+                                        <label class="form-check-label" for="RowDistrict">지역(구군)</label>
+                                    </div>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div id="selection-container" style="display: flex; gap: 20px; margin-bottom: 10px;">
+                            <dl style="display: flex; flex-direction: column; gap: 4px;">
+                                <dt>
+                                    <label for="columnSelect">열 선택<span class="eq"></span></label>
+                                </dt>
+                                <dd style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: -8px;">
+                                    <div class="form-check region-checkbox" style="display: flex; align-items: center;">
+                                        <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                value="region"
+                                                id="region"
+                                                style="margin-right: 8px;"
+                                        />
+                                        <label class="form-check-label" for="region">지역(시)</label>
+                                    </div>
+                                    <div class="form-check" style="display: flex; align-items: center;">
+                                        <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                value="district"
+                                                id="district"
+                                                style="margin-right: 8px;"
+                                        />
+                                        <label class="form-check-label" for="district">지역(구군)</label>
+                                    </div>
+                                    <div class="form-check" style="display: flex; align-items: center;">
+                                        <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                value="inDatem"
+                                                id="inDatem"
+                                                style="margin-right: 8px;"
+                                        />
+                                        <label class="form-check-label" for="inDatem">등록 일자</label>
+                                    </div>
+                                    <div class="form-check" style="display: flex; align-items: center;">
+                                        <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                value="sexYn"
+                                                id="sexYn"
+                                                style="margin-right: 8px;"
+                                        />
+                                        <label class="form-check-label" for="sexYn">성별</label>
+                                    </div>
+                                </dd>
+                            </dl>
+                            <dd style="margin-top: 16px;">
+                                <li>
+                                    <a class="btn btn-delete" title="적용" id="addSheetBtn" onclick="applyChanges()">
+                                        <img src="/images/icon/btn-srch.svg" alt="적용 아이콘" />
+                                        적용
+                                    </a>
+                                </li>
                             </dd>
-                          </dl>
-                          <dd style="margin-top: 16px;">
-                            <li>
-                              <a class="btn btn-delete" title="적용" id="addSheetBtn" onclick="applyChanges()">
-                                <img src="/images/icon/btn-srch.svg" alt="적용 아이콘">
-                                적용
-                              </a>
-                            </li>
-                          </dd>
                         </div>
                         <p id="selectedItem"></p>
-                        <div id="theGrid" style="max-height: 600px;"></div>
+                        <!-- 초기에는 theGrid 표시 -->
+                        <div id="theGrid" style="max-height: 600px; display: block;"></div>
+                        <div id="theGrid2" style="max-height: 600px; display: none;"></div>
+                        <div id="theGrid3" style="max-height: 600px; display: none;"></div>
                     </div>
+
                     <div class="btn-wrap">
                     </div>
                 </section>
@@ -189,28 +248,101 @@
             $('#endDate').val(endMonthFormatted);
 
         });
-       document.readyState === 'complete' ? init() : window.onload = init;
+
+        function toggleCheckboxVisibility(selected) {
+            // 체크박스 요소 선택
+            const regionCheckbox = document.querySelector('.region-checkbox');
+            const districtCheckbox = document.querySelector('#district').parentElement; // 구군 체크박스 부모
+            const allCheckboxes = document.querySelectorAll('#selection-container input[type="checkbox"]'); // 모든 체크박스 선택
+
+            // 체크박스 초기화 (선택 해제)
+            allCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            if (selected === 'ageNum') {
+                // 나이 클릭 시 모두 표시
+                regionCheckbox.style.display = 'flex';
+                districtCheckbox.style.display = 'flex';
+            } else if (selected === 'region') {
+                // 지역(시) 클릭 시 지역(시) 체크박스 숨기기
+                regionCheckbox.style.display = 'none';
+                districtCheckbox.style.display = 'flex';
+            } else if (selected === 'district') {
+                // 구군 클릭 시 구군 체크박스 숨기기
+                regionCheckbox.style.display = 'flex';
+                districtCheckbox.style.display = 'none';
+            }
+        }
+
+        // 초기화: 페이지 로드 시 모든 체크박스가 보이도록 설정
+        document.addEventListener('DOMContentLoaded', () => {
+            toggleCheckboxVisibility('ageNum'); // 기본값: 나이 선택으로 모두 표시
+        });
+
+        // 라디오 버튼 클릭 이벤트 연결
+        document.querySelectorAll('input[name="rowSelect"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                toggleCheckboxVisibility(e.target.value);
+            });
+        });
+
+        function toggleGrid(gridToShow) {
+            // 모든 그리드 숨기기
+            document.getElementById('theGrid').style.display = 'none';
+            document.getElementById('theGrid2').style.display = 'none';
+            document.getElementById('theGrid3').style.display = 'none';
+
+            // 선택한 그리드만 표시
+            document.getElementById(gridToShow).style.display = 'block';
+        }
+
+        // 라디오 버튼 클릭 이벤트에 연결
+        document.getElementById('RowRegion').addEventListener('click', function () {
+            if (!window.theGrid2Initialized) {
+                RegionData(); // theGrid2 초기화 함수 호출
+                window.theGrid2Initialized = true; // 초기화 여부 기록
+            }
+            toggleGrid('theGrid2'); // 지역(시) 선택 시 theGrid2 표시
+        });
+
+        document.getElementById('ageNum').addEventListener('click', function () {
+            toggleGrid('theGrid'); // 나이 선택 시 theGrid 표시
+        });
+
+        document.getElementById('RowDistrict').addEventListener('click', function () {
+            if (!window.theGrid3Initialized) {
+                DistrictData(); // theGrid3 초기화 함수 호출 (예: DistrictData 함수 작성 필요)
+                window.theGrid3Initialized = true; // 초기화 여부 기록
+            }
+            toggleGrid('theGrid3'); // 구군 선택 시 theGrid3 표시
+        });
+
+
+
+        document.readyState === 'complete' ? init() : window.onload = init;
 
         var theGrid;
         var viewdata;
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('addSheetBtn').addEventListener('click', applyChanges);
+            document.getElementById('addSheetBtn').addEventListener('click', applyChanges2);
         });
 
         document.getElementById('txtCode').addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault(); // 기본 동작(폼 제출) 방지
-                fetchListData();
+                DefaultData();
             }
         });
 
         function init() {
-            fetchListData();
+            DefaultData();
         }
 
 
-        function fetchListData() {
+        function DefaultData() {
           let data = [];
 
             const params = {
@@ -409,7 +541,7 @@
                       buildingType: buildingType, // 예: '아파트'
                     };
 
-                    console.log('클릭된 정보:', params);
+                  //  console.log('클릭된 정보:', params);
                     fetchCellData(params);
                   }
                 });
@@ -512,7 +644,7 @@
                 document.querySelectorAll('#selection-container .form-check-input:checked')
             ).map((checkbox) => checkbox.value);
 
-            console.log('선택된 열들:', selectedRows);
+           // console.log('선택된 열들:', selectedRows);
 
             updateGridColumns(selectedRows);
         }
@@ -567,7 +699,7 @@
                 }
             });
 
-            console.log('FlexGrid 열이 업데이트되었습니다.');
+           // console.log('FlexGrid 열이 업데이트되었습니다.');
         }
 
         function getData(count) {
@@ -583,6 +715,263 @@
                 sexYn: sexes[Math.floor(Math.random() * sexes.length)],
             }));
         }
+
+        //나이 그리드 함수 끝 --------------
+
+        var theGrid2;
+        var viewdata2;
+
+        // 지역 이름 배열
+        const regions = [
+            '서울특별시', '부산광역시', '대구광역시', '인천광역시', '광주광역시',
+            '대전광역시', '울산광역시', '세종특별자치시', '경기도', '강원도',
+            '충청북도', '충청남도', '전라북도', '전라남도', '경상북도', '경상남도', '제주특별자치도'
+        ];
+
+        // 하위 항목 배열
+        const subCategories = ['아파트', '빌라', '단독', '오피스', '기타'];
+
+        // 초기 컬럼 배열
+        const columns = [
+            { binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false },
+            { binding: 'inDatem', header: '년도', width: 80, allowMerging: true },
+            { binding: 'district', header: '구군', width: 120 },
+            { binding: 'construction', header: '구축물', width: 100 }
+        ];
+
+        // 지역과 하위 항목을 기반으로 컬럼 동적 추가
+        regions.forEach(region => {
+            const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase(); // 키 생성 (특수문자 제거)
+            subCategories.forEach(subCategory => {
+                const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase(); // 하위 항목 키 생성
+                columns.push({
+                    binding: `${regionKey}_${subKey}`, // 데이터 바인딩 키 (예: seoul_apartment)
+                    header: ` ${subCategory}`, // 헤더 이름 (예: " 아파트")
+                    width: 150,
+                    align: 'center'
+                });
+            });
+        });
+
+        // 소계 컬럼 추가
+        columns.push({ binding: 'total', header: '합계', width: 100, align: 'center' });
+
+        // 생성된 컬럼 출력 (FlexGrid에 사용 가능)
+      //  console.log(columns);
+
+
+        function RegionData() {
+            let data2  = [];
+
+            const params = {
+                startDate: $('#startDate').val(),
+                endDate: $('#endDate').val(),
+                searchUserNm: $('#txtCode').val(),
+            };
+            // Ajax 통신을 통해 데이터 가져오기
+            $.ajax({
+               url: '/api/report/read',
+                type: 'GET',
+                data2: params,
+                dataType: 'json',
+                success: function (response) {
+                   // console.log("API 응답 데이터:", response);
+
+                    if (response && Array.isArray(response.data2)) {
+                        data2 = response.data2.map((item, index) => {
+                            const rowData = {
+                                rownum: index + 1,
+                                INDATEM: item.inDatem || '',
+                                district: item.district || '', // 구군 정보
+                            };
+
+                            // 지역별 데이터 추가
+                            regions.forEach(region => {
+                                const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
+                                subCategories.forEach(subCategory => {
+                                    const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
+                                    const dataKey = `${regionKey}_${subKey}`;
+                                    rowData[dataKey] = item[regionKey]?.[subKey] || ''; // 데이터 매핑
+                                });
+                            });
+
+                            rowData.total = item.total || ''; // 소계
+                            return rowData;
+                        });
+                    }
+
+                    // 데이터가 15개 미만일 경우 빈 데이터 추가
+                    while (data2.length < 15) {
+                        const emptyRow = { rownum: data2.length + 1 };
+                        regions.forEach(region => {
+                            const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
+                            subCategories.forEach(subCategory => {
+                                const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
+                                emptyRow[`${regionKey}_${subKey}`] = ''; // 빈 데이터 추가
+                            });
+                        });
+                        emptyRow.total = ''; // 소계
+                        data2.push(emptyRow);
+                    }
+
+                   // console.log('처리된 데이터:', data2);
+
+                    // 그리드에 데이터 적용
+                    viewdata2 = new wijmo.collections.CollectionView(data2);
+
+                    if (!theGrid2) {
+                        theGrid2 = new wijmo.grid.FlexGrid('#theGrid2', {
+                            allowMerging: 'ColumnHeaders',
+                            autoGenerateColumns: false,
+                            selectionMode: wijmo.grid.SelectionMode.Row,
+                            isReadOnly: true,
+                            columns: columns,
+                            itemsSource: viewdata2,
+                            allowMerging: 'Cells',
+                        });
+
+
+                        const headerRow1 = new wijmo.grid.Row();
+
+                        headerRow1.allowMerging = true; // 병합 허용
+
+                        theGrid2.columnHeaders.rows.splice(0, 0, headerRow1); // 첫 번째 줄 추가
+
+                        const panel = theGrid2.columnHeaders;
+
+                        // 첫 번째 헤더 줄
+                        panel.setCellData(0, 1, '구분');
+                        panel.setCellData(0, 4, '지역');
+                        panel.setCellData(0, 40, '합계');
+
+                        // 첫 번째 헤더 줄 구성
+                        panel.setCellData(0, 5, '서울특별시');
+                        panel.setCellData(0, 10, '부산광역시');
+                        panel.setCellData(0, 15, '대구광역시');``
+                        panel.setCellData(0, 20, '인천광역시');
+                        panel.setCellData(0, 25, '광주광역시');
+                        panel.setCellData(0, 30, '대전광역시');
+                        panel.setCellData(0, 35, '울산광역시');
+                        panel.setCellData(0, 40, '세종특별자치시');
+                        panel.setCellData(0, 45, '경기도');
+                        panel.setCellData(0, 50, '강원도');``
+                        panel.setCellData(0, 55, '충청북도');
+                        panel.setCellData(0, 60, '충청남도');
+                        panel.setCellData(0, 65, '전라북도');
+                        panel.setCellData(0, 70, '전라남도');
+                        panel.setCellData(0, 75, '경상북도');
+                        panel.setCellData(0, 80, '경상남도');
+                        panel.setCellData(0, 85, '제주특별자치도');
+
+                        theGrid2.rowHeaders.columns.splice(0, 1);
+                        // ContextMenu 추가
+                        new FlexGridContextMenu(theGrid2);
+                        window.downloadFileName = '통계보고서';
+
+                    } else {
+                        theGrid2.itemsSource = viewdata2;
+                    }
+                },
+                error: function () {
+                    console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+                }
+            });
+            // 버튼 클릭 이벤트 연결
+            document.getElementById('addSheetBtn').onclick = applyChanges2;
+        }
+
+        function applyChanges2() {
+            const selectedRows = Array.from(
+                document.querySelectorAll('#selection-container .form-check-input:checked')
+            ).map((checkbox) => checkbox.value);
+
+            //console.log('선택된 열들:', selectedRows);
+
+            updateGridColumns2(selectedRows);
+        }
+
+        function updateGridColumns2(selectedRows) {
+            if (!theGrid2) {
+                console.error('FlexGrid2가 초기화되지 않았습니다.');
+                return;
+            }
+
+            // 항상 유지해야 하는 기본 열 목록
+            const alwaysColumns2 = [
+                { binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false },
+                { binding: 'construction', header: '구축물', width: 100 }
+            ];
+
+            // 지역과 하위 항목 열 추가
+            regions.forEach(region => {
+                const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase(); // 키 생성
+                subCategories.forEach(subCategory => {
+                    const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase(); // 하위 항목 키 생성
+                    alwaysColumns2.push({
+                        binding: `${regionKey}_${subKey}`, // 데이터 바인딩 키
+                        header: `${region} ${subCategory}`, // 헤더 이름
+                        width: 150,
+                        align: 'center'
+                    });
+                });
+            });
+
+            // 동적으로 추가할 열 생성 (체크박스에서 선택된 열만 추가)
+            const dynamicColumns2 = [];
+            selectedRows.forEach(binding => {
+                dynamicColumns2.push({
+                    binding: binding,
+                    header: binding, // 기본적으로 binding을 header로 설정
+                    width: 150,
+                    align: 'center'
+                });
+            });
+
+            // 최종 유지해야 할 열 목록 (기본 열 + 선택된 열)
+            const allColumns = [...alwaysColumns2, ...dynamicColumns2];
+
+            // 현재 FlexGrid에 있는 열 목록
+            const existingColumns = theGrid2.columns.map(col => col.binding);
+
+            // **1. 기존 열 중 제거 대상 확인 및 제거**
+            for (let i = existingColumns.length - 1; i >= 0; i--) {
+                const col = existingColumns[i];
+                if (!allColumns.some(c => c.binding === col)) {
+                   // console.log(`Removing column: ${col}`); // 디버깅용 로그
+                    theGrid2.columns.removeAt(i);
+                }
+            }
+
+            // **2. 추가해야 할 열 추가**
+            allColumns.forEach((col, index) => {
+                if (!existingColumns.includes(col.binding)) {
+                   // console.log(`Adding column: ${col.binding}`); // 디버깅용 로그
+
+                    // rownum의 다음 위치를 계산
+                    const rownumIndex = theGrid2.columns.findIndex(c => c.binding === 'rownum');
+                    const insertionIndex = rownumIndex !== -1 ? rownumIndex + 1 : 0; // rownum이 없으면 맨 앞에 추가
+
+                    theGrid2.columns.splice(insertionIndex, 0, new wijmo.grid.Column({
+                        binding: col.binding,
+                        header: col.header || col.binding, // header가 없으면 binding 사용
+                        width: col.width || 100,
+                        align: col.align || 'center',
+                        visible: col.visible !== undefined ? col.visible : true,
+                        allowMerging: col.allowMerging || false
+                    }));
+                }
+            });
+
+
+            console.log('FlexGrid2 열이 업데이트되었습니다.');
+        }
+
+        //지역(시) 끝 ################################################
+
+        function DistrictData(){
+
+        }
+
 
     </script>
 </th:block>
