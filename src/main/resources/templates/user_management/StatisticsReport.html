@@ -446,7 +446,7 @@
                 {binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false},
                 {binding: 'inDatem', header: '년도', width: 80, allowMerging: true},
                 {binding: 'region', header: '지역(시)', width: 100, allowMerging: true},
-                {binding: 'district', header: '구군', width: 120},
+                {binding: 'district', header: '구군', width: 120 ,allowMerging: true},
                 {binding: 'construction', header: '구축물', width: 100},
 
                 // 10대 이하 구축물
@@ -692,7 +692,7 @@
         }
       });
 
-      console.log('theGrid 업데이트:', theGrid.columns.map(col => col.binding));
+    //  console.log('theGrid 업데이트:', theGrid.columns.map(col => col.binding));
     }
 
 
@@ -945,136 +945,10 @@
         }
       });
 
-      console.log('theGrid2 업데이트:', theGrid2.columns.map(col => col.binding));
+      //console.log('theGrid2 업데이트:', theGrid2.columns.map(col => col.binding));
     }
 
     //지역(시) 끝 ################################################
-
-    var theGrid3;
-    var viewdata3;
-
-    function DistrictData() {
-
-      let data2 = [];
-
-      const params = {
-        startDate: $('#startDate').val(),
-        endDate: $('#endDate').val(),
-        searchUserNm: $('#txtCode').val(),
-      };
-      // Ajax 통신을 통해 데이터 가져오기
-      $.ajax({
-        url: '/api/report/read',
-        type: 'GET',
-        data2: params,
-        dataType: 'json',
-        success: function (response) {
-          // console.log("API 응답 데이터:", response);
-
-          if (response && Array.isArray(response.data2)) {
-            data2 = response.data2.map((item, index) => {
-              const rowData = {
-                rownum: index + 1,
-                INDATEM: item.inDatem || '',
-                district: item.district || '', // 구군 정보
-              };
-
-              // 지역별 데이터 추가
-              regions.forEach(region => {
-                const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
-                subCategories.forEach(subCategory => {
-                  const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
-                  const dataKey = `${regionKey}_${subKey}`;
-                  rowData[dataKey] = item[regionKey]?.[subKey] || ''; // 데이터 매핑
-                });
-              });
-
-              rowData.total = item.total || ''; // 소계
-              return rowData;
-            });
-          }
-
-          // 데이터가 15개 미만일 경우 빈 데이터 추가
-          while (data2.length < 15) {
-            const emptyRow = {rownum: data2.length + 1};
-            regions.forEach(region => {
-              const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
-              subCategories.forEach(subCategory => {
-                const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
-                emptyRow[`${regionKey}_${subKey}`] = ''; // 빈 데이터 추가
-              });
-            });
-            emptyRow.total = ''; // 소계
-            data2.push(emptyRow);
-          }
-
-          // console.log('처리된 데이터:', data2);
-
-          // 그리드에 데이터 적용
-          viewdata2 = new wijmo.collections.CollectionView(data2);
-
-          if (!theGrid3) {
-            theGrid3 = new wijmo.grid.FlexGrid('#theGrid3', {
-              allowMerging: 'ColumnHeaders',
-              autoGenerateColumns: false,
-              selectionMode: wijmo.grid.SelectionMode.Row,
-              isReadOnly: true,
-              columns: columns,
-              itemsSource: viewdata2,
-              allowMerging: 'Cells',
-            });
-
-
-            const headerRow1 = new wijmo.grid.Row();
-
-            headerRow1.allowMerging = true; // 병합 허용
-
-            theGrid3.columnHeaders.rows.splice(0, 0, headerRow1); // 첫 번째 줄 추가
-
-            const panel = theGrid3.columnHeaders;
-
-            // 첫 번째 헤더 줄
-            panel.setCellData(0, 1, '구분');
-            panel.setCellData(0, 4, '지역');
-            panel.setCellData(0, 40, '합계');
-
-            // 첫 번째 헤더 줄 구성
-            panel.setCellData(0, 5, '서울특별시');
-            panel.setCellData(0, 10, '부산광역시');
-            panel.setCellData(0, 15, '대구광역시');
-            ``
-            panel.setCellData(0, 20, '인천광역시');
-            panel.setCellData(0, 25, '광주광역시');
-            panel.setCellData(0, 30, '대전광역시');
-            panel.setCellData(0, 35, '울산광역시');
-            panel.setCellData(0, 40, '세종특별자치시');
-            panel.setCellData(0, 45, '경기도');
-            panel.setCellData(0, 50, '강원도');
-            ``
-            panel.setCellData(0, 55, '충청북도');
-            panel.setCellData(0, 60, '충청남도');
-            panel.setCellData(0, 65, '전라북도');
-            panel.setCellData(0, 70, '전라남도');
-            panel.setCellData(0, 75, '경상북도');
-            panel.setCellData(0, 80, '경상남도');
-            panel.setCellData(0, 85, '제주특별자치도');
-
-            theGrid3.rowHeaders.columns.splice(0, 1);
-            // ContextMenu 추가
-            new FlexGridContextMenu(theGrid3);
-            window.downloadFileName = '통계보고서';
-
-          } else {
-            theGrid3.itemsSource = viewdata2;
-          }
-        },
-        error: function () {
-          console.error("데이터를 가져오는 중 오류가 발생했습니다.");
-        }
-      });
-      // 버튼 클릭 이벤트 연결
-      document.getElementById('addSheetBtn').onclick = applyChanges3;
-    }
 
 
   </script>
