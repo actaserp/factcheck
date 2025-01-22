@@ -22,7 +22,7 @@ import java.util.Random;
 public class TilkoController3 {
 
     String apiHost = "https://api.tilko.net/";
-    String apiKey = "a2768417999c45978d5cefdc12adf588";
+    String apiKey = "4846bd87087041bcb210305ecbbb888b";
 
     // RSA 암호화 함수
     public static String rsaEncrypt(String rsaPublicKey, byte[] aesKey) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
@@ -93,7 +93,7 @@ public class TilkoController3 {
 
             // API 요청 파라미터 설정
             JSONObject json = new JSONObject();
-            String testKey = "9bdd83c6-84a0-45df-abfe-8af3757d81e7";
+            String testKey = "229aa9be-6e24-40da-962f-e888d1d0570d";
             json.put("TransactionKey", testKey);
             json.put("IsSummary", "Y");
 
@@ -112,6 +112,8 @@ public class TilkoController3 {
             String responseStr = response.body().string();
             // JSON 파싱
             JSONObject responseJson = new JSONObject(responseStr);
+
+            System.out.println("responseJson : " + responseJson);
 
             // "PdfData" 섹션 가져오기 (PdfData의 길이가 너무 길어 String 선언 없이 저장)
             String pdfBase64 = responseJson.optString("PdfData", null);
@@ -158,7 +160,9 @@ public class TilkoController3 {
                     }
                     // 결과에 추가
                 } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
                 } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         } catch (Exception e) {

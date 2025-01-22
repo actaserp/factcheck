@@ -10,6 +10,8 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import javax.crypto.BadPaddingException;
@@ -17,6 +19,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import mes.app.tilko.TilkoController;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -31,8 +34,8 @@ import okhttp3.Response;
 
 public class TilkoTest {
 
-    String apiHost	= "https://api.tilko.net/";
-    String apiKey	= "a2768417999c45978d5cefdc12adf588";
+    static String apiHost	= "https://api.tilko.net/";
+    static String apiKey	= "a2768417999c45978d5cefdc12adf588";
 
 
     // RSA 암호화 함수
@@ -80,58 +83,51 @@ public class TilkoTest {
 
 
     public static void main(String[] args) throws IOException, ParseException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        TilkoTest tc			= new TilkoTest();
+        TilkoController tc = new TilkoController();
+        Map<String, Object> map = new HashMap<>();
+        try {
+            //RSA Public Key 조회
+            String rsaPublicKey = tc.getPublicKey();
+            // AES Secret Key 및 IV 생성
+            // AES Secret Key 및 IV 생성
+            byte[] aesKey			= new byte[16];
+            new Random().nextBytes(aesKey);
+
+            byte[] aesIv			= new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+            // AES Key를 RSA Public Key로 암호화
+            String aesCipherKey = rsaEncrypt(rsaPublicKey, aesKey);
+
+            // api 엔드포인트
+            String url = apiHost + "api/v2.0/IrosArchive/ParseXml";
+            String TRKey = "f02f448f-d56c-4836-b8c2-744bf1fc0b31";
+            // API 요청 파라미터 설정
+            org.json.JSONObject json			= new org.json.JSONObject();
+            json.put("TransactionKey"				, TRKey);
+
+            System.out.println("Request Payload: " + json);
+
+            // API 호출
+            OkHttpClient client		= new OkHttpClient();
+
+            Request request			= new Request.Builder()
+                    .url(url)
+                    .addHeader("API-KEY"			, apiKey)
+                    .addHeader("ENC-KEY"			, aesCipherKey)
+                    .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toString())).build();
+
+            Response response		= client.newCall(request).execute();
+            String responseStr		= response.body().string();
+            System.out.println("responseStr: " + responseStr);
+            // JSON 파싱
+            org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
+            JSONArray resultArray = responseJson.optJSONArray("ResultList");
+            // 데이터 설정
 
 
-        // RSA Public Key 조회
-        String rsaPublicKey		= tc.getPublicKey();
-        System.out.println("rsaPublicKey: " + rsaPublicKey);
-
-
-        // AES Secret Key 및 IV 생성
-        byte[] aesKey			= new byte[16];
-        new Random().nextBytes(aesKey);
-
-        byte[] aesIv			= new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-
-
-        // AES Key를 RSA Public Key로 암호화
-        String aesCipherKey		= rsaEncrypt(rsaPublicKey, aesKey);
-        System.out.println("aesCipherKey: " + aesCipherKey);
-
-
-        // API URL 설정(인터넷 등기소 등기물건 주소검색: https://tilko.net/Help/Api/POST-api-apiVersion-Iros-RISUConfirmSimpleC)
-        String url				= tc.apiHost + "api/v1.0/Iros/RISUConfirmSimpleC";
-
-
-        // API 요청 파라미터 설정
-        JSONObject json			= new JSONObject();
-        json.put("Address"				, "충북 청주시 상당구 호미로 2 1602 호");
-        json.put("Sangtae"				, "2");
-        json.put("KindClsFlag"			, "0");
-        json.put("Region"				, "0");
-        json.put("Page"					, "1");
-
-
-        // API 호출
-        OkHttpClient client		= new OkHttpClient();
-
-        Request request			= new Request.Builder()
-                .url(url)
-                .addHeader("API-KEY"			, tc.apiKey)
-                .addHeader("ENC-KEY"			, aesCipherKey)
-                .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toJSONString())).build();
-
-        Response response		= client.newCall(request).execute();
-        String responseStr		= response.body().string();
-        System.out.println("responseStr: " + responseStr);
-
-        // JSON 파싱
-        org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
-
-        // "ResultList" 섹션 가져오기
-        JSONArray resultArray = (JSONArray) responseJson.get("ResultList");
-        System.out.println("resultArray: " + resultArray);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

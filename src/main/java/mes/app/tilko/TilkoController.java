@@ -1,11 +1,15 @@
 package mes.app.tilko;
 
+import mes.app.tilko.service.TilkoService;
+import mes.domain.entity.User;
 import mes.domain.model.AjaxResult;
 import okhttp3.*;
 import org.json.XML;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +26,8 @@ import java.security.*;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
@@ -29,13 +35,294 @@ import java.util.*;
 public class TilkoController {
 
     private static final String apiHost	= "https://api.tilko.net/";
-    private static final String apiKey	= "a2768417999c45978d5cefdc12adf588";
+    private static final String apiKey	= "4846bd87087041bcb210305ecbbb888b";
+
+    @Autowired
+    TilkoService tilkoService;
+
+    // xml 데이터 파싱 api 통신
+    public void searchParsingData(String TRKey, String GoyuNUM, int realMaxNum){
+        TilkoController tc = new TilkoController();
+        try {
+            //RSA Public Key 조회
+            String rsaPublicKey = getPublicKey();
+            // AES Secret Key 및 IV 생성
+            // AES Secret Key 및 IV 생성
+            byte[] aesKey			= new byte[16];
+            new Random().nextBytes(aesKey);
+
+            byte[] aesIv			= new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+            // AES Key를 RSA Public Key로 암호화
+            String aesCipherKey = rsaEncrypt(aesKey, rsaPublicKey);
+
+            // api 엔드포인트
+            String url = apiHost + "api/v2.0/IrosArchive/ParseXml";
+
+            // API 요청 파라미터 설정
+            JSONObject json			= new JSONObject();
+            json.put("TransactionKey"				, TRKey);
+
+            System.out.println("Request Payload: " + json);
+
+            // API 호출
+            OkHttpClient client		= new OkHttpClient();
+
+            Request request			= new Request.Builder()
+                    .url(url)
+                    .addHeader("API-KEY"			, apiKey)
+                    .addHeader("ENC-KEY"			, aesCipherKey)
+                    .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toString())).build();
+
+            Response response		= client.newCall(request).execute();
+            String responseStr		= response.body().string();
+            System.out.println("responseStr: " + responseStr);
+            // JSON 파싱
+            org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
+            // "Result" 키 접근
+            org.json.JSONObject resultObject = responseJson.optJSONObject("Result");
+
+            if (resultObject != null) {
+                // "Register" 키 접근
+                org.json.JSONObject registerObject = resultObject.optJSONObject("Register");
+                // "summary" 키 접근
+                org.json.JSONObject summaryObject = resultObject.optJSONObject("Summary");
+                if (registerObject != null) {
+                    Map<String, Object> registerData = new HashMap<>();
+                    registerData.put("PinNo", registerObject.optString("PinNo", ""));
+                    registerData.put("WksbiAddress", registerObject.optString("WksbiAddress", ""));
+                    registerData.put("Address", registerObject.optString("Address", ""));
+                    registerData.put("WksbiBalDate", registerObject.optString("WksbiBalDate", ""));
+                    registerData.put("WksbiBalNoTime", registerObject.optString("WksbiBalNoTime", ""));
+                    registerData.put("IssOffice", registerObject.optString("IssOffice", ""));
+                    registerData.put("IssNo", registerObject.optString("IssNo", ""));
+                    registerData.put("SumYn", registerObject.optString("SumYn", ""));
+                    registerData.put("WksbiJrisdictionOffice", registerObject.optString("WksbiJrisdictionOffice", ""));
+                    registerData.put("REALID", realMaxNum);
+
+                    // realinfoxml 테이블 데이터 저장
+                    try{
+                        tilkoService.saveTilkoXML(registerData);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    // Data 키 접근()
+                    // 공동전세목록
+                    org.json.JSONArray  dataH = registerObject.optJSONArray("DataH");
+                    // 매매목록
+                    org.json.JSONArray  dataJ = registerObject.optJSONArray("DataJ");
+                    // 담보목록
+                    org.json.JSONArray  dataE = registerObject.optJSONArray("DataE");
+                    if (dataH != null) {
+                        for (int i = 0; i < dataH.length(); i++) {
+                            org.json.JSONObject dataHItem = dataH.getJSONObject(i);
+
+                            // "IndiNo"와 같은 개별 항목 접근
+                            Map<String, Object> dataMap = new HashMap<>();
+                            dataMap.put("SeqNo", dataHItem.optString("SeqNo", null));
+                            dataMap.put("EstateRightDisplay", dataHItem.optString("EstateRightDisplay", null));
+                            dataMap.put("OwnJuris", dataHItem.optString("OwnJuris", null));
+                            dataMap.put("RankNo", dataHItem.optString("RankNo", null));
+                            dataMap.put("CrtResn", dataHItem.optString("CrtResn", null));
+                            dataMap.put("DstInfo", dataHItem.optString("DstInfo", null));
+                            dataMap.put("REALID", realMaxNum);
+
+                            try {
+                                tilkoService.savedataHItems(dataMap);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                    } else if(dataJ != null){
+//                        Map<String, Object> dataJMap = new HashMap<>();
+//                        dataJMap.put("Number", dataJ.optString("Number", ""));
+//
+//                        // realinfoxml 테이블 데이터 저장
+//                        try{
+//                            tilkoService.savedataJ(dataJMap);
+//                        }catch (Exception e){
+//                            e.printStackTrace();
+//                        }
+//                        // TradeAmount 접근
+//                        org.json.JSONArray  TradeAmount = registerObject.optJSONArray("DataE");
+//                        // Items 접근
+//                        org.json.JSONArray  Items = registerObject.optJSONArray("DataE");
+//                        if(TradeAmount != null){
+//                            for (int i = 0; i < TradeAmount.length(); i++) {
+//                                org.json.JSONObject TradeAmountItem = TradeAmount.getJSONObject(i);
+//
+//                                // "IndiNo"와 같은 개별 항목 접근
+//                                Map<String, Object> dataMap = new HashMap<>();
+//                                dataMap.put("Amount", TradeAmountItem.optString("Amount", null));
+//                                dataMap.put("UpdateResn", TradeAmountItem.optString("UpdateResn", null));
+//                                dataMap.put("REALID", realMaxNum);
+//
+//                                try {
+//                                    tilkoService.saveTradeAmount(dataMap);
+//                                }catch (Exception e){
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                        }else if(Items != null){
+//                            for (int i = 0; i < Items.length(); i++) {
+//                                org.json.JSONObject Itemsdata = Items.getJSONObject(i);
+//
+//                                // "IndiNo"와 같은 개별 항목 접근
+//                                Map<String, Object> dataMap = new HashMap<>();
+//                                dataMap.put("SeqNo", Itemsdata.optString("SeqNo", null));
+//                                dataMap.put("EstateDisplay", Itemsdata.optString("EstateDisplay", null));
+//                                dataMap.put("RankNo", Itemsdata.optString("RankNo", null));
+//                                dataMap.put("CrtResn", Itemsdata.optString("CrtResn", null));
+//                                dataMap.put("UpdateResn", Itemsdata.optString("UpdateResn", null));
+//                                dataMap.put("REALID", realMaxNum);
+//
+//                                try {
+//                                    tilkoService.saveItemsdata(dataMap);
+//                                }catch (Exception e){
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                        }else{
+//                            System.out.println("Regester DataJ Array is null or empty");
+//                        }
+//                        for (int i = 0; i < dataJ.length(); i++) {
+//                            org.json.JSONObject dataJItem = dataJ.getJSONObject(i);
+//
+//                            // "IndiNo"와 같은 개별 항목 접근
+//                            Map<String, Object> dataMap = new HashMap<>();
+//                            dataMap.put("IndiNo", dataJItem.optString("SeqNo", null));
+//                            dataMap.put("EstateRightDisplay", dataJItem.optString("EstateRightDisplay", null));
+//                            dataMap.put("OwnJuris", dataJItem.optString("OwnJuris", null));
+//                            dataMap.put("RankNo", dataJItem.optString("RankNo", null));
+//                            dataMap.put("CrtResn", dataJItem.optString("CrtResn", null));
+//                            dataMap.put("DstInfo", dataJItem.optString("DstInfo", null));
+//
+//                            try {
+//                                tilkoService.savedataJItems(dataMap);
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+                        System.out.println("dataJ 존재 :" + dataJ);
+                    } else if(dataE != null){
+                        for (int i = 0; i < dataE.length(); i++) {
+                            org.json.JSONObject dataEItem = dataE.getJSONObject(i);
+
+                            // 개별 항목 접근
+                            Map<String, Object> dataMap = new HashMap<>();
+                            dataMap.put("RankNo", dataEItem.optString("RankNo", ""));
+                            dataMap.put("RgsAimCont", dataEItem.optString("RgsAimCont", ""));
+                            dataMap.put("Receve", dataEItem.optString("Receve", ""));
+                            dataMap.put("RgsCaus", dataEItem.optString("RgsCaus", ""));
+                            dataMap.put("NomprsAndEtc", dataEItem.optString("NomprsAndEtc", ""));
+                            dataMap.put("REALID", realMaxNum);
+
+                            try {
+                                tilkoService.savedataE(dataMap);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } else {
+                        System.out.println("Data Array is null or empty");
+                    }
+                } else if (summaryObject != null) {
+                    Map<String, Object> summaryData = new HashMap<>();
+                    summaryData.put("UniqueNo", summaryObject.get("UniqueNo").toString());
+                    summaryData.put("Gubun", summaryObject.get("WksbiAddress").toString());
+                    summaryData.put("Address", summaryObject.get("Address").toString());
+                    summaryData.put("PrintDate", summaryObject.get("WksbiBalDate").toString());
+                    summaryData.put("REALID", realMaxNum);
+
+                    // summary 데이터 저장
+                    try{
+                        tilkoService.saveSummary(summaryData);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    // Data 키 접근()
+                    org.json.JSONArray dataAArray = registerObject.optJSONArray("DataA");
+                    org.json.JSONArray dataKArray = registerObject.optJSONArray("DataK");
+                    org.json.JSONArray dataEArray = registerObject.optJSONArray("DataE");
+
+                    if (dataAArray != null) {
+                        for (int i = 0; i < dataAArray.length(); i++) {
+                            org.json.JSONObject dataAItem = dataAArray.getJSONObject(i);
+
+                            // "IndiNo"와 같은 개별 항목 접근
+                            Map<String, Object> dataMap = new HashMap<>();
+                            dataMap.put("RegisteredHolder", dataAItem.optString("RegisteredHolder", ""));
+                            dataMap.put("RegistrationNumber", dataAItem.optString("RegistrationNumber", ""));
+                            dataMap.put("FinalShare", dataAItem.optString("FinalShare", ""));
+                            dataMap.put("Address", dataAItem.optString("Address", ""));
+                            dataMap.put("RankNo", dataAItem.optString("RankNo", ""));
+                            dataMap.put("REALID", realMaxNum);
+
+                            // dataa 개별 저장
+                            try {
+                                tilkoService.saveSummaryDataA(dataMap);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } else if(dataKArray != null){
+                        for (int i = 0; i < dataKArray.length(); i++) {
+                            org.json.JSONObject dataKItem = dataKArray.getJSONObject(i);
+
+                            //  개별 항목 접근
+                            Map<String, Object> dataMap = new HashMap<>();
+                            dataMap.put("Purpose", dataKItem.optString("Purpose", ""));
+                            dataMap.put("ReceiptInfo", dataKItem.optString("ReceiptInfo", ""));
+                            dataMap.put("Information", dataKItem.optString("Information", ""));
+                            dataMap.put("TargetOwner", dataKItem.optString("TargetOwner", ""));
+                            dataMap.put("RankNo", dataKItem.optString("RankNo", ""));
+                            dataMap.put("REALID", realMaxNum);
+
+                            // datak 개별 저장
+                            try {
+                                tilkoService.saveSummaryDataK(dataMap);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } else if(dataEArray != null){
+                        for (int i = 0; i < dataEArray.length(); i++) {
+                            org.json.JSONObject dataEItem = dataEArray.getJSONObject(i);
+
+                            // "IndiNo"와 같은 개별 항목 접근
+                            Map<String, Object> dataMap = new HashMap<>();
+                            dataMap.put("Purpose", dataEItem.optString("Purpose", ""));
+                            dataMap.put("ReceiptInfo", dataEItem.optString("ReceiptInfo", ""));
+                            dataMap.put("Information", dataEItem.optString("Information", ""));
+                            dataMap.put("TargetOwner", dataEItem.optString("TargetOwner", ""));
+                            dataMap.put("RankNo", dataEItem.optString("RankNo", ""));
+                            dataMap.put("REALID", realMaxNum);
+
+                            try {
+                                tilkoService.saveSummaryDataE(dataMap);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } else{
+                        System.out.println("summary data Object is null");
+                    }
+                } else {
+                    System.out.println("Result Object is null");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     // 주소 고유번호 조회 api 통신
     @GetMapping("/searchGoyuList")
     public AjaxResult getGoyuNUM(@RequestParam(value = "address1")String address){
         TilkoController tc = new TilkoController();
         AjaxResult result = new AjaxResult();
-
 
         try {
             //RSA Public Key 조회
@@ -76,6 +363,7 @@ public class TilkoController {
             Response response		= client.newCall(request).execute();
             String responseStr		= response.body().string();
             System.out.println("responseStr: " + responseStr);
+
             // JSON 파싱
             org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
             JSONArray resultArray = responseJson.optJSONArray("ResultList");
@@ -93,53 +381,60 @@ public class TilkoController {
         return result;
     }
     // 등기부등본 xml데이터 api 통신
+    @org.springframework.web.bind.annotation.ResponseBody
     @GetMapping("/searchaddress")
-    public AjaxResult searchaddress(@RequestParam(value = "GoyuNUM")String GoyuNUM) throws IOException, ParseException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
-        TilkoController tc = new TilkoController();
+    public AjaxResult searchaddress(@RequestParam(value = "GoyuNUM")String GoyuNUM,
+                                    @RequestParam(value = "address")String address,
+                                    Authentication authentication) throws IOException, ParseException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
         AjaxResult result = new AjaxResult();
-        // 인터넷 등기소 정보
+        TilkoController2 tc = new TilkoController2();
         String irosID = "aarmani";
         String irosPWD = "jky@6400";
         String irosNUM1 = "O3275071";
         String irosNUM2 = "3112";
         String irosNUM3 = "jky6400";
         // 등기물건 고유번호(GoyuNUM)
-        String GoyuAddressNUM = String.valueOf(GoyuNUM).replace("-","");
-        System.out.println("고유번호 : "+ GoyuAddressNUM);
+        String GoyuAddressNUM = GoyuNUM;
 
         // 기타 데이터 (공백일경우 기본값 IsSummary제외 "N")
         String JoinYn = "N";
         String CostsYn = "N";
         String DataYn = "N";
-        String ValidYn = "N";
+        String ValidYn = "Y"; // 유효사항만 포함 여부
         String IsSummary = "Y";
 
-        // 1. RSA 공개키 가져오기
+        // RSA Public Key 조회
         String rsaPublicKey = tc.getPublicKey();
+        System.out.println("rsaPublicKey: " + rsaPublicKey);
+
 
         // AES Secret Key 및 IV 생성
-        byte[] aesKey			= new byte[16];
+        byte[] aesKey = new byte[16];
         new Random().nextBytes(aesKey);
 
-        byte[] aesIv			= new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+        byte[] aesIv = new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-        // 3. AES 키를 RSA 공개키로 암호화
-        String encryptedAesKey = rsaEncrypt(aesKey, rsaPublicKey);
 
-        // 등기부등본 조회 엔드포인트
-        String url = apiHost + "api/v2.0/IrosIdLogin/RISURetrieve";
+        // AES Key를 RSA Public Key로 암호화
+        String aesCipherKey = rsaEncrypt(aesKey, rsaPublicKey);
+        System.out.println("aesCipherKey: " + aesCipherKey);
+
+
+        // API URL 설정
+        String url = tc.apiHost + "api/v2.0/IrosIdLogin/RISURetrieve";
+
 
         // API 요청 파라미터 설정
-        JSONObject json			= new JSONObject();
+        org.json.simple.JSONObject json = new org.json.simple.JSONObject();
 
-        JSONObject auth			= new JSONObject();
-        auth.put("UserId", tc.aesEncrypt(irosID, aesIv, aesKey));
-        auth.put("UserPassword", tc.aesEncrypt(irosPWD, aesIv, aesKey));
+        org.json.simple.JSONObject auth = new org.json.simple.JSONObject();
+        auth.put("UserId", tc.aesEncrypt(aesKey, aesIv, irosID));
+        auth.put("UserPassword", tc.aesEncrypt(aesKey, aesIv, irosPWD));
 
         json.put("Auth", auth);
-        json.put("EmoneyNo1", tc.aesEncrypt(irosNUM1, aesIv, aesKey));
-        json.put("EmoneyNo2", tc.aesEncrypt(irosNUM2, aesIv, aesKey));
-        json.put("EmoneyPwd", tc.aesEncrypt(irosNUM3, aesIv, aesKey));
+        json.put("EmoneyNo1", tc.aesEncrypt(aesKey, aesIv, irosNUM1));
+        json.put("EmoneyNo2", tc.aesEncrypt(aesKey, aesIv, irosNUM2));
+        json.put("EmoneyPwd", tc.aesEncrypt(aesKey, aesIv, irosNUM3));
         json.put("UniqueNo", GoyuAddressNUM);
         json.put("JoinYn", JoinYn);
         json.put("CostsYn", CostsYn);
@@ -147,42 +442,88 @@ public class TilkoController {
         json.put("ValidYn", ValidYn);
         json.put("IsSummary", IsSummary);
 
+
         // API 호출
-        OkHttpClient client		= new OkHttpClient();
+        OkHttpClient client = new OkHttpClient();
 
-        Request request			= new Request.Builder()
+        Request request = new Request.Builder()
                 .url(url)
-                .addHeader("API-KEY"			, tc.apiKey)
-                .addHeader("ENC-KEY"			, encryptedAesKey)
-                .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toString())).build();
+                .addHeader("API-KEY", tc.apiKey)
+                .addHeader("ENC-KEY", aesCipherKey)
+                .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toJSONString())).build();
 
-        Response response		= client.newCall(request).execute();
-        String responseStr		= response.body().string();
+        Response response = client.newCall(request).execute();
+        String responseStr = response.body().string();
         System.out.println("responseStr: " + responseStr);
-
         // JSON 파싱
-        JSONObject responseJson = new JSONObject(responseStr);
+        org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
 
         // "XmlData" 섹션 가져오기
         Object xmlDataObject = responseJson.opt("XmlData");
         if (xmlDataObject instanceof String) {
             // XML 데이터를 JSON 객체로 변환
-            JSONObject jsonData = XML.toJSONObject((String) xmlDataObject);
+            org.json.JSONObject jsonData = XML.toJSONObject((String) xmlDataObject);
 
             // 트랜잭션 키 가져오기
             Object transactionKeyObject = responseJson.opt("TransactionKey");
-            JSONObject transactionKey = transactionKeyObject instanceof JSONObject
-                    ? (JSONObject) transactionKeyObject
+            org.json.JSONObject transactionKey = transactionKeyObject instanceof org.json.JSONObject
+                    ? (org.json.JSONObject) transactionKeyObject
                     : null;
 
-            // 결과 저장
-            result.message = transactionKey != null ? transactionKey.toString() : "TransactionKey 없음";
-            result.data = jsonData;
+            // xml 데이터(json) 결과 저장
+            Map<String, Object> resultData = new HashMap<>();
+            Map<String, Object> jsonDataMap = jsonData.toMap();
+
+            resultData.put("jsonData", jsonDataMap);
+            assert transactionKey != null;
+            resultData.put("transactionKey", transactionKeyObject.toString());
+
+            System.out.println("jsonDataMap : " +  jsonDataMap);
+
+            // 데이터 파싱(건축물 구축물별 구분)
+            Map<String, Object> summary = (Map<String, Object>) jsonDataMap.get("register");
+            List<Map<String, Object>> itemList = (List<Map<String, Object>>) summary.get("item");
+            StringBuilder wksbiData = new StringBuilder();
+            for (Map<String, Object> item : itemList) {
+                // 각 item별 건물내역 데이터
+                String wksbiAddress = (String) item.get("wksbw_buld_cont");
+                wksbiData.append(wksbiAddress);
+            }
+            // wksbiData 에 아파트 / 주택 유무 판별
+            System.out.println("wksbiData: " + wksbiData);
+
+            // REALINFO 테이블 id 최대값 확인
+            Map<String, Object> maxRealNum = tilkoService.getMaxOfRealinfo();
+            int maxNum = (Integer) maxRealNum.get("NextID");
+
+            // xml 파싱 데이터 조회 및 저장
+            try {
+                searchParsingData(transactionKeyObject.toString(), GoyuNUM, maxNum);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            // REALINFO 테이블 데이터 저장
+            Map<String, Object> dataMap = new HashMap<>();
+            User user = (User) authentication.getPrincipal();
+            // 오늘 날짜 가져오기
+            LocalDate today = LocalDate.now();
+
+            // 날짜를 YYYYMMDD 형식으로 포맷팅
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            String formattedDate = today.format(formatter);
+            dataMap.put("USERID", user.getUsername());
+            dataMap.put("REQDATE", formattedDate);
+            dataMap.put("REALADD", address);
+
+            tilkoService.saveTilko(dataMap);
+
         } else {
-            result.data = "데이터 조회 실패";
+            System.out.println("데이터 저장 실패");
         }
         return result;
     }
+
 
     // pdf파일 다운로드
     @GetMapping("/downloadPDF")

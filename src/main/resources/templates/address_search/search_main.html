@@ -89,7 +89,7 @@
                     </div>
                     <div>
                         <label for="address2">상세 주소:</label>
-                        <input type="text" id="address2"><br>
+                        <input type="text" id="address2" placeholder="상세주소를 검색"><br>
                     </div>
                     <button onclick="searchGoyuList()" style="margin-top: 10px">고유번호 확인</button>
                 </dl>
@@ -180,9 +180,6 @@
         if (document.getElementById('address1').value === "") {
             Alert.alert('', '주소를 선택해주세요');
             return false;
-        } else if(document.getElementById('address2').value === ""){
-            Alert.alert('', '상세주소를 입력해주세요');
-            return false;
         }
         $.ajax({
             url: '/api/tilko/searchGoyuList',
@@ -266,7 +263,8 @@
             url: '/api/tilko/searchaddress',
             type: 'GET',
             data: {
-                "GoyuNUM" : data.UniqueNo
+                "GoyuNUM" : data.UniqueNo,
+                "address" : data.BudongsanSojaejibeon
             },
             async: false,
             success: function (data) {
