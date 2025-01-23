@@ -45,20 +45,25 @@ public class HomeController {
 	}
 
 
-	/*@RequestMapping(value= "/", method=RequestMethod.GET)
-	public ModelAndView pageIndex(HttpServletRequest request, HttpSession session) {
-
-		SecurityContext sc = SecurityContextHolder.getContext();
-		Authentication auth = sc.getAuthentication();
-		User user = (User)auth.getPrincipal();
-		String userid = user.getUsername();
-		String username = user.getUserProfile().getName();;
+		@RequestMapping(value= "/", method=RequestMethod.GET)
+    public ModelAndView pageIndex(HttpServletRequest request, HttpSession session) {
 
 
-		SystemOption sysOpt= this.systemOptionRepository.getByCode("LOGO_TITLE");
-		String logoTitle = sysOpt.getValue();
+			// User-Agent 확인
+			String userAgent = request.getHeader("User-Agent").toLowerCase();
+			boolean isMobile = userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone");
 
-		//q = this.systemOptionRepository.getByCode("main_menu");
+        SecurityContext sc = SecurityContextHolder.getContext();
+        Authentication auth = sc.getAuthentication();
+        User user = (User)auth.getPrincipal();
+				String userid = user.getUsername();
+        String username = user.getUserProfile().getName();;
+
+
+        SystemOption sysOpt= this.systemOptionRepository.getByCode("LOGO_TITLE");
+        String logoTitle = sysOpt.getValue();
+
+        //q = this.systemOptionRepository.getByCode("main_menu");
 
 
 		ModelAndView mv = new ModelAndView();
@@ -68,53 +73,9 @@ public class HomeController {
 		mv.addObject("system_title", logoTitle);
 //		mv.addObject("default_menu_code", "wm_dashboard_summary");
 
-
-
-		mv.setViewName("index");
-		return mv;
-	}*/
-	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public ModelAndView pageIndex(HttpServletRequest request, HttpSession session) {
-
-		// User-Agent 확인
-		String userAgent = request.getHeader("User-Agent").toLowerCase();
-		boolean isMobile = userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone");
-
-		SecurityContext sc = SecurityContextHolder.getContext();
-		Authentication auth = sc.getAuthentication();
-
-		// Principal 가져오기
-		Object principal = auth.getPrincipal();
-		String userid = null;
-		String username = null;
-
-		if (principal instanceof User) {
-			// Principal이 User 타입일 때 처리
-			User user = (User) principal;
-			userid = user.getUsername();
-			username = user.getUserProfile() != null ? user.getUserProfile().getName() : "Unknown User";
-		} else if (principal instanceof String) {
-			// Principal이 String 타입일 때 처리 (소셜 로그인 사용 시)
-			userid = (String) principal;
-			username = "소셜 사용자"; // 적절히 기본 값을 설정
-		} else {
-			throw new IllegalStateException("Authentication principal is neither User nor String.");
-		}
-
-		SystemOption sysOpt = this.systemOptionRepository.getByCode("LOGO_TITLE");
-		String logoTitle = sysOpt.getValue();
-
-		ModelAndView mv = new ModelAndView();
-		mv.addObject("userid", userid);
-		mv.addObject("username", username);
-		mv.addObject("system_title", logoTitle);
-
-		// 모바일 첫페이지
-		mv.addObject("currentPage", "ticket-list");
-		mv.setViewName(isMobile ? "mobile/ticket-list" : "index");
+			mv.setViewName(isMobile ? "mobile/ticket-list" : "index");
 		return mv;
 	}
-
 
 	@RequestMapping(value= "/intro", method=RequestMethod.GET)
     public ModelAndView pageIntro(HttpServletRequest request, HttpSession session) {
@@ -135,11 +96,11 @@ public class HomeController {
 		
 		User user = (User)auth.getPrincipal();
 		String username = user.getUserProfile().getName();
-		
+
 		ModelAndView mv = new ModelAndView();
 		mv.addObject("username", username);
 		mv.addObject("userinfo", user);
-		
+
 		mv.setViewName("/system/setup");
 		return mv;
 	}
