@@ -97,7 +97,7 @@
             <div id="addressWrap" class="contents-wrap">
 
             </div>
-            <a href="search_card" style="margin-top: 10px">페이지 이동 테스트</a>
+            <button onclick="searchdatetest()" style="margin-top: 10px">test</button>
         </div> <!--//layout-contents end -->
 
     </div> <!-- //mobile-layout-contents end-->
@@ -276,6 +276,24 @@
 
                 // 페이지 이동
                 // window.location.href ="search_card";
+
+            },
+            error: function (error) {
+                console.error("Error in API call:", error);
+            }
+        });
+    }
+    function searchdatetest() {
+        console.log("data : ", )
+        $.ajax({
+            url: '/api/tilkotest/searchGoyuList',
+            type: 'GET',
+            data: {
+            },
+            async: false,
+            success: function (data) {
+                data2 = data.data;
+                console.log("data2", data2);
 
             },
             error: function (error) {

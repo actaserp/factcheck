@@ -40,7 +40,7 @@ import okhttp3.Response;
 public class TilkoController2 {
 
     String apiHost	= "https://api.tilko.net/";
-    String apiKey	= "4846bd87087041bcb210305ecbbb888b";
+    String apiKey	= "b9a7e1c16ad44a4aa165d7f20427537d";
 
 
     // AES 암호화 함수

@@ -83,52 +83,148 @@ public class TilkoTest {
 
 
     public static void main(String[] args) throws IOException, ParseException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+//        TilkoController tc = new TilkoController();
+//        Map<String, Object> map = new HashMap<>();
+//        try {
+//            //RSA Public Key 조회
+//            String rsaPublicKey = tc.getPublicKey();
+//            // AES Secret Key 및 IV 생성
+//            // AES Secret Key 및 IV 생성
+//            byte[] aesKey			= new byte[16];
+//            new Random().nextBytes(aesKey);
+//
+//            byte[] aesIv			= new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+//
+//            // AES Key를 RSA Public Key로 암호화
+//            String aesCipherKey = rsaEncrypt(rsaPublicKey, aesKey);
+//
+//            // api 엔드포인트
+//            String url = apiHost + "api/v2.0/IrosArchive/ParseXml";
+//            String TRKey = "f02f448f-d56c-4836-b8c2-744bf1fc0b31";
+//            // API 요청 파라미터 설정
+//            org.json.JSONObject json			= new org.json.JSONObject();
+//            json.put("TransactionKey"				, TRKey);
+//
+//            System.out.println("Request Payload: " + json);
+//
+//            // API 호출
+//            OkHttpClient client		= new OkHttpClient();
+//
+//            Request request			= new Request.Builder()
+//                    .url(url)
+//                    .addHeader("API-KEY"			, apiKey)
+//                    .addHeader("ENC-KEY"			, aesCipherKey)
+//                    .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toString())).build();
+//
+//            Response response		= client.newCall(request).execute();
+//            String responseStr		= response.body().string();
+//            System.out.println("responseStr: " + responseStr);
+//            // JSON 파싱
+//            org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
+//            JSONArray resultArray = responseJson.optJSONArray("ResultList");
+//            // 데이터 설정
+//
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         TilkoController tc = new TilkoController();
-        Map<String, Object> map = new HashMap<>();
         try {
             //RSA Public Key 조회
             String rsaPublicKey = tc.getPublicKey();
             // AES Secret Key 및 IV 생성
             // AES Secret Key 및 IV 생성
-            byte[] aesKey			= new byte[16];
+            byte[] aesKey = new byte[16];
             new Random().nextBytes(aesKey);
 
-            byte[] aesIv			= new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            byte[] aesIv = new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
             // AES Key를 RSA Public Key로 암호화
             String aesCipherKey = rsaEncrypt(rsaPublicKey, aesKey);
 
             // api 엔드포인트
-            String url = apiHost + "api/v2.0/IrosArchive/ParseXml";
+            String url = apiHost + "api/v2.0/IrosArchive/Analyze";
             String TRKey = "f02f448f-d56c-4836-b8c2-744bf1fc0b31";
+            int realMaxNum = 999;
             // API 요청 파라미터 설정
-            org.json.JSONObject json			= new org.json.JSONObject();
-            json.put("TransactionKey"				, TRKey);
+            org.json.JSONObject json = new org.json.JSONObject();
+            json.put("TransactionKey", TRKey);
 
             System.out.println("Request Payload: " + json);
 
             // API 호출
-            OkHttpClient client		= new OkHttpClient();
+            OkHttpClient client = new OkHttpClient();
 
-            Request request			= new Request.Builder()
+            Request request = new Request.Builder()
                     .url(url)
-                    .addHeader("API-KEY"			, apiKey)
-                    .addHeader("ENC-KEY"			, aesCipherKey)
+                    .addHeader("API-KEY", apiKey)
+                    .addHeader("ENC-KEY", aesCipherKey)
                     .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toString())).build();
 
-            Response response		= client.newCall(request).execute();
-            String responseStr		= response.body().string();
+            Response response = client.newCall(request).execute();
+            String responseStr = response.body().string();
             System.out.println("responseStr: " + responseStr);
             // JSON 파싱
             org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
-            JSONArray resultArray = responseJson.optJSONArray("ResultList");
-            // 데이터 설정
+            // "Result" 키 접근
+            org.json.JSONObject resultObject = responseJson.optJSONObject("Result");
 
-
+//            if (resultObject != null) {
+//                // "Rights" 키 접근
+//                org.json.JSONArray rightsArray = resultObject.optJSONArray("Rights");
+//
+//                // "Seniority" 키 접근
+//                org.json.JSONArray seniorityArray = resultObject.optJSONArray("Seniority");
+//                if (rightsArray != null) {
+//                    for (int i = 0; i < rightsArray.length(); i++) {
+//                        org.json.JSONObject rightsItem = rightsArray.getJSONObject(i);
+//
+//                        // 개별 항목 접근
+//                        Map<String, Object> dataMap = new HashMap<>();
+//                        dataMap.put("RankNo", rightsItem.optString("RankNo", null));
+//                        dataMap.put("Gubun", rightsItem.optString("Gubun", null));
+//                        dataMap.put("TargetOwner", rightsItem.optString("TargetOwner", null));
+//                        dataMap.put("Information", rightsItem.optString("Information", null));
+//                        dataMap.put("OriginalText", rightsItem.optString("OriginalText", null));
+//                        dataMap.put("REALID", realMaxNum);
+//
+//                        try {
+//                            tilkoService.saveRights(dataMap);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                } else {
+//                    System.out.println("Rights Array is null or empty");
+//                }
+//                if (seniorityArray != null) {
+//                    for (int i = 0; i < seniorityArray.length(); i++) {
+//                        org.json.JSONObject seniorityItem = seniorityArray.getJSONObject(i);
+//
+//                        // 개별 항목 접근
+//                        Map<String, Object> dataMap = new HashMap<>();
+//                        dataMap.put("RankNo", seniorityItem.optString("RankNo", null));
+//                        dataMap.put("Gubun", seniorityItem.optString("Gubun", null));
+//                        dataMap.put("TargetOwner", seniorityItem.optString("TargetOwner", null));
+//                        dataMap.put("Amount", seniorityItem.optString("Amount", null));
+//                        dataMap.put("CurCode", seniorityItem.optString("CurCode", null));
+//                        dataMap.put("Warning", seniorityItem.optString("Warning", null));
+//                        dataMap.put("OriginalText", seniorityItem.optString("OriginalText", null));
+//                        dataMap.put("REALID", realMaxNum);
+//
+//                        try {
+//                            tilkoService.saveSeniority(dataMap);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                } else {
+//                    System.out.println("Seniority Array is null or empty");
+//                }
+//            }
         } catch (Exception e) {
-            e.printStackTrace();
+            e.getMessage();
         }
-
     }
 
 }

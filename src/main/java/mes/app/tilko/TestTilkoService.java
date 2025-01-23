@@ -1,4 +1,4 @@
-package mes.app.tilko.service;
+package mes.app.tilko;
 
 import mes.domain.services.SqlRunner;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class TilkoService {
+public class TestTilkoService {
 
     @Autowired
     SqlRunner sqlRunner;
@@ -54,42 +54,10 @@ public class TilkoService {
         params.addValue("IssNo", jsonDataMap.get("IssNo"));
         params.addValue("SumYn", jsonDataMap.get("SumYn"));
         params.addValue("WksbiJrisdictionOffice", jsonDataMap.get("WksbiJrisdictionOffice"));
-        int realMaxNum = this.sqlRunner.execute(sql,params);
 
+        int realMaxNum = this.sqlRunner.execute(sql,params);
         System.out.println("realMaxNum : " + realMaxNum);
 
-    }
-    // registerdataK 저장
-    public void saveRegisterDataK(Map<String, Object> jsonDataMap) {
-        MapSqlParameterSource params = new MapSqlParameterSource();
-
-        String sql = """
-            INSERT INTO TB_REALAOWN (
-                REALID,
-                RankNo,
-                RgsAimCont,
-                Receve,
-                RgsCaus,
-                NomprsAndEtc
-            ) VALUES (
-                :REALID,
-                :RankNo,
-                :RgsAimCont,
-                :Receve,
-                :RgsCaus,
-                :NomprsAndEtc
-            );
-            """;
-
-        // Map 데이터를 SQL 파라미터에 매핑
-        params.addValue("REALID", jsonDataMap.get("REALID"));
-        params.addValue("RankNo", jsonDataMap.get("RankNo"));
-        params.addValue("RgsAimCont", jsonDataMap.get("RgsAimCont"));
-        params.addValue("Receve", jsonDataMap.get("Receve"));
-        params.addValue("RgsCaus", jsonDataMap.get("RgsCaus"));
-        params.addValue("NomprsAndEtc", jsonDataMap.get("NomprsAndEtc"));
-
-        int realMaxNum = this.sqlRunner.execute(sql,params);
     }
     // dataH저장
     public void savedataH(String dataHNum) {
@@ -144,31 +112,28 @@ public class TilkoService {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         String sql = """
-            INSERT INTO TB_REALBOWN (
-                REALID,
-                RankNo,
-                RgsAimCont,
-                Receve,
-                RgsCaus,
-                NomprsAndEtc
-            ) VALUES (
-                :REALID,
-                :RankNo,
-                :RgsAimCont,
-                :Receve,
-                :RgsCaus,
-                :NomprsAndEtc
-            );
-            """;
-
-        // Map 데이터를 SQL 파라미터에 매핑
+                INSERT INTO TB_REGISTERDATAE (
+                                REALID,
+                                RankNo,
+                                RgsAimCont,
+                                Receve,
+                                RgsCaus,
+                                NomprsAndEtc
+                            ) VALUES (
+                                :REALID,
+                                :RankNo,
+                                :RgsAimCont,
+                                :Receve,
+                                :RgsCaus,
+                                :NomprsAndEtc
+                            );
+                """;
         params.addValue("REALID", dataMap.get("REALID"));
         params.addValue("RankNo", dataMap.get("RankNo"));
         params.addValue("RgsAimCont", dataMap.get("RgsAimCont"));
         params.addValue("Receve", dataMap.get("Receve"));
         params.addValue("RgsCaus", dataMap.get("RgsCaus"));
         params.addValue("NomprsAndEtc", dataMap.get("NomprsAndEtc"));
-
         int realMaxNum = this.sqlRunner.execute(sql,params);
 
     }
@@ -292,7 +257,7 @@ public class TilkoService {
                 ) VALUES (
                     :USERID,      -- USERID
                     :REQDATE,     -- REQDATE (YYYYMMDD 형식)
-                    :REALADD, -- REALADD
+                    :REQDATE, -- REALADD
                     '20250121',     -- REGDATE
                     '1234567890',   -- RESIDO
                     '금천구',       -- REGUGUN
@@ -418,79 +383,7 @@ public class TilkoService {
         // SQL 실행
         int rowsAffected = this.sqlRunner.execute(sql, params);
     }
-    // Rights 저장
-    public void saveRights(Map<String, Object> jsonDataMap) {
-        MapSqlParameterSource params = new MapSqlParameterSource();
 
-        String sql = """
-        INSERT INTO TB_RIGHTS (
-            REALID,
-            RankNo,
-            Gubun,
-            TargetOwner,
-            Information,
-            OriginalText
-        ) VALUES (
-            :REALID,
-            :RankNo,
-            :Gubun,
-            :TargetOwner,
-            :Information,
-            :OriginalText
-        );
-    """;
-
-        // Map 데이터를 SQL 파라미터에 매핑
-        params.addValue("REALID", jsonDataMap.get("REALID"));
-        params.addValue("RankNo", jsonDataMap.get("RankNo"));
-        params.addValue("Gubun", jsonDataMap.get("Gubun"));
-        params.addValue("TargetOwner", jsonDataMap.get("TargetOwner"));
-        params.addValue("Information", jsonDataMap.get("Information"));
-        params.addValue("OriginalText", jsonDataMap.get("OriginalText"));
-
-        // SQL 실행
-        int rowsAffected = this.sqlRunner.execute(sql, params);
-    }
-
-    // Seniority 저장
-    public void saveSeniority(Map<String, Object> jsonDataMap) {
-        MapSqlParameterSource params = new MapSqlParameterSource();
-
-        String sql = """
-        INSERT INTO TB_SENIORITY (
-            REALID,
-            RankNo,
-            Gubun,
-            TargetOwner,
-            Amount,
-            CurCode,
-            Warning,
-            OriginalText
-        ) VALUES (
-            :REALID,
-            :RankNo,
-            :Gubun,
-            :TargetOwner,
-            :Amount,
-            :CurCode,
-            :Warning,
-            :OriginalText
-        );
-    """;
-
-        // Map 데이터를 SQL 파라미터에 매핑
-        params.addValue("REALID", jsonDataMap.get("REALID"));
-        params.addValue("RankNo", jsonDataMap.get("RankNo"));
-        params.addValue("Gubun", jsonDataMap.get("Gubun"));
-        params.addValue("TargetOwner", jsonDataMap.get("TargetOwner"));
-        params.addValue("Amount", jsonDataMap.get("Amount"));
-        params.addValue("CurCode", jsonDataMap.get("CurCode"));
-        params.addValue("Warning", jsonDataMap.get("Warning"));
-        params.addValue("OriginalText", jsonDataMap.get("OriginalText"));
-
-        // SQL 실행
-        int rowsAffected = this.sqlRunner.execute(sql, params);
-    }
 
 
 

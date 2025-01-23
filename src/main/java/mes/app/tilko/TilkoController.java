@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.transaction.Transactional;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -35,10 +37,12 @@ import java.util.*;
 public class TilkoController {
 
     private static final String apiHost	= "https://api.tilko.net/";
-    private static final String apiKey	= "4846bd87087041bcb210305ecbbb888b";
+    private static final String apiKey	= "b9a7e1c16ad44a4aa165d7f20427537d";
 
     @Autowired
     TilkoService tilkoService;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     // xml 데이터 파싱 api 통신
     public void searchParsingData(String TRKey, String GoyuNUM, int realMaxNum){
@@ -85,6 +89,7 @@ public class TilkoController {
             if (resultObject != null) {
                 // "Register" 키 접근
                 org.json.JSONObject registerObject = resultObject.optJSONObject("Register");
+
                 // "summary" 키 접근
                 org.json.JSONObject summaryObject = resultObject.optJSONObject("Summary");
                 if (registerObject != null) {
@@ -101,19 +106,52 @@ public class TilkoController {
                     registerData.put("REALID", realMaxNum);
 
                     // realinfoxml 테이블 데이터 저장
-                    try{
-                        tilkoService.saveTilkoXML(registerData);
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
 
+                    // 데이터 삽입 수행
+                    tilkoService.saveTilkoXML(registerData);
                     // Data 키 접근()
-                    // 공동전세목록
+                    // 표제부 주소 출력
+                    org.json.JSONArray  dataW = registerObject.optJSONArray("DataH");
+                    if(dataW != null) {
+                        for (int i = 0; i < dataW.length(); i++) {
+                            org.json.JSONObject dataWItem = dataW.getJSONObject(i);
+                            // 건물 구분자 출력
+                            String buldCont = dataWItem.optString("BuldCont", null);
+                            System.out.println("buldCont(건축물 구분): " + buldCont);
+                        }
+                    }
+                    // 공동전세목록 (TB_REGISTERDATAH / TB_REGISTERDATAHITEMS)
                     org.json.JSONArray  dataH = registerObject.optJSONArray("DataH");
-                    // 매매목록
+                    // 매매목록 (TB_REGISTER.DATAJ / TB_TradeAmount / TB_items)
                     org.json.JSONArray  dataJ = registerObject.optJSONArray("DataJ");
-                    // 담보목록
+                    // 을구 소유권 사항 (TB_REALBOWN)
                     org.json.JSONArray  dataE = registerObject.optJSONArray("DataE");
+                    // 갑구 소유권 사항 (TB_REALAOWN)
+                    org.json.JSONArray  dataK = registerObject.optJSONArray("DataK");
+                    // 담보목록 (TB_REGISTERDATAH / TB_REGISTERDATAHITEMS)
+                    org.json.JSONArray  dataG = registerObject.optJSONArray("DataG");
+                    if (dataK != null) {
+                        for (int i = 0; i < dataK.length(); i++) {
+                            org.json.JSONObject dataKItem = dataK.getJSONObject(i);
+
+                            // "IndiNo"와 같은 개별 항목 접근
+                            Map<String, Object> dataMap = new HashMap<>();
+                            dataMap.put("RgsAimCont", dataKItem.optString("RgsAimCont", null));
+                            dataMap.put("Receve", dataKItem.optString("Receve", null));
+                            dataMap.put("RgsCaus", dataKItem.optString("RgsCaus", null));
+                            dataMap.put("RankNo", dataKItem.optString("RankNo", null));
+                            dataMap.put("NomprsAndEtc", dataKItem.optString("NomprsAndEtc", null));
+                            dataMap.put("REALID", realMaxNum);
+
+                            try {
+                                tilkoService.saveRegisterDataK(dataMap);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                    } else {
+                        System.out.println("DataH Array is null or empty");
+                    }
                     if (dataH != null) {
                         for (int i = 0; i < dataH.length(); i++) {
                             org.json.JSONObject dataHItem = dataH.getJSONObject(i);
@@ -134,7 +172,10 @@ public class TilkoController {
                                 e.printStackTrace();
                             }
                         }
-                    } else if(dataJ != null){
+                    } else {
+                        System.out.println("DataH Array is null or empty");
+                    }
+                    if(dataJ != null){
 //                        Map<String, Object> dataJMap = new HashMap<>();
 //                        dataJMap.put("Number", dataJ.optString("Number", ""));
 //
@@ -205,7 +246,67 @@ public class TilkoController {
 //                            }
 //                        }
                         System.out.println("dataJ 존재 :" + dataJ);
-                    } else if(dataE != null){
+                    } else {
+                        System.out.println("DataJ Array is null or empty");
+                    }
+                    if(dataG != null) {
+                        // dataG 가 개별 컬럼을 가지고 있을경우
+//                        Map<String, Object> dataGMap = new HashMap<>();
+//                        dataGMap.put("Number", dataG.optString("Number", ""));
+//
+//                        // registerdatag 테이블 데이터 저장
+//                        try{
+//                            tilkoService.savedataJ(dataGMap);
+//                        }catch (Exception e){
+//                            e.printStackTrace();
+//                        }
+//                        // registerdatagItems 접근
+//                        org.json.JSONArray  Items = dataG.optJSONArray("Items");
+//                        if(Items != null){
+//                            for (int i = 0; i < TradeAmount.length(); i++) {
+//                                org.json.JSONObject TradeAmountItem = TradeAmount.getJSONObject(i);
+//
+//                                // "IndiNo"와 같은 개별 항목 접근
+//                                Map<String, Object> dataMap = new HashMap<>();
+//                                dataMap.put("Amount", TradeAmountItem.optString("Amount", null));
+//                                dataMap.put("UpdateResn", TradeAmountItem.optString("UpdateResn", null));
+//                                dataMap.put("REALID", realMaxNum);
+//
+//                                try {
+//                                    tilkoService.saveTradeAmount(dataMap);
+//                                }catch (Exception e){
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                        }
+//                        else{
+//                            System.out.println("Regester DataJ Array is null or empty");
+//                        }
+
+                        // datag가 리스트로 하위 테이블정보만 가지고 있을경우
+//                        for (int i = 0; i < dataJ.length(); i++) {
+//                            org.json.JSONObject dataJItem = dataJ.getJSONObject(i);
+//
+//                            // "IndiNo"와 같은 개별 항목 접근
+//                            Map<String, Object> dataMap = new HashMap<>();
+//                            dataMap.put("IndiNo", dataJItem.optString("SeqNo", null));
+//                            dataMap.put("EstateRightDisplay", dataJItem.optString("EstateRightDisplay", null));
+//                            dataMap.put("OwnJuris", dataJItem.optString("OwnJuris", null));
+//                            dataMap.put("RankNo", dataJItem.optString("RankNo", null));
+//                            dataMap.put("CrtResn", dataJItem.optString("CrtResn", null));
+//                            dataMap.put("DstInfo", dataJItem.optString("DstInfo", null));
+//
+//                            try {
+//                                tilkoService.savedataJItems(dataMap);
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+                        System.out.println("dataG 존재 :" + dataG);
+                    } else {
+                        System.out.println("DataJ Array is null or empty");
+                    }
+                    if(dataE != null){
                         for (int i = 0; i < dataE.length(); i++) {
                             org.json.JSONObject dataEItem = dataE.getJSONObject(i);
 
@@ -225,14 +326,17 @@ public class TilkoController {
                             }
                         }
                     } else {
-                        System.out.println("Data Array is null or empty");
+                        System.out.println("DatE Array is null or empty");
                     }
-                } else if (summaryObject != null) {
+                }  else {
+                    System.out.println("register is null or empty");
+                }
+                if (summaryObject != null) {
                     Map<String, Object> summaryData = new HashMap<>();
                     summaryData.put("UniqueNo", summaryObject.get("UniqueNo").toString());
-                    summaryData.put("Gubun", summaryObject.get("WksbiAddress").toString());
+                    summaryData.put("Gubun", summaryObject.get("Gubun").toString());
                     summaryData.put("Address", summaryObject.get("Address").toString());
-                    summaryData.put("PrintDate", summaryObject.get("WksbiBalDate").toString());
+                    summaryData.put("PrintDate", summaryObject.get("PrintDate").toString());
                     summaryData.put("REALID", realMaxNum);
 
                     // summary 데이터 저장
@@ -243,9 +347,12 @@ public class TilkoController {
                     }
 
                     // Data 키 접근()
-                    org.json.JSONArray dataAArray = registerObject.optJSONArray("DataA");
-                    org.json.JSONArray dataKArray = registerObject.optJSONArray("DataK");
-                    org.json.JSONArray dataEArray = registerObject.optJSONArray("DataE");
+                    // 소유지분현황 갑구 (TB_SummaryDataA)
+                    org.json.JSONArray dataAArray = summaryObject.optJSONArray("DataA");
+                    // 소유지분을 제외한소유권에 관한 사항 갑구 (TB_SUMMARYDATAK)
+                    org.json.JSONArray dataKArray = summaryObject.optJSONArray("DataK");
+                    // (근)저당권 및 전세권등(을구) (TB_SUMMARYDATAE)
+                    org.json.JSONArray dataEArray = summaryObject.optJSONArray("DataE");
 
                     if (dataAArray != null) {
                         for (int i = 0; i < dataAArray.length(); i++) {
@@ -267,7 +374,10 @@ public class TilkoController {
                                 e.printStackTrace();
                             }
                         }
-                    } else if(dataKArray != null){
+                    } else {
+                        System.out.println("Summary DataA Array is null or empty");
+                    }
+                    if(dataKArray != null){
                         for (int i = 0; i < dataKArray.length(); i++) {
                             org.json.JSONObject dataKItem = dataKArray.getJSONObject(i);
 
@@ -287,7 +397,10 @@ public class TilkoController {
                                 e.printStackTrace();
                             }
                         }
-                    } else if(dataEArray != null){
+                    } else {
+                        System.out.println("Summary DataK Array is null or empty");
+                    }
+                    if(dataEArray != null){
                         for (int i = 0; i < dataEArray.length(); i++) {
                             org.json.JSONObject dataEItem = dataEArray.getJSONObject(i);
 
@@ -307,10 +420,10 @@ public class TilkoController {
                             }
                         }
                     } else{
-                        System.out.println("summary data Object is null");
+                        System.out.println("summary dataE Object is null");
                     }
                 } else {
-                    System.out.println("Result Object is null");
+                    System.out.println("Summary Object is null");
                 }
             }
         } catch (Exception e) {
@@ -442,6 +555,7 @@ public class TilkoController {
         json.put("ValidYn", ValidYn);
         json.put("IsSummary", IsSummary);
 
+        System.out.println("Request Payload: " + json.toJSONString());
 
         // API 호출
         OkHttpClient client = new OkHttpClient();
@@ -460,7 +574,7 @@ public class TilkoController {
 
         // "XmlData" 섹션 가져오기
         Object xmlDataObject = responseJson.opt("XmlData");
-        if (xmlDataObject instanceof String) {
+        if (xmlDataObject instanceof String && !((String) xmlDataObject).isEmpty()) {
             // XML 데이터를 JSON 객체로 변환
             org.json.JSONObject jsonData = XML.toJSONObject((String) xmlDataObject);
 
@@ -520,6 +634,7 @@ public class TilkoController {
 
         } else {
             System.out.println("데이터 저장 실패");
+            result.data = responseJson.opt("Message").toString();
         }
         return result;
     }
@@ -687,5 +802,105 @@ public class TilkoController {
         String encryptedData				= new String(Base64.getEncoder().encodeToString(byteEncryptedData));
 
         return encryptedData;
+    }
+
+    // 권리분석 api 통신
+    public void searchAnalyzeData(String TRKey, int realMaxNum) {
+        TilkoController tc = new TilkoController();
+        try {
+            //RSA Public Key 조회
+            String rsaPublicKey = getPublicKey();
+            // AES Secret Key 및 IV 생성
+            // AES Secret Key 및 IV 생성
+            byte[] aesKey = new byte[16];
+            new Random().nextBytes(aesKey);
+
+            byte[] aesIv = new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+            // AES Key를 RSA Public Key로 암호화
+            String aesCipherKey = rsaEncrypt(aesKey, rsaPublicKey);
+
+            // api 엔드포인트
+            String url = apiHost + "api/v2.0/IrosArchive/Analyze";
+
+            // API 요청 파라미터 설정
+            JSONObject json = new JSONObject();
+            json.put("TransactionKey", TRKey);
+
+            System.out.println("Request Payload: " + json);
+
+            // API 호출
+            OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("API-KEY", apiKey)
+                    .addHeader("ENC-KEY", aesCipherKey)
+                    .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toString())).build();
+
+            Response response = client.newCall(request).execute();
+            String responseStr = response.body().string();
+            System.out.println("responseStr: " + responseStr);
+            // JSON 파싱
+            org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
+            // "Result" 키 접근
+            org.json.JSONObject resultObject = responseJson.optJSONObject("Result");
+
+            if (resultObject != null) {
+                // "Rights" 키 접근
+                org.json.JSONArray rightsArray = resultObject.optJSONArray("Rights");
+
+                // "Seniority" 키 접근
+                org.json.JSONArray seniorityArray = resultObject.optJSONArray("Seniority");
+                if (rightsArray != null) {
+                    for (int i = 0; i < rightsArray.length(); i++) {
+                        org.json.JSONObject rightsItem = rightsArray.getJSONObject(i);
+
+                        // 개별 항목 접근
+                        Map<String, Object> dataMap = new HashMap<>();
+                        dataMap.put("RankNo", rightsItem.optString("RankNo", null));
+                        dataMap.put("Gubun", rightsItem.optString("Gubun", null));
+                        dataMap.put("TargetOwner", rightsItem.optString("TargetOwner", null));
+                        dataMap.put("Information", rightsItem.optString("Information", null));
+                        dataMap.put("OriginalText", rightsItem.optString("OriginalText", null));
+                        dataMap.put("REALID", realMaxNum);
+
+                        try {
+                            tilkoService.saveRights(dataMap);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else {
+                    System.out.println("Rights Array is null or empty");
+                }
+                if (seniorityArray != null) {
+                    for (int i = 0; i < seniorityArray.length(); i++) {
+                        org.json.JSONObject seniorityItem = seniorityArray.getJSONObject(i);
+
+                        // 개별 항목 접근
+                        Map<String, Object> dataMap = new HashMap<>();
+                        dataMap.put("RankNo", seniorityItem.optString("RankNo", null));
+                        dataMap.put("Gubun", seniorityItem.optString("Gubun", null));
+                        dataMap.put("TargetOwner", seniorityItem.optString("TargetOwner", null));
+                        dataMap.put("Amount", seniorityItem.optString("Amount", null));
+                        dataMap.put("CurCode", seniorityItem.optString("CurCode", null));
+                        dataMap.put("Warning", seniorityItem.optString("Warning", null));
+                        dataMap.put("OriginalText", seniorityItem.optString("OriginalText", null));
+                        dataMap.put("REALID", realMaxNum);
+
+                        try {
+                            tilkoService.saveSeniority(dataMap);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else {
+                    System.out.println("Seniority Array is null or empty");
+                }
+            }
+        } catch (Exception e) {
+            e.getMessage();
+        }
     }
 }
