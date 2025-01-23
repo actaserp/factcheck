@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css"/>
 
 
-    <title>SMART ACTAS</title>
+    <title>FACT CHECK</title>
 
 </head>
 <style>
@@ -553,7 +553,6 @@
 
 
 </script>
-
 <script type="text/javascript">
 
     function openPopup(url) {
@@ -1270,7 +1269,7 @@
 
         // AJAX 요청
         $.ajax({
-            url: "http://localhost:8040/mobile/save", // 요청 URL
+            url: "/mobile/save", // 요청 URL
             type: "POST", // HTTP 메서드
             data: data, // 요청 데이터
             success: function (res) {
@@ -1492,13 +1491,33 @@
     });
 
     document.getElementById('kakao-login-btn').addEventListener('click', function() {
+        // 버튼 클릭 이벤트 확인
+        console.log('Kakao 로그인 버튼 클릭됨');
+
+        // 현재 URL 출력
+        console.log('현재 URL:', window.location.href);
+
+        // 이동할 URL 출력
+        const kakaoAuthUrl = '/auth/KAKAO';
+        console.log('카카오 로그인 요청 URL:', kakaoAuthUrl);
+
         // 카카오 로그인 요청
-        window.location.href = '/auth/kakao';
+        window.location.href = kakaoAuthUrl;
     });
 
+
     document.getElementById('naver-login-btn').addEventListener('click', function() {
-        // 네이버 로그인 요청
-        window.location.href = '/auth/naver';
+        console.log('NAVER 로그인 버튼 클릭됨');
+
+        // 현재 URL 출력
+        console.log('현재 URL:', window.location.href);
+
+        // 이동할 URL 출력
+        const NaverAuthUrl = '/auth/NAVER';
+        console.log('네이버 로그인 요청 URL:', NaverAuthUrl);
+
+        // 카카오 로그인 요청
+        window.location.href = NaverAuthUrl;
     });
 </script>
 </body>

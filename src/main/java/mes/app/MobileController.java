@@ -21,16 +21,15 @@ public class MobileController {
         model.addAttribute("currentPage", "ticket-register");
         return "mobile/ticket-register"; // "mobile/ticket-register.html"로 매핑
     }
-
-    @GetMapping("/kakaoMap")
-    public String kakaoMap(Model model) {
-        model.addAttribute("currentPage", "kakaoMap");
-        return "mobile/kakaoMap";
-    }
     @GetMapping("/kakaoMap2")
     public String kakaoMap2(Model model) {
         model.addAttribute("currentPage", "kakaoMap2");
         return "mobile/kakaoMap2";
+    }
+    @GetMapping("/UserInfo")
+    public String UserInfo(Model model) {
+        model.addAttribute("currentPage", "UserInfo");
+        return "mobile/UserInfo";
     }
 
     @GetMapping("/fsr-register")

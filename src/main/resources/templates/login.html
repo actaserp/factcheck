@@ -1370,12 +1370,27 @@
         window.location.href = '/auth/google';
     });*/
 
-    document.getElementById('kakao-login-btn').addEventListener('click', function() {
+   /* document.getElementById('kakao-login-btn').addEventListener('click', function() {
         // 카카오 로그인 요청
         window.location.href = '/auth/kakao';
-    });
+    });*/
+   document.getElementById('kakao-login-btn').addEventListener('click', function() {
+       // 버튼 클릭 이벤트 확인
+       console.log('Kakao 로그인 버튼 클릭됨');
 
-    document.getElementById('naver-login-btn').addEventListener('click', function() {
+       // 현재 URL 출력
+       console.log('현재 URL:', window.location.href);
+
+       // 이동할 URL 출력
+       const kakaoAuthUrl = '/auth/kakao';
+       console.log('카카오 로그인 요청 URL:', kakaoAuthUrl);
+
+       // 카카오 로그인 요청
+       window.location.href = kakaoAuthUrl;
+   });
+
+
+   document.getElementById('naver-login-btn').addEventListener('click', function() {
         // 네이버 로그인 요청
         window.location.href = '/auth/naver';
     });

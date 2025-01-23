@@ -46,12 +46,15 @@ public class AccountService {
 		return result;	
 	}
 
-	// 로그인&로그아웃시 login_log 테이블에 이력 저장
-	@Transactional
-	public void saveLoginLog(String type, Authentication auth) throws UnknownHostException {
+// 로그인&로그아웃 시 login_log 테이블에 이력 저장
+@Transactional
+public void saveLoginLog(String type, Authentication auth) throws UnknownHostException {
 
-		User user = (User) auth.getPrincipal();
+	Object principal = auth.getPrincipal(); // Principal 객체 가져오기
 
+	// principal 타입 확인
+	if (principal instanceof User user) {
+		// principal이 User 객체인 경우
 		MapSqlParameterSource paramMap = new MapSqlParameterSource();
 		paramMap.addValue("type", type);
 		paramMap.addValue("IPAddress", InetAddress.getLocalHost().getHostAddress());
@@ -64,11 +67,17 @@ public class AccountService {
 
 		try {
 			int rowsAffected = this.sqlRunner.execute(sql, paramMap);
-			//System.out.println("Rows affected: " + rowsAffected);
+			System.out.println("Rows affected: " + rowsAffected);
 		} catch (Exception e) {
 			System.err.println("Failed to save login log: " + e.getMessage());
 			e.printStackTrace();
 		}
-
+	} else if (principal instanceof String username) {
+		// principal이 String인 경우 (사용자 이름만 존재)
+		System.err.println("Principal is a String: " + username + ". Login log not saved.");
+	} else {
+		throw new IllegalStateException("Unsupported principal type: " + principal.getClass());
 	}
+}
+
 }

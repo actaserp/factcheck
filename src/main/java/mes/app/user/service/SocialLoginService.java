@@ -4,11 +4,11 @@ package mes.app.user.service;
 import lombok.extern.slf4j.Slf4j;
 import mes.app.user.controller.SocialLoginProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -31,17 +31,29 @@ public class SocialLoginService {
         RestTemplate restTemplate = new RestTemplate();
 
         Map<String, String> params = provider.getAccessTokenRequestParams(
-                null, // clientId를 null로 전달하면 provider 내부 값 사용
-                null, // clientSecret을 null로 전달하면 provider 내부 값 사용
-                code,
-                null  // redirectUri를 null로 전달하면 provider 내부 값 사용
+            null, // clientId를 null로 전달하면 provider 내부 값 사용
+            null, // clientSecret을 null로 전달하면 provider 내부 값 사용
+            code,
+            null  // redirectUri를 null로 전달하면 provider 내부 값 사용
         );
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(provider.getAccessTokenUrl(), params, Map.class);
+        // 파라미터 디버깅 로그
+        log.info("네이버 Access Token 요청 파라미터: {}", params);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
+        HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(params, headers);
+
+        // Access Token 요청
+        ResponseEntity<Map> response = restTemplate.postForEntity(provider.getAccessTokenUrl(), requestEntity, Map.class);
+
         if (!response.getStatusCode().is2xxSuccessful()) {
+            log.error("Access Token 요청 실패: 상태 코드 - {}", response.getStatusCode());
             throw new IllegalStateException("Failed to retrieve access token: " + response.getStatusCode());
         }
 
+        // 응답 디버깅
+        log.info("Access Token 응답 데이터: {}", response.getBody());
         return response.getBody();
     }
 
@@ -57,38 +69,37 @@ public class SocialLoginService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
+
+       // log.info("사용자 정보 요청 Authorization 헤더: {}", headers);
+
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                provider.getUserInfoUrl(accessToken),
+        String userInfoUrl = provider.getUserInfoUrl(accessToken);
+        //log.info("사용자 정보 요청 URL: {}", userInfoUrl);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(
+                userInfoUrl,
                 HttpMethod.GET,
                 entity,
                 Map.class
-        );
+            );
 
-        if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new IllegalStateException("Failed to retrieve user info: " + response.getStatusCode());
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                log.error("HTTP 응답 상태 코드: {}", response.getStatusCode());
+                throw new IllegalStateException("Failed to retrieve user info");
+            }
+
+            //log.info("사용자 정보 응답 데이터: {}", response.getBody());
+            return response.getBody();
+
+        } catch (HttpClientErrorException e) {
+            log.error("HTTP 에러 상태 코드: {}", e.getStatusCode());
+            log.error("HTTP 에러 메시지: {}", e.getResponseBodyAsString());
+            throw new IllegalStateException("Failed to retrieve user info due to HTTP error", e);
+        } catch (Exception e) {
+            log.error("사용자 정보 요청 중 예외 발생", e);
+            throw new IllegalStateException("An unexpected error occurred while retrieving user info", e);
         }
-
-        return response.getBody();
     }
-
-    /**
-     * 소셜 로그인 처리 로직
-     *
-     * @param provider 소셜 로그인 제공자
-     * @param code     인증 코드
-     */
-    public void handleSocialLogin(SocialLoginProvider provider, String code) {
-        // 1. Access Token 요청
-        Map<String, Object> tokenResponse = getAccessToken(provider, code);
-        String accessToken = (String) tokenResponse.get("access_token");
-
-        // 2. 사용자 정보 요청
-        Map<String, Object> userInfo = getUserInfo(provider, accessToken);
-
-        // 3. 사용자 생성/업데이트 위임
-        authUserService.createOrUpdateUser(userInfo, provider.getClass().getSimpleName());
-    }
-
 }

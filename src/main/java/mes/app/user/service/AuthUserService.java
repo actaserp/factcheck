@@ -1,56 +1,113 @@
 package mes.app.user.service;
 
+import lombok.extern.slf4j.Slf4j;
+import mes.app.account.service.TB_USERINFOService;
+import mes.app.system.service.UserService;
+import mes.app.user.enums.SocialProvider;
 import mes.domain.entity.User;
+import mes.domain.entity.actasEntity.TB_USERINFO;
 import mes.domain.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class AuthUserService {
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
+  @Autowired
+  TB_USERINFOService userInfoService;
+  @Autowired
+  JdbcTemplate jdbcTemplate;
 
-    /**
-     * 사용자 정보를 기반으로 사용자를 생성하거나 업데이트합니다.
-     *
-     * @param userInfo 소셜 제공자로부터 받은 사용자 정보
-     * @param provider 소셜 로그인 제공자 이름
-     */
-    public void createOrUpdateUser(Map<String, Object> userInfo, String provider) {
-        String email = (String) userInfo.get("email");        // 사용자 이메일
-        String name = (String) userInfo.get("name");          // 사용자 이름
-        String socialId = (String) userInfo.get("id");        // 소셜 제공자 ID
+    @Transactional
+    public User saveOrUpdateUser(Map<String, Object> userInfo, SocialProvider provider) {
+        Map<String, Object> responseData = (Map<String, Object>) userInfo.get("response");
 
-        // 이메일 기준으로 사용자 조회
+        // 필요한 필드 추출
+        String id = (String) responseData.get("id");
+        String name = Optional.ofNullable((String) responseData.get("name")).orElse("Unknown");
+        String email = Optional.ofNullable((String) responseData.get("email"))
+            .orElseThrow(() -> new IllegalArgumentException("Email is required"));
+        String gender = Optional.ofNullable((String) responseData.get("gender")).orElse("U");
+      Integer age = Optional.ofNullable((String) responseData.get("age"))
+          .map(Integer::valueOf) // String을 Integer로 변환
+          .orElse(null); // 값이 없거나 변환 실패 시 null 반환
+      String birthday = Optional.ofNullable((String) responseData.get("birthday")).orElse("01-01");
+        String birthyear = Optional.ofNullable((String) responseData.get("birthyear")).orElse("1900");
+        String mobile = Optional.ofNullable((String) responseData.get("mobile")).orElse("Unknown");
+
+        // 기존 사용자 조회
         Optional<User> existingUser = userRepository.findByEmail(email);
 
-        if (existingUser.isEmpty()) {
-            // 신규 사용자 등록
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setFirst_name(name);
-//            newUser.setProvider(provider); // 소셜 제공자 이름
-//            newUser.setSocialId(socialId); // 소셜 제공자 ID
-//            newUser.setCreatedAt(new Timestamp(System.currentTimeMillis())); // 가입 시간
-            newUser.setLastLogin(new Timestamp(System.currentTimeMillis())); // 첫 로그인 시간
-            userRepository.save(newUser);
-        } else {
-            // 기존 사용자 정보 업데이트
+        if (existingUser.isPresent()) {
+            // 기존 사용자 업데이트
             User user = existingUser.get();
-            user.setLastLogin(new Timestamp(System.currentTimeMillis())); // 마지막 로그인 시간 갱신
-//            user.setProvider(provider); // 제공자 정보 업데이트
-//            user.setSocialId(socialId); // 소셜 ID 업데이트
+            user.setFirst_name(name);
+            user.setPhone(mobile);
+            user.setActive(true);
             userRepository.save(user);
+            log.info("기존 사용자 업데이트: {}", user);
+            return user;
+        } else {
+            // 새로운 사용자 저장
+            User newUser = User.builder()
+                .username(email)
+                .phone(mobile)
+                .email(email)
+                .first_name(name)
+                .last_name(name)
+                .active(true)
+                .is_staff(false)
+                .date_joined(new Timestamp(System.currentTimeMillis()))
+                .superUser(false)
+                .build();
+            userRepository.save(newUser);
+            log.info("새로운 사용자 저장: {}", newUser);
+
+            jdbcTemplate.execute("SET IDENTITY_INSERT user_profile ON");
+            // UserProfile 저장 (JDBC 사용)
+            String sql = "INSERT INTO user_profile (_created, lang_code, Name, UserGroup_id, User_id) VALUES (?,?, ?, ?, ?)";
+            jdbcTemplate.update(sql,
+                new Timestamp(System.currentTimeMillis()), // 현재 시간
+                "ko-KR", // lang_code (예: 한국어)
+                name, // Name (사용자 이름)
+                36 ,// marketing_manager (마케팅 관리자)
+                newUser.getId() // User_id
+            );
+            jdbcTemplate.execute("SET IDENTITY_INSERT user_profile OFF");
+
+            // `TB_USERINFO` 저장
+            TB_USERINFO tbUserinfo = TB_USERINFO.builder()
+                .inUserId(id)
+                .inUserNm(name)
+                .userMail(email)
+                .sexYn(gender)
+                .ageNum(age)
+                .birthYear(birthyear)
+                .userHp(mobile)
+                .ssoCd(provider.name())
+                .build();
+            userInfoService.save(tbUserinfo);
+            log.info("TB_USERINFO 저장: {}", tbUserinfo);
+
+            return newUser;
         }
     }
 
-    public boolean isUserRegistered(Object email) {
-        return userRepository.existsByEmail(email);
-    }
+  public void createOrUpdateUser(Map<String, Object> userInfo, String simpleName) {
+  }
+
 }
 
 

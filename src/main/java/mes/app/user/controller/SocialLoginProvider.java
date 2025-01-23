@@ -10,5 +10,6 @@ public interface SocialLoginProvider {
     Map<String, String> getAccessTokenRequestParams(String clientId, String clientSecret, String code, String redirectUri);
 
     String getUserInfoUrl(String accessToken);
+
 }
 

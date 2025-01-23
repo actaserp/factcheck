@@ -44,6 +44,9 @@
                     <li  th:classappend="${currentPage == 'user-info' ? 'active' : ''}">
                         <a href="/mobile/user-info" title="사용자정보">사용자정보</a>
                     </li>
+                    <li  th:classappend="${currentPage == 'UserInfo' ? 'active' : ''}">
+                        <a href="/mobile/UserInfo" title="소셜 사용자 정보">소셜 사용자 정보</a>
+                    </li>
                     <li >
                         <a href="/mobile/ticket-list" title="앱정보" th:classappend="${currentPage == 'ticket-list' ? 'on' : ''}" >앱정보</a>
                     </li>
