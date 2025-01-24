@@ -269,7 +269,7 @@ public class TilkoService {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         String sql = """
-                INSERT INTO MOB_FACTCHK.dbo.TB_REALINFO (
+                INSERT INTO TB_REALINFO (
                     USERID,
                     REQDATE,
                     REALADD,

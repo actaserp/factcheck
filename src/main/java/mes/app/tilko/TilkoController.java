@@ -31,6 +31,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("api/tilko")
@@ -38,6 +40,7 @@ public class TilkoController {
 
     private static final String apiHost	= "https://api.tilko.net/";
     private static final String apiKey	= "b9a7e1c16ad44a4aa165d7f20427537d";
+    TilkoParsing tilkoParsing;
 
     @Autowired
     TilkoService tilkoService;
@@ -45,8 +48,9 @@ public class TilkoController {
     private JdbcTemplate jdbcTemplate;
 
     // xml 데이터 파싱 api 통신
-    public void searchParsingData(String TRKey, String GoyuNUM, int realMaxNum){
+    public Map<String, Object> searchParsingData(String TRKey, String GoyuNUM, int realMaxNum){
         TilkoController tc = new TilkoController();
+        Map<String, Object> returnMap = new HashMap<>();
         try {
             //RSA Public Key 조회
             String rsaPublicKey = getPublicKey();
@@ -149,6 +153,12 @@ public class TilkoController {
                                 e.printStackTrace();
                             }
                         }
+                        // REALINFO 테이블에 등기 목적/원인 위해 출력 return
+                        org.json.JSONObject lastData = dataK.getJSONObject(dataK.length()-1);
+                        String RgsAimCont = lastData.optString("RgsAimCont",null);
+                        String RgsCaus = lastData.optString("RgsCaus",null);
+                        returnMap.put("RgsAimCont", RgsAimCont);
+                        returnMap.put("RgsCaus", RgsCaus);
                     } else {
                         System.out.println("DataH Array is null or empty");
                     }
@@ -230,7 +240,7 @@ public class TilkoController {
 //                        for (int i = 0; i < dataJ.length(); i++) {
 //                            org.json.JSONObject dataJItem = dataJ.getJSONObject(i);
 //
-//                            // "IndiNo"와 같은 개별 항목 접근
+//                            // 개별 항목 접근
 //                            Map<String, Object> dataMap = new HashMap<>();
 //                            dataMap.put("IndiNo", dataJItem.optString("SeqNo", null));
 //                            dataMap.put("EstateRightDisplay", dataJItem.optString("EstateRightDisplay", null));
@@ -245,7 +255,15 @@ public class TilkoController {
 //                                e.printStackTrace();
 //                            }
 //                        }
+
+
                         System.out.println("dataJ 존재 :" + dataJ);
+                        // dataJ 데이터중 거래가액 / 일련번호 추출 return
+//                        org.json.JSONObject lastData = dataJ.getJSONObject(dataJ.length()-1);
+//                        String Amount = lastData.optString("Amount",null);
+//                        returnMap.put("Amount", Amount);
+//                        String SeqNo = lastData.optString("SeqNo",null);
+//                        returnMap.put("SeqNo", SeqNo);
                     } else {
                         System.out.println("DataJ Array is null or empty");
                     }
@@ -318,6 +336,10 @@ public class TilkoController {
                             dataMap.put("RgsCaus", dataEItem.optString("RgsCaus", ""));
                             dataMap.put("NomprsAndEtc", dataEItem.optString("NomprsAndEtc", ""));
                             dataMap.put("REALID", realMaxNum);
+                            // REALINFO 테이블에 채권최고액 위해 출력 return
+                            org.json.JSONObject lastData = dataE.getJSONObject(dataE.length()-1);
+                            String NomprsAndEtc = lastData.optString("NomprsAndEtc",null);
+                            returnMap.put("NomprsAndEtc", NomprsAndEtc);
 
                             try {
                                 tilkoService.savedataE(dataMap);
@@ -429,6 +451,7 @@ public class TilkoController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return returnMap;
     }
 
     // 주소 고유번호 조회 api 통신
@@ -594,30 +617,19 @@ public class TilkoController {
 
             System.out.println("jsonDataMap : " +  jsonDataMap);
 
-            // 데이터 파싱(건축물 구축물별 구분)
-            Map<String, Object> summary = (Map<String, Object>) jsonDataMap.get("register");
-            List<Map<String, Object>> itemList = (List<Map<String, Object>>) summary.get("item");
-            StringBuilder wksbiData = new StringBuilder();
-            for (Map<String, Object> item : itemList) {
-                // 각 item별 건물내역 데이터
-                String wksbiAddress = (String) item.get("wksbw_buld_cont");
-                wksbiData.append(wksbiAddress);
-            }
-            // wksbiData 에 아파트 / 주택 유무 판별
-            System.out.println("wksbiData: " + wksbiData);
-
             // REALINFO 테이블 id 최대값 확인
             Map<String, Object> maxRealNum = tilkoService.getMaxOfRealinfo();
             int maxNum = (Integer) maxRealNum.get("NextID");
 
             // xml 파싱 데이터 조회 및 저장
+            Map<String, Object> returnData = new HashMap<>();
             try {
-                searchParsingData(transactionKeyObject.toString(), GoyuNUM, maxNum);
+                returnData = searchParsingData(transactionKeyObject.toString(), GoyuNUM, maxNum);
             }catch (Exception e){
                 e.printStackTrace();
             }
 
-            // REALINFO 테이블 데이터 저장
+            // REALINFO 테이블 데이터 저장 데이터 처리
             Map<String, Object> dataMap = new HashMap<>();
             User user = (User) authentication.getPrincipal();
             // 오늘 날짜 가져오기
@@ -629,6 +641,50 @@ public class TilkoController {
             dataMap.put("USERID", user.getUsername());
             dataMap.put("REQDATE", formattedDate);
             dataMap.put("REALADD", address);
+            dataMap.put("REGDATE", formattedDate);
+
+            //시도 (address 파싱)
+            Map<String, String> parsedResult = tilkoParsing.parseAddress(address);
+            dataMap.put("RESIDO", parsedResult.get("RESIDO"));
+            dataMap.put("REGUGUN", parsedResult.get("REGUGUN"));
+
+            dataMap.put("REMOK", returnData.get("RgsAimCont")); // 등기목적
+            // 등기원인일자 파싱
+            Map<String, String> parsedDateAndRemaining = tilkoParsing.parseDateAndRemaining(returnData.get("RgsCaus").toString());
+            dataMap.put("RgsCaus", parsedDateAndRemaining.get("DATE"));
+            dataMap.put("RgsAimCont", parsedDateAndRemaining.get("REMAINING"));
+
+            dataMap.put("REJIMOK", ""); //지목내역
+            dataMap.put("REAREA", ""); // 면적
+            dataMap.put("REAMOUNT", ""); // 거래가액 dataMap.put("REAMOUNT", returnData.get("Amount"));
+
+            dataMap.put("RESEQ", ""); // 일련번호 dataMap.put("RESEQ", returnData.get("SeqNo"))
+
+            // 채권최고액 파싱
+            String amount = tilkoParsing.parseAmount(returnData.get("RgsCaus").toString());
+            dataMap.put("REMAXAMT", amount);
+            // 입력일시 GETDATE()
+            // 판정점수 계산 로직
+
+            dataMap.put("REALSCORE", ""); // 판정점수
+
+            dataMap.put("REALPOINT", 1); // 조회수
+            dataMap.put("RELASTDATE", formattedDate); // 최종 조회일
+            dataMap.put("PinNo", GoyuNUM); // 조회고유번호
+            // 구축물 데이터 파싱
+            // 데이터 파싱(건축물 구축물별 구분)
+            Map<String, Object> register = (Map<String, Object>) jsonDataMap.get("register");
+            List<Map<String, Object>> itemList = (List<Map<String, Object>>) register.get("item");
+            StringBuilder wksbiData = new StringBuilder();
+            for (Map<String, Object> item : itemList) {
+                // 각 item별 건물내역 데이터
+                String wksbiAddress = (String) item.get("wksbw_buld_cont");
+                wksbiData.append(wksbiAddress);
+            }
+            // 구축물별 파싱 메서드 호출
+            String archtec = tilkoParsing.assortArchitec(String.valueOf(wksbiData));
+            dataMap.put("REALGUBUN", archtec); // 구축물
+
 
             tilkoService.saveTilko(dataMap);
 

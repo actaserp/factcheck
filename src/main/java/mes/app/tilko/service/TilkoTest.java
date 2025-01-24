@@ -35,7 +35,7 @@ import okhttp3.Response;
 public class TilkoTest {
 
     static String apiHost	= "https://api.tilko.net/";
-    static String apiKey	= "a2768417999c45978d5cefdc12adf588";
+    static String apiKey	= "b9a7e1c16ad44a4aa165d7f20427537d";
 
 
     // RSA 암호화 함수
@@ -144,7 +144,7 @@ public class TilkoTest {
 
             // api 엔드포인트
             String url = apiHost + "api/v2.0/IrosArchive/Analyze";
-            String TRKey = "f02f448f-d56c-4836-b8c2-744bf1fc0b31";
+            String TRKey = "30b1b351-a146-4a82-8896-9990583bf65f";
             int realMaxNum = 999;
             // API 요청 파라미터 설정
             org.json.JSONObject json = new org.json.JSONObject();
