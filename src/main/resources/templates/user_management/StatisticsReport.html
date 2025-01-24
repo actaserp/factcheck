@@ -310,17 +310,19 @@
       DefaultData();
     }
 
-    function DefaultData() {
-      console.log('DefaultData 실행: 나이 데이터 초기화');
+    function DefaultData(selectedRows) {
+
       if (theGrid) {
         theGrid.itemsSource = null; // 데이터 초기화
       }
+
       let data = [];
 
       const params = {
         startDate: $('#startDate').val(),
         endDate: $('#endDate').val(),
       };
+
       // Ajax 통신을 통해 데이터 가져오기
       $.ajax({
         url: '/api/report/read',
@@ -637,10 +639,11 @@
     function applyChanges() {
       const selectedRows = Array.from(
         document.querySelectorAll('#selection-container .form-check-input:checked')
+
       ).map((checkbox) => checkbox.value);
 
       // console.log('선택된 열들:', selectedRows);
-      DefaultData();
+      DefaultData(selectedRows);
       updateGridColumns(selectedRows);
     }
 
