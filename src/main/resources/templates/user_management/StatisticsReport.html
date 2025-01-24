@@ -320,7 +320,6 @@
       const params = {
         startDate: $('#startDate').val(),
         endDate: $('#endDate').val(),
-        searchUserNm: $('#txtCode').val(),
       };
       // Ajax 통신을 통해 데이터 가져오기
       $.ajax({
@@ -334,52 +333,54 @@
           if (response && Array.isArray(response.data)) {
             data = response.data.map((item, index) => ({
               rownum: index + 1,
-              INDATEM: item.inDatem || '',
+              inDatem: item.inDatem || '',
               region: item.region || '', // 예: '경기'
               district: item.district || '', // 예: '고양시'
+              sexYn :item.sexYn ||'' , //성별
+
               // 10대 이하 구축물
-              age_10_apartment: item.age_10?.apartment || '',
-              age_10_villa: item.age_10?.villa || '',
-              age_10_house: item.age_10?.house || '',
-              age_10_office: item.age_10?.office || '',
-              age_10_other: item.age_10?.other || '',
+              age_10_apartment: item.age_10_apartment || '',
+              age_10_villa: item.age_10_villa || '',
+              age_10_house: item.age_10_house || '',
+              age_10_office: item.age_10_office || '',
+              age_10_other: item.age_10_other || '',
               // 20대 구축물
-              age_20_apartment: item.age_20?.apartment || '',
-              age_20_villa: item.age_20?.villa || '',
-              age_20_house: item.age_20?.house || '',
-              age_20_office: item.age_20?.office || '',
-              age_20_other: item.age_20?.other || '',
+              age_20_apartment: item.age_20_apartment || '',
+              age_20_villa: item.age_20_villa || '',
+              age_20_house: item.age_20_house || '',
+              age_20_office: item.age_20_office || '',
+              age_20_other: item.age_20_other || '',
               // 30대 구축물
-              age_30_apartment: item.age_30?.apartment || '',
-              age_30_villa: item.age_30?.villa || '',
-              age_30_house: item.age_30?.house || '',
-              age_30_office: item.age_30?.office || '',
-              age_30_other: item.age_30?.other || '',
+              age_30_apartment: item.age_30_apartment || '',
+              age_30_villa: item.age_30_villa || '',
+              age_30_house: item.age_30_house || '',
+              age_30_office: item.age_30_office || '',
+              age_30_other: item.age_30_other || '',
               // 40대구축물
-              age_40_apartment: item.age_40?.apartment || '',
-              age_40_villa: item.age_40?.villa || '',
-              age_40_house: item.age_40?.house || '',
-              age_40_office: item.age_40?.office || '',
-              age_40_other: item.age_40?.other || '',
+              age_40_apartment: item.age_40_apartment || '',
+              age_40_villa: item.age_40_villa || '',
+              age_40_house: item.age_40_house || '',
+              age_40_office: item.age_40_office || '',
+              age_40_other: item.age_40_other || '',
               //50대 구축물
-              age_50_apartment: item.age_50?.apartment || '',
-              age_50_villa: item.age_50?.villa || '',
-              age_50_house: item.age_50?.house || '',
-              age_50_office: item.age_50?.office || '',
-              age_50_other: item.age_50?.other || '',
+              age_50_apartment: item.age_50_apartment || '',
+              age_50_villa: item.age_50_villa || '',
+              age_50_house: item.age_50_house || '',
+              age_50_office: item.age_50_office || '',
+              age_50_other: item.age_50_other || '',
 
               //60대 구축물
-              age_60_apartment: item.age_60?.apartment || '',
-              age_60_villa: item.age_60?.villa || '',
-              age_60_house: item.age_60?.house || '',
-              age_60_office: item.age_60?.office || '',
-              age_60_other: item.age_60?.other || '',
+              age_60_apartment: item.age_60_apartment || '',
+              age_60_villa: item.age_60_villa || '',
+              age_60_house: item.age_60_house || '',
+              age_60_office: item.age_60_office || '',
+              age_60_other: item.age_60_other || '',
               //70대 이상 구축물
-              age_70_apartment: item.age_70?.apartment || '',
-              age_70_villa: item.age_70?.villa || '',
-              age_70_house: item.age_70?.house || '',
-              age_70_office: item.age_70?.office || '',
-              age_70_other: item.age_70?.other || '',
+              age_70_apartment: item.age_70_apartment || '',
+              age_70_villa: item.age_70_villa || '',
+              age_70_house: item.age_70_house || '',
+              age_70_office: item.age_70_office || '',
+              age_70_other: item.age_70_other || '',
               // 소계
               total: item.total || '',
             }));
@@ -392,6 +393,7 @@
               inDatem: '',
               region: '',
               district: '',
+              sexYn: '',
               age_10_apartment: '',
               age_10_villa: '',
               age_10_house: '',
@@ -447,7 +449,10 @@
                 {binding: 'inDatem', header: '년도', width: 80, allowMerging: true},
                 {binding: 'region', header: '지역(시)', width: 100, allowMerging: true},
                 {binding: 'district', header: '구군', width: 120 ,allowMerging: true},
+                // 소계
+                {binding: 'total', header: '합계', width: 100, align: 'center'},
                 {binding: 'construction', header: '구축물', width: 100},
+
 
                 // 10대 이하 구축물
                 {binding: 'age_10_apartment', header: '아파트', width: 100, align: 'center'},
@@ -498,8 +503,7 @@
                 {binding: 'age_70_office', header: '오피스', width: 100, align: 'center'},
                 {binding: 'age_70_other', header: '기타', width: 100, align: 'center'},
 
-                // 소계
-                {binding: 'total', header: '합계', width: 100, align: 'center'},
+
               ],
               itemsSource: viewdata,
               allowMerging: 'Cells',
@@ -548,17 +552,16 @@
 
             // 첫 번째 헤더 줄
             panel.setCellData(0, 1, '구분');
-            panel.setCellData(0, 4, '나이');
-            panel.setCellData(0, 40, '합계');
+            panel.setCellData(0, 5, '나이');
 
             // 두 번째 헤더 줄
-            panel.setCellData(0, 5, '10대 이하');
-            panel.setCellData(0, 10, '20대');
-            panel.setCellData(0, 15, '30대');
-            panel.setCellData(0, 20, '40대');
-            panel.setCellData(0, 25, '50대');
-            panel.setCellData(0, 30, '60대');
-            panel.setCellData(0, 35, '70대 이상');
+            panel.setCellData(0, 6, '10대 이하');
+            panel.setCellData(0, 11, '20대');
+            panel.setCellData(0, 16, '30대');
+            panel.setCellData(0, 21, '40대');
+            panel.setCellData(0, 26, '50대');
+            panel.setCellData(0, 31, '60대');
+            panel.setCellData(0, 36, '70대 이상');
 
             theGrid.rowHeaders.columns.splice(0, 1);
             // ContextMenu 추가
@@ -637,7 +640,7 @@
       ).map((checkbox) => checkbox.value);
 
       // console.log('선택된 열들:', selectedRows);
-
+      DefaultData();
       updateGridColumns(selectedRows);
     }
 
@@ -761,7 +764,7 @@
             data2 = response.data2.map((item, index) => {
               const rowData = {
                 rownum: index + 1,
-                INDATEM: item.inDatem || '',
+                inDatem: item.inDatem || '',
                 district: item.district || '', // 구군 정보
               };
 
