@@ -73,14 +73,41 @@ public class TilkoParsing {
 
     // 구축물별 구분 메서드
     public static String assortArchitec(String input) {
-        // Pattern to match monetary amount
-        Pattern amountPattern = Pattern.compile("\\b\\d{1,3}(,\\d{3})*(?=원)\\b");
-        Matcher matcher = amountPattern.matcher(input);
-
-        if (matcher.find()) {
-            return matcher.group().replace(",", ""); // Remove commas for consistent format
+        // 1. 주요 카테고리 분류
+        if (input.contains("단독주택")) {
+            return checkType(input, new String[]{"단독주택", "다중주택", "다가구주택"}, "단독주택");
+        }
+        if (input.contains("공동주택")) {
+            return checkType(input, new String[]{"아파트", "연립주택", "다세대주택", "기숙사"}, "공동주택");
+        }
+        if (input.contains("판매시설")) {
+            return "판매시설";
+        }
+        if (input.contains("업무시설")) {
+            return "업무시설";
+        }
+        if (input.contains("숙박시설")) {
+            return "숙박시설";
+        }
+        if (input.contains("근린생활시설")) {
+            return "근린생활시설";
+        }
+        if (input.contains("학교")) {
+            return "학교";
+        }
+        if (input.contains("학원")) {
+            return "학원";
         }
 
-        return null; // Return null if no amount is found
+        return "분류되지 않음"; // 어떤 카테고리에도 해당하지 않는 경우
+    }
+
+    private static String checkType(String input, String[] types, String defaultType) {
+        for (String type : types) {
+            if (input.contains(type)) {
+                return type;
+            }
+        }
+        return defaultType; // 세부 유형이 없으면 기본 카테고리 반환
     }
 }

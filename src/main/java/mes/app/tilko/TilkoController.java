@@ -666,7 +666,7 @@ public class TilkoController {
             // 입력일시 GETDATE()
             // 판정점수 계산 로직
 
-            dataMap.put("REALSCORE", ""); // 판정점수
+            dataMap.put("REALSCORE", ""); // 판정점수 (점수 로직 summary 데이터 기준 공통코드 텍스트 비교 후 로직)
 
             dataMap.put("REALPOINT", 1); // 조회수
             dataMap.put("RELASTDATE", formattedDate); // 최종 조회일
