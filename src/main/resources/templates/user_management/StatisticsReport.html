@@ -272,17 +272,13 @@
       if (gridToShow === 'theGrid') {
         DefaultData(); // 나이 그리드 데이터 초기화
       } else if (gridToShow === 'theGrid2') {
-        RegionData(); // 지역 그리드 데이터 초기화
+        //RegionData(); // 지역 그리드 데이터 초기화
       }
     }
 
     // 라디오 버튼 클릭 이벤트에 연결
     document.getElementById('RowRegion').addEventListener('click', function () {
-      if (!window.theGrid2Initialized) {
-        RegionData(); // theGrid2 초기화 함수 호출
-        window.theGrid2Initialized = true; // 초기화 여부 기록
-      }
-      updateGridColumns2([], true);
+      RegionData([], true);
       toggleGrid('theGrid2'); // 지역(시) 선택 시 theGrid2 표시
     });
 
@@ -310,7 +306,7 @@
       DefaultData();
     }
 
-    function DefaultData(selectedRows) {
+    function DefaultData() {
 
       if (theGrid) {
         theGrid.itemsSource = null; // 데이터 초기화
@@ -318,9 +314,13 @@
 
       let data = [];
 
+      // 선택한 컬럼 리스트를 배열로 변환
+      const selectedColumns = Object.keys(columnNames);
+
       const params = {
         startDate: $('#startDate').val(),
         endDate: $('#endDate').val(),
+        columns: selectedColumns // 배열을 직접 추가
       };
 
       // Ajax 통신을 통해 데이터 가져오기
@@ -328,6 +328,7 @@
         url: '/api/report/read',
         type: 'GET',
         data: params,
+        traditional: true,// GET 방식에서 배열을 정상적으로 전달
         dataType: 'json',
         success: function (response) {
           console.log("API 응답 데이터:", response);
@@ -518,31 +519,56 @@
                 const rowIndex = ht.row;
                 const colIndex = ht.col;
                 const item = theGrid.rows[rowIndex].dataItem;
-                const columnName = theGrid.columns[colIndex].header; // 클릭한 열의 이름 (예: 아파트, 빌라)
+                const columnBinding = theGrid.columns[colIndex].binding; // 컬럼의 binding 값 (예: "age_10_apartment")
 
-                const ageGroup = colIndex >= 4 && colIndex <= 8 ? '10대 이하' :
-                  colIndex >= 9 && colIndex <= 13 ? '20대' :
-                    colIndex >= 14 && colIndex <= 18 ? '30대' :
-                      colIndex >= 19 && colIndex <= 23 ? '40대' :
-                        colIndex >= 24 && colIndex <= 28 ? '50대' :
-                          colIndex >= 29 && colIndex <= 33 ? '60대' :
-                            '70대 이상';
+                // 동적으로 추가된 데이터 추출
+                let dynamicData = {};
+                Object.keys(columnNames).forEach(key => {
+                  if (item.hasOwnProperty(key)) {
+                    dynamicData[key] = item[key];
+                  }
+                });
 
-                const buildingType = columnName; // 예: '아파트', '빌라'
+                // 연령대 구분을 binding 값 기반으로 자동 매핑
+                let ageGroup = '';
+                const ageMatch = columnBinding.match(/age_(\d+)_/); // 'age_10_apartment' → '10' 추출
+                if (ageMatch) {
+                  const age = parseInt(ageMatch[1]); // 정수 변환
+                  if (age <= 10) {
+                    ageGroup = '10대 이하';
+                  } else if (age <= 20) {
+                    ageGroup = '20대';
+                  } else if (age <= 30) {
+                    ageGroup = '30대';
+                  } else if (age <= 40) {
+                    ageGroup = '40대';
+                  } else if (age <= 50) {
+                    ageGroup = '50대';
+                  } else if (age <= 60) {
+                    ageGroup = '60대';
+                  } else {
+                    ageGroup = '70대 이상';
+                  }
+                }
 
+                // 구축물 유형 추출 (예: '아파트', '빌라')
+                let buildingType = columnBinding.replace(/age_\d+_/, ''); // 연령대 부분 제거하여 구축물 타입만 남김
+
+                // API 호출에 필요한 데이터 객체 생성
                 const params = {
                   startDate: $('#startDate').val(),
                   endDate: $('#endDate').val(),
-                  region: item.region,        // 예: '경기'
-                  district: item.district,    // 예: '고양시'
-                  ageGroup: ageGroup,         // 예: '30대'
-                  buildingType: buildingType, // 예: '아파트'
+                  ageGroup: ageGroup,
+                  buildingType: buildingType,
+                  ...dynamicData
                 };
 
-                //  console.log('클릭된 정보:', params);
+                console.log("API 요청 파라미터:", JSON.stringify(params, null, 2));
+                // API 호출 또는 데이터 처리
                 fetchCellData(params);
               }
             });
+
 
             const headerRow1 = new wijmo.grid.Row();
 
@@ -586,15 +612,20 @@
       $.ajax({
         url: '/api/report/getUserInfo', // 서버에서 데이터를 제공할 엔드포인트
         type: 'GET',
-        data: params,            // 서버에 전달할 데이터
+        data: params,
         success: function (response) {
-          console.log("클릭된 셀의 세부 데이터:", response);
+          console.log("✅ API 응답 데이터:", response);
 
-          // 데이터를 처리하거나 UI에 표시
+          if (!response || !Array.isArray(response) || response.length === 0) {
+            console.warn("⚠️ 서버에서 받은 데이터가 없습니다.");
+            return;
+          }
+
           downloadExcel(response, params);
         },
         error: function () {
-          console.error("셀 데이터를 가져오는 중 오류가 발생했습니다.");
+          console.error("❌ 셀 데이터를 가져오는 중 오류가 발생했습니다.");
+          alert("데이터를 가져오는 중 오류가 발생했습니다.");
         }
       });
     }
@@ -621,7 +652,6 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "통계보고서");
 
-      // 엑셀 파일 다운로드
       // 현재 날짜 가져오기
       const now = new Date();
       const formattedDate =
@@ -631,10 +661,19 @@
         "-" +
         String(now.getDate()).padStart(2, "0");
 
-      // 파일 이름 생성
-      const excelFileName = `통계보고서_${params.region}_${params.district}_${params.ageGroup}_${formattedDate}.xlsx`;
+      // 파일 이름 생성 (값이 없을 경우 'N/A' 처리)
+      const region = params.region || "N/A";
+      const district = params.district || "N/A";
+      const ageGroup = params.ageGroup || "N/A";
+      const buildingType = params.buildingType || "N/A";
+
+      const excelFileName = `통계보고서_${region}_${district}_${ageGroup}_${buildingType}_${formattedDate}.xlsx`;
+
+      console.log("다운로드 파일명:", excelFileName); // 파일명 확인
+
       XLSX.writeFile(wb, excelFileName);
     }
+
 
     function applyChanges() {
       const selectedRows = Array.from(
@@ -752,32 +791,40 @@
       const params = {
         startDate: $('#startDate').val(),
         endDate: $('#endDate').val(),
-        searchUserNm: $('#txtCode').val(),
       };
       // Ajax 통신을 통해 데이터 가져오기
       $.ajax({
-        url: '/api/report/read',
+        url: '/api/report/read2',
         type: 'GET',
-        data2: params,
+        data: params,
         dataType: 'json',
         success: function (response) {
-          // console.log("API 응답 데이터:", response);
+          console.log("API 지역(시) 응답 데이터:", response);
 
           if (response && Array.isArray(response.data2)) {
+            console.log("📢 API 응답 데이터 크기:", response.data2.length);
+
             data2 = response.data2.map((item, index) => {
+              console.log("🔍 현재 처리 중인 API 응답 객체:", item);
+
               const rowData = {
                 rownum: index + 1,
                 inDatem: item.inDatem || '',
                 district: item.district || '', // 구군 정보
               };
 
+              console.log("📢 regions 배열:", regions);
+              console.log("📢 subCategories 배열:", subCategories);
+
               // 지역별 데이터 추가
               regions.forEach(region => {
-                const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
                 subCategories.forEach(subCategory => {
-                  const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
-                  const dataKey = `${regionKey}_${subKey}`;
-                  rowData[dataKey] = item[regionKey]?.[subKey] || ''; // 데이터 매핑
+                  const dataKey = `${region}_${subCategory}`; // API 응답 데이터의 키와 일치하도록 변경
+
+                  console.log("🛠 매핑할 키:", dataKey);
+                  console.log("🔍 실제 API 응답 데이터에서 찾은 값:", item[dataKey]);
+
+                  rowData[dataKey] = item[dataKey] ?? ''; // 데이터 매핑
                 });
               });
 
@@ -788,19 +835,17 @@
 
           // 데이터가 15개 미만일 경우 빈 데이터 추가
           while (data2.length < 15) {
-            const emptyRow = {rownum: data2.length + 1};
+            const emptyRow = { rownum: data2.length + 1 };
             regions.forEach(region => {
-              const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
               subCategories.forEach(subCategory => {
-                const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
-                emptyRow[`${regionKey}_${subKey}`] = ''; // 빈 데이터 추가
+                const dataKey = `${region}_${subCategory}`;
+                emptyRow[dataKey] = ''; // 빈 데이터 추가
               });
             });
             emptyRow.total = ''; // 소계
             data2.push(emptyRow);
           }
-
-          // console.log('처리된 데이터:', data2);
+          console.log('✅ 최종 처리된 데이터:', data2);
 
           // 그리드에 데이터 적용
           viewdata2 = new wijmo.collections.CollectionView(data2);
@@ -834,7 +879,6 @@
             panel.setCellData(0, 5, '서울특별시');
             panel.setCellData(0, 10, '부산광역시');
             panel.setCellData(0, 15, '대구광역시');
-            ``
             panel.setCellData(0, 20, '인천광역시');
             panel.setCellData(0, 25, '광주광역시');
             panel.setCellData(0, 30, '대전광역시');
@@ -842,7 +886,6 @@
             panel.setCellData(0, 40, '세종특별자치시');
             panel.setCellData(0, 45, '경기도');
             panel.setCellData(0, 50, '강원도');
-            ``
             panel.setCellData(0, 55, '충청북도');
             panel.setCellData(0, 60, '충청남도');
             panel.setCellData(0, 65, '전라북도');
@@ -858,6 +901,7 @@
 
           } else {
             theGrid2.itemsSource = viewdata2;
+            console.log('그리드 데이터 바인딩 후:', theGrid2.itemsSource);
           }
         },
         error: function () {
