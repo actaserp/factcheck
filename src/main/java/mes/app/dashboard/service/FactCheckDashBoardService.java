@@ -274,18 +274,17 @@ public class FactCheckDashBoardService {
 
         String sql = """
                 SELECT
-                    SUM(CASE
-                            WHEN YEAR(INDATEM) = YEAR(DATEADD(MONTH, -1, GETDATE()))
-                                 AND MONTH(INDATEM) = MONTH(DATEADD(MONTH, -1, GETDATE()))
-                            THEN 1 ELSE 0
-                        END) AS LAST_MONTH_COUNT,
-                    SUM(CASE
-                            WHEN YEAR(INDATEM) = YEAR(GETDATE())
-                                 AND MONTH(INDATEM) = MONTH(GETDATE())
-                            THEN 1 ELSE 0
-                        END) AS THIS_MONTH_COUNT
-                FROM
-                    TB_USERINFO;
+                    COUNT(CASE
+                             WHEN INDATEM >= DATEADD(MONTH, -1, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
+                              AND INDATEM < DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1)
+                             THEN 1
+                          END) AS LAST_MONTH_COUNT,
+                    COUNT(CASE
+                             WHEN INDATEM >= DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1)
+                              AND INDATEM < DATEADD(MONTH, 1, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
+                             THEN 1
+                          END) AS THIS_MONTH_COUNT
+                FROM TB_USERINFO;
             """;
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql, null);
