@@ -107,7 +107,7 @@ public class AccountController {
     boolean isMobile = userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone");
 
     // 모바일이면 "mlogin" 뷰로, 아니면 "login" 뷰로 설정
-    ModelAndView mv = new ModelAndView(isMobile ? "mlogin" : "login");
+    ModelAndView mv = new ModelAndView(isMobile ? "search_main" : "login");
 
     Map<String, Object> userInfo = new HashMap<String, Object>();
     Map<String, Object> gui = new HashMap<String, Object>();
