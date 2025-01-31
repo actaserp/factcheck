@@ -491,7 +491,33 @@ public class TilkoService {
         // SQL 실행
         int rowsAffected = this.sqlRunner.execute(sql, params);
     }
+    // 분류관리 조회
+    public List<Map<String, Object>> getComcode() {
+        MapSqlParameterSource params = new MapSqlParameterSource();
 
+        String sql = """
+        SELECT *
+        FROM TB_REGISTER;
+    """;
+
+        // SQL 실행
+        List<Map<String, Object>> resultRows = this.sqlRunner.getRows(sql, params);
+        return resultRows;
+    }
+    // 공통코드 386(최저점수) 조회
+    public Map<String, Object> getLessScore() {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+        String sql = """
+        SELECT Value
+        FROM user_code
+        WHERE Parent_id = 386;
+    """;
+
+        // SQL 실행
+        Map<String, Object> resultRow = this.sqlRunner.getRow(sql, params);
+        return resultRow;
+    }
 
 
     // api 사용 로그 쌓기

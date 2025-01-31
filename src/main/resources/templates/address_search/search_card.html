@@ -128,59 +128,83 @@
     function init() {
         searchGoyuList();
     }
-    // 세션값 가져와 카드출력
+    // 세션값 가져와 카드 출력
     function searchGoyuList() {
-        let data2 = [];
-        // $.ajax({
-        //     url: '/api/tilko/searchGoyuList',
-        //     type: 'GET',
-        //     data: {
-        //         'address': sessionStorage.getItem('address')
-        //     },
-        //     async: false,
-        //     success: function (data) {
-        //         data2 = data.data;
-        //         console.log("data2", data2);
-                // 카드 데이터를 정의
-                const cardData = [
-                    { title: "서울시 강남구 일원동", content: "등급" , content2 : "41" , content3 : "1. 집을 담보로 대출 받았어요"},
-                ];
-                const contentsWrap = document.querySelector('.contents-wrap');
+        // 세션에서 저장된 데이터를 가져오기
+        let storedData = sessionStorage.getItem("resultMap");
 
-                // 데이터를 기반으로 카드를 동적으로 생성
-                cardData.forEach(data => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
+        if (!storedData) {
+            console.log("세션 데이터 없음.");
+            return;
+        }
 
-                    const cardTitle = document.createElement('div');
-                    cardTitle.className = 'card-title';
-                    cardTitle.textContent = data.title;
+        let parsedData = JSON.parse(storedData);
 
-                    const cardContent = document.createElement('div');
-                    cardContent.className = 'card-content';
-                    cardContent.textContent = data.content;
+        console.log("세션에서 불러온 데이터:", parsedData);
 
-                    const cardContent2 = document.createElement('div');
-                    cardContent2.className = 'card-content';
-                    cardContent2.textContent = data.content2;
+        // `.contents-wrap` 요소 가져오기
+        const contentsWrap = document.querySelector('.contents-wrap');
+        contentsWrap.innerHTML = ""; // 기존 카드 초기화
 
-                    const cardContent3 = document.createElement('div');
-                    cardContent3.className = 'card-content';
-                    cardContent3.textContent = data.content3;
+        // COMMENT가 배열이면 모든 코멘트를 한 문자열로 합치기
+        let commentsText = Array.isArray(parsedData.COMMENT)
+            ? parsedData.COMMENT.join("\n")  // 줄바꿈으로 연결
+            : parsedData.COMMENT;
 
-                    card.appendChild(cardTitle);
-                    card.appendChild(cardContent);
-                    card.appendChild(cardContent2);
-                    card.appendChild(cardContent3);
-                    contentsWrap.appendChild(card);
-                });
-            // }
-        // });
+        // 카드 요소 생성
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const cardTitle = document.createElement('div');
+        cardTitle.className = 'card-title';
+        cardTitle.textContent = `주소: ${parsedData.ADDRESS}`; // 예제 주소
+
+        const cardContent = document.createElement('div');
+        cardContent.className = 'card-content';
+        cardContent.textContent = `등급: ${parsedData.GRADE}`;
+
+        const cardContent2 = document.createElement('div');
+        cardContent2.className = 'card-content';
+        cardContent2.textContent = `점수: ${parsedData.REALSCORE}`;
+
+        const cardContent3 = document.createElement('div');
+        cardContent3.className = 'card-content';
+        cardContent3.textContent = `코멘트: ${commentsText}`;
+
+        // 요소 추가
+        card.appendChild(cardTitle);
+        card.appendChild(cardContent);
+        card.appendChild(cardContent2);
+        card.appendChild(cardContent3);
+        contentsWrap.appendChild(card);
     }
+
     // 상세보기
     function cardDetail() {
 
     }
+    // 세션 삭제
+    let isReloading = false;
+
+    // 페이지가 새로고침되었는지 감지
+    window.addEventListener("beforeunload", function (event) {
+        if (event.persisted) {
+            isReloading = true; // 브라우저에서 페이지 복원이 일어난 경우
+        }
+    });
+
+    // 뒤로 가기 시 세션 데이터 삭제
+    window.addEventListener("popstate", function () {
+        sessionStorage.removeItem("resultMap");
+    });
+
+    // 다른 페이지로 이동할 때 세션 데이터 삭제 (단, 새로고침은 예외 처리)
+    window.addEventListener("beforeunload", function () {
+        if (!isReloading) {
+            sessionStorage.removeItem("resultMap");
+        }
+    });
+
 
 </script>
 </body>

@@ -423,6 +423,7 @@ public class TilkoController {
                         System.out.println("Summary DataK Array is null or empty");
                     }
                     if(dataEArray != null){
+                        List<Map<String, Object>> dataList = new ArrayList<>();
                         for (int i = 0; i < dataEArray.length(); i++) {
                             org.json.JSONObject dataEItem = dataEArray.getJSONObject(i);
 
@@ -434,12 +435,15 @@ public class TilkoController {
                             dataMap.put("TargetOwner", dataEItem.optString("TargetOwner", ""));
                             dataMap.put("RankNo", dataEItem.optString("RankNo", ""));
                             dataMap.put("REALID", realMaxNum);
+                            dataList.add(dataMap);
 
                             try {
                                 tilkoService.saveSummaryDataE(dataMap);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+                            // REALINFO 테이블에 점수계산 위해 return
+                            returnMap.put("summaryData", dataList);
                         }
                     } else{
                         System.out.println("summary dataE Object is null");
@@ -475,7 +479,7 @@ public class TilkoController {
 
             // API URL 설정(인터넷 등기소 등기물건 주소검색: https://tilko.net/Help/Api/POST-api-apiVersion-Iros-RISUConfirmSimpleC)
             // 고유번호 조회 엔드포인트
-            String url = apiHost + "api/v1.0/Iros/RISUConfirmSimpleC";
+            String url = apiHost + "api/v2.0/Iros2/RetrieveSmplSrchList";
 
             // API 요청 파라미터 설정
             JSONObject json			= new JSONObject();
@@ -501,11 +505,22 @@ public class TilkoController {
             System.out.println("responseStr: " + responseStr);
 
             // JSON 파싱
-            org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
-            JSONArray resultArray = responseJson.optJSONArray("ResultList");
+            JSONObject responseJson = new JSONObject(responseStr);
+            // "Result" 객체에 접근
+            JSONObject resultObject = responseJson.optJSONObject("Result");
+
+            // "DataList" 배열 가져오기
+            JSONArray dataList = resultObject != null ? resultObject.optJSONArray("DataList") : new JSONArray();
+
+//            if (dataList != null) {
+//                for (int i = 0; i < dataList.length(); i++) {
+//                    JSONObject dataItem = dataList.getJSONObject(i);
+//                    System.out.println("Data Item " + i + ": " + dataItem.toString());
+//                }
+//            }
             // 데이터 설정
-            if (resultArray != null && resultArray.length() > 0) {
-                result.data = resultArray.toList();
+            if (dataList != null && dataList.length() > 0) {
+                result.data = dataList.toList();
             } else {
                 result.data = new ArrayList<>(); // 빈 배열 설정
             }
@@ -533,11 +548,10 @@ public class TilkoController {
         String GoyuAddressNUM = GoyuNUM;
 
         // 기타 데이터 (공백일경우 기본값 IsSummary제외 "N")
-        String JoinYn = "N";
-        String CostsYn = "N";
-        String DataYn = "N";
-        String ValidYn = "Y"; // 유효사항만 포함 여부
-        String IsSummary = "Y";
+        String CmortFlag = "N";
+        String TradeSeqFlag = "N";
+        String AbsCls = "11";
+        String RgsMttrSmry = "1"; // 유효사항만 포함 여부
 
         // RSA Public Key 조회
         String rsaPublicKey = tc.getPublicKey();
@@ -557,7 +571,7 @@ public class TilkoController {
 
 
         // API URL 설정
-        String url = tc.apiHost + "api/v2.0/IrosIdLogin/RISURetrieve";
+        String url = tc.apiHost + "api/v2.0/Iros2IdLogin/RealtyRegistry";
 
 
         // API 요청 파라미터 설정
@@ -571,12 +585,11 @@ public class TilkoController {
         json.put("EmoneyNo1", tc.aesEncrypt(aesKey, aesIv, irosNUM1));
         json.put("EmoneyNo2", tc.aesEncrypt(aesKey, aesIv, irosNUM2));
         json.put("EmoneyPwd", tc.aesEncrypt(aesKey, aesIv, irosNUM3));
-        json.put("UniqueNo", GoyuAddressNUM);
-        json.put("JoinYn", JoinYn);
-        json.put("CostsYn", CostsYn);
-        json.put("DataYn", DataYn);
-        json.put("ValidYn", ValidYn);
-        json.put("IsSummary", IsSummary);
+        json.put("Pin", GoyuAddressNUM);
+        json.put("CmortFlag", CmortFlag);
+        json.put("TradeSeqFlag", TradeSeqFlag);
+        json.put("AbsCls", AbsCls);
+        json.put("RgsMttrSmry", RgsMttrSmry);
 
         System.out.println("Request Payload: " + json.toJSONString());
 
@@ -602,7 +615,7 @@ public class TilkoController {
             org.json.JSONObject jsonData = XML.toJSONObject((String) xmlDataObject);
 
             // 트랜잭션 키 가져오기
-            Object transactionKeyObject = responseJson.opt("TransactionKey");
+            Object transactionKeyObject = responseJson.opt("ApiTxKey");
             org.json.JSONObject transactionKey = transactionKeyObject instanceof org.json.JSONObject
                     ? (org.json.JSONObject) transactionKeyObject
                     : null;
@@ -665,8 +678,20 @@ public class TilkoController {
             dataMap.put("REMAXAMT", amount);
             // 입력일시 GETDATE()
             // 판정점수 계산 로직
-
-            dataMap.put("REALSCORE", ""); // 판정점수 (점수 로직 summary 데이터 기준 공통코드 텍스트 비교 후 로직)
+            // 공통코드 데이터 불러오기
+            List<Map<String, Object>> comcode = tilkoService.getComcode();
+            // 차감 최저점수 불러오기
+            Map<String, Object> lessScore = tilkoService.getLessScore();
+            Map<String, Object> resultScore = tilkoParsing.calScore((List<Map<String, Object>>) returnData.get("summaryData"),
+                    comcode,
+                    (Integer)lessScore.get("Value"));
+            dataMap.put("REALSCORE", resultScore.get("REALSCORE")); // 판정점수 (점수 로직 summary 데이터 기준 공통코드 텍스트 비교 후 로직)
+            // 카드 출력시 필요 데이터
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("REALSCORE", resultScore.get("REALSCORE"));
+            resultMap.put("GRADE", resultScore.get("GRADE"));
+            resultMap.put("COMMENT", resultScore.get("COMMENT"));
+            resultMap.put("ADDRESS", address);
 
             dataMap.put("REALPOINT", 1); // 조회수
             dataMap.put("RELASTDATE", formattedDate); // 최종 조회일
@@ -687,10 +712,11 @@ public class TilkoController {
 
 
             tilkoService.saveTilko(dataMap);
+            result.data = resultMap;
 
         } else {
             System.out.println("데이터 저장 실패");
-            result.data = responseJson.opt("Message").toString();
+            result.message = responseJson.opt("Message").toString();
         }
         return result;
     }

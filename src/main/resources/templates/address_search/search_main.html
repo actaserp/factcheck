@@ -205,28 +205,30 @@
                     colorIndex = (colorIndex + 1) % availableColors.length;
                     if(data.Gubun !== '토지') {
                         // 버튼 처리
-                        let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="작업이력">
+                        let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="등기부">
                             등기부 조회
                         </button>`;
+                        // rd_addr_detail에서 태그 제거 후 적용
+                        let cleanAddress = stripHtmlTags(data.rd_addr_detail).replace(/\s+/g, ''); // 공백 제거
 
                         htmlContent += `
-                        <div class="card-box ${cardColor}" data-Goyu="${data.UniqueNo}">
+                        <div class="card-box ${cardColor}" data-Goyu="${data.pin}">
                             <div class="card-cont">
                                 <dl>
                                     <dt>고유번호</dt>
-                                    <dd>${data.UniqueNo}</dd>
+                                    <dd>${data.pin}</dd>
                                 </dl>
                                 <dl>
                                     <dt>주소</dt>
-                                    <dd>${data.BudongsanSojaejibeon}</dd>
+                                    <dd>${cleanAddress}</dd>
                                 </dl>
                                 <dl>
                                     <dt>구분</dt>
-                                    <dd>${data.Gubun}</dd>
+                                    <dd>${data.real_cls_cd}</dd>
                                 </dl>
                                 <dl>
                                     <dt>상태</dt>
-                                    <dd>${data.Sangtae}</dd>
+                                    <dd>${data.use_cls_cd}</dd>
                                 </dl>
                             </div>
                                 ${buttonsHtml}
@@ -248,13 +250,19 @@
                     const goyuNum = cardBox.getAttribute('data-Goyu');
 
                     // 데이터 찾기
-                    const item = data2.find(d => d.UniqueNo === goyuNum);
+                    const item = data2.find(d => d.pin === goyuNum);
                     if (item) {
                         searchaddress(item);
                     }
                 });
             }
         });
+    }
+    // HTML 태그 제거 함수
+    function stripHtmlTags(html) {
+        let tempDiv = document.createElement("div");
+        tempDiv.innerHTML = html;
+        return tempDiv.textContent || tempDiv.innerText || "";
     }
 
     function searchaddress(data) {
@@ -263,20 +271,25 @@
             url: '/api/tilko/searchaddress',
             type: 'GET',
             data: {
-                "GoyuNUM" : data.UniqueNo,
-                "address" : data.BudongsanSojaejibeon
+                "GoyuNUM" : data.pin,
+                "address" : data.rd_addr
             },
             async: false,
-            success: function (data) {
-                data2 = data.data;
+            success: function (response) {
+                let data2 = response.data;
                 console.log("data2", data2);
 
-                // 데이터를 sessionStorage에 저장
-                sessionStorage.setItem("data2", JSON.stringify(data2));
+                // API 응답에서 필요한 값 추출 후 sessionStorage에 저장
+                let resultMap = {
+                    "REALSCORE": data2.REALSCORE,
+                    "GRADE": data2.GRADE,
+                    "COMMENT": data2.COMMENT,
+                    "ADDRESS": data2.ADDRESS
+                };
+                sessionStorage.setItem("resultMap", JSON.stringify(resultMap));
 
-                // 페이지 이동
-                // window.location.href ="search_card";
-
+                // search_card 페이지로 이동
+                window.location.href = "search_card";
             },
             error: function (error) {
                 console.error("Error in API call:", error);
