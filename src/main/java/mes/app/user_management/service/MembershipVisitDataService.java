@@ -113,7 +113,7 @@ public class MembershipVisitDataService {
             params.addValue("startDate", startDate);
         }
         if (endDate != null && !endDate.isEmpty()) {
-            sql.append(" AND tu.INDATEM <= :endDate");
+            sql.append(" AND tu.INDATEM < DATEADD(day, 1, :endDate)");
             params.addValue("endDate", endDate);
         }
 
