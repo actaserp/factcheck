@@ -107,7 +107,7 @@ public class AccountController {
     boolean isMobile = userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone");
 
     // 모바일이면 "mlogin" 뷰로, 아니면 "login" 뷰로 설정
-    ModelAndView mv = new ModelAndView(isMobile ? "search_main" : "login");
+    ModelAndView mv = new ModelAndView(isMobile ? "mlogin" : "login");
 
     Map<String, Object> userInfo = new HashMap<String, Object>();
     Map<String, Object> gui = new HashMap<String, Object>();
@@ -137,51 +137,6 @@ public class AccountController {
     response.sendRedirect("/login");
   }
 
-  /*@PostMapping("/login")
-  public AjaxResult postLogin(
-      @RequestParam("username") final String username,
-      @RequestParam("password") final String password,
-      final HttpServletRequest request) throws UnknownHostException {
-
-    //log.info("로그인 시도, username: {}", username);
-
-    AjaxResult result = new AjaxResult();
-    HashMap<String, Object> data = new HashMap<>();
-    result.data = data;
-
-    // 사용자 조회
-    Optional<User> optionalUser = userRepository.findByUsername(username);
-    if (optionalUser.isEmpty()) {
-      data.put("code", "NOUSER");
-      return result;
-    }
-
-    // 인증 성공 처리
-    UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(username, password);
-    CustomAuthenticationToken auth = (CustomAuthenticationToken) authManager.authenticate(authReq);
-
-    if (auth != null) {
-      data.put("code", "OK");
-
-      try {
-        accountService.saveLoginLog("login", auth);
-      } catch (UnknownHostException e) {
-        log.error("로그 저장 중 에러 발생", e);
-      }
-
-      // Spring Security 세션 설정
-      SecurityContext sc = SecurityContextHolder.getContext();
-      sc.setAuthentication(auth);
-
-      HttpSession session = request.getSession(true);
-      session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
-    } else {
-      result.success = false;
-      data.put("code", "NOID");
-    }
-
-    return result;
-  }*/
   @PostMapping("/login")
   public AjaxResult postLogin(
       @RequestParam("username") final String username,
@@ -250,6 +205,19 @@ public class AccountController {
     }
 
     return result;
+  }
+
+  @GetMapping("/check-login")
+  @ResponseBody
+  public String checkLogin() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    if (authentication != null && authentication.isAuthenticated()
+        && !"anonymousUser".equals(authentication.getPrincipal())) {
+      return "로그인된 사용자: " + authentication.getName();
+    } else {
+      return "로그인이 필요합니다.";
+    }
   }
 
   /**
