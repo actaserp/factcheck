@@ -23,6 +23,8 @@ public class UM_userchartService {
 
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
+  @Autowired
+  private mes.app.precedence.service.PartnerCheckService partnerCheckService;
 
     public List<Map<String, Object>> getGridList(String startDate, String endDate, List<String> columns, String sexYn) {
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -263,7 +265,10 @@ public class UM_userchartService {
         return regionMap.getOrDefault(region, region);  // 매핑된 값이 없으면 원래 값 유지
     }
 
-    public List<Map<String, Object>> getDynamicData(String startDate, String endDate) {
+    //지역(시)/구축물 List
+    public List<Map<String, Object>> getDynamicData(
+        String startDate, String endDate, String inDatem, String sexYn, String district) {
+
         // 지역 목록
         List<String> regions = Arrays.asList(
             "서울특별시", "부산광역시", "대구광역시", "인천광역시", "광주광역시",
@@ -276,7 +281,31 @@ public class UM_userchartService {
 
         // SQL 생성
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT sub.inDatem, sub.region, sub.district, ");
+        sql.append("SELECT ");
+
+        // 동적으로 선택된 컬럼 추가
+        List<String> selectColumns = new ArrayList<>();
+        List<String> groupByColumns = new ArrayList<>();
+
+        if (inDatem !=null ) {
+            selectColumns.add("sub.inDatem");
+            groupByColumns.add("sub.inDatem");
+        }
+        if (district != null) {
+            selectColumns.add("sub.district");
+            groupByColumns.add("sub.district");
+        }
+        if (sexYn != null) {
+            selectColumns.add("sub.sexYn");
+            groupByColumns.add("sub.sexYn");
+        }
+
+       /* if (district != null) {
+            selectColumns.add("sub.region");
+            groupByColumns.add("sub.region");
+        }*/
+        sql.append(String.join(", ", selectColumns));
+        sql.append(", ");
 
         // 지역 및 구축물 유형별 COUNT 컬럼 동적 생성
         for (String region : regions) {
@@ -298,25 +327,66 @@ public class UM_userchartService {
         // 서브쿼리 추가
         sql.append("\nFROM (\n");
         sql.append("    SELECT \n");
-        sql.append("         CONVERT(DATE, RI.RELASTDATE) AS inDatem,\n");
-        sql.append("        COALESCE(TRIM(RI.RESIDO), '') AS region,\n");
-        sql.append("        RI.REGUGUN AS district,\n");
-        sql.append("        COALESCE(TRIM(RI.REALGUBUN), '기타') AS REALGUBUN\n");
-        sql.append("    FROM MOB_FACTCHK.dbo.TB_REALINFO RI\n");
-        sql.append("     WHERE RI.RELASTDATE >= :startDate AND RI.RELASTDATE <= :endDate ");
+
+        List<String> subQueryColumns = new ArrayList<>();
+        if (inDatem != null) {
+            subQueryColumns.add("CONVERT(DATE, RI.RELASTDATE) AS inDatem");
+        }
+        if (district != null) {
+            subQueryColumns.add("RI.REGUGUN AS district");
+        }
+        if (sexYn != null) {
+            subQueryColumns.add("TU.SEXYN AS sexYn");
+        }
+        if (district != null || sexYn != null || inDatem != null) {
+            subQueryColumns.add("COALESCE(TRIM(RI.RESIDO), '') AS region");
+        }
+        subQueryColumns.add("COALESCE(TRIM(RI.REALGUBUN), '기타') AS REALGUBUN");
+
+        sql.append(String.join(", ", subQueryColumns));
+        sql.append("\n    FROM MOB_FACTCHK.dbo.TB_REALINFO RI\n");
+        sql.append("join TB_USERINFO TU ON TU.USERID = RI.USERID ");
+        sql.append("    WHERE RI.RELASTDATE >= :startDate AND RI.RELASTDATE <= :endDate \n");
+
+        // 추가 필터 조건
+        if (inDatem != null) {
+            sql.append("       AND RI.RELASTDATE <=:inDatem  \n");
+        }
+        if (sexYn != null) {
+            sql.append("      AND TU.SEXYN LIKE :sexYn \n");
+        }
+        if (district != null) {
+            sql.append("       AND RI.REGUGUN LIKE :district\n");
+        }
+
         sql.append(") AS sub\n");
 
-        sql.append("GROUP BY sub.inDatem, sub.region, sub.district;");
+        // 🚀 **`GROUP BY` 문제 해결**
+        if (!groupByColumns.isEmpty()) {
+            sql.append(" GROUP BY ");
+            sql.append(String.join(", ", groupByColumns));
+        }
 
         // SQL 실행 파라미터 설정
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("startDate", startDate);
         params.addValue("endDate", endDate);
 
-        // 디버깅용 SQL 출력
-      //  log.info("Generated SQL:\n{}", sql.toString());
+        if (inDatem != null) {
+            params.addValue("inDatem", inDatem);
+        }
+        if (sexYn != null) {
+            params.addValue("sexYn", sexYn);
+        }
+        if (district != null) {
+            params.addValue("district", district);
+        }
 
-        // SQL 실행 및 결과 반환
+        log.info("Generated SQL:\n{}", sql.toString());
+        log.info("SQL 매개변수: {}", params.getValues());
+
         return jdbcTemplate.queryForList(sql.toString(), params);
     }
+
+
 }

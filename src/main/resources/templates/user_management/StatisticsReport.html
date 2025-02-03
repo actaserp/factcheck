@@ -245,10 +245,6 @@
         // 지역(시) 클릭 시 지역(시) 체크박스 숨기기
         regionCheckbox.style.display = 'none';
         districtCheckbox.style.display = 'flex';
-      } else if (selected === 'district') {
-        // 구군 클릭 시 구군 체크박스 숨기기
-        regionCheckbox.style.display = 'flex';
-        districtCheckbox.style.display = 'none';
       }
     }
 
@@ -260,9 +256,8 @@
       // 그리드 초기화 및 RegionData() 실행
       toggleGrid('theGrid2');
       RegionData([], true);
-
       // 체크박스 표시 로직 실행
-      toggleCheckboxVisibility('region');
+      //toggleCheckboxVisibility('region');
     });
 
     // 라디오 버튼 클릭 이벤트 연결
@@ -276,26 +271,26 @@
       // 모든 그리드 숨기기
       document.getElementById('theGrid').style.display = 'none';
       document.getElementById('theGrid2').style.display = 'none';
-      // document.getElementById('theGrid3').style.display = 'none';
-
       // 선택한 그리드만 표시
       document.getElementById(gridToShow).style.display = 'block';
       if (gridToShow === 'theGrid') {
         DefaultData(); // 나이 그리드 데이터 초기화
       } else if (gridToShow === 'theGrid2') {
-        //RegionData(); // 지역 그리드 데이터 초기화
+        RegionData(); // 지역 그리드 데이터 초기화
       }
     }
 
     // 라디오 버튼 클릭 이벤트에 연결
     document.getElementById('RowRegion').addEventListener('click', function () {
       toggleGrid('theGrid2'); // 지역(시) 선택 시 theGrid2 표시
-      RegionData([], true);
+     RegionData([], true);
     });
 
+    // 나이/구축물 라디오 버든
     document.getElementById('ageNum').addEventListener('click', function () {
       toggleGrid('theGrid'); // 나이 선택 시 theGrid 표시
-      updateGridColumns([], true);
+      //updateGridColumns([], true);
+      DefaultData([], true);
     });
 
     document.getElementById("RowRegion").checked = true;
@@ -311,7 +306,6 @@
       inDatem: "등록 일자",
       sexYn: "성별"
     };
-
 
     function init() {
       RegionData();
@@ -772,7 +766,8 @@
       {binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false},
       {binding: 'inDatem', header: '년도', width: 80, allowMerging: true},
       {binding: 'district', header: '구군', width: 120},
-      {binding: 'construction', header: '구축물', width: 100}
+     // {binding: 'total', header: '합계', width: 100, align: 'center'},
+      {binding: 'construction', header: '구축물', width: 100},
     ];
 
     // 지역과 하위 항목을 기반으로 컬럼 동적 추가
@@ -789,20 +784,27 @@
       });
     });
 
-    // 소계 컬럼 추가
-    columns.push({binding: 'total', header: '합계', width: 100, align: 'center'});
-
     // 생성된 컬럼 출력 (FlexGrid에 사용 가능)
     //  console.log(columns);
 
 
-    function RegionData() {
+    function RegionData(selectedRows =[]) {
       let data2 = [];
 
       const params = {
         startDate: $('#startDate').val(),
         endDate: $('#endDate').val(),
       };
+
+      if(selectedRows.length ===0){
+        params.district = $('#district').val() || ''; // 지역(구군)
+        params.inDatem = $('#inDatem').val() || '';   // 등록 일자
+      }
+
+      selectedRows.forEach(col => {
+        params[col] = $('#' + col).val() || '';
+      });
+
       // Ajax 통신을 통해 데이터 가져오기
       $.ajax({
         url: '/api/report/read2',
@@ -812,38 +814,24 @@
         success: function (response) {
           console.log("API 지역(시) 응답 데이터:", response);
 
-          if (response && Array.isArray(response.data2)) {
-            console.log("📢 API 응답 데이터 크기:", response.data2.length);
-
-            data2 = response.data2.map((item, index) => {
-              console.log("🔍 현재 처리 중인 API 응답 객체:", item);
-
+          if (response && Array.isArray(response.data)) {
+            data2 = response.data.map((item, index) => {
               const rowData = {
                 rownum: index + 1,
                 inDatem: item.inDatem || '',
                 district: item.district || '', // 구군 정보
                 region : item.region || '',
-
+                sexYn: item.sexYn || ''
               };
-
-              console.log("📢 regions 배열:", regions);
-              console.log("📢 subCategories 배열:", subCategories);
-
               // 지역별 데이터 추가
               regions.forEach(region => {
                 subCategories.forEach(subCategory => {
                   const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
                   const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
                   const dataKey = `${regionKey}_${subKey}`;
-
-
-                  console.log("🛠 매핑할 키:", dataKey);
-                  console.log("🔍 실제 API 응답 데이터에서 찾은 값:", item[dataKey]);
-
                   rowData[dataKey] = item[dataKey] ?? ''; // 데이터 매핑
                 });
               });
-
               rowData.total = item.total || ''; // 소계
               return rowData;
             });
@@ -862,7 +850,6 @@
             data2.push(emptyRow);
           }
           console.log('✅ 최종 처리된 데이터:', data2);
-
           // 그리드에 데이터 적용
           viewdata2 = new wijmo.collections.CollectionView(data2);
 
@@ -887,33 +874,33 @@
             const panel = theGrid2.columnHeaders;
 
             // 첫 번째 헤더 줄
-            panel.setCellData(0, 1, '구분');
-            panel.setCellData(0, 4, '지역');
-            panel.setCellData(0, 40, '합계');
+            panel.setCellData(0, 2, '구분');
+            panel.setCellData(0, 3, '지역');
+           // panel.setCellData(0, 40, '합계');
 
             // 첫 번째 헤더 줄 구성
-            panel.setCellData(0, 5, '서울특별시');
-            panel.setCellData(0, 10, '부산광역시');
-            panel.setCellData(0, 15, '대구광역시');
-            panel.setCellData(0, 20, '인천광역시');
-            panel.setCellData(0, 25, '광주광역시');
-            panel.setCellData(0, 30, '대전광역시');
-            panel.setCellData(0, 35, '울산광역시');
-            panel.setCellData(0, 40, '세종특별자치시');
-            panel.setCellData(0, 45, '경기도');
-            panel.setCellData(0, 50, '강원도');
-            panel.setCellData(0, 55, '충청북도');
-            panel.setCellData(0, 60, '충청남도');
-            panel.setCellData(0, 65, '전라북도');
-            panel.setCellData(0, 70, '전라남도');
-            panel.setCellData(0, 75, '경상북도');
-            panel.setCellData(0, 80, '경상남도');
-            panel.setCellData(0, 85, '제주특별자치도');
+            panel.setCellData(0, 4, '서울특별시');
+            panel.setCellData(0, 9, '부산광역시');
+            panel.setCellData(0, 14, '대구광역시');
+            panel.setCellData(0, 19, '인천광역시');
+            panel.setCellData(0, 24, '광주광역시');
+            panel.setCellData(0, 29, '대전광역시');
+            panel.setCellData(0, 34, '울산광역시');
+            panel.setCellData(0, 39, '세종특별자치시');
+            panel.setCellData(0, 44, '경기도');
+            panel.setCellData(0, 49, '강원도');
+            panel.setCellData(0, 54, '충청북도');
+            panel.setCellData(0, 59, '충청남도');
+            panel.setCellData(0, 64, '전라북도');
+            panel.setCellData(0, 69, '전라남도');
+            panel.setCellData(0, 74, '경상북도');
+            panel.setCellData(0, 79, '경상남도');
+            panel.setCellData(0, 84, '제주특별자치도');
 
             theGrid2.rowHeaders.columns.splice(0, 1);
             // ContextMenu 추가
             new FlexGridContextMenu(theGrid2);
-            window.downloadFileName = '통계보고서';
+            window.downloadFileName = '통계보고서_지역/구축물';
 
           } else {
             theGrid2.itemsSource = viewdata2;
@@ -932,8 +919,8 @@
       const selectedRows = Array.from(
         document.querySelectorAll('#selection-container .form-check-input:checked')
       ).map((checkbox) => checkbox.value);
-
-      //console.log('선택된 열들:', selectedRows);
+      console.log('선택된 열들:', selectedRows);
+      RegionData(selectedRows);
 
       updateGridColumns2(selectedRows);
     }

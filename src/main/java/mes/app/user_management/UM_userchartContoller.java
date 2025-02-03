@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -102,15 +103,49 @@ public class UM_userchartContoller {
 
   @GetMapping("/read2")
   public AjaxResult getReportList2(@RequestParam(value = "startDate", required = false) String startDate,
-                                  @RequestParam(value = "endDate", required = false) String endDate) {
+                                   @RequestParam(value = "endDate", required = false) String endDate,
+                                   @RequestParam(value = "inDatem" ,required = false) String inDatem,
+                                   @RequestParam(value = "sexYn" , required = false) String sexYn,
+                                   @RequestParam(value = "district" , required = false) String district) {
     AjaxResult result = new AjaxResult();
-    log.info("들어온 데이터: startDate={}, endDate={}", startDate, endDate);
+    log.info("지역/구축물_들어온 데이터: startDate={}, endDate={},inDatem={},sexYn={}, district={} ", startDate, endDate, inDatem, sexYn, district);
 
     try {
 
+      // inDatem이 "inDatem"라면 inDatem 을 endDate로 설정
+      if ("inDatem".equals(inDatem)) {
+        //log.info(" inDatem이 'inDatem'이므로 inDatem을 endDate({})로 설정", endDate);
+        inDatem = endDate; // inDatem을 endDate 값으로 설정
+      }
+
+      if ("district".equals(district)) {
+      //  log.info(" district가 'district'이므로 전체 지역(district) 데이터 조회");
+        district = "%"; // 모든 값을 포함하는 조건
+      }
+      if ("sexYn".equals(sexYn)) {
+       // log.info(" sexYn 'sexYn'이므로 전체 성별(sexYn) 데이터 조회");
+        sexYn = "%"; // 모든 값을 포함하는 조건
+      }
+
       // 원본 데이터 가져오기
-      List<Map<String, Object>> rawData = userchartService.getDynamicData(startDate, endDate);
-//      log.info("받아온 데이터 :{}", rawData);
+      List<Map<String, Object>> rawData = userchartService.getDynamicData(startDate, endDate, inDatem, sexYn, district);
+
+      for (Map<String, Object> row : rawData) {
+        if (row.containsKey("sexYn") && row.get("sexYn") != null) {
+          String originalSex = row.get("sexYn").toString().trim();
+          switch (originalSex) {
+            case "1":
+              row.put("sexYn", "남자");
+              break;
+            case "2":
+              row.put("sexYn", "여자");
+              break;
+            default:
+              row.put("sexYn", "알 수 없음");
+              break;
+          }
+        }
+      }
 
       // 날짜 포맷터 목록 (다양한 소수점 자리수를 처리하기 위함)
       List<DateTimeFormatter> formatters = Arrays.asList(
