@@ -239,10 +239,19 @@
       const districtCheckbox = document.querySelector('#district').parentElement; // 구군 체크박스 부모
       const allCheckboxes = document.querySelectorAll('#selection-container input[type="checkbox"]'); // 모든 체크박스 선택
 
+      //  "발급 일자" 체크박스 및 콤보박스 요소 추가 선택
+      const inDatemCheckbox = document.querySelector('#inDatem');
+      const inDatemSelect = document.querySelector('#inDatemValue');
+
       // 체크박스 초기화 (선택 해제)
       allCheckboxes.forEach(checkbox => {
         checkbox.checked = false;
       });
+
+      // "발급 일자" 콤보박스 초기화 및 비활성화
+      inDatemCheckbox.checked = false;
+      inDatemSelect.selectedIndex = 0;  // 첫 번째 기본 옵션 선택
+      inDatemSelect.disabled = true;    // 체크 해제 시 비활성화
 
       if (selected === 'ageNum') {
         // 나이 클릭 시 모두 표시
@@ -254,6 +263,7 @@
         districtCheckbox.style.display = 'flex';
       }
     }
+
     document.getElementById("inDatem").addEventListener("change", function() {
       document.getElementById("inDatemValue").disabled = !this.checked;
     });
@@ -844,22 +854,29 @@
                 rownum: index + 1,
                 inDatem: item.inDatem || '',
                 district: item.district || '', // 구군 정보
-                region : item.region || '',
+                region: item.region || '',
                 sexYn: item.sexYn || ''
               };
-              var ll_valuesum = 0;
+
+              let ll_valuesum = 0; // 총합 계산 변수
+
               // 지역별 데이터 추가
               regions.forEach(region => {
                 subCategories.forEach(subCategory => {
                   const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
                   const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
                   const dataKey = `${regionKey}_${subKey}`;
-                  rowData[dataKey] = item[dataKey] ?? ''; // 데이터 매핑
-                  ll_valuesum += rowData[dataKey];
+
+                  //  0이면 ''(빈 문자열)로 변환
+                  rowData[dataKey] = item[dataKey] === 0 ? '' : item[dataKey] ?? '';
+
+                  ll_valuesum += rowData[dataKey] === '' ? 0 : rowData[dataKey];
                 });
               });
-              rowData.total = item.total || ''; // 소계
-              if(ll_valuesum > 0){
+
+              rowData.total = item.total === 0 ? '' : item.total || ''; // 소계도 같은 방식 적용
+
+              if (ll_valuesum > 0) {
                 data_renew.push({
                   index: cnt,
                   data: rowData // 전체 행 추가
