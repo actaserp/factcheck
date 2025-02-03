@@ -156,7 +156,14 @@
                         id="inDatem"
                         style="margin-right: 8px;"
                     />
-                    <label class="form-check-label" for="inDatem">발급 일자</label>
+<!--                    <label class="form-check-label" for="inDatem">발급 일자</label>-->
+                    <select class="form-check-select" id="inDatemValue">
+                      <option value="" disabled selected>발급 일자를 선택하세요</option>
+                      <option value="Year">발급일자 (년)</option>
+                      <option value="Month">발급일자 (년, 월)</option>
+                      <option value="Day">발급일자 (년, 월, 일)</option>
+                    </select>
+
                   </div>
                   <div class="form-check" style="display: flex; align-items: center;">
                     <input
@@ -247,6 +254,9 @@
         districtCheckbox.style.display = 'flex';
       }
     }
+    document.getElementById("inDatem").addEventListener("change", function() {
+      document.getElementById("inDatemValue").disabled = !this.checked;
+    });
 
     // 초기화: 페이지 로드 시 모든 체크박스가 보이도록 설정
     document.addEventListener("DOMContentLoaded", function () {
@@ -257,7 +267,7 @@
       toggleGrid('theGrid2');
       RegionData([], true);
       // 체크박스 표시 로직 실행
-      //toggleCheckboxVisibility('region');
+      toggleCheckboxVisibility('region');
     });
 
     // 라디오 버튼 클릭 이벤트 연결
@@ -764,7 +774,7 @@
     // 초기 컬럼 배열
     const columns = [
       {binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false},
-      {binding: 'inDatem', header: '년도', width: 80, allowMerging: true},
+      {binding: 'inDatem', header: '년도', width: 120, allowMerging: true},
       {binding: 'district', header: '구군', width: 120},
      // {binding: 'total', header: '합계', width: 100, align: 'center'},
       {binding: 'construction', header: '구축물', width: 100},
@@ -791,6 +801,12 @@
     function RegionData(selectedRows =[]) {
       let data2 = [];
 
+      // 선택한 발급일자
+      const inDatemChecked = document.getElementById("inDatem").checked;
+      console.log("inDatemChecked 상태 :", inDatemChecked);
+      const inDatemValue = document.getElementById("inDatemValue").value;
+      console.log("inDatemValue 값: ", inDatemValue);
+
       const params = {
         startDate: $('#startDate').val(),
         endDate: $('#endDate').val(),
@@ -801,9 +817,16 @@
         params.inDatem = $('#inDatem').val() || '';   // 등록 일자
       }
 
+      if (inDatemChecked) {
+        params.inDatem = inDatemValue; // 체크되어 있으면 선택된 값 추가
+      }
+
       selectedRows.forEach(col => {
-        params[col] = $('#' + col).val() || '';
+        if(col !=='inDatem' ){
+          params[col] = $('#' + col).val() || '';
+        }
       });
+      console.log("📌 최종 요청 파라미터:", params);
 
       // Ajax 통신을 통해 데이터 가져오기
       $.ajax({
@@ -813,7 +836,8 @@
         dataType: 'json',
         success: function (response) {
           console.log("API 지역(시) 응답 데이터:", response);
-
+          var data_renew = [];
+          var cnt = 0;
           if (response && Array.isArray(response.data)) {
             data2 = response.data.map((item, index) => {
               const rowData = {
@@ -823,6 +847,7 @@
                 region : item.region || '',
                 sexYn: item.sexYn || ''
               };
+              var ll_valuesum = 0;
               // 지역별 데이터 추가
               regions.forEach(region => {
                 subCategories.forEach(subCategory => {
@@ -830,13 +855,21 @@
                   const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
                   const dataKey = `${regionKey}_${subKey}`;
                   rowData[dataKey] = item[dataKey] ?? ''; // 데이터 매핑
+                  ll_valuesum += rowData[dataKey];
                 });
               });
               rowData.total = item.total || ''; // 소계
+              if(ll_valuesum > 0){
+                data_renew.push({
+                  index: cnt,
+                  data: rowData // 전체 행 추가
+                });
+                cnt++;
+              }
               return rowData;
             });
           }
-
+          console.log("data_renew :", data_renew);
           // 데이터가 15개 미만일 경우 빈 데이터 추가
           while (data2.length < 15) {
             const emptyRow = { rownum: data2.length + 1 };
@@ -849,7 +882,7 @@
             emptyRow.total = ''; // 소계
             data2.push(emptyRow);
           }
-          console.log('✅ 최종 처리된 데이터:', data2);
+          console.log(' 최종 처리된 데이터:', data2);
           // 그리드에 데이터 적용
           viewdata2 = new wijmo.collections.CollectionView(data2);
 

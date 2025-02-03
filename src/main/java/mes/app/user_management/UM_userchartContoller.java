@@ -117,7 +117,6 @@ public class UM_userchartContoller {
         //log.info(" inDatem이 'inDatem'이므로 inDatem을 endDate({})로 설정", endDate);
         inDatem = endDate; // inDatem을 endDate 값으로 설정
       }
-
       if ("district".equals(district)) {
       //  log.info(" district가 'district'이므로 전체 지역(district) 데이터 조회");
         district = "%"; // 모든 값을 포함하는 조건
@@ -129,6 +128,7 @@ public class UM_userchartContoller {
 
       // 원본 데이터 가져오기
       List<Map<String, Object>> rawData = userchartService.getDynamicData(startDate, endDate, inDatem, sexYn, district);
+      //log.info("받은 데이터 _지역/구축물 : {}", rawData);
 
       for (Map<String, Object> row : rawData) {
         if (row.containsKey("sexYn") && row.get("sexYn") != null) {
@@ -147,51 +147,21 @@ public class UM_userchartContoller {
         }
       }
 
-      // 날짜 포맷터 목록 (다양한 소수점 자리수를 처리하기 위함)
-      List<DateTimeFormatter> formatters = Arrays.asList(
-          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"), // 소수점 3자리
-          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS"),  // 소수점 2자리
-          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"),   // 소수점 1자리
-          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")      // 소수점 없음
-      );
-
-      DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // 날짜만 있는 경우
-      DateTimeFormatter yearFormatter = DateTimeFormatter.ofPattern("yyyy"); // 연도만 추출
-
       // 날짜 변환 처리
       for (Map<String, Object> row : rawData) {
         if (row.containsKey("inDatem") && row.get("inDatem") != null) {
           String originalDate = row.get("inDatem").toString().trim();
+          String selectedFormat = inDatem; // "Year", "Month", "Day" 값 중 하나
 
-          boolean parsed = false;
-
-          // 1. 먼저 날짜만 있는 경우 (yyyy-MM-dd) 변환 시도
-          try {
-            LocalDate date = LocalDate.parse(originalDate, dateOnlyFormatter);
-            row.put("inDatem", String.valueOf(date.getYear())); // 연도만 저장
-            parsed = true;
-          } catch (Exception ignored) {
-            // 변환 실패하면 다음 포맷 시도
-          }
-
-          // 2. 날짜 + 시간 포맷 시도
-          if (!parsed) {
-            for (DateTimeFormatter formatter : formatters) {
-              try {
-                LocalDateTime dateTime = LocalDateTime.parse(originalDate, formatter);
-                row.put("inDatem", dateTime.format(yearFormatter)); // 연도만 저장
-                parsed = true;
-                break; // 변환 성공하면 루프 종료
-              } catch (Exception ignored) {
-                // 변환 실패한 경우 무시하고 다음 포맷 시도
-              }
-            }
-          }
-
-          // 3. 모든 포맷에서 변환 실패 시 기본값 설정
-          if (!parsed) {
-            log.error("날짜 변환 실패: {} (원본 데이터: {})", originalDate, row);
-            row.put("inDatem", "알 수 없음");
+          // 쿼리에서 변환되어 왔으므로 그대로 사용
+          switch (selectedFormat) {
+            case "Year":
+            case "Month":
+            case "Day":
+              row.put("inDatem", originalDate); // 변환 없이 그대로 사용
+              break;
+            default:
+              row.put("inDatem", originalDate); // 기본적으로 원본 유지
           }
         }
       }

@@ -287,10 +287,22 @@ public class UM_userchartService {
         List<String> selectColumns = new ArrayList<>();
         List<String> groupByColumns = new ArrayList<>();
 
-        if (inDatem !=null ) {
-            selectColumns.add("sub.inDatem");
-            groupByColumns.add("sub.inDatem");
+        String inDatemColumn = "sub.inDatem"; // 기본값 설정 (그대로 사용)
+
+        if ("Year".equals(inDatem)) {
+            inDatemColumn = "LEFT(sub.inDatem, 4)";
+        } else if ("Month".equals(inDatem)) {
+            inDatemColumn = "LEFT(sub.inDatem, 7)";
+        } else if ("Day".equals(inDatem)) {
+            inDatemColumn = "LEFT(sub.inDatem, 10)";
         }
+
+        // inDatem이 선택된 경우에만 컬럼 추가
+        if (inDatem != null) {
+            selectColumns.add(inDatemColumn + " AS inDatem");
+            groupByColumns.add(inDatemColumn);
+        }
+
         if (district != null) {
             selectColumns.add("sub.district");
             groupByColumns.add("sub.district");
@@ -300,10 +312,6 @@ public class UM_userchartService {
             groupByColumns.add("sub.sexYn");
         }
 
-       /* if (district != null) {
-            selectColumns.add("sub.region");
-            groupByColumns.add("sub.region");
-        }*/
         sql.append(String.join(", ", selectColumns));
         sql.append(", ");
 
@@ -361,7 +369,7 @@ public class UM_userchartService {
 
         sql.append(") AS sub\n");
 
-        // 🚀 **`GROUP BY` 문제 해결**
+        // GROUP BY
         if (!groupByColumns.isEmpty()) {
             sql.append(" GROUP BY ");
             sql.append(String.join(", ", groupByColumns));
@@ -382,8 +390,8 @@ public class UM_userchartService {
             params.addValue("district", district);
         }
 
-        log.info("Generated SQL:\n{}", sql.toString());
-        log.info("SQL 매개변수: {}", params.getValues());
+//        log.info("Generated SQL:\n{}", sql.toString());
+//        log.info("SQL 매개변수: {}", params.getValues());
 
         return jdbcTemplate.queryForList(sql.toString(), params);
     }
