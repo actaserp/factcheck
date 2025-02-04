@@ -1,6 +1,5 @@
 package mes.app.user_management.service;
 
-
 import lombok.extern.slf4j.Slf4j;
 import mes.domain.services.SqlRunner;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -23,148 +21,6 @@ public class UM_userchartService {
 
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
-  @Autowired
-  private mes.app.precedence.service.PartnerCheckService partnerCheckService;
-
-    public List<Map<String, Object>> getGridList(String startDate, String endDate, List<String> columns, String sexYn) {
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        StringBuilder sql = new StringBuilder("SELECT ");
-
-        // 기본 컬럼 정의 (동적으로 선택 가능)
-        List<String> defaultColumns = List.of(
-            "sub.inDatem",
-            "sub.region",
-            "sub.district",
-            "sub.AGE_GROUP",
-            "sub.REALGUBUN"
-        );
-
-        // 동적으로 선택된 컬럼 적용
-        if (columns == null || columns.isEmpty()) {
-            sql.append(String.join(", ", defaultColumns));
-        } else {
-            List<String> selectedColumns = new ArrayList<>();
-            for (String column : columns) {
-                switch (column) {
-                    case "inDatem": selectedColumns.add("sub.inDatem"); break;
-                    case "region": selectedColumns.add("sub.region"); break;
-                    case "district": selectedColumns.add("sub.district"); break;
-                    case "ageGroup": selectedColumns.add("sub.AGE_GROUP"); break;
-                    case "realGubun": selectedColumns.add("sub.REALGUBUN"); break;
-                    case "sexYn": selectedColumns.add("sub.sexYn"); break;
-                    default: log.warn("Unknown column: {}", column);
-                }
-            }
-            sql.append(String.join(", ", selectedColumns));
-        }
-
-        // 고정된 집계 컬럼 추가
-        sql.append("""
-       , COUNT(*) AS total,
-        SUM(CASE WHEN AGENUM <= 19 AND REALGUBUN = '아파트' THEN 1 ELSE 0 END) AS age_10_apartment,
-        SUM(CASE WHEN AGENUM <= 19 AND REALGUBUN = '빌라' THEN 1 ELSE 0 END) AS age_10_villa,
-        SUM(CASE WHEN AGENUM <= 19 AND REALGUBUN = '단독' THEN 1 ELSE 0 END) AS age_10_house,
-        SUM(CASE WHEN AGENUM <= 19 AND REALGUBUN = '오피스' THEN 1 ELSE 0 END) AS age_10_office,
-        SUM(CASE WHEN AGENUM <= 19 AND REALGUBUN = '기타' THEN 1 ELSE 0 END) AS age_10_other,
-        -- 20대 구축물 유형
-        SUM(CASE WHEN AGENUM BETWEEN 20 AND 29 AND REALGUBUN = '아파트' THEN 1 ELSE 0 END) AS age_20_apartment,
-        SUM(CASE WHEN AGENUM BETWEEN 20 AND 29 AND REALGUBUN = '빌라' THEN 1 ELSE 0 END) AS age_20_villa,
-        SUM(CASE WHEN AGENUM BETWEEN 20 AND 29 AND REALGUBUN = '단독' THEN 1 ELSE 0 END) AS age_20_house,
-        SUM(CASE WHEN AGENUM BETWEEN 20 AND 29 AND REALGUBUN = '오피스' THEN 1 ELSE 0 END) AS age_20_office,
-        SUM(CASE WHEN AGENUM BETWEEN 20 AND 29 AND REALGUBUN = '기타' THEN 1 ELSE 0 END) AS age_20_other,
-        -- 30대 구축물 유형
-        SUM(CASE WHEN AGENUM BETWEEN 30 AND 39 AND REALGUBUN = '아파트' THEN 1 ELSE 0 END) AS age_30_apartment,
-        SUM(CASE WHEN AGENUM BETWEEN 30 AND 39 AND REALGUBUN = '빌라' THEN 1 ELSE 0 END) AS age_30_villa,
-        SUM(CASE WHEN AGENUM BETWEEN 30 AND 39 AND REALGUBUN = '단독' THEN 1 ELSE 0 END) AS age_30_house,
-        SUM(CASE WHEN AGENUM BETWEEN 30 AND 39 AND REALGUBUN = '오피스' THEN 1 ELSE 0 END) AS age_30_office,
-        SUM(CASE WHEN AGENUM BETWEEN 30 AND 39 AND REALGUBUN = '기타' THEN 1 ELSE 0 END) AS age_30_other,
-        -- 40대 구축물 유형
-        SUM(CASE WHEN AGENUM BETWEEN 40 AND 49 AND REALGUBUN = '아파트' THEN 1 ELSE 0 END) AS age_40_apartment,
-        SUM(CASE WHEN AGENUM BETWEEN 40 AND 49 AND REALGUBUN = '빌라' THEN 1 ELSE 0 END) AS age_40_villa,
-        SUM(CASE WHEN AGENUM BETWEEN 40 AND 49 AND REALGUBUN = '단독' THEN 1 ELSE 0 END) AS age_40_house,
-        SUM(CASE WHEN AGENUM BETWEEN 40 AND 49 AND REALGUBUN = '오피스' THEN 1 ELSE 0 END) AS age_40_office,
-        SUM(CASE WHEN AGENUM BETWEEN 40 AND 49 AND REALGUBUN = '기타' THEN 1 ELSE 0 END) AS age_40_other,
-        -- 50대 구축물
-        SUM(CASE WHEN AGENUM BETWEEN 50 AND 59 AND REALGUBUN = '아파트' THEN 1 ELSE 0 END) AS age_50_apartment,
-        SUM(CASE WHEN AGENUM BETWEEN 50 AND 59 AND REALGUBUN = '빌라' THEN 1 ELSE 0 END) AS age_50_villa,
-        SUM(CASE WHEN AGENUM BETWEEN 50 AND 59 AND REALGUBUN = '단독' THEN 1 ELSE 0 END) AS age_50_house,
-        SUM(CASE WHEN AGENUM BETWEEN 50 AND 59 AND REALGUBUN = '오피스' THEN 1 ELSE 0 END) AS age_50_office,
-        SUM(CASE WHEN AGENUM BETWEEN 50 AND 59 AND REALGUBUN = '기타' THEN 1 ELSE 0 END) AS age_50_other,
-        -- 60대
-        SUM(CASE WHEN AGENUM BETWEEN 60 AND 69 AND REALGUBUN = '아파트' THEN 1 ELSE 0 END) AS age_60_apartment,
-        SUM(CASE WHEN AGENUM BETWEEN 60 AND 69 AND REALGUBUN = '빌라' THEN 1 ELSE 0 END) AS age_60_villa,
-        SUM(CASE WHEN AGENUM BETWEEN 60 AND 69 AND REALGUBUN = '단독' THEN 1 ELSE 0 END) AS age_60_house,
-        SUM(CASE WHEN AGENUM BETWEEN 60 AND 69 AND REALGUBUN = '오피스' THEN 1 ELSE 0 END) AS age_60_office,
-        SUM(CASE WHEN AGENUM BETWEEN 60 AND 69 AND REALGUBUN = '기타' THEN 1 ELSE 0 END) AS age_60_other,
-        -- 70대 이상
-        SUM(CASE WHEN AGENUM >= 70 AND REALGUBUN = '아파트' THEN 1 ELSE 0 END) AS age_70_apartment,
-        SUM(CASE WHEN AGENUM >= 70 AND REALGUBUN = '빌라' THEN 1 ELSE 0 END) AS age_70_villa,
-        SUM(CASE WHEN AGENUM >= 70 AND REALGUBUN = '단독' THEN 1 ELSE 0 END) AS age_70_house,
-        SUM(CASE WHEN AGENUM >= 70 AND REALGUBUN = '오피스' THEN 1 ELSE 0 END) AS age_70_office,
-        SUM(CASE WHEN AGENUM >= 70 AND REALGUBUN = '기타' THEN 1 ELSE 0 END) AS age_70_other
-    FROM (
-        SELECT
-            tu.INDATEM AS inDatem,
-            tr.RESIDO AS region,
-            tr.REGUGUN AS district,
-            tr.REALGUBUN,
-            tu.AGENUM,
-    """);
-        // sexYn이 `columns`에 포함된 경우만 SELECT에 추가
-        if (columns != null && columns.contains("sexYn")) {
-            sql.append("tu.SEXYN AS sexYn, ");
-        }
-
-        sql.append("""
-            CASE
-                WHEN tu.AGENUM < 20 THEN '20대 이하'
-                WHEN tu.AGENUM BETWEEN 20 AND 29 THEN '20대'
-                WHEN tu.AGENUM BETWEEN 30 AND 39 THEN '30대'
-                WHEN tu.AGENUM BETWEEN 40 AND 49 THEN '40대'
-                WHEN tu.AGENUM BETWEEN 50 AND 59 THEN '50대'
-                WHEN tu.AGENUM BETWEEN 60 AND 69 THEN '60대'
-                ELSE '70대 이상'
-            END AS AGE_GROUP
-        FROM TB_REALINFO tr
-        LEFT JOIN TB_USERINFO tu ON tr.USERID = tu.USERID
-        LEFT JOIN auth_user au ON tr.USERID = au.username
-        WHERE 1=1
-    """);
-
-        // WHERE 조건 추가
-        if (startDate != null && !startDate.isEmpty()) {
-            sql.append(" AND tu.INDATEM >= :startDate ");
-            params.addValue("startDate", startDate);
-        }
-        if (endDate != null && !endDate.isEmpty()) {
-            sql.append(" AND tu.INDATEM <= :endDate ");
-            params.addValue("endDate", endDate);
-        }
-        if (sexYn != null && !sexYn.isEmpty()) {
-            sql.append(" AND tu.SEXYN = :sexYn ");
-            params.addValue("sexYn", sexYn);
-        }
-
-        sql.append("""
-    ) AS sub
-    GROUP BY sub.inDatem, sub.region, sub.district, sub.AGE_GROUP, sub.REALGUBUN
-    """);
-
-        // `sexYn`이 `columns`에 포함된 경우만 `GROUP BY`에 추가
-        if (columns != null && columns.contains("sexYn")) {
-            sql.append(", sub.sexYn");
-        }
-
-        sql.append(" ORDER BY sub.region, sub.district;");
-
-        // 로그 출력
-        //log.info("그리드 리스트 SQL: {}", sql.toString());
-        //log.info("SQL 매개변수: {}", params.getValues());
-
-        // SQL 실행
-        return sqlRunner.getRows(sql.toString(), params);
-    }
-
 
     //엑셀 다운 정보
     public List<Map<String, Object>> getUserInfo(String startDate, String endDate, String region, String district, String ageGroup) {
@@ -352,7 +208,7 @@ public class UM_userchartService {
         subQueryColumns.add("COALESCE(TRIM(RI.REALGUBUN), '기타') AS REALGUBUN");
 
         sql.append(String.join(", ", subQueryColumns));
-        sql.append("\n    FROM MOB_FACTCHK.dbo.TB_REALINFO RI\n");
+        sql.append("\n    FROM TB_REALINFO RI\n");
         sql.append("join TB_USERINFO TU ON TU.USERID = RI.USERID ");
         sql.append("    WHERE RI.RELASTDATE >= :startDate AND RI.RELASTDATE <= :endDate \n");
 
@@ -394,6 +250,131 @@ public class UM_userchartService {
 //        log.info("SQL 매개변수: {}", params.getValues());
 
         return jdbcTemplate.queryForList(sql.toString(), params);
+    }
+
+    public List<Map<String, Object>> getGridListDynamic(
+        String startDate, String endDate, String sexYn, String inDatem, String district, String region) {
+
+        List<String> ageGroups = Arrays.asList("20대 이하", "20대", "30대", "40대", "50대", "60대", "70대 이상");
+        List<String> constructions = Arrays.asList("아파트", "빌라", "단독", "오피스", "기타");
+
+        // SQL 생성
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT ");
+
+        // 동적으로 선택된 컬럼 추가
+        List<String> selectColumns = new ArrayList<>();
+        List<String> groupByColumns = new ArrayList<>();
+
+        String inDatemColumn = "sub.inDatem";
+        if ("Year".equals(inDatem)) {
+            inDatemColumn = "LEFT(sub.inDatem, 4)";
+        } else if ("Month".equals(inDatem)) {
+            inDatemColumn = "LEFT(sub.inDatem, 7)";
+        } else if ("Day".equals(inDatem)) {
+            inDatemColumn = "LEFT(sub.inDatem, 10)";
+        }
+
+        if (inDatem != null) {
+            selectColumns.add(inDatemColumn + " AS inDatem");
+            groupByColumns.add(inDatemColumn);
+        }
+
+        if (region != null) {
+            selectColumns.add("sub.region");
+            groupByColumns.add("sub.region");
+        }
+        if (district != null) {
+            selectColumns.add("sub.district");
+            groupByColumns.add("sub.district");
+        }
+        if (sexYn != null) {
+            selectColumns.add("sub.sexYn");
+            groupByColumns.add("sub.sexYn");
+        }
+
+        sql.append(String.join(", ", selectColumns));
+        sql.append(", ");
+
+        for (String age : ageGroups) {
+            String ageKey = age.replaceAll("[^0-9]", "");
+            for (String construction : constructions) {
+                String columnAlias = "age_" + ageKey + "_" + construction;
+                sql.append(String.format(
+                    "SUM(CASE WHEN sub.AGE_GROUP = '%s' AND sub.REALGUBUN = '%s' THEN 1 ELSE 0 END) AS %s,\n",
+                    age, construction, columnAlias
+                ));
+            }
+        }
+
+        int lastCommaIndex = sql.lastIndexOf(",");
+
+        if (lastCommaIndex != -1) {
+            sql.deleteCharAt(lastCommaIndex);
+        }
+
+        // 서브쿼리 추가
+        sql.append("\nFROM (\n");
+        sql.append("    SELECT \n");
+
+        List<String> subQueryColumns = new ArrayList<>();
+        if (inDatem != null) {
+            subQueryColumns.add("CONVERT(DATE, RI.RELASTDATE) AS inDatem");
+        }
+        if (region != null) {
+            subQueryColumns.add("RI.RESIDO AS region");
+        }
+        if (district != null) {
+            subQueryColumns.add("RI.REGUGUN AS district");
+        }
+        if (sexYn != null) {
+            subQueryColumns.add("TU.SEXYN AS sexYn");
+        }
+
+        subQueryColumns.add("RI.REALGUBUN");
+        subQueryColumns.add("TU.AGENUM");
+        subQueryColumns.add("""
+        CASE
+            WHEN TU.AGENUM < 20 THEN '20대 이하'
+            WHEN TU.AGENUM BETWEEN 20 AND 29 THEN '20대'
+            WHEN TU.AGENUM BETWEEN 30 AND 39 THEN '30대'
+            WHEN TU.AGENUM BETWEEN 40 AND 49 THEN '40대'
+            WHEN TU.AGENUM BETWEEN 50 AND 59 THEN '50대'
+            WHEN TU.AGENUM BETWEEN 60 AND 69 THEN '60대'
+            ELSE '70대 이상'
+        END AS AGE_GROUP
+    """);
+
+        sql.append(String.join(", ", subQueryColumns));
+        sql.append("\n    FROM TB_REALINFO RI\n");
+        sql.append("join TB_USERINFO TU ON TU.USERID = RI.USERID ");
+        sql.append("    WHERE RI.RELASTDATE >= :startDate AND RI.RELASTDATE <= :endDate \n");
+
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("startDate", startDate);
+        params.addValue("endDate", endDate);
+
+        if (inDatem != null && !inDatem.isEmpty()) {
+            sql.append("       AND RI.RELASTDATE <= :inDatem  \n");
+            params.addValue("inDatem", inDatem);
+        }
+        if (sexYn != null) {
+            params.addValue("sexYn", sexYn);
+        }
+        if (region != null && !region.isEmpty()) {
+            sql.append("      AND RI.RESIDO LIKE :region \n");
+            params.addValue("region", "%" + region + "%");
+        }
+        if (district != null) {
+            params.addValue("district", district);
+        }
+
+        sql.append(") AS sub\nGROUP BY ").append(String.join(", ", groupByColumns));
+
+        //log.info("그리드 리스트 SQL: {}", sql.toString());
+        //log.info("SQL 매개변수: {}", params.getValues());
+
+        return sqlRunner.getRows(sql.toString(), params);
     }
 
 

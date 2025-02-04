@@ -59,7 +59,7 @@
               <div class="search-wrap">
                 <dl>
                   <dt>
-                   발급 기간<span class="eq">*</span>
+                    발급 기간<span class="eq">*</span>
                   </dt>
                   <dd>
                     <ul class="date-box">
@@ -74,124 +74,119 @@
                     </ul>
                   </dd>
                 </dl>
-                <dl>
+                <!--<dl>
                   <dt><span class="eq"></span></dt>
                   <dd>
                     <li>
                       <a class="btn btn-delete" title="검색" id="btnSearch1"
-                         onclick="DefaultData()">
+                         onclick="">
                         <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
                         검색
                       </a>
                     </li>
                   </dd>
+                </dl>-->
+                <dl style="display: flex; flex-direction: column; gap: 4px;">
+                  <dt>
+                    <label for="RowSelect">행 선택<span class="eq"></span></label>
+                  </dt>
+                  <dd style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 13px;">
+                    <div class="form-check" style="display: flex; align-items: center;">
+                      <input
+                          class="form-check-input"
+                          type="radio"
+                          name="rowSelect"
+                          value="region"
+                          id="RowRegion"
+                          style="margin-right: 8px;"
+                      />
+                      <label class="form-check-label" for="RowRegion">지역(시)/구축물</label>
+                    </div>
+                    <div class="form-check" style="display: flex; align-items: center;">
+                      <input
+                          class="form-check-input"
+                          type="radio"
+                          name="rowSelect"
+                          value="ageNum"
+                          id="ageNum"
+                          style="margin-right: 8px;"
+                      />
+                      <label class="form-check-label" for="ageNum">나이/구축물</label>
+                    </div>
+                  </dd>
                 </dl>
+                <div id="selection-container" style="display: flex; gap: 20px; margin-bottom: 10px;">
+                  <dl style="display: flex; flex-direction: column; gap: 4px;">
+                    <dt>
+                      <label for="columnSelect">열 선택<span class="eq"></span></label>
+                    </dt>
+                    <dd style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: -8px;">
+                      <div class="form-check region-checkbox" style="display: flex; align-items: center;">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="region"
+                            id="region"
+                            style="margin-right: 8px;"
+                        />
+                        <label class="form-check-label" for="region">지역(시)</label>
+                      </div>
+                      <div class="form-check" style="display: flex; align-items: center;">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="district"
+                            id="district"
+                            style="margin-right: 8px;"
+                        />
+                        <label class="form-check-label" for="district">지역(구군)</label>
+                      </div>
+                      <div class="form-check" style="display: flex; align-items: center;">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="inDatem"
+                            id="inDatem"
+                            style="margin-right: 8px;"
+                        />
+                        <!--                    <label class="form-check-label" for="inDatem">발급 일자</label>-->
+                        <select class="form-check-select" id="inDatemValue">
+                          <option value="" disabled selected>발급 일자를 선택하세요</option>
+                          <option value="Year">발급일자 (년)</option>
+                          <option value="Month">발급일자 (년, 월)</option>
+                          <option value="Day">발급일자 (년, 월, 일)</option>
+                        </select>
+
+                      </div>
+                      <div class="form-check" style="display: flex; align-items: center;">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="sexYn"
+                            id="sexYn"
+                            style="margin-right: 8px;"
+                        />
+                        <label class="form-check-label" for="sexYn">성별</label>
+                      </div>
+                    </dd>
+                  </dl>
+                  <dd style="margin-top: 16px;">
+                    <li>
+                      <a class="btn btn-delete" title="적용" id="addSheetBtn">
+                        <img src="/images/icon/btn-srch.svg" alt="적용 아이콘"/>
+                        행/열 조건적용
+                      </a>
+                    </li>
+                  </dd>
+                </div>
               </div>
             </form>
           </div> <!--//section-top end -->
           <div class="container-fluid">
-            <div class="apply" style="display: flex; gap: 20px;">
-            <div id="selection-Row" style="display: flex; gap: 20px; margin-bottom: 5px;">
-              <dl style="display: flex; flex-direction: column; gap: 4px;">
-                <dt>
-                  <label for="RowSelect">행 선택<span class="eq"></span></label>
-                </dt>
-                <dd style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 13px;">
-                  <div class="form-check" style="display: flex; align-items: center;">
-                    <input
-                        class="form-check-input"
-                        type="radio"
-                        name="rowSelect"
-                        value="region"
-                        id="RowRegion"
-                        style="margin-right: 8px;"
-                    />
-                    <label class="form-check-label" for="RowRegion">지역(시)/구축물</label>
-                  </div>
-                  <div class="form-check" style="display: flex; align-items: center;">
-                    <input
-                        class="form-check-input"
-                        type="radio"
-                        name="rowSelect"
-                        value="ageNum"
-                        id="ageNum"
-                        style="margin-right: 8px;"
-                    />
-                    <label class="form-check-label" for="ageNum">나이/구축물</label>
-                  </div>
-                </dd>
-              </dl>
-            </div>
-            <div id="selection-container" style="display: flex; gap: 20px; margin-bottom: 10px;">
-              <dl style="display: flex; flex-direction: column; gap: 4px;">
-                <dt>
-                  <label for="columnSelect">열 선택<span class="eq"></span></label>
-                </dt>
-                <dd style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: -8px;">
-                  <div class="form-check region-checkbox" style="display: flex; align-items: center;">
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value="region"
-                        id="region"
-                        style="margin-right: 8px;"
-                    />
-                    <label class="form-check-label" for="region">지역(시)</label>
-                  </div>
-                  <div class="form-check" style="display: flex; align-items: center;">
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value="district"
-                        id="district"
-                        style="margin-right: 8px;"
-                    />
-                    <label class="form-check-label" for="district">지역(구군)</label>
-                  </div>
-                  <div class="form-check" style="display: flex; align-items: center;">
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value="inDatem"
-                        id="inDatem"
-                        style="margin-right: 8px;"
-                    />
-<!--                    <label class="form-check-label" for="inDatem">발급 일자</label>-->
-                    <select class="form-check-select" id="inDatemValue">
-                      <option value="" disabled selected>발급 일자를 선택하세요</option>
-                      <option value="Year">발급일자 (년)</option>
-                      <option value="Month">발급일자 (년, 월)</option>
-                      <option value="Day">발급일자 (년, 월, 일)</option>
-                    </select>
-
-                  </div>
-                  <div class="form-check" style="display: flex; align-items: center;">
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value="sexYn"
-                        id="sexYn"
-                        style="margin-right: 8px;"
-                    />
-                    <label class="form-check-label" for="sexYn">성별</label>
-                  </div>
-                </dd>
-              </dl>
-              <dd style="margin-top: 16px;">
-                <li>
-                  <a class="btn btn-delete" title="적용" id="addSheetBtn">
-                    <img src="/images/icon/btn-srch.svg" alt="적용 아이콘"/>
-                    행/열 조건적용
-                  </a>
-                </li>
-              </dd>
-            </div>
-            </div>
             <p id="selectedItem"></p>
             <!-- 초기에는 theGrid 표시 -->
-            <div id="theGrid" style="max-height: 620px; display: block;"></div>
-            <div id="theGrid2" style="max-height: 620px; display: none;"></div>
-            <!--                        <div id="theGrid3" style="max-height: 600px; display: none;"></div>-->
+            <div id="theGrid" style="max-height: 700px; display: block;"></div>
+            <div id="theGrid2" style="max-height: 700px; display: none;"></div>
           </div>
 
           <div class="btn-wrap">
@@ -264,7 +259,7 @@
       }
     }
 
-    document.getElementById("inDatem").addEventListener("change", function() {
+    document.getElementById("inDatem").addEventListener("change", function () {
       document.getElementById("inDatemValue").disabled = !this.checked;
     });
 
@@ -303,7 +298,7 @@
     // 라디오 버튼 클릭 이벤트에 연결
     document.getElementById('RowRegion').addEventListener('click', function () {
       toggleGrid('theGrid2'); // 지역(시) 선택 시 theGrid2 표시
-     RegionData([], true);
+      RegionData([], true);
     });
 
     // 나이/구축물 라디오 버든
@@ -316,10 +311,6 @@
     document.getElementById("RowRegion").checked = true;
 
     document.readyState === 'complete' ? init() : window.onload = init;
-
-    var theGrid;
-    var viewdata;
-
     const columnNames = {
       region: "지역(시)",
       district: "지역(구군)",
@@ -330,443 +321,6 @@
     function init() {
       RegionData();
     }
-
-    function DefaultData() {
-
-      if (theGrid) {
-        theGrid.itemsSource = null; // 데이터 초기화
-      }
-
-      let data = [];
-
-      // 선택한 컬럼 리스트를 배열로 변환
-      const selectedColumns = Object.keys(columnNames);
-
-      const params = {
-        startDate: $('#startDate').val(),
-        endDate: $('#endDate').val(),
-        columns: selectedColumns // 배열을 직접 추가
-      };
-
-      // Ajax 통신을 통해 데이터 가져오기
-      $.ajax({
-        url: '/api/report/read',
-        type: 'GET',
-        data: params,
-        traditional: true,// GET 방식에서 배열을 정상적으로 전달
-        dataType: 'json',
-        success: function (response) {
-          console.log("API 응답 데이터:", response);
-
-          if (response && Array.isArray(response.data)) {
-            data = response.data.map((item, index) => ({
-              rownum: index + 1,
-              inDatem: item.inDatem || '',
-              region: item.region || '', // 예: '경기'
-              district: item.district || '', // 예: '고양시'
-              sexYn :item.sexYn ||'' , //성별
-
-              // 10대 이하 구축물
-              age_10_apartment: item.age_10_apartment || '',
-              age_10_villa: item.age_10_villa || '',
-              age_10_house: item.age_10_house || '',
-              age_10_office: item.age_10_office || '',
-              age_10_other: item.age_10_other || '',
-              // 20대 구축물
-              age_20_apartment: item.age_20_apartment || '',
-              age_20_villa: item.age_20_villa || '',
-              age_20_house: item.age_20_house || '',
-              age_20_office: item.age_20_office || '',
-              age_20_other: item.age_20_other || '',
-              // 30대 구축물
-              age_30_apartment: item.age_30_apartment || '',
-              age_30_villa: item.age_30_villa || '',
-              age_30_house: item.age_30_house || '',
-              age_30_office: item.age_30_office || '',
-              age_30_other: item.age_30_other || '',
-              // 40대구축물
-              age_40_apartment: item.age_40_apartment || '',
-              age_40_villa: item.age_40_villa || '',
-              age_40_house: item.age_40_house || '',
-              age_40_office: item.age_40_office || '',
-              age_40_other: item.age_40_other || '',
-              //50대 구축물
-              age_50_apartment: item.age_50_apartment || '',
-              age_50_villa: item.age_50_villa || '',
-              age_50_house: item.age_50_house || '',
-              age_50_office: item.age_50_office || '',
-              age_50_other: item.age_50_other || '',
-
-              //60대 구축물
-              age_60_apartment: item.age_60_apartment || '',
-              age_60_villa: item.age_60_villa || '',
-              age_60_house: item.age_60_house || '',
-              age_60_office: item.age_60_office || '',
-              age_60_other: item.age_60_other || '',
-              //70대 이상 구축물
-              age_70_apartment: item.age_70_apartment || '',
-              age_70_villa: item.age_70_villa || '',
-              age_70_house: item.age_70_house || '',
-              age_70_office: item.age_70_office || '',
-              age_70_other: item.age_70_other || '',
-              // 소계
-              total: item.total || '',
-            }));
-          }
-
-          // 데이터가 15개 미만일 경우 빈 데이터 추가
-          while (data.length < 15) {
-            data.push({
-              rownum: data.length + 1,
-              inDatem: '',
-              region: '',
-              district: '',
-              sexYn: '',
-              age_10_apartment: '',
-              age_10_villa: '',
-              age_10_house: '',
-              age_10_office: '',
-              age_10_other: '',
-              age_20_apartment: '',
-              age_20_villa: '',
-              age_20_house: '',
-              age_20_office: '',
-              age_20_other: '',
-              age_30_apartment: '',
-              age_30_villa: '',
-              age_30_house: '',
-              age_30_office: '',
-              age_30_other: '',
-              age_40_apartment: '',
-              age_40_villa: '',
-              age_40_house: '',
-              age_40_office: '',
-              age_40_other: '',
-              age_50_apartment: '',
-              age_50_villa: '',
-              age_50_house: '',
-              age_50_office: '',
-              age_50_other: '',
-              age_60_apartment: '',
-              age_60_villa: '',
-              age_60_house: '',
-              age_60_office: '',
-              age_60_other: '',
-              age_70_apartment: '',
-              age_70_villa: '',
-              age_70_house: '',
-              age_70_office: '',
-              age_70_other: '',
-              total: '',
-            });
-          }
-
-          console.log('처리된 데이터:', data);
-
-          // 그리드에 데이터 적용
-          viewdata = new wijmo.collections.CollectionView(data);
-
-          if (!theGrid) {
-            theGrid = new wijmo.grid.FlexGrid('#theGrid', {
-              allowMerging: 'ColumnHeaders',
-              autoGenerateColumns: false,
-              selectionMode: wijmo.grid.SelectionMode.Row,
-              isReadOnly: true,
-              columns: [
-                {binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false},
-                {binding: 'inDatem', header: '년도', width: 80, allowMerging: true},
-                {binding: 'region', header: '지역(시)', width: 100, allowMerging: true},
-                {binding: 'district', header: '구군', width: 120 ,allowMerging: true},
-                // 소계
-                {binding: 'total', header: '합계', width: 100, align: 'center'},
-                {binding: 'construction', header: '구축물', width: 100},
-
-
-                // 10대 이하 구축물
-                {binding: 'age_10_apartment', header: '아파트', width: 100, align: 'center'},
-                {binding: 'age_10_villa', header: '빌라', width: 100, align: 'center'},
-                {binding: 'age_10_house', header: '단독', width: 100, align: 'center'},
-                {binding: 'age_10_office', header: '오피스', width: 100, align: 'center'},
-                {binding: 'age_10_other', header: '기타', width: 100, align: 'center'},
-
-                // 20대 구축물
-                {binding: 'age_20_apartment', header: '아파트', width: 100, align: 'center'},
-                {binding: 'age_20_villa', header: '빌라', width: 100, align: 'center'},
-                {binding: 'age_20_house', header: '단독', width: 100, align: 'center'},
-                {binding: 'age_20_office', header: '오피스', width: 100, align: 'center'},
-                {binding: 'age_20_other', header: '기타', width: 100, align: 'center'},
-
-                // 30대 구축물
-                {binding: 'age_30_apartment', header: '아파트', width: 100, align: 'center'},
-                {binding: 'age_30_villa', header: '빌라', width: 100, align: 'center'},
-                {binding: 'age_30_house', header: '단독', width: 100, align: 'center'},
-                {binding: 'age_30_office', header: '오피스', width: 100, align: 'center'},
-                {binding: 'age_30_other', header: '기타', width: 100, align: 'center'},
-
-                // 40대 구축물
-                {binding: 'age_40_apartment', header: '아파트', width: 100, align: 'center'},
-                {binding: 'age_40_villa', header: '빌라', width: 100, align: 'center'},
-                {binding: 'age_40_house', header: '단독', width: 100, align: 'center'},
-                {binding: 'age_40_office', header: '오피스', width: 100, align: 'center'},
-                {binding: 'age_40_other', header: '기타', width: 100, align: 'center'},
-
-                // 50대 구축물
-                {binding: 'age_50_apartment', header: '아파트', width: 100, align: 'center'},
-                {binding: 'age_50_villa', header: '빌라', width: 100, align: 'center'},
-                {binding: 'age_50_house', header: '단독', width: 100, align: 'center'},
-                {binding: 'age_50_office', header: '오피스', width: 100, align: 'center'},
-                {binding: 'age_50_other', header: '기타', width: 100, align: 'center'},
-
-                // 60대 구축물
-                {binding: 'age_60_apartment', header: '아파트', width: 100, align: 'center'},
-                {binding: 'age_60_villa', header: '빌라', width: 100, align: 'center'},
-                {binding: 'age_60_house', header: '단독', width: 100, align: 'center'},
-                {binding: 'age_60_office', header: '오피스', width: 100, align: 'center'},
-                {binding: 'age_60_other', header: '기타', width: 100, align: 'center'},
-
-                // 70대  이상 구축물
-                {binding: 'age_70_apartment', header: '아파트', width: 100, align: 'center'},
-                {binding: 'age_70_villa', header: '빌라', width: 100, align: 'center'},
-                {binding: 'age_70_house', header: '단독', width: 100, align: 'center'},
-                {binding: 'age_70_office', header: '오피스', width: 100, align: 'center'},
-                {binding: 'age_70_other', header: '기타', width: 100, align: 'center'},
-
-
-              ],
-              itemsSource: viewdata,
-              allowMerging: 'Cells',
-            });
-
-            // hostElement에 클릭 이벤트 추가
-            theGrid.hostElement.addEventListener('click', (e) => {
-              const ht = theGrid.hitTest(e);
-              if (ht.cellType === wijmo.grid.CellType.Cell) {
-                const rowIndex = ht.row;
-                const colIndex = ht.col;
-                const item = theGrid.rows[rowIndex].dataItem;
-                const columnBinding = theGrid.columns[colIndex].binding; // 컬럼의 binding 값 (예: "age_10_apartment")
-
-                // 동적으로 추가된 데이터 추출
-                let dynamicData = {};
-                Object.keys(columnNames).forEach(key => {
-                  if (item.hasOwnProperty(key)) {
-                    dynamicData[key] = item[key];
-                  }
-                });
-
-                // 연령대 구분을 binding 값 기반으로 자동 매핑
-                let ageGroup = '';
-                const ageMatch = columnBinding.match(/age_(\d+)_/); // 'age_10_apartment' → '10' 추출
-                if (ageMatch) {
-                  const age = parseInt(ageMatch[1]); // 정수 변환
-                  if (age <= 10) {
-                    ageGroup = '10대 이하';
-                  } else if (age <= 20) {
-                    ageGroup = '20대';
-                  } else if (age <= 30) {
-                    ageGroup = '30대';
-                  } else if (age <= 40) {
-                    ageGroup = '40대';
-                  } else if (age <= 50) {
-                    ageGroup = '50대';
-                  } else if (age <= 60) {
-                    ageGroup = '60대';
-                  } else {
-                    ageGroup = '70대 이상';
-                  }
-                }
-
-                // 구축물 유형 추출 (예: '아파트', '빌라')
-                let buildingType = columnBinding.replace(/age_\d+_/, ''); // 연령대 부분 제거하여 구축물 타입만 남김
-
-                // API 호출에 필요한 데이터 객체 생성
-                const params = {
-                  startDate: $('#startDate').val(),
-                  endDate: $('#endDate').val(),
-                  ageGroup: ageGroup,
-                  buildingType: buildingType,
-                  ...dynamicData
-                };
-
-                console.log("API 요청 파라미터:", JSON.stringify(params, null, 2));
-                // API 호출 또는 데이터 처리
-                fetchCellData(params);
-              }
-            });
-
-
-            const headerRow1 = new wijmo.grid.Row();
-
-            headerRow1.allowMerging = true; // 병합 허용
-
-            theGrid.columnHeaders.rows.splice(0, 0, headerRow1); // 첫 번째 줄 추가
-
-            const panel = theGrid.columnHeaders;
-
-            // 첫 번째 헤더 줄
-            panel.setCellData(0, 1, '구분');
-            panel.setCellData(0, 5, '나이');
-
-            // 두 번째 헤더 줄
-            panel.setCellData(0, 6, '10대 이하');
-            panel.setCellData(0, 11, '20대');
-            panel.setCellData(0, 16, '30대');
-            panel.setCellData(0, 21, '40대');
-            panel.setCellData(0, 26, '50대');
-            panel.setCellData(0, 31, '60대');
-            panel.setCellData(0, 36, '70대 이상');
-
-            theGrid.rowHeaders.columns.splice(0, 1);
-            // ContextMenu 추가
-            new FlexGridContextMenu(theGrid);
-            window.downloadFileName = '통계보고서_나이';
-
-          } else {
-            theGrid.itemsSource = viewdata;
-          }
-        },
-        error: function () {
-          console.error("데이터를 가져오는 중 오류가 발생했습니다.");
-        }
-      });
-      // 버튼 클릭 이벤트 연결
-      document.getElementById('addSheetBtn').onclick = applyChanges;
-    }
-
-    function fetchCellData(params) {
-      $.ajax({
-        url: '/api/report/getUserInfo', // 서버에서 데이터를 제공할 엔드포인트
-        type: 'GET',
-        data: params,
-        success: function (response) {
-          console.log("✅ API 응답 데이터:", response);
-
-          if (!response || !Array.isArray(response) || response.length === 0) {
-            console.warn("⚠️ 서버에서 받은 데이터가 없습니다.");
-            return;
-          }
-
-          downloadExcel(response, params);
-        },
-        error: function () {
-          console.error("❌ 셀 데이터를 가져오는 중 오류가 발생했습니다.");
-          alert("데이터를 가져오는 중 오류가 발생했습니다.");
-        }
-      });
-    }
-
-    function downloadExcel(data, params) {
-      if (!Array.isArray(data)) {
-        console.error("데이터가 배열 형식이 아닙니다:", data);
-        return;
-      }
-
-      // 헤더 생성 (첫 번째 객체의 키 사용)
-      const headers = Object.keys(data[0]);
-
-      // 데이터 생성 (배열의 각 객체 값을 2차원 배열로 변환)
-      const worksheetData = [headers]; // 첫 번째 행에 헤더 추가
-      data.forEach(item => {
-        worksheetData.push(Object.values(item));
-      });
-
-      // SheetJS를 사용하여 워크시트 생성
-      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
-
-      // 워크북 생성 및 워크시트 추가
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "통계보고서");
-
-      // 현재 날짜 가져오기
-      const now = new Date();
-      const formattedDate =
-        now.getFullYear() +
-        "-" +
-        String(now.getMonth() + 1).padStart(2, "0") +
-        "-" +
-        String(now.getDate()).padStart(2, "0");
-
-      // 파일 이름 생성 (값이 없을 경우 'N/A' 처리)
-      const region = params.region || "N/A";
-      const district = params.district || "N/A";
-      const ageGroup = params.ageGroup || "N/A";
-      const buildingType = params.buildingType || "N/A";
-
-      const excelFileName = `통계보고서_${region}_${district}_${ageGroup}_${buildingType}_${formattedDate}.xlsx`;
-
-      console.log("다운로드 파일명:", excelFileName); // 파일명 확인
-
-      XLSX.writeFile(wb, excelFileName);
-    }
-
-
-    function applyChanges() {
-      const selectedRows = Array.from(
-        document.querySelectorAll('#selection-container .form-check-input:checked')
-
-      ).map((checkbox) => checkbox.value);
-
-      // console.log('선택된 열들:', selectedRows);
-      DefaultData(selectedRows);
-      updateGridColumns(selectedRows);
-    }
-
-    function updateGridColumns(selectedRows) {
-
-      if (!theGrid) {
-        console.error('FlexGrid가 초기화되지 않았습니다.');
-        return;
-      }
-
-      // 항상 유지해야 하는 기본 열 목록
-      const alwaysColumns = [
-        'rownum', 'construction',
-        'age_10_apartment', 'age_10_villa', 'age_10_house', 'age_10_office', 'age_10_other',
-        'age_20_apartment', 'age_20_villa', 'age_20_house', 'age_20_office', 'age_20_other',
-        'age_30_apartment', 'age_30_villa', 'age_30_house', 'age_30_office', 'age_30_other',
-        'age_40_apartment', 'age_40_villa', 'age_40_house', 'age_40_office', 'age_40_other',
-        'age_50_apartment', 'age_50_villa', 'age_50_house', 'age_50_office', 'age_50_other',
-        'age_60_apartment', 'age_60_villa', 'age_60_house', 'age_60_office', 'age_60_other',
-        'age_70_apartment', 'age_70_villa', 'age_70_house', 'age_70_office', 'age_70_other',
-        'total'
-      ];
-
-      // 동적으로 추가될 열 목록
-      const dynamicColumns = selectedRows;
-
-      // 유지해야 할 모든 열 (기본 열 + 선택된 열)
-      const allSelectedColumns = [...alwaysColumns, ...dynamicColumns];
-
-      // 현재 그리드에 있는 열 목록
-      const existingColumns = theGrid.columns.map(col => col.binding);
-
-      // **1. 기존 열 중 제거 대상 확인 및 제거**
-      for (let i = existingColumns.length - 1; i >= 0; i--) {
-        const col = existingColumns[i];
-        if (!allSelectedColumns.includes(col)) { // 유지해야 할 열 목록에 포함되지 않으면 제거
-          theGrid.columns.removeAt(i);
-        }
-      }
-
-      // **2. 추가해야 할 열 추가**
-      let insertionIndex = existingColumns.indexOf('rownum') + 1; // rownum 다음에 추가
-      dynamicColumns.forEach((col) => {
-        if (!existingColumns.includes(col)) {
-          theGrid.columns.splice(insertionIndex, 0, new wijmo.grid.Column({
-            binding: col,
-            header: columnNames[col] || col,
-            width: 150,
-            align: 'center',
-          }));
-          insertionIndex++; // 다음 열은 바로 뒤에 추가되도록 인덱스 증가
-        }
-      });
-
-    //  console.log('theGrid 업데이트:', theGrid.columns.map(col => col.binding));
-    }
-
-
-    //나이 그리드 함수 끝 --------------
 
     var theGrid2;
     var viewdata2;
@@ -786,7 +340,7 @@
       {binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false},
       {binding: 'inDatem', header: '년도', width: 120, allowMerging: true},
       {binding: 'district', header: '구군', width: 120},
-     // {binding: 'total', header: '합계', width: 100, align: 'center'},
+      // {binding: 'total', header: '합계', width: 100, align: 'center'},
       {binding: 'construction', header: '구축물', width: 100},
     ];
 
@@ -804,11 +358,7 @@
       });
     });
 
-    // 생성된 컬럼 출력 (FlexGrid에 사용 가능)
-    //  console.log(columns);
-
-
-    function RegionData(selectedRows =[]) {
+    function RegionData(selectedRows = []) {
       let data2 = [];
 
       // 선택한 발급일자
@@ -822,7 +372,7 @@
         endDate: $('#endDate').val(),
       };
 
-      if(selectedRows.length ===0){
+      if (selectedRows.length === 0) {
         params.district = $('#district').val() || ''; // 지역(구군)
         params.inDatem = $('#inDatem').val() || '';   // 등록 일자
       }
@@ -832,11 +382,11 @@
       }
 
       selectedRows.forEach(col => {
-        if(col !=='inDatem' ){
+        if (col !== 'inDatem') {
           params[col] = $('#' + col).val() || '';
         }
       });
-      console.log("📌 최종 요청 파라미터:", params);
+      //console.log("📌 최종 요청 파라미터:", params);
 
       // Ajax 통신을 통해 데이터 가져오기
       $.ajax({
@@ -845,7 +395,7 @@
         data: params,
         dataType: 'json',
         success: function (response) {
-          console.log("API 지역(시) 응답 데이터:", response);
+          //console.log("API 지역(시) 응답 데이터:", response);
           var data_renew = [];
           var cnt = 0;
           if (response && Array.isArray(response.data)) {
@@ -866,7 +416,6 @@
                   const regionKey = region.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
                   const subKey = subCategory.replace(/[^a-zA-Z가-힣]/g, '').toLowerCase();
                   const dataKey = `${regionKey}_${subKey}`;
-
                   //  0이면 ''(빈 문자열)로 변환
                   rowData[dataKey] = item[dataKey] === 0 ? '' : item[dataKey] ?? '';
 
@@ -886,10 +435,10 @@
               return rowData;
             });
           }
-          console.log("data_renew :", data_renew);
+          //console.log("data_renew :", data_renew);
           // 데이터가 15개 미만일 경우 빈 데이터 추가
           while (data2.length < 15) {
-            const emptyRow = { rownum: data2.length + 1 };
+            const emptyRow = {rownum: data2.length + 1};
             regions.forEach(region => {
               subCategories.forEach(subCategory => {
                 const dataKey = `${region}_${subCategory}`;
@@ -899,7 +448,6 @@
             emptyRow.total = ''; // 소계
             data2.push(emptyRow);
           }
-          console.log(' 최종 처리된 데이터:', data2);
           // 그리드에 데이터 적용
           viewdata2 = new wijmo.collections.CollectionView(data2);
 
@@ -926,7 +474,7 @@
             // 첫 번째 헤더 줄
             panel.setCellData(0, 2, '구분');
             panel.setCellData(0, 3, '지역');
-           // panel.setCellData(0, 40, '합계');
+            // panel.setCellData(0, 40, '합계');
 
             // 첫 번째 헤더 줄 구성
             panel.setCellData(0, 4, '서울특별시');
@@ -954,7 +502,7 @@
 
           } else {
             theGrid2.itemsSource = viewdata2;
-            console.log('그리드 데이터 바인딩 후:', theGrid2.itemsSource);
+           // console.log('그리드 데이터 바인딩 후:', theGrid2.itemsSource);
           }
         },
         error: function () {
@@ -1051,9 +599,258 @@
       //console.log('theGrid2 업데이트:', theGrid2.columns.map(col => col.binding));
     }
 
-    //지역(시) 끝 ################################################
+    //지역(시)/구축물 끝 ################################################
+
+    var theGrid;
+    var viewdata;
+    let rowData2;
+
+    // 기본 컬럼 정의
+    const columns2 = [
+      {binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false},
+      {binding: 'inDatem', header: '발급일자', width: 120, allowMerging: true},
+      {binding: 'region', header: '지역(시)', width: 100, allowMerging: true},
+      {binding: 'district', header: '구군', width: 120},
+      {binding: 'total', header: '합계', width: 100, align: 'center'},
+    ];
+
+    const ageGroups = ["20대 이하", "20대", "30대", "40대", "50대", "60대", "70대 이상"];
 
 
+    // 나이별 & 구축물별 컬럼 동적 추가
+    ageGroups.forEach(age => {
+      const ageKey = age.replace(/[^0-9]/g, ''); // 나이 숫자만 추출 (ex. "70대 이상" → "70")
+      subCategories.forEach(type => {
+        columns2.push({
+          binding: `age_${ageKey}_${type}`,  // 바인딩 키 예: "age_30_아파트"
+          header: `${type}`,         // 헤더 예: "아파트"
+          width: 100,
+          align: 'center'
+        });
+      });
+    });
+
+    function DefaultData(selectedRows = []) {
+      let data = [];
+
+      // 선택한 발급일자
+      const inDatemChecked = document.getElementById("inDatem").checked;
+      const inDatemValue = document.getElementById("inDatemValue").value;
+
+      const params = {
+        startDate: $('#startDate').val(),
+        endDate: $('#endDate').val(),
+      };
+
+      if (selectedRows.length === 0) {
+        params.district = $('#district').val() || '';
+        params.inDatem = $('#inDatem').val() || '';
+        params.region = $('#region').val() || '';
+      }
+
+      if (inDatemChecked) {
+        params.inDatem = inDatemValue;
+      }
+
+      selectedRows.forEach(col => {
+        if (col !== 'inDatem') {
+          params[col] = $('#' + col).val() || '';
+        }
+      });
+
+      console.log("📌 최종 요청 파라미터:", params);
+
+      // Ajax 요청
+      $.ajax({
+        url: '/api/report/read',
+        type: 'GET',
+        data: params,
+        traditional: true,
+        dataType: 'json',
+        success: function (response) {
+          //console.log("API 응답 데이터:", response);
+          var data_renew = [];
+          var cnt = 0;
+
+          if (response && Array.isArray(response.data)) {
+            data = response.data.map((item, index) => {
+              const rowData2 = {
+                rownum: index + 1,
+                inDatem: item.inDatem || '',
+                district: item.district || '',
+                region: item.region || '',
+                sexYn: item.sexYn || '',
+                total: item.total || ''
+              };
+
+              let valueSum = 0; // 총합 계산 변수
+
+              // 나이별 & 구축물별 데이터 동적 매핑
+              ageGroups.forEach(age => {
+                const ageKey = age.replace(/[^0-9]/g, ''); // "70대 이상" → "70"
+                subCategories.forEach(type => {
+                  const key = `age_${ageKey}_${type}`;
+                  rowData2[key] = item[key] === 0 ? '' : item[key] ?? ''; // 0이면 빈 문자열
+                  valueSum += rowData2[key] === '' ? 0 : rowData2[key]; // 총합 계산
+                });
+              });
+
+              if (valueSum > 0) {
+                data_renew.push({
+                  index: cnt,
+                  data: rowData2
+                });
+                cnt++;
+              }
+              return rowData2;
+            });
+          }
+
+          // 데이터가 15개 미만일 경우 빈 데이터 추가
+          while (data.length < 15) {
+            const emptyRow = {rownum: data.length + 1};
+            ageGroups.forEach(age => {
+              const ageKey = age.replace(/[^0-9]/g, '');
+              subCategories.forEach(type => {
+                const key = `age_${ageKey}_${type}`;
+                emptyRow[key] = '';
+              });
+            });
+            emptyRow.total = '';
+            data.push(emptyRow);
+          }
+
+          //console.log('📌 최종 처리된 데이터:', data);
+
+          // 그리드에 데이터 적용
+          viewdata = new wijmo.collections.CollectionView(data);
+
+          if (!theGrid) {
+            theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+              allowMerging: 'ColumnHeaders',
+              autoGenerateColumns: false,
+              selectionMode: wijmo.grid.SelectionMode.Row,
+              isReadOnly: true,
+              columns: columns2,
+              itemsSource: viewdata,
+              allowMerging: 'Cells',
+            });
+
+            const headerRow1 = new wijmo.grid.Row();
+
+            headerRow1.allowMerging = true; // 병합 허용
+
+            theGrid.columnHeaders.rows.splice(0, 0, headerRow1); // 첫 번째 줄 추가
+
+            const panel = theGrid.columnHeaders;
+
+            // 첫 번째 헤더 줄
+            panel.setCellData(0, 1, '구분');
+            panel.setCellData(0, 4, '나이');
+
+            // 두 번째 헤더 줄
+            panel.setCellData(0, 5, '20대 이하');
+            panel.setCellData(0, 10, '20대');
+            panel.setCellData(0, 15, '30대');
+            panel.setCellData(0, 20, '40대');
+            panel.setCellData(0, 25, '50대');
+            panel.setCellData(0, 30, '60대');
+            panel.setCellData(0, 35, '70대 이상');
+
+            theGrid.rowHeaders.columns.splice(0, 1);
+            // ContextMenu 추가
+            new FlexGridContextMenu(theGrid);
+            window.downloadFileName = '통계보고서_나이';
+
+          } else {
+            theGrid.itemsSource = viewdata;
+           // console.log('그리드 데이터 바인딩 후:', theGrid.itemsSource);
+          }
+        },
+        error: function () {
+          console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+        }
+      });
+
+      // 버튼 클릭 이벤트 연결
+      document.getElementById('addSheetBtn').onclick = applyChanges;
+    }
+
+    function applyChanges() {
+      const selectedRows = Array.from(
+        document.querySelectorAll('#selection-container .form-check-input:checked')
+      ).map((checkbox) => checkbox.value);
+     // console.log('선택된 열들:', selectedRows);
+      DefaultData(selectedRows);
+
+      updateGridColumns(selectedRows);
+    }
+
+    function updateGridColumns(selectedRows) {
+      if (!theGrid) {
+        console.error('FlexGrid가 초기화되지 않았습니다.');
+        return;
+      }
+
+      // 항상 유지해야 하는 기본 열 목록
+      const alwaysColumns = [
+        {binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false},
+        {binding: 'total', header: '합계', width: 100, align: 'center'},
+      ];
+
+      // 선택된 열을 동적으로 추가할 목록
+      let dynamicColumns = selectedRows.map(binding => ({
+        binding: binding,
+        header: columnNames[binding] || binding, // 기본적으로 binding을 header로 설정
+        width: 150,
+        align: 'center'
+      }));
+
+      // 🛠 나이별 & 구축물별 컬럼 동적 추가
+      ageGroups.forEach(age => {
+        const ageKey = age.replace(/[^0-9]/g, ''); // 숫자만 추출 (예: "70대 이상" → "70")
+
+        subCategories.forEach(type => {
+          const key = `age_${ageKey}_${type}`;
+          dynamicColumns.push({
+            binding: key,
+            header: `${age} - ${type}`, // 예: "30대 - 아파트"
+            width: 100,
+            align: 'center'
+          });
+        });
+      });
+
+      // 유지해야 할 모든 열 (기본 열 + 선택된 열)
+      const allSelectedColumns = [...alwaysColumns, ...dynamicColumns];
+
+      // 현재 FlexGrid에 있는 열 목록
+      const existingColumns2 = theGrid.columns.map(col => col.binding);
+
+      // **1. 기존 열 중 제거 대상 확인 및 제거**
+      for (let i = existingColumns2.length - 1; i >= 0; i--) {
+        const col = existingColumns2[i];
+        if (!allSelectedColumns.some(c => c.binding === col)) { // 유지해야 할 열 목록에 포함되지 않으면 제거
+          theGrid.columns.removeAt(i);
+        }
+      }
+
+      // **2. 추가해야 할 열 추가**
+      let insertionIndex = existingColumns2.indexOf('rownum') + 1;
+      dynamicColumns.forEach(col => {
+        if (!existingColumns2.includes(col.binding)) {
+          theGrid.columns.splice(insertionIndex, 0, new wijmo.grid.Column({
+            binding: col.binding,
+            header: col.header,
+            width: col.width,
+            align: col.align,
+          }));
+          insertionIndex++; // 다음 열은 바로 뒤에 추가되도록 인덱스 증가
+        }
+      });
+
+     // console.log('📌 그리드 업데이트 완료:', theGrid.columns.map(col => col.binding));
+    }
   </script>
 </th:block>
 
