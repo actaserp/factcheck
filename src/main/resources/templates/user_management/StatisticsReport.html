@@ -461,6 +461,51 @@
               allowMerging: 'Cells',
             });
 
+            theGrid2.hostElement.addEventListener('click', function (e) {
+              let ht = theGrid2.hitTest(e);
+
+              if (ht.cellType === wijmo.grid.CellType.Cell) {
+                let rowIndex = ht.row;
+                let colIndex = ht.col;
+                let rowData = theGrid2.rows[rowIndex].dataItem;
+                let columnHeader = theGrid2.columns[colIndex].header.trim();
+
+                // "합계" 컬럼 클릭 시 이벤트 제외
+                if (columnHeader === "합계") {
+                  console.log("'합계' 컬럼 클릭은 무시됩니다.");
+                  return; // 클릭 이벤트 중지
+                }
+
+                // "합계" 컬럼 앞의 데이터 찾기
+                let totalColumnIndex = theGrid2.columns.findIndex(col => col.binding === 'total');
+
+                let beforeTotalColumns = theGrid2.columns
+                  .slice(0, totalColumnIndex)
+                  .map(col => ({
+                    key: col.binding,
+                    name: col.header,
+                    value: rowData[col.binding] || ''
+                  }));
+
+                // 병합된 헤더 정보 가져오기
+                let mergedHeader = getMergedHeader(colIndex);
+
+                // API 요청을 위한 파라미터 생성
+                let params = {
+                  region: mergedHeader || '',
+                  district: rowData.district || '',
+                  yearMonth: rowData.inDatem || '',
+                  sexYn: rowData.sexYn || '',
+                  selectedColumn: columnHeader,
+                  selectedValue: rowData[theGrid2.columns[colIndex].binding] || ''
+                };
+
+                console.log("엑셀_API 요청 데이터:", params);
+
+                // 사용자 정보 조회 & 엑셀 다운로드 실행
+                fetchCellData(params);
+              }
+            });
 
             const headerRow1 = new wijmo.grid.Row();
 
@@ -509,6 +554,38 @@
       });
       // 버튼 클릭 이벤트 연결
       document.getElementById('addSheetBtn').onclick = applyChanges2;
+    }
+
+    // 클릭한 컬럼의 병합된 상위 헤더 찾기
+    function getMergedHeader(colIndex) {
+      const mergedHeaders = {
+        5: '서울특별시',
+        10: '부산광역시',
+        15: '대구광역시',
+        20: '인천광역시',
+        25: '광주광역시',
+        30: '대전광역시',
+        35: '울산광역시',
+        40: '세종특별자치시',
+        45: '경기도',
+        50: '강원도',
+        55: '충청북도',
+        60: '충청남도',
+        65: '전라북도',
+        70: '전라남도',
+        75: '경상북도',
+        80: '경상남도',
+        85: '제주특별자치도'
+      };
+
+      let nearestHeader = '';
+      Object.keys(mergedHeaders).forEach(index => {
+        if (colIndex >= index) {
+          nearestHeader = mergedHeaders[index];
+        }
+      });
+
+      return nearestHeader;
     }
 
     function applyChanges2() {
@@ -598,6 +675,76 @@
       //console.log('theGrid2 업데이트:', theGrid2.columns.map(col => col.binding));
     }
 
+    function fetchCellData(params) {
+      $.ajax({
+        url: '/api/report/getUserInfo', // 서버 API 엔드포인트
+        type: 'GET',
+        data: params,
+        success: function (response) {
+          console.log("✅ API 응답 데이터:", response);
+
+          if (!response || !Array.isArray(response) || response.length === 0) {
+            Alert.alert('',"사용자 정보를 찾을 수 없습니다.");
+            return;
+          }
+
+          // 엑셀 다운로드 실행
+          downloadExcel(response, params);
+        },
+        error: function () {
+          console.error("❌ 셀 데이터를 가져오는 중 오류가 발생했습니다.");
+          Alert.alert('',"데이터를 가져오는 중 오류가 발생했습니다.");
+        }
+      });
+    }
+
+    // 엑셀 다운로드 함수 (기존 코드 유지)
+    function downloadExcel(data, params) {
+      if (!Array.isArray(data)) {
+        console.error("데이터가 배열 형식이 아닙니다:", data);
+        return;
+      }
+
+      // 헤더 생성 (첫 번째 객체의 키 사용)
+      const headers = Object.keys(data[0]);
+
+      // 데이터 생성 (배열의 각 객체 값을 2차원 배열로 변환)
+      const worksheetData = [headers]; // 첫 번째 행에 헤더 추가
+      data.forEach(item => {
+        worksheetData.push(Object.values(item));
+      });
+
+      // SheetJS를 사용하여 워크시트 생성
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+      // 워크북 생성 및 워크시트 추가
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "통계보고서");
+
+      // 현재 날짜 가져오기
+      const now = new Date();
+      const formattedDate =
+        now.getFullYear() +
+        "-" +
+        String(now.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(now.getDate()).padStart(2, "0");
+
+      // 파일 이름 생성 (값이 없을 경우 'N/A' 처리)
+      const region = params.region || '';
+      const district = params.district || '';
+      const yearMonth = params.yearMonth || '';
+      const sexYn = params.sexYn || '';
+      const selectedColumn = params.selectedColumn || '';
+      const ageGroup = params.ageGroup || '';
+
+      const excelFileName = `통계보고서_${region}_${district}_${ageGroup}_${yearMonth}_${sexYn}_${selectedColumn}_${formattedDate}.xlsx`;
+
+      console.log("다운로드 파일명:", excelFileName); // 파일명 확인
+
+      XLSX.writeFile(wb, excelFileName);
+    }
+
     //지역(시)/구축물 끝 ################################################
 
     var theGrid;
@@ -656,7 +803,7 @@
         }
       });
 
-      //console.log("📌 최종 요청 파라미터:", params);
+      //console.log("최종 요청 파라미터:", params);
 
       // Ajax 요청
       $.ajax({
@@ -718,7 +865,7 @@
             data.push(emptyRow);
           }
 
-          //console.log('📌 최종 처리된 데이터:', data);
+          //console.log('최종 처리된 데이터:', data);
 
           // 그리드에 데이터 적용
           viewdata = new wijmo.collections.CollectionView(data);
@@ -732,6 +879,42 @@
               columns: columns2,
               itemsSource: viewdata,
               allowMerging: 'Cells',
+            });
+
+            theGrid.hostElement.addEventListener('click', function (e) {
+              let ht = theGrid.hitTest(e);
+
+              if (ht.cellType === wijmo.grid.CellType.Cell) {
+                let rowIndex = ht.row;
+                let colIndex = ht.col;
+                let rowData = theGrid.rows[rowIndex].dataItem;
+                let columnHeader = theGrid.columns[colIndex].header.trim();
+
+                // "합계" 컬럼 클릭 시 이벤트 제외
+                if (columnHeader === "합계") {
+                  console.log("'합계' 컬럼 클릭은 무시됩니다.");
+                  return;
+                }
+
+                // 선택한 셀의 "나이" 헤더 가져오기
+                let mergedHeader = getMergedHeader2(colIndex); // "30대", "40대" 등 반환
+
+                // API 요청을 위한 파라미터 생성
+                let params = {
+                  region: rowData.region || '',
+                  district: rowData.district || '',
+                  yearMonth: rowData.inDatem || '',
+                  sexYn: rowData.sexYn || '',
+                  ageGroup: mergedHeader, // 나이 그룹 추가
+                  selectedColumn: columnHeader, // 선택한 열
+                  selectedValue: rowData[theGrid.columns[colIndex].binding] || ''
+                };
+
+                console.log("엑셀_API 요청 데이터:", params);
+
+                // 사용자 정보 조회 & 엑셀 다운로드 실행
+                fetchCellData(params);
+              }
             });
 
             const headerRow1 = new wijmo.grid.Row();
@@ -772,6 +955,33 @@
 
       // 버튼 클릭 이벤트 연결
       document.getElementById('addSheetBtn').onclick = applyChanges;
+    }
+    // 선택한 열(colIndex)이 속한 "나이" 헤더 가져오기
+    function getMergedHeader2(colIndex) {
+      // 현재 선택한 열의 헤더 가져오기
+      let columnHeader = theGrid.columns[colIndex].header.trim();
+
+      // 연령대 헤더 리스트 (예: "20대 이하", "20대", ...)
+      const ageGroups = ["20대 이하", "20대", "30대", "40대", "50대", "60대", "70대 이상"];
+
+      // 현재 열(`colIndex`)이 속한 연령대 찾기
+      let matchedAgeGroup = ageGroups.find(age => columnHeader.includes(age));
+
+      // 현재 헤더에 연령대가 직접 포함되지 않았다면, 부모 헤더를 찾아야 함.
+      if (!matchedAgeGroup) {
+        let columnPanel = theGrid.columnHeaders;
+        let headerRowIndex = 0; // 병합된 헤더가 있는 첫 번째 행
+
+        try {
+          matchedAgeGroup = columnPanel.getCellData(headerRowIndex, colIndex).trim();
+        } catch (e) {
+          console.error("⚠️ 연령대 헤더를 찾을 수 없음:", e);
+          matchedAgeGroup = ""; // 에러 발생 시 빈 문자열 반환
+        }
+      }
+
+      // 결과 반환 (연령대가 없으면 빈 문자열 반환)
+      return ageGroups.includes(matchedAgeGroup) ? matchedAgeGroup : "";
     }
 
     function applyChanges() {
@@ -847,7 +1057,7 @@
         }
       });
 
-     // console.log('📌 그리드 업데이트 완료:', theGrid.columns.map(col => col.binding));
+     // console.log('그리드 업데이트 완료:', theGrid.columns.map(col => col.binding));
     }
   </script>
 </th:block>

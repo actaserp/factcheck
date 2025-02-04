@@ -78,7 +78,7 @@ public class UM_userchartService {
             }
         }
 
-        // ✅ total 컬럼을 동적으로 생성하는 방식 수정
+        // total 컬럼을 동적으로 생성하는 방식 수정
         sql.append("(\n    ");
         for (String construction : constructions) {
             sql.append(String.format(
@@ -282,103 +282,71 @@ public class UM_userchartService {
         return sqlRunner.getRows(sql.toString(), params);
     }
 
-
-    //엑셀 다운 정보
-    public List<Map<String, Object>> getUserInfo(String startDate, String endDate, String region, String district, String ageGroup) {
+   public List<Map<String, Object>> getUserInfo(String yearMonth, String dateType, String region, String district, Integer sexYn, String selectedColumn) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
-        // 지역명 변환 적용 (예: "서울특별시" → "서울")
-        region = convertRegionName(region);
-
-        //  나이 그룹 변환
-        int minAge = 0, maxAge = 0;
-        if (ageGroup != null) {
-            switch (ageGroup) {
-                case "10대 이하":
-                    minAge = 0; maxAge = 19;
-                    break;
-                case "20대":
-                    minAge = 20; maxAge = 29;
-                    break;
-                case "30대":
-                    minAge = 30; maxAge = 39;
-                    break;
-                case "40대":
-                    minAge = 40; maxAge = 49;
-                    break;
-                case "50대":
-                    minAge = 50; maxAge = 59;
-                    break;
-                case "60대":
-                    minAge = 60; maxAge = 69;
-                    break;
-                case "70대 이상":
-                    minAge = 70; maxAge = 150;
-                    break;
-            }
-        }
-
+        // SQL 기본 구조
         StringBuilder sql = new StringBuilder("""
-    SELECT
-        USERNM AS 이름,
-        AGENUM AS 연령,
-        USERSIDO AS 지역,
-        USERGU AS 구군,
-        USERMAIL AS 이메일,
-        CASE SEXYN
-           WHEN 1 THEN '남자'
-           WHEN 2 THEN '여자'
-           ELSE '알 수 없음'
-       END AS 성별
-    FROM TB_USERINFO
-    WHERE
-        USERSIDO = :region  --  변환된 지역명 사용
-        AND USERGU LIKE CONCAT('%', :district, '%')    
-        AND AGENUM BETWEEN :minAge AND :maxAge 
-        AND (:startDate IS NULL OR INDATEM >= :startDate)
-        AND (:endDate IS NULL OR INDATEM <= :endDate)        
-    ORDER BY INDATEM;
+        SELECT userid AS 아이디,
+        usernm as 이름 ,
+        CASE\s
+          WHEN sexyn = 1 THEN '남자'
+          WHEN sexyn = 2 THEN '여자'
+          ELSE '알 수 없음'
+      END AS 성별
+        FROM TB_USERINFO
+        WHERE userid IN (
+            SELECT userid 
+            FROM TB_REALINFO 
+            WHERE 1=1 
     """);
 
-        // SQL 매개변수 설정
-        params.addValue("region", region);
-        params.addValue("district", "%" + district + "%");  // LIKE 검색
-        params.addValue("minAge", minAge);
-        params.addValue("maxAge", maxAge);
-        params.addValue("startDate", startDate);
-        params.addValue("endDate", endDate);
+        // 동적으로 `WHERE` 조건 추가
+        if (region != null && !region.isEmpty()) {
+            sql.append(" AND RESIDO LIKE CONCAT('%', :region, '%')");
+            params.addValue("region", region);
+        }
+
+        if (district != null && !district.isEmpty()) {
+            sql.append(" AND REGUGUN LIKE CONCAT('%', :district, '%')");
+            params.addValue("district", district);
+        }
+
+        if (selectedColumn != null && !selectedColumn.isEmpty()) {
+            sql.append(" AND TB_REALINFO.REALGUBUN LIKE :selectedColumn");
+            params.addValue("selectedColumn", selectedColumn);
+        }
+
+        // 날짜 검색 방식 수정
+        if (yearMonth != null && !yearMonth.isEmpty()) {
+            if (yearMonth.length() == 4) {  // 연도만 입력된 경우 (예: 2025)
+                sql.append(" AND LEFT(RELASTDATE, 4) = :yearMonth");
+            } else if (yearMonth.length() == 7) {  // 연도-월 입력된 경우 (예: 2025-01)
+                sql.append(" AND LEFT(RELASTDATE, 6) = REPLACE(:yearMonth, '-', '')");
+            } else if (yearMonth.length() == 10) {  // 연도-월-일 입력된 경우 (예: 2025-01-28)
+                sql.append(" AND RELASTDATE = REPLACE(:yearMonth, '-', '')");
+            }
+            params.addValue("yearMonth", yearMonth);
+        }
+
+        if (dateType != null && !dateType.isEmpty()) {
+            sql.append(" AND RELASTDATE = REPLACE(:dateType, '-', '')");
+            params.addValue("dateType", dateType);
+        }
+
+        if (sexYn != null) {
+            sql.append(" AND SEXYN = :sexYn");
+            params.addValue("sexYn", sexYn);
+        }
+
+        // SQL 닫기
+        sql.append(" )");
 
         // 디버깅 로그 추가
-        log.info("엑셀 다운 정보SQL: {}", sql.toString());
-        log.info("SQL 매개변수: {}", params.getValues());
+        //log.info("🔍 실행할 SQL: {}", sql.toString());
+        //log.info("📌 SQL 매개변수: {}", params.getValues());
 
         return sqlRunner.getRows(sql.toString(), params);
     }
 
-    public String convertRegionName(String region) {
-        if (region == null) return null;
-
-        //지역명 변환 매핑
-        Map<String, String> regionMap = Map.ofEntries(
-            Map.entry("서울특별시", "서울"),
-            Map.entry("부산광역시", "부산"),
-            Map.entry("인천광역시", "인천"),
-            Map.entry("대구광역시", "대구"),
-            Map.entry("광주광역시", "광주"),
-            Map.entry("대전광역시", "대전"),
-            Map.entry("울산광역시", "울산"),
-            Map.entry("세종특별자치시", "세종"),
-            Map.entry("경기도", "경기"),
-            Map.entry("강원도", "강원"),
-            Map.entry("충청북도", "충북"),
-            Map.entry("충청남도", "충남"),
-            Map.entry("전라북도", "전북"),
-            Map.entry("전라남도", "전남"),
-            Map.entry("경상북도", "경북"),
-            Map.entry("경상남도", "경남"),
-            Map.entry("제주특별자치도", "제주")
-        );
-
-        return regionMap.getOrDefault(region, region);  // 매핑된 값이 없으면 원래 값 유지
-    }
 }

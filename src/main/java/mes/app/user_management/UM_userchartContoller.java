@@ -185,16 +185,35 @@ public class UM_userchartContoller {
 
   @GetMapping("/getUserInfo")
   public ResponseEntity<List<Map<String, Object>>> getUserInfo(
-      @RequestParam(required = false) String startDate,
-      @RequestParam(required = false) String endDate,
-      @RequestParam String region,
-      @RequestParam String district,
-      @RequestParam String ageGroup) {
+      @RequestParam(value = "yearMonth",required = false) String yearMonth, // 발급일자 (년, 월, 일 포함)
+      @RequestParam(value = "dateType",required = false) String dateType, // Year, Month, Day 중 선택
+      @RequestParam(value = "region",required = false) String region,
+      @RequestParam(value = "district",required = false) String district,
+      @RequestParam(value = "sexYn",required = false) String sexYn,
+      @RequestParam(value = "selectedColumn",required = false) String selectedColumn // 선택한 열(예: "아파트", "오피스")
+  ) {
+    log.info("엑셀 다운_들어온 데이터: dateType={}, yearMonth={}, region={}, district={}, sexYn={}, selectedColumn={}",
+        dateType, yearMonth, region, district, sexYn, selectedColumn);
 
-    log.info("엑셀 다운_들어온 데이터: startDate={}, endDate={},region={},district={}, ageGroup={}", startDate, endDate, region, district, ageGroup);
-    List<Map<String, Object>> userInfo = userchartService.getUserInfo(startDate, endDate, region, district, ageGroup);
+    // 📌 성별(sex) 값 변환 ("남자" → 1, "여자" → 2)
+    Integer sexCode = null;
+    if ("남자".equals(sexYn)) {
+      sexCode = 1;
+    } else if ("여자".equals(sexYn)) {
+      sexCode = 2;
+    }
+
+    // 📌 `yearMonth` 가공 (dateType에 맞게 변환)
+    if (yearMonth != null) {
+      yearMonth = yearMonth.replace("-", "");  // "-" 제거하여 YYYY, YYYYMM, YYYYMMDD 형식으로 변경
+    }
+
+    // 📌 userchartService에서 해당 조건으로 데이터 가져오기
+    List<Map<String, Object>> userInfo = userchartService.getUserInfo(yearMonth, dateType, region, district, sexCode, selectedColumn);
 
     return ResponseEntity.ok(userInfo);
   }
+
+
 }
 
