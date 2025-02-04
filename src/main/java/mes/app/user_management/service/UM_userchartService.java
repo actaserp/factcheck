@@ -87,7 +87,7 @@ public class UM_userchartService {
             ));
         }
 
-// 🔹 마지막 `+` 제거
+        // 🔹 마지막 `+` 제거
         int lastPlusIndex = sql.lastIndexOf("+");
         if (lastPlusIndex != -1) {
             sql.deleteCharAt(lastPlusIndex);

@@ -453,14 +453,14 @@
                         { binding: 'indatem', header: '등록일자', width: 150, minWidth: 100, align: 'center'},
                         { binding: 'userNm', header: '사용자명', width: 110, minWidth: 100, align: 'center' },
                         { binding: 'userAddr', header: '주소', width: '*', minWidth: 230, align: 'left' },
-                        { binding: 'InquiryCount', header: '조회건수', width: 80, align: 'center', minWidth: 100},
+                        { binding: 'InquiryCount', header: '총 발급건수', width: 80, align: 'center', minWidth: 100},
                         // { binding: 'remark', header: '비고', width: 100, align: 'center', minWidth: 150 }
                     ],
                     itemsSource: viewdata
 
                 });
                 theGrid1.rowHeaders.columns.splice(0, 1);
-                new FlexGridContextMenu(theGrid);
+                new FlexGridContextMenu(theGrid1);
                 window.downloadFileName = '회원등록_현황';
             } else {
                 theGrid1.itemsSource = viewdata;

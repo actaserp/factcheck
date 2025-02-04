@@ -81,53 +81,36 @@ public class MembershipVisitDataService {
 
         // SQL 기본 쿼리
         StringBuilder sql = new StringBuilder("""
-            SELECT
-                tu.USERID,
-                tu.USERNM AS userNm,
-                tu.USERADDR AS userAddr,
-                tu.INDATEM AS indatem,
-                COUNT(se.REQDATE) AS RequestCount,
-                COALESCE(req.InquiryCount, 0) AS InquiryCount
-            FROM
-                TB_USERINFO tu
-            LEFT JOIN
-                TB_SEARCHINFO se
-                ON se.USERID = tu.USERID
-            LEFT JOIN
-                (SELECT
-                     USERID,
-                     COUNT(*) AS InquiryCount
-                 FROM
-                     TB_SEARCHINFO
-                 WHERE
-                     REQDATE BETWEEN :startDate AND :endDate
-                 GROUP BY
-                     USERID) req
-                ON tu.USERID = req.USERID
+        SELECT
+        TU.USERID,
+         COUNT(*) AS InquiryCount, 
+         TU.usernm as userNm,
+         TU.USERADDR as userAddr,
+         TU.INDATEM as indatem
+            FROM TB_REALINFO RI
+            JOIN TB_USERINFO TU ON TU.userid = RI.USERID\s
             WHERE 1=1
-    """);
+        """);
 
         // 동적 조건 추가
         if (startDate != null && !startDate.isEmpty()) {
-            sql.append(" AND tu.INDATEM >= :startDate");
+            sql.append("AND RI.RELASTDATE >= :startDate ");
             params.addValue("startDate", startDate);
         }
         if (endDate != null && !endDate.isEmpty()) {
-            sql.append(" AND tu.INDATEM < DATEADD(day, 1, :endDate)");
+            sql.append(" AND RI.RELASTDATE <= :endDate ");
             params.addValue("endDate", endDate);
         }
 
         // 그룹화 및 정렬 추가
         sql.append("""
-            GROUP BY
-                tu.USERID, tu.USERNM, tu.USERADDR, tu.INDATEM, req.InquiryCount
-            ORDER BY
-                INDATEM ASC
-    """);
+           GROUP BY TU.userid, TU.usernm, TU.INDATEM, TU.USERADDR
+           ORDER BY InquiryCount DESC
+        """);
 
         // 로깅 활성화
-        //log.info("회원등록 현황 그리드 SQL: {}", sql);
-        //log.info("SQL Parameters: {}", params.getValues());
+        log.info("회원등록 현황 그리드 SQL: {}", sql);
+        log.info("SQL Parameters: {}", params.getValues());
 
         // 결과 반환
         return sqlRunner.getRows(sql.toString(), params);
