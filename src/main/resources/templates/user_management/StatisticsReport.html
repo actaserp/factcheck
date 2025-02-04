@@ -340,7 +340,7 @@
       {binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false},
       {binding: 'inDatem', header: '년도', width: 120, allowMerging: true},
       {binding: 'district', header: '구군', width: 120},
-      // {binding: 'total', header: '합계', width: 100, align: 'center'},
+      {binding: 'total', header: '합계', width: 100, align: 'center'},
       {binding: 'construction', header: '구축물', width: 100},
     ];
 
@@ -363,9 +363,7 @@
 
       // 선택한 발급일자
       const inDatemChecked = document.getElementById("inDatem").checked;
-      console.log("inDatemChecked 상태 :", inDatemChecked);
       const inDatemValue = document.getElementById("inDatemValue").value;
-      console.log("inDatemValue 값: ", inDatemValue);
 
       const params = {
         startDate: $('#startDate').val(),
@@ -405,7 +403,8 @@
                 inDatem: item.inDatem || '',
                 district: item.district || '', // 구군 정보
                 region: item.region || '',
-                sexYn: item.sexYn || ''
+                sexYn: item.sexYn || '',
+                total: item.total || ''
               };
 
               let ll_valuesum = 0; // 총합 계산 변수
@@ -473,27 +472,26 @@
 
             // 첫 번째 헤더 줄
             panel.setCellData(0, 2, '구분');
-            panel.setCellData(0, 3, '지역');
-            // panel.setCellData(0, 40, '합계');
+            panel.setCellData(0, 4, '지역');
 
             // 첫 번째 헤더 줄 구성
-            panel.setCellData(0, 4, '서울특별시');
-            panel.setCellData(0, 9, '부산광역시');
-            panel.setCellData(0, 14, '대구광역시');
-            panel.setCellData(0, 19, '인천광역시');
-            panel.setCellData(0, 24, '광주광역시');
-            panel.setCellData(0, 29, '대전광역시');
-            panel.setCellData(0, 34, '울산광역시');
-            panel.setCellData(0, 39, '세종특별자치시');
-            panel.setCellData(0, 44, '경기도');
-            panel.setCellData(0, 49, '강원도');
-            panel.setCellData(0, 54, '충청북도');
-            panel.setCellData(0, 59, '충청남도');
-            panel.setCellData(0, 64, '전라북도');
-            panel.setCellData(0, 69, '전라남도');
-            panel.setCellData(0, 74, '경상북도');
-            panel.setCellData(0, 79, '경상남도');
-            panel.setCellData(0, 84, '제주특별자치도');
+            panel.setCellData(0, 5, '서울특별시');
+            panel.setCellData(0, 10, '부산광역시');
+            panel.setCellData(0, 15, '대구광역시');
+            panel.setCellData(0, 20, '인천광역시');
+            panel.setCellData(0, 25, '광주광역시');
+            panel.setCellData(0, 30, '대전광역시');
+            panel.setCellData(0, 35, '울산광역시');
+            panel.setCellData(0, 40, '세종특별자치시');
+            panel.setCellData(0, 45, '경기도');
+            panel.setCellData(0, 50, '강원도');
+            panel.setCellData(0, 55, '충청북도');
+            panel.setCellData(0, 60, '충청남도');
+            panel.setCellData(0, 65, '전라북도');
+            panel.setCellData(0, 70, '전라남도');
+            panel.setCellData(0, 75, '경상북도');
+            panel.setCellData(0, 80, '경상남도');
+            panel.setCellData(0, 85, '제주특별자치도');
 
             theGrid2.rowHeaders.columns.splice(0, 1);
             // ContextMenu 추가
@@ -533,7 +531,8 @@
       // 항상 유지해야 하는 기본 열 목록
       const alwaysColumns2 = [
         {binding: 'rownum', header: 'NO', width: 70, align: 'center', visible: false},
-        {binding: 'construction', header: '구축물', width: 100}
+        {binding: 'construction', header: '구축물', width: 100},
+        {binding: 'total', header: '합계', width: 100, align: 'center'},
       ];
 
       // 지역과 하위 항목 열 추가
@@ -603,7 +602,6 @@
 
     var theGrid;
     var viewdata;
-    let rowData2;
 
     // 기본 컬럼 정의
     const columns2 = [
@@ -658,7 +656,7 @@
         }
       });
 
-      console.log("📌 최종 요청 파라미터:", params);
+      //console.log("📌 최종 요청 파라미터:", params);
 
       // Ajax 요청
       $.ajax({
