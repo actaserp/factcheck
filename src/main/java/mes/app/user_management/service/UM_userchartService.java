@@ -289,7 +289,9 @@ public class UM_userchartService {
         StringBuilder sql = new StringBuilder("""
         SELECT userid AS 아이디,
         usernm as 이름 ,
-        CASE\s
+        USERHP AS 핸드폰_번호,
+        AGENUM AS 나이,
+        CASE
           WHEN sexyn = 1 THEN '남자'
           WHEN sexyn = 2 THEN '여자'
           ELSE '알 수 없음'
@@ -343,8 +345,8 @@ public class UM_userchartService {
         sql.append(" )");
 
         // 디버깅 로그 추가
-        //log.info("🔍 실행할 SQL: {}", sql.toString());
-        //log.info("📌 SQL 매개변수: {}", params.getValues());
+        log.info("🔍 실행할 SQL: {}", sql.toString());
+        log.info("📌 SQL 매개변수: {}", params.getValues());
 
         return sqlRunner.getRows(sql.toString(), params);
     }
