@@ -489,6 +489,15 @@
 
                 // 병합된 헤더 정보 가져오기
                 let mergedHeader = getMergedHeader(colIndex);
+                // 선택한 셀 값 확인 (빈 값인지 체크)
+                let selectedValue = rowData[theGrid2.columns[colIndex].binding] || '';
+
+                // 빈 셀 클릭 시 알림 후 요청 중단 🚨
+                if (selectedValue === '') {
+                  Alert.alert('',"선택한 셀에 데이터가 없습니다."); //사용자 알림
+                  console.warn("빈 셀을 클릭했습니다. API 요청 중지.");
+                  return; // API 요청 중단
+                }
 
                 // API 요청을 위한 파라미터 생성
                 let params = {
@@ -898,6 +907,15 @@
 
                 // 선택한 셀의 "나이" 헤더 가져오기
                 let mergedHeader = getMergedHeader2(colIndex); // "30대", "40대" 등 반환
+
+                let selectedValue = rowData[theGrid.columns[colIndex].binding] || '';
+
+                // 빈 셀 클릭 시 알림 후 요청 중단
+                if (selectedValue === '') {
+                  Alert.alert('',"선택한 셀에 데이터가 없습니다."); //사용자 알림
+                  console.warn("빈 셀을 클릭했습니다. API 요청 중지.");
+                  return; // API 요청 중단
+                }
 
                 // API 요청을 위한 파라미터 생성
                 let params = {
