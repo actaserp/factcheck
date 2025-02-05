@@ -3,6 +3,7 @@ package mes.app.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import mes.app.Map.service.MapService;
+import mes.app.Map.service.MarkerService;
 import mes.domain.model.AjaxResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +42,9 @@ public class MapController {
 
     @Value("${sgis.consumer_secret}")
     private String consumer_secrets;
+
+    @Autowired
+    private MarkerService markerService;
 
 
     @GetMapping("/script")
@@ -216,4 +220,20 @@ public class MapController {
         }
     }
 
+
+    //마커
+    /*@GetMapping("/markers")
+    public ResponseEntity<Map<String, Object>> getMarkers(@RequestParam(required = false) String region) {
+        List<Marker> markers = new ArrayList<>();
+        if (region != null) {
+            markers = markerService.getMarkersByRegion(region);
+        } else {
+            markers = markerService.getAllMarkers();
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("markers", markers);
+        return ResponseEntity.ok(response);
+    }*/
 }
