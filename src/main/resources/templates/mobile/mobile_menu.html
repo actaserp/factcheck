@@ -1,7 +1,4 @@
-
-
 <div th:fragment="mobile_menu">
-    <!-- [모바일] 메뉴  -->
     <div class="mobile-layout-menu">
         <div class="menu-wrapper" id="gnb">
             <div class="menu-top">
@@ -16,41 +13,59 @@
                     <a id="logout" title="로그아웃">
                         <img src="/assets_mobile/images/icon/btn-logout.svg" alt="로그아웃">
                     </a>
-                    <a href="#" title="팝업닫기" class="btn-menu-close">
+                    <a title="팝업닫기" class="btn-menu-close">
                         <img src="/assets_mobile/images/icon/btn-popup-close.svg" alt="닫기">
                     </a>
                 </div>
             </div> <!--//menu-top end-->
-            <nav>
+
+            <nav th:data-page="${currentPage}">
+                <!-- dep1 -->
                 <ul class="dep1">
-                    <li>전체메뉴</li>
+                    <li data-target="menu1">카드 점수 보기</li>
+                    <li data-target="menu2">지역별 등기 상황맵</li>
+                    <li data-target="menu3">물건 열람 상세 내역</li>
+                    <li data-target="menu4">통계 관리</li>
+                    <li data-target="menu5">내 정보</li>
+                    <li data-target="menu6">앱 정보</li>
                 </ul>
-                <ul class="dep2">
-                    <li>
-                        <a href="/mobile/search_main" title="등기부 발급" th:classappend="${currentPage == 'search_main' ? 'on' : ''}">등기부 발급</a>
-                    </li>
-                    <li>
-                        <a href="/mobile/search_sub" title="등기부 발급 조회" th:classappend="${currentPage == 'search_sub' ? 'on' : ''}">등기부 발급 조회</a>
-                    </li>
-                    <li>
-                        <a href="/mobile/kakaoMap2" title="지역별 등기 상황맵" th:classappend="${currentPage == 'kakaoMap' ? 'on' : ''}">지역별 등기 상황맵</a>
-                    </li>
-                    <li>
-                        <a href="/mobile/ticket-list" title="물건 열람 상세 내역" th:classappend="${currentPage == 'kakaoMap' ? 'on' : ''}">물건 열람 상세 내역</a>
-                    </li>
-                    <li >
-                        <a href="/mobile/ticket-list" title="통계조회" th:classappend="${currentPage == 'kakaoMap2' ? 'on' : ''}" >통계조회</a>
-                    </li>
-                    <li  th:classappend="${currentPage == 'user-info' ? 'active' : ''}">
-                        <a href="/mobile/user-info" title="사용자정보">사용자정보</a>
-                    </li>
-                    <li  th:classappend="${currentPage == 'UserInfo' ? 'active' : ''}">
-                        <a href="/mobile/UserInfo" title="소셜 사용자 정보">소셜 사용자 정보</a>
-                    </li>
-                    <li >
-                        <a href="/mobile/ticket-list" title="앱정보" th:classappend="${currentPage == 'ticket-list' ? 'on' : ''}" >앱정보</a>
-                    </li>
-                </ul>
+
+                <div class="dep2">
+                    <ul data-menu="menu1">
+                        <li><a href="/mobile/search_main" title="카드 점수 보기" class="menu-link">카드 점수 보기</a></li>
+                        <li><a href="/mobile/search_sub" title="주소 조회" class="menu-link">주소 조회</a></li>
+                    </ul>
+                    <ul data-menu="menu2">
+                        <li><a href="/mobile/kakaoMap2" title="지도로 보기" class="menu-link">지도로 보기</a></li>
+                        <li><a href="/mobile/" title="카드로 보기" class="menu-link">카드로 보기</a></li>
+                        <li><a href="/mobile/" title="리스트로 보기" class="menu-link">리스트로 보기</a></li>
+                    </ul>
+                    <ul data-menu="menu3">
+                        <li><a href="/mobile/" title="열람 상세 내역" class="menu-link">열람 상세 내역</a></li>
+                        <li><a href="/mobile/" title="내가 조회한 물건" class="menu-link">내가 조회한 물건</a></li>
+                        <li><a href="/mobile/" title="최근 조회한 물건" class="menu-link">최근 조회한 물건</a></li>
+                        <li><a href="/mobile/" title="가장 많이 조회한 물건" class="menu-link">가장 많이 조회한 물건</a></li>
+                        <li><a href="/mobile/" title="인기 물건" class="menu-link">인기 물건</a></li>
+                        <li><a href="/mobile/" title="집구입 서류" class="menu-link">집구입 서류</a></li>
+                    </ul>
+                    <ul data-menu="menu4">
+                        <li><a href="/mobile/" title="원형 점수 그래프" class="menu-link">원형 점수 그래프</a></li>
+                        <li><a href="/mobile/" title="팩트 체크 심사" class="menu-link">팩트 체크 심사</a></li>
+                    </ul>
+                    <ul data-menu="menu5">
+                        <li><a href="/mobile/user-info" title="내 정보 보기" class="menu-link">내 정보 보기</a></li>
+                        <li><a href="/mobile/UserInfo" title="FAQ" class="menu-link">FAQ</a></li>
+                    </ul>
+                    <ul data-menu="menu6">
+                        <li><a href="/mobile/" title="공지 사항" class="menu-link">공지 사항</a></li>
+                        <li><a href="/mobile/" title="버전 정보" class="menu-link">버전 정보</a></li>
+                        <li><a href="/mobile/" title="1:1 문의" class="menu-link">1:1 문의</a></li>
+                        <li><a href="/mobile/" title="이용 약관" class="menu-link">이용 약관</a></li>
+                        <li><a href="/mobile/" title="위험도" class="menu-link">위험도</a></li>
+                        <li><a href="/mobile/" title="위험 권리" class="menu-link">위험 권리</a></li>
+                        <li><a href="/mobile/" title="계정 탈퇴" class="menu-link">계정 탈퇴</a></li>
+                    </ul>
+                </div>
             </nav>
         </div> <!--//menu-wrapper end-->
     </div> <!--//mobile-layout-menu end-->

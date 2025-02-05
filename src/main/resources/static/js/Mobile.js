@@ -831,4 +831,54 @@ $(document).ready(function() {
     loadUserInfo();
 });
 
+// 메뉴
+document.addEventListener("DOMContentLoaded", function () {
+    const dep1Items = document.querySelectorAll(".dep1 li");
+    const dep2Menus = document.querySelectorAll(".dep2 ul");
 
+    // Thymeleaf에서 현재 페이지 가져오기
+    const currentPage = document.querySelector("nav").getAttribute("data-page");
+    console.log('currentPage', currentPage);
+    // 현재 페이지가 존재하는 경우 활성화 처리
+    if (currentPage) {
+        // 현재 페이지의 dep2 메뉴 활성화
+        const activeLink = document.querySelector(`.dep2 a[href*="${currentPage}"]`);
+        if (activeLink) {
+            activeLink.classList.add("on"); // 현재 페이지 링크 강조
+
+            // 해당 링크가 속한 dep2 찾기
+            const activeDep2 = activeLink.closest("ul");
+            if (activeDep2) {
+                activeDep2.classList.add("active");
+
+                // 해당 dep2의 dep1을 찾아 활성화
+                const targetDep1 = activeDep2.getAttribute("data-menu");
+                if (targetDep1) {
+                    const matchingDep1 = document.querySelector(`.dep1 li[data-target="${targetDep1}"]`);
+                    if (matchingDep1) {
+                        matchingDep1.classList.add("active");
+                    }
+                }
+            }
+        }
+    }
+
+    // dep1 클릭 이벤트 추가 (메뉴 선택 시 동작)
+    dep1Items.forEach(item => {
+        item.addEventListener("click", function () {
+            // 모든 dep1에서 active 제거
+            dep1Items.forEach(el => el.classList.remove("active"));
+            this.classList.add("active");
+
+            // 모든 dep2 숨김
+            dep2Menus.forEach(menu => menu.classList.remove("active"));
+
+            // 클릭한 dep1에 연결된 dep2만 표시
+            const targetMenu = this.getAttribute("data-target");
+            const selectedMenu = document.querySelector(`.dep2 ul[data-menu="${targetMenu}"]`);
+            if (selectedMenu) {
+                selectedMenu.classList.add("active");
+            }
+        });
+    });
+});

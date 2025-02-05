@@ -43,7 +43,8 @@ public class MobileController {
     }
 
     @GetMapping("/user-info")
-    public String userInfo() {
+    public String userInfo(Model model) {
+        model.addAttribute("currentPage", "user-info");
         return "mobile/user-info"; // "mobile/user-info.html"로 매핑
     }
 

@@ -29,24 +29,68 @@ header .left {display: flex; align-items: center; gap: 16px;}
 header .right a {display: block;}
 
 /* GNB */
-.menu-wrapper {height: 100vh; background-color: #fff;}
-.menu-wrapper .menu-top {display: flex; justify-content: space-between; align-items: center; padding: 24px 20px 16px 20px; background-color: #3069B3; color: #fff;}
+.menu-wrapper {height: 100vh; background-color: #fff; display: flex; flex-direction: column;}
+.menu-wrapper .menu-top {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 20px 16px 20px; background-color: #3069B3; color: #fff;
+}
 .menu-wrapper .menu-top a {display: inline-block; color: #fff;}
 .menu-wrapper .menu-top .left {display: flex; align-items: baseline; gap: 12px;}
 .menu-wrapper .menu-top .left .user-name {display: flex; align-items: baseline; gap:8px;}
-/*.menu-wrapper .menu-top .left .user-name span {color: #5DDFDE; font-size: 20px; font-weight: 600;}*/
 .menu-wrapper .menu-top .left .user-name span {color: white; font-size: 20px; font-weight: 600;}
 .menu-wrapper .menu-top .right {display: flex; align-items: center; gap: 8px;}
-.menu-wrapper .menu-top .setting-box {display: none; position: absolute; top:66px; right: 30px;}
-.menu-wrapper .menu-top .setting-box ul { display: flex; justify-content: center; flex-flow: column wrap; background-color: #fff; border: 1px solid #E6E6E6; border-radius: 3px; box-shadow: 0px 0px 10px rgba(0,2,6,0.08); padding: 8px;}
-.menu-wrapper .menu-top .setting-box a {display: block; min-width: 120px; padding: 9px 16px; background-color: #EDEFF5; border-radius: 3px; color: #333333; font-weight: 700; text-align: center;}
-.menu-wrapper nav {display: flex;}
-.menu-wrapper nav ul {display: inline-block; width: calc(100% - 140px);}
-.menu-wrapper nav ul li {border-bottom: 1px solid #EDEDED;}
-.menu-wrapper nav ul li a {display: block; padding: 16px 24px; font-size: 17px; font-weight: 600;}
-.menu-wrapper nav .dep1 {width: 140px; height: 100vh; background-color: #F0F1F2;}
-.menu-wrapper nav .dep1 li {padding: 16px 24px; background-color: #031B4B; color: #fff; font-size: 17px;}
-.menu-wrapper nav .dep2 .on {color: #3069B3;}
+
+.menu-wrapper nav {
+    display: flex; height: 100%; flex: 1;
+}
+
+.menu-wrapper nav .dep1 {
+    width: 140px; height: 100vh; background-color: #F0F1F2;
+    display: flex; flex-direction: column;
+    border-right: solid 1px #031B4B;
+}
+
+.menu-wrapper nav .dep1 li {
+    padding: 16px 24px; background-color: #fff; color: black; font-size: 17px;
+    cursor: pointer; transition: background 0.3s;
+}
+
+/* dep1 활성화된 메뉴 */
+.menu-wrapper nav .dep1 li.active {
+    background-color: #031B4B; color: #fff;
+}
+
+/* dep2 (하위 메뉴) */
+.menu-wrapper nav .dep2 {
+    flex: 1; background-color: #fff; padding: 0; margin: 0;
+}
+
+/* dep2 하위 메뉴 리스트 기본적으로 숨김 */
+.menu-wrapper nav .dep2 ul {
+    display: none; padding: 0; margin: 0; list-style: none;
+}
+
+/* 선택된 dep2만 표시 */
+.menu-wrapper nav .dep2 ul.active {
+    display: block;
+}
+
+/* dep2 항목 */
+.menu-wrapper nav .dep2 li {
+    border-bottom: 1px solid #EDEDED;
+}
+
+/* dep2 링크 스타일 */
+.menu-wrapper nav .dep2 li a {
+    display: block; padding: 16px 24px; font-size: 17px; font-weight: 600;
+}
+
+/* 선택된 메뉴 */
+.menu-wrapper nav .dep2 .on {
+    color: #3069B3; font-weight: bold;
+}
+
+
 
 
 /*=================================================================================
