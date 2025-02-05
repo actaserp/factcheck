@@ -39,4 +39,7 @@ public class TB_REALINFO {
   @Column(name = "INDATEM")
   private LocalDateTime createdAt;
 
+  @Column(name="REALSCORE")
+  private Integer REALSCORE;  //판정점수
+
 }
