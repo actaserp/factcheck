@@ -45,7 +45,24 @@ public class ProductionService {
                      MAX(subquery.S_REQDATE) AS S_REQDATE,
                      MAX(subquery.S_USERID) AS S_USERID,
                      MAX(subquery.S_REALID) AS S_REALID,
-                     MAX(subquery.view_count) AS view_count
+                     MAX(subquery.view_count) AS view_count,
+                     MAX(subquery.UniqueNo) AS UniqueNo,
+                     MAX(subquery.Gubun) AS Gubun,
+                     MAX(subquery.Address) AS Address,
+                     MAX(subquery.PrintDate) AS PrintDate,
+                     MAX(subquery.DataA) AS DataA,
+                     MAX(subquery.DataK) AS DataK,
+                     MAX(subquery.DataE) AS DataE,
+                     MAX(subquery.RankNo_A) AS RankNo_A,
+                     MAX(subquery.RgsAimCont_A) AS RgsAimCont_A,
+                     MAX(subquery.Receve_A) AS Receve_A,
+                     MAX(subquery.RgsCaus_A) AS RgsCaus_A,
+                     MAX(subquery.NomprsAndEtc_A) AS NomprsAndEtc_A,
+                     MAX(subquery.RankNo_B) AS RankNo_B,
+                     MAX(subquery.RgsAimCont_B) AS RgsAimCont_B,
+                     MAX(subquery.Receve_B) AS Receve_B,
+                     MAX(subquery.RgsCaus_B) AS RgsCaus_B,
+                     MAX(subquery.NomprsAndEtc_B) AS NomprsAndEtc_B
                  FROM (
                      SELECT
                          R.REALID,
@@ -71,13 +88,42 @@ public class ProductionService {
                          S.REQDATE AS S_REQDATE,
                          S.USERID AS S_USERID,
                          S.REALID AS S_REALID,
-                         COUNT(*) OVER (PARTITION BY R.REALID) AS view_count
+                         COUNT(*) OVER (PARTITION BY R.REALID) AS view_count,
+                         RS.UniqueNo,
+                         RS.Gubun,
+                         RS.Address,
+                         RS.PrintDate,
+                         RS.DataA,
+                         RS.DataK,
+                         RS.DataE,
+                         AOWN.RankNo AS RankNo_A,
+                         AOWN.RgsAimCont AS RgsAimCont_A,
+                         AOWN.Receve AS Receve_A,
+                         AOWN.RgsCaus AS RgsCaus_A,
+                         AOWN.NomprsAndEtc AS NomprsAndEtc_A,
+                         BOWN.RankNo AS RankNo_B,
+                         BOWN.RgsAimCont AS RgsAimCont_B,
+                         BOWN.Receve AS Receve_B,
+                         BOWN.RgsCaus AS RgsCaus_B,
+                         BOWN.NomprsAndEtc AS NomprsAndEtc_B
                      FROM
                          TB_REALINFO R
                      JOIN
                          TB_SEARCHINFO S
                      ON
                          R.USERID = S.USERID
+                     LEFT JOIN
+                         TB_REALSUMMARY RS
+                     ON
+                         R.REALID = RS.REALID
+                     LEFT JOIN
+                         TB_REALAOWN AOWN
+                     ON
+                         R.REALID = AOWN.REALID
+                     LEFT JOIN
+                         TB_REALBOWN BOWN
+                     ON
+                         R.REALID = BOWN.REALID
                      WHERE
                          S.REQDATE BETWEEN :startDate AND :endDate
                          AND (
@@ -95,8 +141,11 @@ public class ProductionService {
                          WHEN :property IN ('most_viewed_property', 'popular_property') THEN MAX(subquery.view_count)
                          ELSE NULL
                      END DESC,
-                     MAX(subquery.RELASTDATE) DESC;
+                     MAX(subquery.RELASTDATE) DESC
             """;
+
+
+
 
        /* // 'most_viewed_property'일 경우 LIMIT 100 추가
         if ("most_viewed_property".equals(property)) {

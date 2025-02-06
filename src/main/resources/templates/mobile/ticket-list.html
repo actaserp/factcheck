@@ -8,6 +8,16 @@
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
+
+
+    .tab-item {
+        display: none;  /* 기본적으로 모든 탭 내용을 숨깁니다 */
+    }
+
+    .tab-item.active {
+        display: block;  /* 'active' 클래스가 있을 때만 해당 탭 내용을 표시 */
+    }
+
 </style>
 <head>
     <meta charset="UTF-8">
@@ -91,21 +101,14 @@
                     <dl>
                         <dt>검색 조건</dt>
                         <dd>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <div style="width: 100%; display: flex; gap: 20px;">
-                                    <label style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="radio" name="property" value="my_property" checked> 내가 조회한 물건
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="radio" name="property" value="recent_property"> 최근 조회한 물건
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="radio" name="property" value="most_viewed_property"> 가장 많이 조회한 물건
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="radio" name="property" value="popular_property"> 인기물건
-                                    </label>
-                                </div>
+                            <div style="width: 100%; display: flex; gap: 20px;">
+                                <label for="property" style="display: flex; align-items: center; gap: 5px;">조건 선택</label>
+                                <select id="property" name="property" style="width: 80%; text-align: center;">
+                                    <option value="my_property" selected>내가 조회한 물건</option>
+                                    <option value="recent_property">최근 조회한 물건</option>
+                                    <option value="most_viewed_property">가장 많이 조회한 물건</option>
+                                    <option value="popular_property">인기물건</option>
+                                </select>
                             </div>
                         </dd>
                     </dl>
@@ -129,6 +132,245 @@
         </div> <!--//layout-contents end -->
 
     </div> <!-- //mobile-layout-contents end-->
+
+
+
+    <div class="mobile-layout-popup" id="popup-history" >
+        <div class="popup-overlay"></div>
+        <div class="popup-wrapper" >
+            <div class="popup-title">
+                <h3>상세내용</h3>
+                <!--                <a href="#a" title="팝업닫기" class="btn-popup-close">-->
+                <!--                    <img src="/assets_mobile/images/icon/btn-popup-close.svg" alt="닫기">-->
+                <!--                </a>-->
+            </div>
+            <div class="popup-contents">
+                <div class="table-wrap">
+                    <div class="write-wrap">
+                        <div class="row">
+                            <div class="tab-wrap">
+                                <ul class="tab-links">
+                                    <li><a href="#main" name="tabs_basic">표제부</a></li>
+                                    <li><a href="#sub1" name="tab_production">갑구</a></li>
+                                    <li><a href="#sub2" name="tab_production">을구</a></li>
+                                </ul>
+
+                                <section class="tab-item" id="main">
+                                    <table class="write-table"
+                                           style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                                        <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
+                                        <thead>
+                                        <tr>
+                                            <th colspan="4" style="text-align: center;">표 제 부 (건물의 표시)</th>
+                                        </tr>
+
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <!--<th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd;">
+                                                <label for="MaterialGroup_id"></label>
+                                            </th>
+                                            <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                                                <select id="MaterialGroup_id" name="MaterialGroup_id"
+                                                        style="width: 100%;">표시번호</select>
+                                            </td>-->
+
+                                            <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd;">
+                                                <label for="Code">접수</label>
+                                            </th>
+                                            <td style="width: 15%; padding: 5px; border: 1px solid #ddd;" colspan="3">
+                                                2024년11월17일
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd;">
+                                                <label for="Name">소재지번,건물명칭 및 번호</label>
+                                            </th>
+                                            <td style="width: 15%; padding: 5px; border: 1px solid #ddd;" colspan="3">
+                                                울산광역시 영등포구  ** 복합주택
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd;">
+                                                <label for="Name">소재지번</label>
+                                            </th>
+                                            <td style="width: 15%; padding: 5px; border: 1px solid #ddd;" colspan="3">
+                                                울산광역시 영등포구
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd;">
+                                                <label for="Name">지목</label>
+                                            </th>
+                                            <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                                                임야
+                                            </td>
+
+                                            <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd;">
+                                                <label for="Name">면적</label>
+                                            </th>
+                                            <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                                                395.060
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd;">
+                                                <label for="Name">등기원인 및 기타사항</label>
+                                            </th>
+                                            <td style="width: 15%; padding: 5px; border: 1px solid #ddd;" colspan="3">
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </section>
+
+
+                                <section class="tab-item" id="sub1">
+                                    <table class="write-table"
+                                           style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                                        <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
+                                        <thead>
+                                        <tr>
+                                            <th colspan="4" style="text-align: center;">갑 구 (소유권에 관한 사항)</th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                표시번호
+                                            </th>
+                                            <th>
+                                                등기목적
+                                            </th>
+                                            <th>
+                                                접수
+                                            </th>
+                                            <th>
+                                                권리자 및 기타사항
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        <tr>
+                                            <td>
+                                                1
+                                            </td>
+                                            <td>
+                                                공유자전원지분전부 이전
+                                            </td>
+                                            <td>
+                                                1998년12월28일 제78258호
+                                            </td>
+                                            <td>
+                                                소유자  노순덕  530408-******* 서울 서초구 방배동 537-25 현대아트빌라 202호
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </section>
+
+                                <section class="tab-item" id="sub2">
+                                    <table class="write-table"
+                                           style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                                        <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
+                                        <thead>
+                                        <tr>
+                                            <th colspan="5" style="text-align: center;">을 구 (소유권 이외의 권리에 관한 사항)</th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                표시번호
+                                            </th>
+                                            <th>
+                                                등기목적
+                                            </th>
+                                            <th>
+                                                접수
+                                            </th>
+                                            <th>
+                                                등기원인
+                                            </th>
+                                            <th>
+                                                권리자 및 기타사항
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        <tr>
+                                            <td>
+                                                1
+                                            </td>
+                                            <td>
+                                                1번근저당권변경
+                                            </td>
+                                            <td>
+                                                2022년1월27일 제9407호
+                                            </td>
+                                            <td>
+                                                2022년1월13일 변경계약
+                                            </td>
+                                            <td>
+                                                &채권최고액  금108,000,000원&
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                2
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                            <td>
+                                                1번 등기는 건물만에 관한 것임 2022년3월2일  부기
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                3
+                                            </td>
+                                            <td>
+                                                1번근저당권변경
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                            <td>
+                                                2022년1월27일 근저당권변경계 약
+                                            </td>
+                                            <td>
+                                                채권최고액  금108,000,000원 공동담보 해제 2022년3월2일  부기
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </section>
+
+
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="popup-button">
+                <button class="btn-popup-close btn-navy">확인</button>
+            </div>
+        </div>
+    </div>
 
 
 </div> <!-- //page-wrapper end-->
@@ -161,13 +403,11 @@
     document.getElementById('startDate').value = `${currentYear}-01-01`;
     document.getElementById('endDate').value = today;
 
-    // 라디오 버튼 변경 이벤트 리스너 추가
-    document.querySelectorAll('input[name="property"]').forEach((radio) => {
-        radio.addEventListener('change', updateDateRange);
-    });
+    // select 요소의 값이 변경될 때 날짜 범위를 업데이트
+    document.getElementById('property').addEventListener('change', updateDateRange);
 
     function updateDateRange() {
-        const selectedValue = document.querySelector('input[name="property"]:checked').value;
+        const selectedValue = document.getElementById('property').value;
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
 
@@ -182,11 +422,11 @@
             newStartDate = new Date(today);
             newStartDate.setMonth(today.getMonth() - 1);
         } else if (selectedValue === "most_viewed_property") {
-            // 일 년 전 ~오늘
+            // 일 년 전 ~ 오늘
             newStartDate = new Date(today);
             newStartDate.setFullYear(today.getFullYear() - 1);
         } else if (selectedValue === "popular_property") {
-            // 1주일 전 ~ 오늘
+            // 2주일 전 ~ 오늘
             newStartDate = new Date(today);
             newStartDate.setDate(today.getDate() - 14);
         }
@@ -195,6 +435,9 @@
         startDateInput.value = newStartDate.toISOString().split('T')[0];
         endDateInput.value = today.toISOString().split('T')[0];
     }
+
+    // 페이지 로드 시 날짜 범위 업데이트
+    updateDateRange();
 
     function init() {
         fetchListData();
@@ -208,11 +451,11 @@
             data: {
                 'search_startDate': $('#startDate').val(),
                 'search_endDate': $('#endDate').val(),
-                'search_property': $('input[name="property"]:checked').val()
+                'search_property': $('#property').val()
             },
             success: function (data) {
-               /* console.log("서버 응답 데이터:", data);
-                console.log("작업목록:", data.data);*/
+                console.log("서버 응답 데이터:", data);
+                console.log("작업목록:", data.data);
                 // 데이터가 올바른지 확인
                 if (!data || !data.data || !Array.isArray(data.data)) {
                     console.error("데이터가 올바르지 않습니다.");
@@ -237,45 +480,97 @@
                 let colorIndex = 0;
                 let htmlContent = '';
 
-                const selectedValue = $('input[name="property"]:checked').val();  // selectedValue 가져오기
+                const selectedValue = $('#property').val();
 
                 data.data.forEach(item => {
                     const cardColor = availableColors[colorIndex];
                     colorIndex = (colorIndex + 1) % availableColors.length;
 
+                    let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="상세보기">
+                            상세보기
+                        </button>`;
+
+                    // 날짜 포맷 변경
+                    const formattedDate = item.REQDATE.substring(0, 4) + '-' + item.REQDATE.substring(4, 6) + '-' + item.REQDATE.substring(6, 8);
+                    const formattedLastDate = item.RLASTDATE
+                        ? item.RLASTDATE.substring(0, 4) + '-' + item.RLASTDATE.substring(4, 6) + '-' + item.RLASTDATE.substring(6, 8)
+                        : '';
+
                     htmlContent += `
-        <div class="card-box ${cardColor}">
-            <div class="card-cont">
-                <dl>
-                    <dt>판정점수</dt>
-                    <dd>${item.REALSCORE}</dd>
-                </dl>
-                <dl>
-                    <dt>시구군</dt>
-                    <dd>${item.REGUGUN}</dd>
-                </dl>
-                <dl>
-                    <dt>구축물</dt>
-                    <dd>${item.REALGUBUN}</dd>
-                </dl>
-                <dl>
-                    <dt>조회날짜</dt>
-                    <dd>${item.REQDATE}</dd>
-                </dl>
+                        <div class="card-box ${cardColor}" data-realadd="${item.REALADD}">
+                            <div class="card-cont">
+                                 <dl>
+                                    <dt>집합건물</dt>
+                                    <dd>${item.REALGUBUN}</dd>
+                                </dl>
+                                <dl>
+                                    <dt>주소</dt>
+                                    <dd>${item.REALADD}</dd>
+                                </dl>
+                                 ${
+                                    (selectedValue === "most_viewed_property" || selectedValue === "popular_property")
+                                        ? `<dl>
+                                        <dt>최근조회날짜</dt>
+                                        <dd>${formattedLastDate}</dd>
+                                    </dl>`
+                                        : `<dl>
+                                        <dt>조회날짜</dt>
+                                        <dd>${formattedDate}</dd>
+                                    </dl>`
+                                }
+                                 <dl>
+                                    <dt>판정점수</dt>
+                                    <dd>${item.REALSCORE}</dd>
+                                </dl>
 
-                ${ (selectedValue === "most_viewed_property" || selectedValue === "popular_property") ? `
-                <dl>
-                    <dt>조회수</dt>
-                    <dd>${item.view_count}</dd>
-                </dl>
-                ` : '' }
+                              ${ (selectedValue === "most_viewed_property" || selectedValue === "popular_property") ? `
+                                <dl>
+                                    <dt>조회수</dt>
+                                    <dd>${item.view_count}</dd>
+                                </dl>
+                                ` : '' }
 
-            </div>
-        </div>
-    `;
+                            </div>
+                                ${buttonsHtml}
+                        </div>
+                    `;
                 });
 
-                listAddressWrap.innerHTML = htmlContent; // 추가된 부분
+                listAddressWrap.innerHTML = htmlContent;
+
+                listAddressWrap.addEventListener('click', (event) => {
+                    const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+                    if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
+
+                    const cardBox = button.closest('.card-box');
+
+                    const realAdd = cardBox.getAttribute('data-realadd');
+
+                    // 팝업 타이틀 업데이트
+                    const popupTitle = document.querySelector("#popup-history .popup-title h3");
+                    if (popupTitle) {
+                        popupTitle.textContent = `${realAdd} 상세내용`;
+                    }
+
+                    // 팝업 열기
+                    const popupHistory = document.getElementById("popup-history");
+                    popupHistory.classList.add("open");
+
+                    // 모든 탭 내용을 숨깁니다
+                    const tabItems = popupHistory.querySelectorAll('.tab-item');
+                    tabItems.forEach(item => {
+                        item.classList.remove('active');  // 모든 탭 내용 숨기기
+                    });
+
+                    // 'main' 탭만 활성화
+                    const mainTab = popupHistory.querySelector('#main');
+                    if (mainTab) {
+                        mainTab.classList.add('active');  // 'main' 탭만 표시
+                    }
+
+                    const goyuNum = cardBox.getAttribute('data-Goyu');
+                });
+
             },
             error: function (xhr, status, error) {
                 console.error("AJAX 요청 실패:", status, error);
@@ -284,6 +579,11 @@
         });
     }
 
+    /*  // 데이터 찾기
+                   const item = data2.find(d => d.pin === goyuNum);
+                   if (item) {
+                       searchaddress(item);
+                   }*/
     function openModal(popupId) {
         let popup = document.getElementById(popupId);
         let overlay = document.querySelector('.popup-overlay');
@@ -315,6 +615,57 @@
     function closeSearch() {
         document.querySelector('.btn-aco').click();
     }
+
+    /*
+     <div>
+                                    <a href="#" class="btn" title="검색" onclick="searchCltcd()"
+                                       style="background-color: #022D60; color: #fff; text-decoration: none; border-radius: 4px; width: 80px;">
+                                        검색
+                                    </a>
+                                </div>
+
+
+    function searchCltcd() {
+        $.ajax({
+            url: '/api/mobile_production/search_cltcd',
+            type: 'GET',
+            data: {
+                'search_cltnm': $('#searchcltnm').val(),
+            },
+            success: function (data) {
+                console.log(data.data);
+                // 거래처명 업데이트
+                document.getElementById("cltcdText").textContent = document.getElementById("searchcltnm").value;
+                const data2 = data.data;
+                const selectElement = document.getElementById("selectcltcd");
+                // 기존 옵션 제거
+                selectElement.innerHTML = ''; // 모든 옵션 제거
+                // "선택" 기본 옵션 추가
+                const defaultOption = document.createElement("option");
+                defaultOption.value = ""; // 빈 값
+                defaultOption.textContent = "선택"; // 기본 메시지
+                defaultOption.disabled = true; // 선택 불가능
+                defaultOption.selected = true; // 기본 선택 상태
+                selectElement.appendChild(defaultOption);
+                // 새로운 옵션 생성 및 추가
+                data2.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.cltcd; // 거래처 코드
+                    option.textContent = item.cltnm; // 거래처명
+                    selectElement.appendChild(option);
+                });
+
+                // 명시적으로 선택 상태 초기화
+                selectElement.selectedIndex = 0; // 항상 첫 번째 옵션("선택")이 선택되도록 설정
+            },
+            error: function (error) {
+                console.error("Error fetching data:", error);
+            }
+        });
+
+        // 팝업 열기
+        openModal('popup1');
+    }*/
 
 </script>
 </body>
