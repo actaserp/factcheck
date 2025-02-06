@@ -62,4 +62,19 @@ public class MobileController {
     public String searchSub() {
         return "address_search/search_sub"; // "address_search/search_sub.html"로 매핑 }
     }
+
+    @GetMapping("/version")
+    public String versionPage() {
+        return "mobile/appInfo/version"; // "address_search/search_sub.html"로 매핑 }
+    }
+
+    @GetMapping("/terms")
+    public String TermsPage() {
+        return "mobile/appInfo/terms"; // "address_search/search_sub.html"로 매핑 }
+    }
+
+    @GetMapping("/danger")
+    public String DangerPage() {
+        return "mobile/appInfo/danger"; // "address_search/search_sub.html"로 매핑 }
+    }
 }
