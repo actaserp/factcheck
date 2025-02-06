@@ -8,7 +8,6 @@
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
-
 </style>
 <head>
   <meta charset="UTF-8">
@@ -19,6 +18,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/> <!-- Slide css -->
   <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css">
   <link rel="stylesheet" type="text/css" href="/assets_mobile/css/import.css">
+  <link rel="stylesheet" type="text/css" href="/css/MapStyle.css">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
@@ -135,6 +135,10 @@
 
   function init() {
     loadKakaoMapScript();
+
+    localStorage.removeItem('loadedRegions'); // 로컬 스토리지에서 삭제
+    loadedRegions = new Set();
+    //console.log("로컬 스토리지 초기화됨. loadedRegions:", loadedRegions);
   }
 
   //지역선택 팝업열기
@@ -188,11 +192,11 @@
         }
 
         // 새로운 script 태그 생성 및 삽입
-          const scriptElement = document.createElement('script');
-          scriptElement.type = 'text/javascript';
-          scriptElement.src = scriptUrl + "&libraries=clusterer,services&autoload=false";
-          scriptElement.async = false;
-          document.head.appendChild(scriptElement);
+        const scriptElement = document.createElement('script');
+        scriptElement.type = 'text/javascript';
+        scriptElement.src = scriptUrl + "&libraries=clusterer,services&autoload=false";
+        scriptElement.async = false;
+        document.head.appendChild(scriptElement);
 
         scriptElement.onload = function () {
           console.log("카카오 지도 스크립트 로드 완료");
@@ -229,50 +233,65 @@
 
       const options = {
         center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도 중심 좌표
-        level: 5 // 확대 레벨
+        level: 3 // 확대 레벨
       };
 
       window.map = new kakao.maps.Map(container, options); // 전역 변수로 map 생성
       console.log("Kakao 지도 초기화 완료");
 
-        // map이 정상적으로 생성되었는지 확인 후 클러스터러 생성
-        if (window.map) {
-            window.clusterer = new kakao.maps.MarkerClusterer({
-                map: window.map, // 지도 객체
-                averageCenter: true, // 클러스터의 중심을 평균값으로 설정
-                minLevel: 8 // 최소 클러스터링 레벨 설정
-            });
-            console.log("마커 클러스터러 초기화 완료");
-        } else {
-            console.error(" 지도 객체 초기화 실패");
-            return; // 지도 객체 없으면 실행 중지
-        }
+      // map이 정상적으로 생성되었는지 확인 후 클러스터러 생성
+      if (window.map) {
+        window.clusterer = new kakao.maps.MarkerClusterer({
+          map: window.map, // 지도 객체
+          averageCenter: true, // 클러스터의 중심을 평균값으로 설정
+          minLevel: 3,  // 최소 클러스터링 레벨 설정
+          styles: [{
+            minWidth: '30px',
+            height: '30px',
+            padding: '0px 6px',
+            color: 'rgb(255, 255, 255)',
+            fontSize: '12px',
+            lineHeight: '26px',
+            textAlign: 'center',
+            border: '2px solid rgb(50, 108, 249)',
+            borderRadius: '30px',
+            backgroundColor: 'rgb(50, 108, 249)',
+            whiteSpace: 'nowrap',
+            position: 'relative',
+            zIndex: '2'
+          }]
 
-        // 지도 이벤트 리스너 등록 (`idle` 사용)
-        kakao.maps.event.addListener(window.map, 'idle', function() {
-            //console.log(" 지도 IDLE 이벤트 발생: 데이터 요청 가능");
-            var center = window.map.getCenter();
-            getRegionFromCoords(center, function(regionName, gugunName) {
-                if (regionName && gugunName) {
-                    let regionKey = `${regionName} ${gugunName}`;
-
-                    if (!loadedRegions.has(regionKey)) {
-                        //console.log(` 새로운 지역(${regionKey}) 마커 요청`);
-                        loadMarkersForRegion(regionName, gugunName);
-                        loadedRegions.add(regionKey);
-                        localStorage.setItem('loadedRegions', JSON.stringify(Array.from(loadedRegions)));
-                    } else {
-                        //console.log(`⚡ 이미 로드된 지역(${regionKey}), API 요청 생략`);
-                    }
-                }
-            });
         });
+        console.log("마커 클러스터러 초기화 완료");
+      } else {
+        console.error(" 지도 객체 초기화 실패");
+        return; // 지도 객체 없으면 실행 중지
+      }
+
+      // 지도 이벤트 리스너 등록 (`idle` 사용)
+      kakao.maps.event.addListener(window.map, 'idle', function () {
+        //console.log(" 지도 IDLE 이벤트 발생: 데이터 요청 가능");
+        var center = window.map.getCenter();
+        getRegionFromCoords(center, function (regionName, gugunName) {
+          if (regionName && gugunName) {
+            let regionKey = `${regionName} ${gugunName}`;
+
+            if (!loadedRegions.has(regionKey)) {
+              //console.log(` 새로운 지역(${regionKey}) 마커 요청`);
+              loadMarkersForRegion(regionName, gugunName);
+              loadedRegions.add(regionKey);
+              localStorage.setItem('loadedRegions', JSON.stringify(Array.from(loadedRegions)));
+            } else {
+              //console.log(`⚡ 이미 로드된 지역(${regionKey}), API 요청 생략`);
+            }
+          }
+        });
+      });
 
     } catch (error) {
-        console.error("Kakao 지도 초기화 중 오류 발생:", error);
+      console.error("Kakao 지도 초기화 중 오류 발생:", error);
     }
   }
-
   // localStorage에서 기존 저장된 지역 정보 불러오기 (없으면 빈 배열)
   var loadedRegions = new Set(JSON.parse(localStorage.getItem('loadedRegions')) || []);
 
@@ -296,13 +315,13 @@
   function moveToSelectedRegion() {
     if (!window.map) {
       console.error("지도 객체가 초기화되지 않았습니다.");
-        setTimeout(moveToSelectedRegion, 500);
+      setTimeout(moveToSelectedRegion, 500);
       return;
     }
 
     const regionName = `${selectedPath.city} ${selectedPath.district} ${selectedPath.neighborhood}`.trim();
     if (!regionName) {
-      Alert.alert('',"지역을 선택해주세요!");
+      Alert.alert('', "지역을 선택해주세요!");
       return;
     }
 
@@ -310,27 +329,52 @@
       url: "/api/Map/coordinates",
       type: "GET",
       data: {name: regionName},
-        success: function (response) {
-            if (response.success) {
-                const latitude = response.lat;
-                const longitude = response.lng;
-                RegisterUserClose(); //지역선택시 모달닫기
-                if (window.map) {
-                    const newCenter = new kakao.maps.LatLng(latitude, longitude);
-                    window.map.setCenter(newCenter);
-                    console.log(`지도 중심이 ${regionName}(${latitude}, ${longitude})로 이동했습니다.`);
-                } else {
-                    console.warn(" 지도 객체가 아직 초기화되지 않았습니다.");
-                }
-            } else {
-                alert("좌표를 찾을 수 없습니다.");
-            }
+      success: function (response) {
+        if (response.success) {
+          const latitude = response.lat;
+          const longitude = response.lng;
+          RegisterUserClose(); // 지역 선택 시 모달 닫기
 
-        },
-        error: function (xhr, status, error) {
-            console.error("좌표 검색 API 요청 중 오류 발생:", error);
-            alert("좌표 검색 중 문제가 발생했습니다.");
+          if (window.map) {
+            const newCenter = new kakao.maps.LatLng(latitude, longitude);
+            window.map.setCenter(newCenter);
+            console.log(`지도 중심이 ${regionName}(${latitude}, ${longitude})로 이동했습니다.`);
+
+            // 지역 정보를 얻고, 중복 요청 방지 후 마커를 로드
+            let loadedRegions = new Set(JSON.parse(localStorage.getItem('loadedRegions') || "[]"));
+
+            getRegionFromCoords(newCenter, function (regionName, gugunName) {
+              if (regionName && gugunName) {
+                let regionKey = `${regionName.trim()} ${gugunName.trim()}`;
+
+                if (!loadedRegions.has(regionKey)) {
+                  console.log(`새로운 지역(${regionKey}) 마커 요청`);
+
+                  // 마커 로딩 후에 loadedRegions에 추가해야 중복 요청이 발생하지 않음
+                  loadMarkersForRegion(regionName, gugunName).then(() => {
+                    loadedRegions.add(regionKey);
+                    localStorage.setItem('loadedRegions', JSON.stringify(Array.from(loadedRegions)));
+                  }).catch(err => {
+                    console.error(` 마커 로딩 실패: ${err}`);
+                  });
+
+                } else {
+                  //console.log(`이미 로드된 지역(${regionKey}), API 요청 생략`);
+                }
+              }
+            });
+
+          } else {
+            console.warn("지도 객체가 아직 초기화되지 않았습니다.");
+          }
+        } else {
+          alert("좌표를 찾을 수 없습니다.");
         }
+      },
+      error: function (xhr, status, error) {
+        console.error("좌표 검색 API 요청 중 오류 발생:", error);
+        alert("좌표 검색 중 문제가 발생했습니다.");
+      }
     });
   }
 
@@ -474,57 +518,104 @@
     }
   }
 
-
   // 마커 ================================
+  var activeOverlay = null; // 현재 활성화된 오버레이 저장
+
   function loadMarkersForRegion(regionName, gugunName) {
-      $.ajax({
-          url: "/api/Map/markersByRegion",
-          type: "GET",
-          data: { region: regionName, gugun: gugunName },
-          success: function (response) {
-              if (response.success) {
-                  clearMarkers(); // 기존 마커 삭제
-                  console.log(" 기존 마커 삭제 완료");
+    $.ajax({
+      url: "/api/Map/markersByRegion",
+      type: "GET",
+      data: { region: regionName, gugun: gugunName },
+      success: function (response) {
+        if (response.success) {
+          clearMarkers(); // 기존 마커 삭제
+          console.log("🗑 기존 마커 삭제 완료");
 
-                  var newMarkers = response.markers.map(markerData => {
-                      //console.log(" 새 마커 추가:", markerData); // 디버깅용 로그 추가
+          var newMarkers = response.markers.map(markerData => {
+            // 마커 생성
+            var marker = new kakao.maps.Marker({
+              position: new kakao.maps.LatLng(markerData.lat, markerData.lng),
+              title: markerData.title,
+              map: window.map // 지도에 추가
+            });
 
-                      var marker = new kakao.maps.Marker({
-                          position: new kakao.maps.LatLng(markerData.lat, markerData.lng),
-                          title: markerData.title
-                      });
+            // 커스텀 오버레이 컨텐츠 생성 (닫기 버튼에서 closeOverlay(lat, lng) 호출)
+            var content = `
+                        <div class="wrap">
+                            <div class="info">
+                                <div class="title">
+                                    ${markerData.title}
+                                    <div class="close" onclick="closeOverlay(${markerData.lat}, ${markerData.lng})" title="닫기"></div>
+                                </div>
+                                <div class="body">
+                                    <div class="img">
+                                        <img src="${markerData.image || 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/thumnail.png'}" width="73" height="70">
+                                    </div>
+                                    <div class="desc">
+                                        <div class="ellipsis">${markerData.address || '주소 정보 없음'}</div>
+                                        <div class="jibun ellipsis">${markerData.jibun || ''}</div>
+                                        <div><a href="${markerData.url || '#'}" target="_blank" class="link">홈페이지</a></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
 
-                      //console.log(" 마커 추가 좌표:", markerData.lat, markerData.lng);
-                      return marker;
-                  });
+            // 커스텀 오버레이 생성
+            var overlay = new kakao.maps.CustomOverlay({
+              content: content,
+              position: marker.getPosition(),
+              map: null // 기본적으로 닫힌 상태
+            });
 
-                  // 클러스터러 객체 확인 후 마커 추가
-                  if (window.clusterer) {
-                      console.log(" 클러스터러에 마커 추가:", newMarkers.length);
-                      window.clusterer.addMarkers(newMarkers);
-                      console.log(`${regionName} ${gugunName} 지역의 마커 ${newMarkers.length}개가 추가되었습니다.`);
-                  } else {
-                      console.error(" 클러스터러 객체가 초기화되지 않음");
-                  }
-              } else {
-                  console.error(` 마커 데이터를 불러오지 못했습니다.`);
+            // 마커 클릭 시 오버레이 표시
+            kakao.maps.event.addListener(marker, 'click', function () {
+              if (activeOverlay) {
+                activeOverlay.setMap(null); // 기존 오버레이 닫기
               }
-          },
-          error: function (xhr, status, error) {
-              console.error(" 마커 불러오기 오류:", error);
+              overlay.setMap(window.map); // 새로운 오버레이 열기
+              activeOverlay = overlay; // 현재 오버레이 저장
+            });
+
+            // 마커 데이터에 오버레이 저장 (닫기 버튼에서 찾기 위해)
+            markerData.overlay = overlay;
+
+            return marker;
+          });
+
+          // 클러스터러에 마커 추가
+          if (window.clusterer) {
+            console.log(`${regionName} ${gugunName} 지역의 마커 ${newMarkers.length}개 추가`);
+            window.clusterer.addMarkers(newMarkers);
+          } else {
+            console.error("클러스터러 객체가 초기화되지 않음");
           }
-      });
+        } else {
+          console.error(" 마커 데이터를 불러오지 못했습니다.");
+        }
+      },
+      error: function (xhr, status, error) {
+        console.error("마커 불러오기 오류:", error);
+      }
+    });
+  }
+
+  // 오버레이 닫기 함수 (특정 마커의 오버레이 닫기)
+  function closeOverlay(lat, lng) {
+    if (activeOverlay) {
+      activeOverlay.setMap(null);
+      activeOverlay = null;
+    }
   }
 
   // 기존 마커 제거 함수
   function clearMarkers() {
-      if (window.clusterer) {
-          console.log(" 기존 마커 개수:", window.clusterer.getMarkers().length);
-          window.clusterer.clear();
-          console.log("기존 마커 삭제 완료");
-      } else {
-          console.warn("클러스터러가 초기화되지 않음");
-      }
+    if (window.clusterer) {
+      //console.log(" 기존 마커 개수:", window.clusterer.getMarkers().length);
+      window.clusterer.clear();
+     // console.log("기존 마커 삭제 완료");
+    } else {
+      console.warn("클러스터러가 초기화되지 않음");
+    }
   }
 </script>
 </body>

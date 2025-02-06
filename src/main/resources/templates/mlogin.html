@@ -7,16 +7,12 @@
         content="width=device-width, user-scalable=no, initial-scale=1, minimum-scale=1, maximum-scale=1">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="-1">
-  <link rel="icon" type="image/png" href="/img/favicon.png">
-
+  <link rel="icon" type="image/png" href="/images/logo/icon_FACT%20CHECK.png" >
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/> <!-- Slide css -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
   <link rel="stylesheet" href="/assets_mobile/css/import.css"/>
   <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css"/>
-
-
   <title>FACT CHECK</title>
-
 </head>
 <style>
     .social-login {
@@ -93,9 +89,9 @@
       <form method="post" class="form" role="form" id="loginFrm" style=" margin: 0 auto;" action="/postLogin">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <div class="login-logo">
-          <img src="/assets_mobile/images/logo/actas_log.png" alt="로고">
+          <img src="/images/logo/icon_logo_FactCheck.png" alt="로고" style="width:250px; height: 100px;">
         </div>
-        <div class="login-form">
+        <div class="login-form" style="width: 100%">
           <dl>
             <dt><label for="loginId">이메일</label></dt>
             <dd>
@@ -125,9 +121,6 @@
 
           <div class="social-login">
             <div class="social-buttons">
-              <button id="google-login-btn" class="btn-social btn-google">
-                <img src="/images/login/구글로그인.svg" alt="구글 로그인 이미지">
-              </button>
               <button id="kakao-login-btn" class="btn-social btn-kakao">
                 <img src="/images/login/kakao_login_medium_narrow.png" alt="카카오 이미지">
               </button>

@@ -113,9 +113,6 @@ public class MapController {
     Map<String, Object> response = new HashMap<>();
     String apiUrl = "https://dapi.kakao.com/v2/local/search/address.json?query=" + name;
 
-    log.info("좌표 검색 요청 시작: name = {}", name);
-   // log.info("API 호출 URL: {}", apiUrl);
-
     try {
       RestTemplate restTemplate = new RestTemplate();
       org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
@@ -125,25 +122,28 @@ public class MapController {
 
       org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>(headers);
 
-      //log.info("카카오 좌표 API 요청 시작");
-
       org.springframework.http.ResponseEntity<Map> apiResponse = restTemplate.exchange(apiUrl, org.springframework.http.HttpMethod.GET, entity, Map.class);
       Map<String, Object> body = apiResponse.getBody();
 
       if (body != null && body.containsKey("documents")) {
-       // log.info("카카오 좌표 API 응답 성공: {}", body);
+        List<Map<String, Object>> documents = (List<Map<String, Object>>) body.get("documents");
 
-        Map<String, Object> firstResult = ((List<Map<String, Object>>) body.get("documents")).get(0);
-        response.put("success", true);
-        response.put("lat", firstResult.get("y")); // 위도
-        response.put("lng", firstResult.get("x")); // 경도
+        if (documents.isEmpty()) { //리스트가 비어 있는지 확인
+          response.put("success", false);
+          response.put("message", "좌표를 찾을 수 없습니다.");
+          //log.warn(" 카카오 API 응답에서 좌표를 찾을 수 없음: {}", body);
+        } else {
+          Map<String, Object> firstResult = documents.get(0);
+          response.put("success", true);
+          response.put("lat", firstResult.get("y")); // 위도
+          response.put("lng", firstResult.get("x")); // 경도
 
-       // log.info("좌표 검색 성공: lat = {}, lng = {}", firstResult.get("y"), firstResult.get("x"));
+          //log.info("좌표 검색 성공: lat = {}, lng = {}", firstResult.get("y"), firstResult.get("x"));
+        }
       } else {
         response.put("success", false);
-        response.put("message", "좌표를 찾을 수 없습니다.");
-
-        log.warn("카카오 API 응답에서 좌표를 찾을 수 없음: {}", body);
+        response.put("message", "카카오 API 응답이 올바르지 않습니다.");
+        log.warn(" 카카오 API 응답이 올바르지 않음: {}", body);
       }
     } catch (Exception e) {
       response.put("success", false);
@@ -152,7 +152,6 @@ public class MapController {
       log.error("카카오 좌표 API 요청 중 오류 발생: {}", e.getMessage(), e);
     }
 
-    //log.info("좌표 검색 요청 종료: response = {}", response);
     return response;
   }
 
@@ -222,7 +221,7 @@ public class MapController {
   @GetMapping("/markersByRegion")
   public ResponseEntity<Map<String, Object>> getMarkersForRegion(
       @RequestParam String region) {
-    log.info("마커 들어옴 region={}", region);
+   // log.info("마커 들어옴 region={}", region);
 
     String[] parts = region.split(" ");
     String sido = parts.length > 0 ? parts[0] : "";  // 시/도
@@ -241,7 +240,7 @@ public class MapController {
         marker.put("lng", coordinates.get("lng"));
         //log.info("좌표 변환 성공: {} -> lat: {}, lng: {}", address, coordinates.get("lat"), coordinates.get("lng"));
       } else {
-       // log.warn("좌표 변환 실패: {}", address);
+        // log.warn("좌표 변환 실패: {}", address);
       }
     }
 

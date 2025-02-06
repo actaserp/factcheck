@@ -73,7 +73,7 @@ public class HomeController {
 		mv.addObject("system_title", logoTitle);
 //		mv.addObject("default_menu_code", "wm_dashboard_summary");
 
-			mv.setViewName(isMobile ? "mobile/ticket-list" : "index");
+			mv.setViewName(isMobile ? "address_search/search_main" : "index");
 		return mv;
 	}
 
