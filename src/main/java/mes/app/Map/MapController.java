@@ -114,6 +114,7 @@ public class MapController {
     String apiUrl = "https://dapi.kakao.com/v2/local/search/address.json?query=" + name;
 
     try {
+
       RestTemplate restTemplate = new RestTemplate();
       org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
       headers.set("Authorization", "KakaoAK " + kakaoClientKey);
@@ -247,13 +248,16 @@ public class MapController {
     String gugun = parts.length > 1 ? parts[1] : ""; // 구/군
 
     List<Map<String, Object>> getMarker = mapService.getMarkersForRegion(sido, gugun);
-    //log.info("마커 데이터(받아온거) ={} ", getMarker);
+   // log.info("마커 데이터(받아온거) ={} ", getMarker);
 
     // 각 마커 데이터에 좌표 추가
     for (Map<String, Object> marker : getMarker) {
       String address = (marker.get("address") != null && !marker.get("address").toString().trim().isEmpty())
           ? marker.get("address").toString()
           : (marker.get("RESIDO") + " " + marker.get("REGUGUN"));
+
+      address = address.replaceAll("\\(.*?\\)", "").trim(); // 괄호 삭제
+      address = address.replaceAll("\\d{1,4}[동호]\\s?\\d{1,4}호?", "").trim(); // "101동 1017호" 제거
 
       Map<String, Object> coordinates = getCoordinates(address);
 
@@ -271,7 +275,7 @@ public class MapController {
         }
 
       } else {
-        log.warn("좌표 변환 실패: {}", address);
+       // log.warn("좌표 변환 실패: {}", address);
       }
     }
 
