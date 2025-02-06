@@ -77,4 +77,8 @@ public class MobileController {
     public String DangerPage() {
         return "mobile/appInfo/danger"; // "address_search/search_sub.html"로 매핑 }
     }
+
+    @GetMapping("/pie_chart")
+    public String piechart() {return "mobile/pie_chart"; }// "mobile/ticket-list.html"로 매핑}
+
 }
