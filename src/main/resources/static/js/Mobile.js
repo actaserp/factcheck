@@ -813,7 +813,7 @@ function loadUserInfo() {
         type: 'GET',
         dataType: 'json',
         success: function(response) {
-            console.log('응답 데이터:', response); // 응답 확인
+            // console.log('응답 데이터:', response); // 응답 확인
             if (response.success) {
                 $('#userName').text(response.data.username || '사용자명');
             } else {
@@ -838,7 +838,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Thymeleaf에서 현재 페이지 가져오기
     const currentPage = document.querySelector("nav").getAttribute("data-page");
-    console.log('currentPage', currentPage);
+
     // 현재 페이지가 존재하는 경우 활성화 처리
     if (currentPage) {
         // 현재 페이지의 dep2 메뉴 활성화

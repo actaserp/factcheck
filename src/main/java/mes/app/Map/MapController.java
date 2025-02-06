@@ -155,6 +155,25 @@ public class MapController {
     return response;
   }
 
+  @GetMapping("/getList")
+  public ResponseEntity<Map<String, Object>> getList(@RequestParam String name) {
+    Map<String, Object> response = new HashMap<>();
+    try {
+      List<Map<String, Object>> results = mapService.getList(name);
+      if (!results.isEmpty()) {
+        response.put("success", true);
+        response.put("data", results);
+      } else {
+        response.put("success", false);
+        response.put("message", "데이터를 찾을 수 없습니다.");
+      }
+    } catch (Exception e) {
+      response.put("success", false);
+      response.put("message", "요청 중 오류 발생: " + e.getMessage());
+    }
+    return ResponseEntity.ok(response);
+  }
+
   private String currentAccessToken; // 현재 유효한 토큰 저장
   private long tokenExpiryTime = 0;  // 토큰 만료 시간 (Unix Time 기준)
 

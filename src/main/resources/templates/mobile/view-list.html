@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<style>
+    .btn-clear {
+        display: none !important; /* 강제로 숨김 */
+    }
+
+    .btn-close {
+        display: none !important; /* 강제로 숨김 */
+    }
+
+    /* 버튼 스타일 */
+    .toggle-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+    }
+
+    .list-border {
+        border-bottom: 1px solid #ccc;
+        margin-top: 5px;
+        width: 100%;
+    }
+
+    /* 리스트 박스 (아이콘 뷰 - 기본값) */
+    .list-box {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 10px;
+    }
+
+    /* 아이콘 뷰 (한 줄에 3개) */
+    .list-box.icon-view {
+        justify-content: left;
+    }
+
+    .list-box.icon-view .list-item {
+        width: calc(33.33% - 10px); /* 3개씩 배치 */
+    }
+
+    /* 리스트 뷰 (한 줄에 1개) */
+    .list-box.list-view {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .list-box.list-view .list-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .region-wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 5%;
+    }
+
+    /* 버튼 스타일 */
+    .region-wrap button {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    .number-box {
+        display: inline-block;
+        width: 100px;
+        font-size: 50px; /* 숫자 크기 */
+        font-weight: 900; /* 최대 굵기 */
+        background: #f8f8f8;
+        -webkit-text-stroke: 2px black; /* 글자 테두리 (검은색) */
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACT CHECK</title>
+    <link rel="icon" type="image/png" href="/images/logo/icon_FACT%20CHECK.png">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/> <!-- Slide css -->
+    <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css">
+    <link rel="stylesheet" type="text/css" href="/assets_mobile/css/import.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script src="/assets_mobile/js/ui.js"></script> <!-- Common js -->
+    <script th:inline="javascript">
+        var sandanData = /*[[${session.sandanList}]]*/ [];
+    </script>
+
+
+    <script type="text/javascript" src="/resource/ax5ui/ax5ui.all.min.js?v=1000"></script>
+
+    <script type="text/javascript" src="/js/ax5commUtil.js?v=1070"></script>
+
+    <script src="/js/common.js?v=1060"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+    <script src="/js/Mobile.js"></script>
+</head>
+<div class="mobile-wrapper"><!-- ★페이지 Class명 -->
+    <!-- [모바일] 헤더  -->
+    <div class="mobile-layout-header">
+        <header>
+            <div class="left">
+                <a href="#" title="전체메뉴" class="logo">
+                </a>
+            </div>
+            <div class="center" style="margin-left:10px;">
+                <h2>카드로 보기</h2>
+            </div>
+            <div class="right">
+                <a href="#" title="전체메뉴" class="btn-menu">
+                    <img src="/assets_mobile/images/icon/btn-menu.svg" alt="전체메뉴 아이콘">
+                </a>
+            </div>
+        </header>
+    </div> <!-- //mobile-layout-header end-->
+
+    <!-- [모바일] 메뉴  -->
+    <div th:insert="~{mobile/mobile_menu :: mobile_menu}"></div>
+    <!-- [모바일] 컨덴츠  -->
+    <div class="mobile-layout-contents">
+        <!--- (레이아웃) Contents 영역 -->
+        <div class="layout-contents" style="width:100%;height:100vh;">
+            <!-- 컨텐츠 영역  -->
+            <div class="contents-wrap">
+                <div>
+                    <li style="margin-top: 5% ">
+                        <a href="#" class="btn btn-popup-open" data-popup="popup1" onclick="regionList()"
+                           title="지역선택">지역 선택</a>
+                    </li>
+                </div>
+                <div class="region-wrap">
+                    <span id="selected-region" style="font-size: 20px; font-weight: bold; color: #333;"></span>
+
+                    <!-- 리스트/아이콘 전환 버튼 (기본적으로 숨김) -->
+                    <div id="view-toggle-buttons" style="display: none; gap: 10px;">
+                        <button id="toggle-list" onclick="toggleView()" title="리스트 형식" class="toggle-btn active">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="gray">
+                                <rect x="3" y="4" width="18" height="4" rx="1" fill="currentColor"/>
+                                <rect x="3" y="10" width="18" height="4" rx="1" fill="currentColor"/>
+                                <rect x="3" y="16" width="18" height="4" rx="1" fill="currentColor"/>
+                            </svg>
+                        </button>
+                        <button id="toggle-grid" onclick="toggleView()" title="아이콘 형식" class="toggle-btn" style="display: none;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="gray">
+                                <rect x="4" y="4" width="7" height="7" rx="1" fill="currentColor"/>
+                                <rect x="13" y="4" width="7" height="7" rx="1" fill="currentColor"/>
+                                <rect x="4" y="13" width="7" height="7" rx="1" fill="currentColor"/>
+                                <rect x="13" y="13" width="7" height="7" rx="1" fill="currentColor"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 리스트 박스 -->
+                <div class="list-box icon-view"></div>
+
+            </div>  <!--// contents-wrap end-->
+        </div> <!--//layout-contents end -->
+    </div> <!-- //mobile-layout-contents end-->
+
+    <div class="mobile-layout-popup">
+        <div class="popup-overlay"></div>
+        <div class="popup-wrapper" id="popup1">
+            <form id="bomForm1">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="popup-title">
+                    <h3>지역 선택</h3>
+                    <a onclick="RegisterUserClose()" title="팝업닫기" class="btn-popup-close">
+                        <img src="/assets_mobile/images/icon/btn-popup-close.svg" alt="닫기">
+                    </a>
+                </div>
+                <div class="popup-contents">
+                    <div class="table-wrap" id="bomForm">
+                        <div class="write-wrap">
+                            <div class="row">
+                                <dl>
+                                    <dt>
+                                    </dt>
+                                    <dd>
+                                        <div id="region-modal" style="display: none;">
+                                            <div id="region-SelectList"
+                                                 style="font-size: 24px; margin-bottom:25px; "></div>
+                                            <div id="region-list"></div>
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="popup-button">
+                    <button type="button" class="btn-navy" id="btnSaveAuth" onclick="moveToSelectedRegion()">지역 검색
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div> <!-- //mobile-layout-popup end -->
+</div> <!-- //page-wrapper end-->
+<body>
+<script type="text/javascript">
+    document.readyState === 'complete' ? init() : window.onload = init;
+
+    let selectedPath = {
+        city: '',  // 선택한 시/도
+        district: '', // 선택한 구
+        // neighborhood: '' // 선택한 동
+    };
+
+    let selectedTempPath = {
+        city: '',  // 임시 선택된 시/도
+        district: '', // 임시 선택된 구
+        // neighborhood: '' // 임시 선택된 동
+    };
+
+    function init() {
+
+    }
+
+    //지역선택 팝업열기
+    function regionList() {
+        let popup = document.getElementById('popup1');
+        let overlay = document.querySelector('.popup-overlay');
+
+        if (popup && overlay) {
+            popup.classList.add('active'); // 팝업 활성화
+            overlay.style.display = 'block'; // 오버레이 보이기
+        } else {
+            console.error('popup1 또는 popup-overlay 요소를 찾을 수 없습니다.');
+        }
+        fetchRegionDataAjax();
+    }
+
+    function RegisterUserClose() {
+        let popup = document.getElementById('popup1');
+        let overlay = document.querySelector('.popup-overlay');
+
+        if (popup && overlay) {
+            // 팝업 비활성화
+            popup.classList.remove('active');
+
+            // 오버레이 숨기기
+            overlay.style.display = 'none';
+            $('#region-SelectList').empty(); // 선택한 경로 초기화
+            selectedTempPath = {...selectedPath};
+            updateTempSelectedPath();
+            // selectedPath = {city: '', district: '', neighborhood: ''}; // 선택 경로 초기화
+            // 입력 폼 초기화
+        } else {
+            console.error('popup1 또는 popup-overlay 요소를 찾을 수 없습니다.');
+        }
+    }
+
+    //모달 끝###############################################
+
+    // localStorage에서 기존 저장된 지역 정보 불러오기 (없으면 빈 배열)
+    var loadedRegions = new Set(JSON.parse(localStorage.getItem('loadedRegions')) || []);
+
+    //지역 불러오기 ###########
+    // SGIS API 데이터 요청
+    function fetchRegionDataAjax() {
+        $.ajax({
+            url: '/api/Map', // SGIS API 엔드포인트
+            type: 'GET',
+            async: false,
+            headers: {
+                'X-CSRF-Token': $('[name=_csrf]').val()
+            },
+            success: function (data) {
+                if (data.success) {
+                    populateRegionListAjax(data);
+                } else {
+                    console.error("데이터 로드 실패:", data.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("API 요청 중 오류 발생:", error);
+            }
+        });
+    }
+
+    // 지역 목록 생성
+    function populateRegionListAjax(data) {
+        const regionList = $('#region-list');
+        regionList.empty(); // 기존 목록 초기화
+
+        // 이미 JSON 객체라면 JSON.parse를 호출하지 않음
+        const results = data.data.result; // JSON 데이터 접근
+        results.forEach(region => {
+            const button = $('<button></button>')
+                .text(region.addr_name) // 시/도 이름 설정
+                .attr('class', 'region-button') // 스타일 클래스
+                .attr('type', 'button')
+                .on('click', () => loadDistrictsAjax(region.cd, region.addr_name)); // 이름과 코드 전달
+            regionList.append(button); // 버튼 추가
+        });
+
+        $('#region-modal').show(); // 모달 보이기
+    }
+
+    // 시/도 선택 시 구 목록 로드
+    function loadDistrictsAjax(cityCode, cityName) {
+        selectedTempPath.city = cityName; // 시/도 이름 저장
+        updateSelectedPath(); // 선택 경로 업데이트
+
+        $.ajax({
+            url: '/api/Map',
+            type: 'GET',
+            data: {cd: cityCode},
+            headers: {
+                'X-CSRF-Token': $('[name=_csrf]').val()
+            },
+            success: function (data) {
+                const regionList = $('#region-list');
+                regionList.empty();
+
+                if (data.success) {
+                    // JSON 객체로 바로 접근
+                    const results = data.data.result;
+                    results.forEach(district => {
+                        const button = $('<button></button>')
+                            .text(district.addr_name)
+                            .attr('class', 'district-button')
+                            .attr('type', 'button')
+                            .on('click', () => loadNeighborhoodsAjax(district.cd, district.addr_name));
+                        regionList.append(button);
+                    });
+                } else {
+                    console.error("구 데이터 로드 실패:", data.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("API 요청 중 오류 발생:", error);
+            }
+        });
+    }
+
+    // 구 선택 시 동 목록 로드
+    function loadNeighborhoodsAjax(districtCode, districtName) {
+        selectedTempPath.district = districtName; // 구 이름 저장
+        updateSelectedPath(); // 선택 경로 업데이트
+
+        $.ajax({
+            url: '/api/Map',
+            type: 'GET',
+            data: {cd: districtCode},
+            headers: {
+                'X-CSRF-Token': $('[name=_csrf]').val()
+            },
+            success: function (data) {
+                const regionList = $('#region-list');
+                regionList.empty();
+
+                if (data.success) {
+                    const results = data.data.result;
+                    results.forEach(neighborhood => {
+                        const button = $('<button></button>')
+                            .text(neighborhood.addr_name)
+                            .attr('class', 'neighborhood-button')
+                            .attr('type', 'button')
+                            .on('click', () => selectNeighborhood(neighborhood.addr_name));
+                        regionList.append(button);
+                    });
+                } else {
+                    console.error("동 데이터 로드 실패:", data.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("API 요청 중 오류 발생:", error);
+            }
+        });
+    }
+
+    // 동 선택 시 최종 경로 업데이트
+    // function selectNeighborhood(neighborhoodName) {
+    //     selectedTempPath.neighborhood = neighborhoodName; // 동 이름 저장
+    //     updateSelectedPath(); // 선택 경로 업데이트
+    //
+    // }
+
+    // 선택 경로 (임시) 업데이트
+    function updateTempSelectedPath() {
+        // const fullPath = `${selectedTempPath.city} ${selectedTempPath.district} ${selectedTempPath.neighborhood}`.trim();
+        const fullPath = `${selectedTempPath.city} ${selectedTempPath.district}`.trim();
+        const selectedRegionElement = document.getElementById('selected-region');
+        const toggleButtons = document.getElementById("view-toggle-buttons");
+
+        if (selectedRegionElement) {
+            selectedRegionElement.textContent = fullPath || "지역이 선택되지 않았습니다.";
+            toggleButtons.style.display = "flex";
+        } else {
+            console.error("선택된 지역을 표시할 요소(selected-region)를 찾을 수 없습니다.");
+            toggleButtons.style.display = "none";
+        }
+    }
+
+    // 선택 경로 업데이트
+    function updateSelectedPath() {
+        // const fullPath = `${selectedTempPath.city} ${selectedTempPath.district} ${selectedTempPath.neighborhood}`.trim();
+        const fullPath = `${selectedTempPath.city} ${selectedTempPath.district}`.trim();
+        const selectedRegionElement2 = document.getElementById('region-SelectList');
+
+        // 두 번째 요소 업데이트
+        if (selectedRegionElement2) {
+            selectedRegionElement2.textContent = fullPath || "지역이 선택되지 않았습니다.";
+        } else {
+            console.error("선택된 지역을 표시할 요소(region-SelectList)를 찾을 수 없습니다.");
+        }
+    }
+
+    function moveToSelectedRegion() {
+
+        // if (!selectedTempPath.city || !selectedTempPath.district || !selectedTempPath.neighborhood) {
+        //     Alert.alert('', "지역을 선택해주세요!");
+        //     return;
+        // }
+        if (!selectedTempPath.city || !selectedTempPath.district) {
+            Alert.alert('', "지역을 선택해주세요!");
+            return;
+        }
+
+
+        // ✅ 최종 값 업데이트
+        selectedPath = {...selectedTempPath};
+
+        // const regionName = `${selectedPath.city} ${selectedPath.district} ${selectedPath.neighborhood}`.trim();
+        const regionName = `${selectedPath.city} ${selectedPath.district}`.trim();
+
+        $.ajax({
+            url: "/api/Map/getList",
+            type: "GET",
+            data: {name: regionName},
+            headers: {
+                'X-CSRF-Token': $('[name=_csrf]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    RegisterUserClose(); // 지역선택시 모달닫기
+                    // 리스트박스 초기화
+                    $('.list-box').empty();
+
+                    // 응답 데이터 순회하면서 리스트 생성
+                    for (let i = 0; i < response.data.length; i++) {
+                        let realScore = response.data[i].REALSCORE;
+                        const realAdd = response.data[i].SHORT_ADDR;
+
+                        // 🔥 null 처리
+                        if (realScore === null) {
+                            realScore = "?";
+                        }
+
+                        // 🔥 점수 범위에 따른 색상 설정
+                        let scoreColor = "#000000"; // 기본 흰색
+                        if (!isNaN(realScore)) {
+                            realScore = parseInt(realScore); // 숫자로 변환
+                            if (realScore >= 90) scoreColor = "#FFFFFF"; // 흰색
+                            else if (realScore >= 80) scoreColor = "#00FF00"; // 초록색
+                            else if (realScore >= 70) scoreColor = "#0000FF"; // 파란색
+                            else if (realScore >= 60) scoreColor = "#FFFF00"; // 노란색
+                            else if (realScore >= 50) scoreColor = "#FFA500"; // 주황색
+                            else if (realScore >= 40) scoreColor = "#FF0000"; // 빨간색
+                            else scoreColor = "#000000"; // 검정색
+                        }
+
+                        // 박스 생성 및 내용 추가
+                        const box = $('<div></div>')
+                            .addClass('list-item')
+                            .append(
+                                $('<div></div>')
+                                    .addClass('number-box')
+                                    .text(realScore) // 점수 또는 '?'
+                                    .css("color", scoreColor) // 색상 적용
+                            )
+                            .append($('<div style="margin: 5px;"></div>').text(realAdd));
+
+                        // 리스트박스에 추가
+                        $('.list-box').append(box);
+                    }
+                } else {
+                    alert("해당 지역에 대한 정보를 찾을 수 없습니다.");
+                }
+            },
+            error: function (xhr, status, error) {
+                // 에러 처리
+                alert("서버와의 통신 중 오류가 발생했습니다.");
+            }
+        });
+    }
+
+    function toggleView() {
+        const listBox = document.querySelector(".list-box");
+        const listButton = document.getElementById("toggle-list");
+        const gridButton = document.getElementById("toggle-grid");
+
+        if (listBox.classList.contains("icon-view")) {
+            // ✅ 리스트 뷰로 변경
+            listBox.classList.remove("icon-view");
+            listBox.classList.add("list-view");
+
+            // 버튼 아이콘 변경
+            listButton.style.display = "none";
+            gridButton.style.display = "inline-flex";
+
+            // 활성화 상태 변경
+            listButton.classList.remove("active");
+            gridButton.classList.add("active");
+
+            // ✅ 리스트 뷰일 때 각 list-item 아래 list-border 추가 (list-item과 동급)
+            document.querySelectorAll('.list-item').forEach(item => {
+                if (!item.nextElementSibling || !item.nextElementSibling.classList.contains("list-border")) {
+                    const borderDiv = document.createElement("div");
+                    borderDiv.classList.add("list-border");
+                    borderDiv.style.borderBottom = "1px solid #ccc";
+                    borderDiv.style.margin = "5px 0";
+                    borderDiv.style.width = "100%";
+                    listBox.insertBefore(borderDiv, item.nextSibling);
+                }
+            });
+
+        } else {
+            // ✅ 아이콘 뷰로 변경
+            listBox.classList.remove("list-view");
+            listBox.classList.add("icon-view");
+
+            // 버튼 아이콘 변경
+            listButton.style.display = "inline-flex";
+            gridButton.style.display = "none";
+
+            // 활성화 상태 변경
+            listButton.classList.add("active");
+            gridButton.classList.remove("active");
+
+            // ✅ 아이콘 뷰일 때 list-border 제거
+            document.querySelectorAll('.list-border').forEach(border => {
+                border.remove();
+            });
+        }
+    }
+
+
+
+</script>
+</body>
+</html>

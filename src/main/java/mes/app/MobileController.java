@@ -26,6 +26,14 @@ public class MobileController {
         model.addAttribute("currentPage", "kakaoMap2");
         return "mobile/kakaoMap2";
     }
+
+    @GetMapping("/view-list")
+    public String viewList(Model model) {
+        model.addAttribute("currentPage", "view-list");
+        return "mobile/view-list";
+    }
+
+
     @GetMapping("/UserInfo")
     public String UserInfo(Model model) {
         model.addAttribute("currentPage", "UserInfo");
