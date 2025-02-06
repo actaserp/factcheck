@@ -22,12 +22,17 @@ public class MapService {
         params.addValue("gugun", gugun);
 
         return sqlRunner.getRows("""
-                   SELECT 
-                   RESIDO, REGUGUN, REALSCORE 
-                   FROM TB_REALINFO
-                  WHERE RESIDO like :region + '%'
-                  AND (:gugun IS NULL OR REGUGUN like :gugun + '%');
-                """, params);
+      SELECT\s
+             RESIDO,
+             REGUGUN,
+             REALADD as address,
+             COUNT(*) as count,
+             AVG(realscore) AS avg_score
+         FROM TB_REALINFO
+         WHERE RESIDO LIKE CONCAT(:region, '%')
+         AND (:gugun IS NULL OR REGUGUN LIKE CONCAT(:gugun, '%'))
+         GROUP BY RESIDO, REGUGUN, REALADD
+    """, params);
     }
 
 

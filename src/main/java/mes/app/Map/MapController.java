@@ -240,7 +240,7 @@ public class MapController {
   @GetMapping("/markersByRegion")
   public ResponseEntity<Map<String, Object>> getMarkersForRegion(
       @RequestParam String region) {
-   // log.info("마커 들어옴 region={}", region);
+    // log.info("마커 들어옴 region={}", region);
 
     String[] parts = region.split(" ");
     String sido = parts.length > 0 ? parts[0] : "";  // 시/도
@@ -251,15 +251,27 @@ public class MapController {
 
     // 각 마커 데이터에 좌표 추가
     for (Map<String, Object> marker : getMarker) {
-      String address = marker.get("RESIDO") + " " + marker.get("REGUGUN");
+      String address = (marker.get("address") != null && !marker.get("address").toString().trim().isEmpty())
+          ? marker.get("address").toString()
+          : (marker.get("RESIDO") + " " + marker.get("REGUGUN"));
+
       Map<String, Object> coordinates = getCoordinates(address);
 
       if (coordinates.get("success").equals(true)) {
         marker.put("lat", coordinates.get("lat"));
         marker.put("lng", coordinates.get("lng"));
         //log.info("좌표 변환 성공: {} -> lat: {}, lng: {}", address, coordinates.get("lat"), coordinates.get("lng"));
+
+        // avg_score를 기반으로 등급 매기기
+        if (marker.get("avg_score") != null) {
+          int score = Integer.parseInt(marker.get("avg_score").toString());
+          marker.put("grade", getGrade(score));
+        } else {
+          marker.put("grade", "Unknown");  // 점수 없을 경우
+        }
+
       } else {
-        // log.warn("좌표 변환 실패: {}", address);
+        log.warn("좌표 변환 실패: {}", address);
       }
     }
 
@@ -267,5 +279,15 @@ public class MapController {
     response.put("success", true);
     response.put("markers", getMarker);
     return ResponseEntity.ok(response);
+  }
+
+  private String getGrade(int score) {
+    if (score >= 90) return "S";
+    else if (score >= 80) return "A";
+    else if (score >= 70) return "B";
+    else if (score >= 60) return "C";
+    else if (score >= 50) return "D";
+    else if (score >= 40) return "E";
+    else return "F";
   }
 }

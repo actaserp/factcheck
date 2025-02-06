@@ -181,6 +181,9 @@
       url: '/api/Map/script',
       type: 'GET',
       dataType: 'text',
+      headers: {
+        'X-CSRF-Token': $('[name=_csrf]').val()
+      },
       success: function (scriptUrl) {
         // autoload=false를 URL에 추가
         const scriptWithAutoload = `${scriptUrl}&autoload=false`;
@@ -292,6 +295,7 @@
       console.error("Kakao 지도 초기화 중 오류 발생:", error);
     }
   }
+
   // localStorage에서 기존 저장된 지역 정보 불러오기 (없으면 빈 배열)
   var loadedRegions = new Set(JSON.parse(localStorage.getItem('loadedRegions')) || []);
 
@@ -311,14 +315,20 @@
       }
     });
   }
+  let isMapLoading = false;
 
   function moveToSelectedRegion() {
     if (!window.map) {
-      console.error("지도 객체가 초기화되지 않았습니다.");
-      setTimeout(moveToSelectedRegion, 500);
+      if (!isMapLoading) {
+        isMapLoading = true;
+        console.warn("지도 객체가 아직 초기화되지 않음, 500ms 후 재시도...");
+        setTimeout(() => {
+          isMapLoading = false;  // 다음 실행을 허용
+          moveToSelectedRegion();
+        }, 500);
+      }
       return;
     }
-
     const regionName = `${selectedPath.city} ${selectedPath.district} ${selectedPath.neighborhood}`.trim();
     if (!regionName) {
       Alert.alert('', "지역을 선택해주세요!");
@@ -329,6 +339,9 @@
       url: "/api/Map/coordinates",
       type: "GET",
       data: {name: regionName},
+      headers: {
+        'X-CSRF-Token': $('[name=_csrf]').val()
+      },
       success: function (response) {
         if (response.success) {
           const latitude = response.lat;
@@ -412,6 +425,7 @@
       const button = $('<button></button>')
         .text(region.addr_name) // 시/도 이름 설정
         .attr('class', 'region-button') // 스타일 클래스
+        .attr('type', 'button')
         .on('click', () => loadDistrictsAjax(region.cd, region.addr_name)); // 이름과 코드 전달
       regionList.append(button); // 버튼 추가
     });
@@ -442,6 +456,7 @@
             const button = $('<button></button>')
               .text(district.addr_name)
               .attr('class', 'district-button')
+              .attr('type', 'button')
               .on('click', () => loadNeighborhoodsAjax(district.cd, district.addr_name));
             regionList.append(button);
           });
@@ -477,6 +492,7 @@
             const button = $('<button></button>')
               .text(neighborhood.addr_name)
               .attr('class', 'neighborhood-button')
+              .attr('type', 'button')
               .on('click', () => selectNeighborhood(neighborhood.addr_name));
             regionList.append(button);
           });
@@ -526,6 +542,9 @@
       url: "/api/Map/markersByRegion",
       type: "GET",
       data: { region: regionName, gugun: gugunName },
+      headers: {
+        'X-CSRF-Token': $('[name=_csrf]').val()
+      },
       success: function (response) {
         if (response.success) {
           clearMarkers(); // 기존 마커 삭제
@@ -539,26 +558,47 @@
               map: window.map // 지도에 추가
             });
 
-            // 커스텀 오버레이 컨텐츠 생성 (닫기 버튼에서 closeOverlay(lat, lng) 호출)
+            //console.log("markerData : ", markerData);
+
+            // 등급별 이미지 매핑
+            var gradeImages = {
+              "S": "/img/Map/S등급.png",
+              "A": "/img/Map/A등급.png",
+              "B": "/img/Map/B등급.png",
+              "C": "/img/Map/C등급.png",
+              "D": "/img/Map/D등급.png",
+              "E": "/img/Map/E등급.png",
+              "F": "/img/Map/F등급.png"
+            };
+
+            // 등급 설정 (undefined 방지)
+            var gradeClass = markerData.grade ? `grade-${markerData.grade}` : "grade-Unknown";
+
+            // 이미지 설정 (markerData.image가 없을 경우 기본값 설정)
+            var imageUrl = markerData.image && markerData.image.trim() !== ""
+              ? markerData.image
+              : (gradeImages[markerData.grade] || 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/thumnail.png');
+
+            // 커스텀 오버레이 컨텐츠 생성
             var content = `
-                        <div class="wrap">
-                            <div class="info">
-                                <div class="title">
-                                    ${markerData.title}
-                                    <div class="close" onclick="closeOverlay(${markerData.lat}, ${markerData.lng})" title="닫기"></div>
+                    <div class="wrap">
+                        <div class="info">
+                            <div class="title">
+                                ${markerData.REGUGUN} _ ${markerData.grade || 'Unknown'} 등급
+                                <div class="close" onclick="closeOverlay(${markerData.lat}, ${markerData.lng})" title="닫기"></div>
+                            </div>
+                            <div class="body ${gradeClass}">
+                                <div class="img">
+                                   <img src="${imageUrl}" width="73" height="70">
                                 </div>
-                                <div class="body">
-                                    <div class="img">
-                                        <img src="${markerData.image || 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/thumnail.png'}" width="73" height="70">
-                                    </div>
-                                    <div class="desc">
-                                        <div class="ellipsis">${markerData.address || '주소 정보 없음'}</div>
-                                        <div class="jibun ellipsis">${markerData.jibun || ''}</div>
-                                        <div><a href="${markerData.url || '#'}" target="_blank" class="link">홈페이지</a></div>
-                                    </div>
+                                <div class="desc">
+                                    <div class="jibun ellipsis">${markerData.jibun || ''}</div>
+                                    <div class="avg_score"> 점수 : ${markerData.avg_score || ''}</div>
+                                    <div class="count"> 발급건수: ${markerData.count || ''} </div>
                                 </div>
                             </div>
-                        </div>`;
+                        </div>
+                    </div>`;
 
             // 커스텀 오버레이 생성
             var overlay = new kakao.maps.CustomOverlay({
@@ -590,7 +630,7 @@
             console.error("클러스터러 객체가 초기화되지 않음");
           }
         } else {
-          console.error(" 마커 데이터를 불러오지 못했습니다.");
+          console.error("마커 데이터를 불러오지 못했습니다.");
         }
       },
       error: function (xhr, status, error) {
@@ -598,6 +638,7 @@
       }
     });
   }
+
 
   // 오버레이 닫기 함수 (특정 마커의 오버레이 닫기)
   function closeOverlay(lat, lng) {
@@ -612,7 +653,7 @@
     if (window.clusterer) {
       //console.log(" 기존 마커 개수:", window.clusterer.getMarkers().length);
       window.clusterer.clear();
-     // console.log("기존 마커 삭제 완료");
+      // console.log("기존 마커 삭제 완료");
     } else {
       console.warn("클러스터러가 초기화되지 않음");
     }
