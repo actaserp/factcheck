@@ -76,11 +76,7 @@
         <div id="map" style="width:100%;height: 65vh ; flex-grow: 1;"></div>
 
         <div style="margin-top: 5%">
-          <ol id="search-results" class="list-group list-group-numbered" style="font-size: 20px;">
-            <li class="list-group-item">1. 지역검색 시 보이는 발급 내역</li>
-            <li class="list-group-item">2. 지역검색 시 보이는 발급 내역</li>
-            <li class="list-group-item">3. 지역검색 시 보이는 발급 내역</li>
-          </ol>
+          <ol id="search-results" class="list-group list-group-numbered" style="font-size: 15px;"></ol>
         </div>
       </div>  <!--// contents-wrap end-->
     </div> <!--//layout-contents end -->
@@ -226,7 +222,6 @@
     });
   }
 
-  // 지도 초기화
   //   등급별 클러스터 색상 매핑
   var gradeColors = {
     "S": "#B0E57C",   // 연두색 (매우 안전)
@@ -238,8 +233,7 @@
     "F": "#000000"    // 검은색 (매우 위험)
   };
 
-
-  // 지도 초기화
+  // 지도 초기화 함수
   function initializeMap() {
     try {
       const container = document.getElementById('map');
@@ -248,7 +242,7 @@
       }
 
       const options = {
-        center: new kakao.maps.LatLng(37.5665, 126.9780), //   서울특별시 중심 좌표
+        center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울특별시 중심 좌표
         level: 3 // 확대 레벨
       };
 
@@ -256,76 +250,72 @@
       console.log("Kakao 지도 초기화 완료");
 
       // 클러스터러 생성
-      if (window.map) {
+      if (!window.clusterer) {
         window.clusterer = new kakao.maps.MarkerClusterer({
           map: window.map,
           averageCenter: true,
           minLevel: 3
         });
+        console.log("클러스터러 생성 완료");
 
         // 클러스터 색상 변경 이벤트 리스너 추가
-        kakao.maps.event.addListener(window.clusterer, 'clustered', function (clusters) {
+        kakao.maps.event.addListener(window.clusterer, 'clustered', function(clusters) {
           clusters.forEach(cluster => {
             var markers = cluster.getMarkers();
             if (markers.length === 0) return;
 
-            //   클러스터 내에서 가장 높은 위험 등급 찾기 (F > E > D > C > B > A > S)
-            var gradePriority = ["F", "E", "D", "C", "B", "A", "S"]; // 등급 우선순위 배열
-            var gradeCount = {}; // 등급 등장 횟수 저장 객체
+            // 클러스터 내에서 가장 많이 등장한 등급 찾기
+            var gradePriority = ["F", "E", "D", "C", "B", "A", "S"];
+            var gradeCount = {};
 
             markers.forEach(marker => {
               var markerGrade = marker.markerData?.grade || "S"; // 기본값 "S"
-              gradeCount[markerGrade] = (gradeCount[markerGrade] || 0) + 1; // 등장 횟수 증가
+              gradeCount[markerGrade] = (gradeCount[markerGrade] || 0) + 1;
             });
 
-            // 등장 횟수가 가장 많은 등급 찾기
             var highestGrade = Object.entries(gradeCount).reduce((topGrade, current) => {
               var [grade, count] = current;
-
               if (
-                count > (gradeCount[topGrade] || 0) || // 등장 횟수가 더 많다면 업데이트
-                (count === gradeCount[topGrade] && gradePriority.indexOf(grade) < gradePriority.indexOf(topGrade)) // 같은 횟수라면 더 높은 위험 등급 우선
+                count > (gradeCount[topGrade] || 0) ||
+                (count === gradeCount[topGrade] && gradePriority.indexOf(grade) < gradePriority.indexOf(topGrade))
               ) {
                 return grade;
               }
               return topGrade;
-            }, "S"); // 기본값 "S"
+            }, "S");
 
-            //   가장 높은 등급의 색상 적용
-            var backgroundColor = gradeColors[highestGrade] || "#3399FF"; // 기본 파란색
+            var backgroundColor = gradeColors[highestGrade] || "#3399FF";
 
-            //   클러스터 마커 스타일 변경
+            // 클러스터 마커 스타일 변경
             var clusterMarker = cluster.getClusterMarker();
             clusterMarker.setContent(`
-            <div style="
-                min-width: 50px;
-                height: 50px;
-                padding: 10px;
-                color: white;
-                font-size: 14px;
-                font-weight: bold;
-                line-height: 30px;
-                text-align: center;
-                border: 3px solid white;
-                border-radius: 50%;
-                background-color: ${backgroundColor};
-                box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-                white-space: nowrap;
-                position: relative;
-                z-index: 2;">
-               ${markers.length} 개
-            </div>
-        `);
+                        <div style="
+                            min-width: 50px;
+                            height: 50px;
+                            padding: 10px;
+                            color: white;
+                            font-size: 14px;
+                            font-weight: bold;
+                            line-height: 30px;
+                            text-align: center;
+                            border: 3px solid white;
+                            border-radius: 50%;
+                            background-color: ${backgroundColor};
+                            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+                            white-space: nowrap;
+                            position: relative;
+                            z-index: 2;">
+                           ${markers.length} 개
+                        </div>
+                    `);
           });
         });
-
-        console.log("마커 클러스터러 초기화 완료");
       } else {
         console.error("지도 객체 초기화 실패");
         return;
       }
 
-      //  지도 이벤트 리스너 등록 (`idle` 사용)
+      // 지도 이벤트 리스너 등록 (`idle` 사용)
       kakao.maps.event.addListener(window.map, 'idle', function () {
         var center = window.map.getCenter();
         getRegionFromCoords(center, function (regionName, gugunName) {
@@ -340,12 +330,10 @@
           }
         });
       });
-
     } catch (error) {
       console.error("Kakao 지도 초기화 중 오류 발생:", error);
     }
   }
-
 
   // localStorage에서 기존 저장된 지역 정보 불러오기 (없으면 빈 배열)
   var loadedRegions = new Set(JSON.parse(localStorage.getItem('loadedRegions')) || []);
@@ -366,6 +354,7 @@
       }
     });
   }
+
   let isMapLoading = false;
 
   function moveToSelectedRegion() {
@@ -380,6 +369,7 @@
       }
       return;
     }
+
     const regionName = `${selectedPath.city} ${selectedPath.district} ${selectedPath.neighborhood}`.trim();
     if (!regionName) {
       Alert.alert('', "지역을 선택해주세요!");
@@ -428,6 +418,26 @@
               }
             });
 
+            $.ajax({
+              url: "/api/Map/RegionList",
+              type: "GET",
+              data: { region: regionName },
+              headers: {
+                'X-CSRF-Token': $('[name=_csrf]').val()
+              },
+              success: function (response) {
+                if (response.success) {
+                  // 추가 데이터를 동적으로 리스트에 반영
+                  //console.log("추가 데이터 로드 성공:", response.markers);
+                  updateSearchResults(response.markers);
+                } else {
+                  console.warn("추가 데이터 로드 실패");
+                }
+              },
+              error: function (xhr, status, error) {
+                console.error("추가 데이터 API 요청 중 오류 발생:", error);
+              }
+            });
           } else {
             console.warn("지도 객체가 아직 초기화되지 않았습니다.");
           }
@@ -439,6 +449,26 @@
         console.error("좌표 검색 API 요청 중 오류 발생:", error);
         alert("좌표 검색 중 문제가 발생했습니다.");
       }
+    });
+  }
+
+  function updateSearchResults(data) {
+    const searchResults = $("#search-results"); // 리스트 요소 선택
+    searchResults.empty(); // 기존 목록 삭제
+
+    if (!data || data.length === 0) {
+      searchResults.append("<li class='list-group-item'> 지역 검색 결과가 없습니다.</li>");
+      return;
+    }
+
+    // 새로운 리스트 아이템 추가
+    data.forEach((item, index) => {
+      const listItem = `<li class="list-group-item">
+                    ${index + 1}. ${item.REALADD}
+                    <span style="float: right;">${item.RELASTDATE}</span>
+                  </li>`;
+
+      searchResults.append(listItem);
     });
   }
 
@@ -592,7 +622,7 @@
     $.ajax({
       url: "/api/Map/markersByRegion",
       type: "GET",
-      data: { region: regionName, gugun: gugunName },
+      data: {region: regionName, gugun: gugunName},
       headers: {
         'X-CSRF-Token': $('[name=_csrf]').val()
       },
@@ -622,7 +652,7 @@
             var markerImage = new kakao.maps.MarkerImage(
               markerImageUrl,
               new kakao.maps.Size(30, 30),  // 마커 크기
-              { offset: new kakao.maps.Point(20, 40) }
+              {offset: new kakao.maps.Point(20, 40)}
             );
 
             var marker = new kakao.maps.Marker({
@@ -701,9 +731,11 @@
           if (window.clusterer) {
             console.log(`${regionName} ${gugunName} 지역의 마커 ${newMarkers.length}개 추가`);
             window.clusterer.addMarkers(newMarkers);
+
           } else {
             console.error("클러스터러 객체가 초기화되지 않음");
           }
+
         } else {
           console.error("마커 데이터를 불러오지 못했습니다.");
         }
@@ -726,13 +758,18 @@
   // 기존 마커 제거 함수
   function clearMarkers() {
     if (window.clusterer) {
-      //console.log(" 기존 마커 개수:", window.clusterer.getMarkers().length);
-      window.clusterer.clear();
-      // console.log("기존 마커 삭제 완료");
+      console.log("🗑 기존 마커 개수:", window.clusterer.getMarkers().length);
+      window.clusterer.clear(); // 기존 클러스터 삭제
+      console.log("기존 마커 삭제 완료");
+
+      // 클러스터 삭제 후 다시 `clusterclick` 이벤트 리스너 등록 가능하도록 설정
+      window.clusterClickListenerAdded = false;
     } else {
-      console.warn("클러스터러가 초기화되지 않음");
+      console.warn("⚠ 클러스터러가 아직 초기화되지 않음.");
     }
   }
+
+
 </script>
 </body>
 </html>

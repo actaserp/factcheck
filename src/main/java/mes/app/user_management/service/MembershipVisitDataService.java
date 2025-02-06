@@ -61,7 +61,7 @@ public class MembershipVisitDataService {
 
         // 동적 조건 추가
         if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
-            sql.append(" AND REQDATE >= :startDate AND REQDATE < :endDate ");
+            sql.append(" AND REQDATE >= :startDate AND REQDATE <= :endDate ");
             params.addValue("startDate", startDate);
             params.addValue("endDate", endDate);
         }

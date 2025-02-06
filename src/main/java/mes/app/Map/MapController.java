@@ -13,12 +13,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -294,4 +297,66 @@ public class MapController {
     else if (score >= 40) return "E";
     else return "F";
   }
+
+  //지역 검새 리스트
+  @GetMapping("/RegionList")
+  public ResponseEntity<Map<String, Object>> getRegionList(@RequestParam(value = "region", required = false) String region,
+                                  @RequestParam(value = "gugun", required = false)String gugun) {
+    //log.info("지역 검색들어온 데이터 region={}, gugun={}", region, gugun);
+
+    if (region != null) {
+      gugun = extractGugun(region);
+      region = extractRegion(region);
+    }
+
+    List<Map<String, Object>> getRegionList = mapService.getRegionList(region, gugun);
+    for (Map<String, Object> item : getRegionList) {
+      Object dateObj = item.get("RELASTDATE");
+      if (dateObj != null) {
+        try {
+          // 날짜를 "YYYYMMDD" -> "YYYY-MM-DD" 형식으로 변환
+          String formattedDate = formatDate(dateObj.toString());
+          item.put("RELASTDATE", formattedDate); // 변환된 날짜 저장
+        } catch (Exception ex) {
+          // 변환 실패 시 오류 처리
+          log.error("날짜 변환 오류: {}", ex.getMessage());
+          item.put("RELASTDATE", "잘못된 날짜 형식");
+        }
+      }
+    }
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("success", true);
+    response.put("markers", getRegionList);
+    return ResponseEntity.ok(response);
+  }
+  // 지역(region)에서 구(區) 추출
+  private String extractGugun(String region) {
+    String[] parts = region.split(" ");
+    for (String part : parts) {
+      if (part.endsWith("구")) { // "구"로 끝나는 문자열 찾기
+        return part;
+      }
+    }
+    return null; // 구(區)가 없으면 null 반환
+  }
+
+  // 지역(region)에서 시/도만 남기기
+  private String extractRegion(String region) {
+    String[] parts = region.split(" ");
+    if (parts.length > 1) {
+      return parts[0]; // 첫 번째 단어(예: 서울특별시)만 반환
+    }
+    return region; // 만약 단어가 하나뿐이면 그대로 반환
+  }
+  private String formatDate(String dateStr) throws Exception {
+    if (dateStr != null && dateStr.length() == 8) {
+      SimpleDateFormat inputFormat = new SimpleDateFormat("yyyyMMdd");  // 입력 형식
+      SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd"); // 출력 형식
+      Date date = inputFormat.parse(dateStr);
+      return outputFormat.format(date);
+    }
+    return dateStr; // 형식이 맞지 않으면 원본 그대로 반환
+  }
+
 }
