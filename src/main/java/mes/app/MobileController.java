@@ -56,6 +56,12 @@ public class MobileController {
         return "mobile/user-info"; // "mobile/user-info.html"로 매핑
     }
 
+    @GetMapping("/faq")
+    public String faq(Model model) {
+        model.addAttribute("currentPage", "faq");
+        return "mobile/faq"; // "mobile/user-info.html"로 매핑
+    }
+
     @GetMapping("/search_main")
     public String searchMain() {
         return "address_search/search_main"; // "address_search/search_main.html"로 매핑

@@ -37,19 +37,54 @@ public class MapService {
     }
 
 
-    public List<Map<String, Object>> getList(String name) {
-        //MapSqlParameterSource 사용하여 SQL 파라미터 설정
+    public List<Map<String, Object>> getList(String resido, String regugun) {
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("name", name + "%");
-        params.addValue("name_prefix", name);
+        params.addValue("resido", resido);
+        params.addValue("regugun", regugun);
 
-        return sqlRunner.getRows("""
-                  SELECT 
-                    RESIDO, REGUGUN, REALSCORE, REALADD,
-                    STUFF(REALADD, 1, LEN(:name_prefix), '') AS SHORT_ADDR
-                  FROM TB_REALINFO
-                  WHERE REALADD like :name;
-                """, params);
+        String sql = """
+        SELECT
+            RESIDO, REGUGUN, REALSCORE, REALADD, REALID,
+            COUNT(*) OVER() AS total_count,
+            AVG(REALSCORE) OVER() AS avg_score,
+
+            CASE
+                WHEN CHARINDEX(' ', REALADD) > 0
+                THEN STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')
+                ELSE REALADD
+            END AS SHORT_ADDR_1,
+
+            CASE
+                WHEN :regugun IS NOT NULL
+                    AND CHARINDEX(' ',
+                        STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')) > 0
+                THEN STUFF(
+                    STUFF(REALADD, 1, CHARINDEX(' ', REALADD), ''),
+                    1, CHARINDEX(' ', STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')), ''
+                )
+                ELSE STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')
+            END AS SHORT_ADDR
+
+        FROM TB_REALINFO
+        WHERE RESIDO = :resido
+        AND (COALESCE(:regugun, '') = '' OR REGUGUN = :regugun)
+        ORDER BY REALSCORE DESC;
+    """;
+
+        return sqlRunner.getRows(sql, params);
+    }
+
+    public List<Map<String, Object>> getOwn(int realid) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("realid", realid);
+
+        String sql = """
+            SELECT * FROM TB_REALBOWN
+            WHERE REALID = :realid
+            ORDER BY RankNo DESC;
+    """;
+
+        return sqlRunner.getRows(sql, params);
     }
 
     public List<Map<String, Object>> getRegionList(String region, String gugun) {

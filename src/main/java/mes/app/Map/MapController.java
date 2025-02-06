@@ -160,10 +160,30 @@ public class MapController {
   }
 
   @GetMapping("/getList")
-  public ResponseEntity<Map<String, Object>> getList(@RequestParam String name) {
+  public ResponseEntity<Map<String, Object>> getList(@RequestParam String resido,
+                                                     @RequestParam(required = false) String regugun) {
     Map<String, Object> response = new HashMap<>();
     try {
-      List<Map<String, Object>> results = mapService.getList(name);
+      List<Map<String, Object>> results = mapService.getList(resido, regugun);
+      if (!results.isEmpty()) {
+        response.put("success", true);
+        response.put("data", results);
+      } else {
+        response.put("success", false);
+        response.put("message", "데이터를 찾을 수 없습니다.");
+      }
+    } catch (Exception e) {
+      response.put("success", false);
+      response.put("message", "요청 중 오류 발생: " + e.getMessage());
+    }
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/getOwn")
+  public ResponseEntity<Map<String, Object>> getOwn(@RequestParam int realid) {
+    Map<String, Object> response = new HashMap<>();
+    try {
+      List<Map<String, Object>> results = mapService.getOwn(realid);
       if (!results.isEmpty()) {
         response.put("success", true);
         response.put("data", results);

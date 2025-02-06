@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<style>
+
+
+</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACT CHECK</title>
+    <link rel="icon" type="image/png" href="/images/logo/icon_FACT%20CHECK.png">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/> <!-- Slide css -->
+    <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css">
+    <link rel="stylesheet" type="text/css" href="/assets_mobile/css/import.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script src="/assets_mobile/js/ui.js"></script> <!-- Common js -->
+    <script type="text/javascript" src="/resource/ax5ui/ax5ui.all.min.js?v=1000"></script>
+    <script type="text/javascript" src="/js/ax5commUtil.js?v=1070"></script>
+    <script src="/js/common.js?v=1060"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+    <script src="/js/Mobile.js"></script>
+</head>
+
+<body>
+<div class="mobile-wrapper page-ticket-list"><!-- ★페이지 Class명 -->
+    <!-- [모바일] 헤더  -->
+    <div class="mobile-layout-header">
+        <header>
+            <div class="left">
+                <a href="#" title="전체메뉴" class="logo">
+                </a>
+            </div>
+            <div class="center" style="margin-left:35px;">
+                <h2>FAQ</h2>
+            </div>
+            <div class="right">
+                <a href="#" title="전체메뉴" class="btn-menu">
+                    <img src="/assets_mobile/images/icon/btn-menu.svg" alt="전체메뉴 아이콘">
+                </a>
+            </div>
+        </header>
+    </div> <!-- //mobile-layout-header end-->
+
+    <!-- [모바일] 메뉴  -->
+    <div th:insert="~{mobile/mobile_menu :: mobile_menu}"></div>
+    <!-- [모바일] 컨덴츠  -->
+    <div class="mobile-layout-contents">
+        <!--- (레이아웃) Contents 영역 -->
+        <div class="layout-contents">
+            <!-- 검색 영역  -->
+            <div class="search-wrap">
+                <div class="srch-tit aco-hd">
+                    <p></p>
+                    <a href="#" title="열기/닫기" class="btn-aco">
+                        <img src="/assets_mobile/images/icon/ico-down.svg" alt="열기/닫기">
+                    </a>
+                </div>
+                <div class="srch-cont aco-cont">
+
+                </div>
+            </div>
+        </div> <!--//layout-contents end -->
+    </div> <!-- //mobile-layout-contents end-->
+</div> <!-- //page-wrapper end-->
+
+<script type="text/javascript">
+
+    document.readyState === 'complete' ? init() : window.onload = init;
+
+    function init() {
+        fetchList();
+    }
+
+    function fetchList(){
+
+        $.ajax({
+            url: "/api/FAQ/getFAQList",
+            type: "GET",
+            headers: {
+                'X-CSRF-Token': $('[name=_csrf]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    renderFAQ(response.data);
+
+                } else {
+                    alert("FAQ에 대한 정보를 찾을 수 없습니다.");
+
+                }
+            },
+            error: function (xhr, status, error) {
+                // 에러 처리
+                alert("서버와의 통신 중 오류가 발생했습니다.");
+            }
+        });
+    }
+
+    function renderFAQ(faqData) {
+
+        const container = document.querySelector(".layout-contents");
+        container.innerHTML = ''; // 기존 내용 초기화
+
+        faqData.forEach(item => {
+            let faqItem = document.createElement("div");
+            faqItem.classList.add("search-wrap");
+
+            faqItem.innerHTML = `
+            <div class="srch-tit aco-hd">
+                <p>${item.FAQTEXT}</p> <!-- ✅ 질문 표시 -->
+                <a href="#" title="열기/닫기" class="btn-aco">
+                    <img src="/assets_mobile/images/icon/ico-down.svg" alt="열기/닫기">
+                </a>
+            </div>
+            <div class="srch-cont aco-cont" style="display: none;">
+                <dl>
+                    <dt>답변</dt>
+                    <dd>${item.answer}</dd> <!-- ✅ 답변 표시 -->
+                </dl>
+            </div>
+        `;
+            faqItem.querySelector(".aco-hd").addEventListener("click", function (event) {
+                event.preventDefault();
+                let content = faqItem.querySelector(".srch-cont");
+                content.style.display = content.style.display === "none" ? "block" : "none";
+            });
+
+            container.appendChild(faqItem);
+        });
+    }
+
+
+</script>
+</body>
+</html>
