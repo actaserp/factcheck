@@ -4,6 +4,7 @@
     .btn-clear {
         display: none !important; /* 강제로 숨김 */
     }
+
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
@@ -62,42 +63,170 @@
     <div class="mobile-layout-contents">
         <!--- (레이아웃) Contents 영역 -->
         <div class="layout-contents">
-            <!-- 검색 영역  -->
-            <div class="search-wrap">
-
-            </div>
+            <!--  검색 영역
+             <div class="search-wrap">
+             </div>-->
             <!-- 컨텐츠 영역  -->
             <div class="contents-wrap">
-                <dl style="margin-bottom: 10px">
-                    <button onclick="openModal()" style="margin-bottom: 10px">주소 검색</button>
+                <table class="write-table"
+                       style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                    <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
 
-                    <div id="postcodeModal" class="modal" style="display: none">
-                        <div class="modal-content">
-                            <div style="display: flex">
-                                <div class="modal-header">주소 검색</div>
-                                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto">×</button>
-                            </div>
-                            <div id="postcodeContainer" style="width: 100%;"></div>
-                        </div>
-                    </div>
+                    <thead>
+                    <tr>
+                        <th style="width: 23%;">
+                            내용
+                        </th>
+                        <th style="width: 40%;">
+                            필수 확인 서류
+                        </th>
+                        <th style="width: 30%;">
+                            확인 사항
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
 
-                    <div>
-                        <input type="hidden" id="postno" readonly>
-                        <label for="address1">도로명 주소:</label>
-                        <input type="text" id="address1" readonly><br>
-                        <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
-                    </div>
-                    <div>
-                        <label for="address2">상세 주소:</label>
-                        <input type="text" id="address2" placeholder="상세주소를 검색"><br>
-                    </div>
-                    <button onclick="searchGoyuList()" style="margin-top: 10px">고유번호 확인</button>
-                </dl>
+                    <tr>
+                        <th rowspan="6">
+                            계약시
+                        </th>
+                        <td>
+                            등기사항 증명서(건물,토지,집합건물)
+                        </td>
+                        <td>
+                            소유권 및 기타 권리
+                        </td>
+                    </tr>
+                    <tr>
+
+                        <td>
+                            건축물대장, 토지대장
+                        </td>
+                        <td>
+                            위반건축물,면저
+                        </td>
+                    </tr>
+
+                    <tr>
+
+                        <td>
+                            신분증(진위 확인: ARS,인터넷 등)
+                        </td>
+                        <td>
+                            소유자 본인 여부
+                        </td>
+                    </tr>
+
+                    <tr>
+
+                        <td>
+                            등기권리증(진위 확인: 법무사 문의)
+                        </td>
+                        <td>
+                            소유자 본인 여부
+                        </td>
+                    </tr>
+
+                    <tr>
+
+                        <td>
+                            일반 대리인 참석: 위임자, 위임인 본인 발급 인감증명서
+                        </td>
+                        <td>
+                            대리권 내용 등
+                        </td>
+                    </tr>
+
+                    <tr>
+
+                        <td>
+                            부부간 대리(일상가사 대리권): 위임장,위임인본인 발급 인감증명서
+                        </td>
+                        <td>
+                            대리권 수여 여부 확인
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th rowspan="2">
+                            중도금<br>지급전
+                        </th>
+                        <td>
+                            등기사항 증명서(건물,토지,집합건물)
+                        </td>
+                        <td>
+                            권리관계 변동 여부
+                        </td>
+                    </tr>
+
+                    <tr>
+
+                        <td>
+                            건축물대장,토지대장
+                        </td>
+                        <td>
+                            위반건축물 유무 확인
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th rowspan="2">
+                            잔금<br>지급 전
+                        </th>
+                        <td>
+                            등기사항증명서(건물,토지,집합건물)
+                        </td>
+                        <td>
+                            권리관계 변동 여부
+                        </td>
+                    </tr>
+                    <tr>
+
+                        <td>
+                            건축물대장,토지대장
+                        </td>
+                        <td>
+                            위반건축물 유무 확인
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th rowspan="2">
+                            소유권<br>이전 서류
+                        </th>
+                        <td>
+                            매도인
+                        </td>
+                        <td>
+                            매수인
+                        </td>
+                    </tr>
+
+                    <tr>
+
+                        <td>
+                            1. 인감증명서 1통<br>
+                            2. 주민등록 초본 1통<br>
+                            3. 토지대장, 건축물대장<br>
+                            4. 등기권리증<br>
+                            5. 인감도장, 신분증 지참<br>
+                            6. 등기사항 전부 증명서<br>
+                        </td>
+                        <td>
+                            1. 주민등록등본 1통<br>
+                            2. 도장<br>
+                            3. 매매 계약서<br>
+                            4. 거래 신고 필증<br>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div> <!--// contents-wrap end-->
-            <div id="addressWrap" class="contents-wrap">
+            <!--<div id="addressWrap" class="contents-wrap">
 
             </div>
-            <button onclick="searchdatetest()" style="margin-top: 10px">test</button>
+            <button onclick="searchdatetest()" style="margin-top: 10px">test</button>-->
         </div> <!--//layout-contents end -->
 
     </div> <!-- //mobile-layout-contents end-->
@@ -118,10 +247,10 @@
 </script>
 <script>
     function openModal() {
-        document.getElementById('postcodeModal').style.display= 'block';
+        document.getElementById('postcodeModal').style.display = 'block';
 
         new daum.Postcode({
-            oncomplete: function(data) {
+            oncomplete: function (data) {
                 var roadAddr = data.roadAddress;
                 var extraRoadAddr = '';
 
@@ -154,7 +283,7 @@
 
                 closeModal();
             },
-            onresize: function(size) {
+            onresize: function (size) {
                 // 동적 스타일 적용
                 const layers = document.querySelectorAll('[id^="__daum__layer_"]');
                 layers.forEach(layer => {
@@ -169,7 +298,7 @@
     }
 
     function closeModal() {
-        document.getElementById('postcodeModal').style.display= 'none';
+        document.getElementById('postcodeModal').style.display = 'none';
     }
 </script>
 <script type="text/javascript">
@@ -203,7 +332,7 @@
                 data2.forEach(data => {
                     const cardColor = availableColors[colorIndex];
                     colorIndex = (colorIndex + 1) % availableColors.length;
-                    if(data.Gubun !== '토지') {
+                    if (data.Gubun !== '토지') {
                         // 버튼 처리
                         let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="등기부">
                             등기부 조회
@@ -235,7 +364,7 @@
                         </div>
                         `;
 
-                    }else{
+                    } else {
                         console.log("토지데이터")
                     }
                 })
@@ -258,6 +387,7 @@
             }
         });
     }
+
     // HTML 태그 제거 함수
     function stripHtmlTags(html) {
         let tempDiv = document.createElement("div");
@@ -271,8 +401,8 @@
             url: '/api/tilko/searchaddress',
             type: 'GET',
             data: {
-                "GoyuNUM" : data.pin,
-                "address" : data.rd_addr
+                "GoyuNUM": data.pin,
+                "address": data.rd_addr
             },
             async: false,
             success: function (response) {
@@ -296,13 +426,13 @@
             }
         });
     }
+
     function searchdatetest() {
-        console.log("data : ", )
+        console.log("data : ",)
         $.ajax({
             url: '/api/tilkotest/searchGoyuList',
             type: 'GET',
-            data: {
-            },
+            data: {},
             async: false,
             success: function (data) {
                 data2 = data.data;
