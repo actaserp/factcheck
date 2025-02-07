@@ -6,6 +6,7 @@ import mes.app.account.service.TB_USERINFOService;
 import mes.domain.DTO.NoticeResponseDto;
 import mes.domain.entity.User;
 import mes.domain.entity.actasEntity.TB_USERINFO;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -169,12 +170,11 @@ public class MobileController {
     }
 
     @GetMapping("/withdraw")
-    public String WithDrawPage(Model model){
+    public String WithDrawPage(Model model,
+                               @AuthenticationPrincipal User user){
 
         ///TB_USERINFOService
 
-
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         TB_USERINFO userInfo = userinfoService.getUserInfo(user.getUsername());
 
         //System.out.println(user);
