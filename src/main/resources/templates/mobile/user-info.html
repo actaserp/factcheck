@@ -116,36 +116,37 @@
                                 </div>
                             </dd>
                         </dl>
-
-<!--                        <dl>-->
-<!--                            <dt>-->
-<!--                                <label>-->
-<!--                                    비밀번호-->
-<!--                                </label>-->
-<!--                            </dt>-->
-<!--                            <dd>-->
-<!--                                <div class="input-clear">-->
-<!--                                    <input type="password" id="PasswordChange" name="PasswordChange" placeholder="비밀번호"-->
-<!--                                           autocomplete="off">-->
-<!--                                    <i class="toggle-password" data-target="PasswordChange"></i>-->
-<!--                                </div>-->
-<!--                            </dd>-->
-<!--                        </dl>-->
-<!--                        <dl>-->
-<!--                            <dt>-->
-<!--                                <label>-->
-<!--                                    비밀번호 확인-->
-<!--                                </label>-->
-<!--                            </dt>-->
-<!--                            <dd>-->
-<!--                                <div class="input-clear">-->
-<!--                                    <input type="password" id="PasswordChangeChk" name="PasswordChangeChk"-->
-<!--                                           placeholder="비밀번호 확인" autocomplete="off">-->
-<!--                                    <i class="toggle-password" data-target="PasswordChangeChk"></i>-->
-<!--                                </div>-->
-<!--                            </dd>-->
-<!--                        </dl>-->
-
+                        <div id="passwordChangeSection">
+                            <dl>
+                                <dt>
+                                    <label>
+                                        비밀번호
+                                    </label>
+                                </dt>
+                                <dd>
+                                    <div class="input-clear">
+                                        <input type="password" id="PasswordChange" name="PasswordChange"
+                                               placeholder="변경시에 입력하세요."
+                                               autocomplete="off">
+                                        <i class="toggle-password" data-target="PasswordChange"></i>
+                                    </div>
+                                </dd>
+                            </dl>
+                            <dl>
+                                <dt>
+                                    <label>
+                                        비밀번호 확인
+                                    </label>
+                                </dt>
+                                <dd>
+                                    <div class="input-clear">
+                                        <input type="password" id="PasswordChangeChk" name="PasswordChangeChk"
+                                               placeholder="비밀번호 확인" autocomplete="off">
+                                        <i class="toggle-password" data-target="PasswordChangeChk"></i>
+                                    </div>
+                                </dd>
+                            </dl>
+                        </div>
                         <dl>
                             <dt>
                                 <label for="birthYear">
@@ -311,6 +312,7 @@
             type: 'GET',
             dataType: 'json', // 응답 데이터 형식 지정
             success: function (response) {
+                console.log('response.data.birthYear)', response.data.birthYear);
                 // AJAX 호출 성공 시 처리할 로직
                 if (response && response.data) {
                     $('#login_id').val(response.data.userId); // ID 필드 채우기
@@ -321,13 +323,17 @@
                     $('#address1').val(response.data.userAddr);
                     $('#userHp').val(formatPhoneNumber(response.data.userHp));
                     $('#userMail').val(response.data.userMail);
+                    $('#PasswordChange').val("");
+                    $('#PasswordChangeChk').val("");
 
                     // ssocd가 null이 아닐 경우 비밀번호 변경 입력 필드 숨김
                     if (response.data.ssoCd !== null) {
-                        // $("#PasswordChange, #PasswordChangeChk").prop("disabled", true);
+                        $("#passwordChangeSection").hide();
+                        $("#PasswordChange, #PasswordChangeChk").prop("disabled", true);
                         $('#ssoCd').text('(' + response.data.ssoCd + ' 로그인)');
                     } else {
-                        // $("#PasswordChange, #PasswordChangeChk").prop("disabled", false);
+                        $("#passwordChangeSection").show();
+                        $("#PasswordChange, #PasswordChangeChk").prop("disabled", false);
                         $('#ssoCd').text("");
                     }
                 }
@@ -344,12 +350,12 @@
     function formatDate(dateString) {
         if (!dateString || dateString.length !== 6) return ""; // 예외 처리
 
-        let year = parseInt(dateString.substring(0, 2), 10);
-        let month = dateString.substring(2, 4);
-        let day = dateString.substring(4, 6);
+        let yearPart = dateString.substring(0, 2); // 연도 부분 (00, 01, ..., 99)
+        let month = dateString.substring(2, 4); // 월
+        let day = dateString.substring(4, 6); // 일
 
-        // 2000년 이후 출생자는 20XX, 2000년 이전은 19XX로 변환
-        let fullYear = (year >= 50) ? `19${year}` : `20${year}`;
+        // ✅ "00"~"49" → 2000년대, "50"~"99" → 1900년대
+        let fullYear = (parseInt(yearPart, 10) >= 50) ? `19${yearPart}` : `20${yearPart}`;
 
         return `${fullYear}-${month}-${day}`;
     }
@@ -364,11 +370,21 @@
         const userAddr = $('#address1').val();
         const userHp = $('#userHp').val().replace(/-/g, "");
         const userMail = $('#userMail').val();
+        const password = $('#PasswordChange').val();
+        const password2 = $('#PasswordChangeChk').val();
 
         if (!userId || !userNm || !userHp || !userMail) {
             Alert.alert('', '모든 필수 항목을 입력해주세요.');
             return;
         }
+
+        if (password !== password2) {
+            Alert.alert('', '비밀번호가 맞지 않습니다.');
+            return;
+        }
+
+        // 비밀번호가 비어 있으면 null로 설정 (비밀번호 변경 안 함)
+        const passwordValue = password.trim() !== "" ? password : null;
 
         $.ajax({
             url: '/mobile/userInfo/update', // 사용자 정보 업데이트 URL
@@ -382,7 +398,8 @@
                 postCd: postCd,
                 userAddr: userAddr,
                 userHp: userHp,
-                userMail: userMail
+                userMail: userMail,
+                loginPw: passwordValue
             }),
             headers: {
                 'X-CSRF-Token': $('[name=_csrf]').val() // CSRF 토큰 추가
@@ -461,7 +478,6 @@
             userHpInput.val(formatPhoneNumber(initialUserHp));
         }
     });
-
 
 
 </script>

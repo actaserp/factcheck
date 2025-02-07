@@ -277,6 +277,9 @@ public class AccountController {
       TB_USERINFO existingUser = tb_userinfoRepository.findById(userId)
               .orElseThrow(() -> new EntityNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
+      User existingAuthUser = userRepository.findIsActiveUserByUsername(userId)
+              .orElseThrow(() -> new EntityNotFoundException("사용자 계정 정보를 찾을 수 없습니다."));
+
       // 요청 데이터에서 수정할 값 가져오기
       String userNm = (String) requestData.get("userNm");
       String birthYear = (String) requestData.get("birthYear");
@@ -285,8 +288,8 @@ public class AccountController {
       String userAddr = (String) requestData.get("userAddr");
       String userHp = (String) requestData.get("userHp");
       String userMail = (String) requestData.get("userMail");
-      String loginPw = (String) requestData.get("loginPw"); // 변경 비밀번호 (null일 수 있음)
-      System.out.println(birthYear);
+      String loginPw = (String) requestData.get("loginPw");
+
       int ageNum = 0;
       if (birthYear != null && !birthYear.isEmpty()) {
         try {
@@ -357,13 +360,14 @@ public class AccountController {
       existingUser.setUserGU(userGU);
       existingUser.setInDatem(LocalDateTime.now());
 
-      // 비밀번호 변경 (입력값이 있을 경우에만 변경)
-      if (loginPw != null && !loginPw.isEmpty()) {
-        existingUser.setLoginPw(loginPw); // 비밀번호 저장 (해싱 필요하면 여기서 추가)
-      }
-
+      System.out.println("existingUser"+existingUser);
+      System.out.println("existingAuthUser"+existingAuthUser);
       // 사용자 정보 저장
       tb_userinfoRepository.save(existingUser);
+
+      // 비밀번호 저장
+      existingAuthUser.setPassword(Pbkdf2Sha256.encode(loginPw));
+      userRepository.save(existingAuthUser);
 
       result.success = true;
       result.message = "사용자 정보가 성공적으로 업데이트되었습니다.";
