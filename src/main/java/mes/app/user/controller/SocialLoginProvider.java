@@ -11,5 +11,6 @@ public interface SocialLoginProvider {
 
     String getUserInfoUrl(String accessToken);
 
+  String getAccessToken(String code);
 }
 

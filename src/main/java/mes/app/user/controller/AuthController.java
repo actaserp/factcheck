@@ -38,6 +38,9 @@ public class AuthController {
     private NaverLoginProvider naverLoginProvider;
 
     @Autowired
+    private KakaoLoginProvider kakaoLoginProvider;
+
+    @Autowired
     private SocialLoginService socialLoginService;
 
     @Autowired
@@ -77,7 +80,7 @@ public class AuthController {
      */
     @GetMapping("/{provider}")
     public ResponseEntity<?> redirectToSocialLogin(@PathVariable String provider) {
-        //log.info("소셜 로그인 요청 수신 - provider: {}", provider);
+//        log.info("소셜 로그인 요청 수신 - provider: {}", provider);
 
         try {
             SocialProvider socialProvider = SocialProvider.valueOf(provider.toUpperCase());
@@ -87,7 +90,7 @@ public class AuthController {
                 .map(loginProvider -> {
                   //  log.info("SocialLoginProvider: {} - 인증 URL 생성 중", loginProvider.getClass().getSimpleName());
                     String authorizationUrl = loginProvider.getAuthorizationUrl(null, null, Map.of());
-                   // log.info("생성된 인증 URL: {}", authorizationUrl);
+                    //log.info("생성된 인증 URL: {}", authorizationUrl);
                     return ResponseEntity.status(HttpStatus.FOUND)
                         .header("Location", authorizationUrl)
                         .build();
@@ -124,12 +127,27 @@ public class AuthController {
                 mv.setViewName("redirect:/login?error=missing_code");
                 return mv;
             }
+            String accessToken;
+            SocialLoginProvider loginProvider;
+
+            if ("naver".equalsIgnoreCase(provider)) {
+//                log.info("네이버 로그인 처리 시작");
+                loginProvider = naverLoginProvider;
+            } else if ("kakao".equalsIgnoreCase(provider)) {
+//                log.info("카카오 로그인 처리 시작");
+                loginProvider = kakaoLoginProvider;
+            } else {
+                log.error("지원하지 않는 소셜 로그인 provider: {}", provider);
+                mv.setViewName("redirect:/login?error=unsupported_provider");
+                return mv;
+            }
 
             // Access Token 가져오기
-            String accessToken = naverLoginProvider.getAccessToken(code);
+            accessToken = loginProvider.getAccessToken(code);
+//            log.info("{} Access Token: {}", provider, accessToken);
 
             // 사용자 정보 가져오기
-            Map<String, Object> userInfo = socialLoginService.getUserInfo(naverLoginProvider, accessToken);
+            Map<String, Object> userInfo = socialLoginService.getUserInfo(loginProvider, accessToken);
 
             if (userInfo == null || userInfo.isEmpty()) {
                 log.warn("사용자 정보를 가져올 수 없습니다.");
@@ -137,19 +155,43 @@ public class AuthController {
                 return mv;
             }
 
-            // "response" 키에서 데이터 추출
-            Map<String, Object> responseData = (Map<String, Object>) userInfo.get("response");
+          /*  // "response" 키에서 데이터 추출
+            Map<String, Object> responseData;
+            if ("naver".equalsIgnoreCase(provider)) {
+                responseData = (Map<String, Object>) userInfo.get("response");  // 네이버 응답 구조
+            } else {
+                responseData = userInfo;  // 카카오는 response 키 없이 바로 정보가 담겨있음
+            }
 
             if (responseData == null || responseData.isEmpty()) {
-                //log.error("사용자 정보 응답 데이터가 없습니다.");
+                log.error("사용자 정보 응답 데이터가 없습니다.");
                 mv.setViewName("redirect:/login?error=missing_response_data");
                 return mv;
             }
+*/
+            // 소셜 로그인 사용자 정보 매핑
+            String email;
+            String name;
+            String userId;
 
-            //log.info("소셜 로그인 사용자 정보: {}", userInfo);
-            String email = (String) responseData.get("email");
-            String name = (String) responseData.get("name");
-            String userId = (String) responseData.get("id");
+            if ("kakao".equalsIgnoreCase(provider)) {
+                // 카카오는 `kakao_account.email`에서 이메일 가져오기
+                Map<String, Object> kakaoAccount = (Map<String, Object>) userInfo.get("kakao_account");
+                email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
+                name = kakaoAccount != null && kakaoAccount.containsKey("profile")
+                    ? (String) ((Map<String, Object>) kakaoAccount.get("profile")).get("nickname")
+                    : null;
+                userId = String.valueOf(userInfo.get("id")); // Long -> String 변환
+            } else if ("naver".equalsIgnoreCase(provider)) {
+                // 네이버는 `response.email`에서 이메일 가져오기
+                Map<String, Object> responseMap = (Map<String, Object>) userInfo.get("response");
+                email = responseMap != null ? (String) responseMap.get("email") : null;
+                name = responseMap != null ? (String) responseMap.get("name") : null;
+                userId = responseMap != null ? (String) responseMap.get("id") : null; // String 그대로 사용
+            } else {
+                throw new IllegalArgumentException("지원하지 않는 소셜 로그인 제공자: " + provider);
+            }
+
             String sessionToken = accessToken; // 여기에서 Access Token을 세션 토큰으로 사용
 
             if (email == null) {
@@ -157,8 +199,7 @@ public class AuthController {
                 mv.setViewName("redirect:/login?error=email_not_found");
                 return mv;
             }
-
-           // log.info("소셜 로그인 - email: {}, name: {}, userId: {}, sessionToken: {}", email, name, userId, sessionToken);
+            //log.info("소셜 로그인 - email: {}, name: {}, userId: {}, sessionToken: {}", email, name, userId, sessionToken);
 
             // 사용자 등록 여부 확인
             Optional<User> isUserRegistered = userRepository.findByEmail(email);
@@ -216,7 +257,7 @@ public class AuthController {
     }
 
     @PostMapping("/social/save")
-    public ResponseEntity<String> socialUserSave(
+    public ResponseEntity<Map<String, Object>> socialUserSave(
                                                  @RequestParam(value = "name") String name,
                                                  @RequestParam(value = "userHP") String userHP,
                                                  @RequestParam(value = "email") String email,
@@ -228,9 +269,11 @@ public class AuthController {
                                                  @RequestParam(value = "sessionToken") String sessionToken,
                                                  @RequestParam(value = "provider" )String provider
                                                  ) {
-        log.info("소셜 사용자 정보 들어옴");
-        log.info("수신된 데이터 - name: {}, userHP: {}, email: {}, birthYear: {}, sexYn: {}, postno: {}, address: {}, userId: {}, sessionToken: {}",
-            name, userHP, email, birthYear, sexYn, postno, address, userId, sessionToken);
+//        log.info("소셜 사용자 정보 들어옴");
+//        log.info("수신된 데이터 - name: {}, userHP: {}, email: {}, birthYear: {}, sexYn: {}, postno: {}, address: {}, userId: {}, sessionToken: {}",
+//            name, userHP, email, birthYear, sexYn, postno, address, userId, sessionToken);
+        ModelAndView mv = new ModelAndView();
+        Map<String, Object> response = new HashMap<>();
         try {
             // 사용자 정보 저장
             User newUser = User.builder()
@@ -333,12 +376,19 @@ public class AuthController {
                 .build();
 
             userInfoService.save(tbUserinfo);
-            log.info("TB_USERINFO 저장: {}", tbUserinfo);
-            return ResponseEntity.ok("사용자 정보가 성공적으로 저장되었습니다.");
+//            log.info("TB_USERINFO 저장: {}", tbUserinfo);
+            // 성공 응답 반환
+            response.put("success", true);
+            response.put("message", "사용자 정보가 성공적으로 저장되었습니다.");
+            response.put("redirectUrl", "/");
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
             log.error("소셜 사용자 정보 저장 중 오류 발생: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("사용자 정보 저장 중 오류가 발생했습니다.");
+
+            response.put("success", false);
+            response.put("message", "사용자 정보 저장 중 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
     // address를 시도와 구군으로 분리하는 메서드
