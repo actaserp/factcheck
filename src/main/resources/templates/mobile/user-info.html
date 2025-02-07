@@ -200,7 +200,7 @@
                     $('#email').val(response.data.email);
                     $('#phone').val(response.data.phone);
                 }
-                console.log('사용자 정보 가져오기 성공: ', response);
+                // console.log('사용자 정보 가져오기 성공: ', response);
             },
             error: function (xhr, status, error) {
                 // AJAX 호출 실패 시 처리할 로직
@@ -208,8 +208,8 @@
             }
         });
 
-        popup.style.display = 'block';
-        wrapper.style.display = 'block';
+        // popup.style.display = 'block';
+        // wrapper.style.display = 'block';
     }
 
     function upUserInfo() {
