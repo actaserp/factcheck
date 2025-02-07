@@ -6,10 +6,7 @@ import mes.domain.entity.User;
 import mes.domain.model.AjaxResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -70,4 +67,30 @@ public class IssueInquiryController {
 
     return result;
   }
+
+  @PostMapping("/SaveViewHistory")
+  public AjaxResult SaveViewHistory(@RequestParam(value = "realId") int REALID ,
+                                    Authentication auth) {
+    AjaxResult result = new AjaxResult();
+
+    log.info("상세 조회 요청 - realId={}", REALID);
+
+    try {
+      User user = (User)auth.getPrincipal();
+
+      List<Map<String, Object>> SaveViewHistory = issueInquiryService.SaveViewHistory(REALID, user);
+
+      result.success = true;
+      result.message = "상세 데이터 저장 성공";
+      result.data = SaveViewHistory;
+    } catch (Exception e) {
+      log.error("데이터 저장 중 오류 발생: {}", e.getMessage());
+      result.success = false;
+      result.message = "데이터 저장 중 오류 발생";
+    }
+
+    return result;
+
+  }
+
 }

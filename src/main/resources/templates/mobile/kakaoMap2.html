@@ -115,7 +115,7 @@
                   </dt>
                   <dd>
                     <div id="region-modal" style="display: none;">
-                      <div id="region-SelectList" style="font-size: 24px; margin-bottom:25px; "></div>
+                      <div id="region-SelectList" style="font-size: 20px; margin-bottom:25px; "></div>
                       <div id="region-list"></div>
                     </div>
                   </dd>
@@ -130,6 +130,36 @@
       </form>
     </div>
   </div> <!-- //mobile-layout-popup end -->
+
+  <div class="mobile-layout-popup" >
+
+    <div class="popup-wrapper" id="popup-own">
+      <div class="popup-title">
+        <h3>상세 내역</h3>
+        <a title="팝업닫기" class="btn-popup-close">
+          <img src="/assets_mobile/images/icon/btn-popup-close.svg" alt="닫기">
+        </a>
+      </div>
+      <div class="popup-contents">
+        <div class="ticket-tit">
+          <dl>
+            <dt>주소</dt>
+            <dd></dd>
+          </dl>
+        </div>
+        <div class="list-card-wrap">
+
+        </div>
+        <div class="write-wrap">
+
+        </div>
+      </div>
+      <div class="popup-button">
+        <button class="btn-popup-close btn-navy">확인</button>
+      </div>
+    </div>
+  </div>
+
 </div> <!-- //page-wrapper end-->
 <body>
 <script type="text/javascript">
@@ -272,7 +302,7 @@
         console.log("클러스터러 생성 완료");
 
         // 클러스터 색상 변경 이벤트 리스너 추가
-        kakao.maps.event.addListener(window.clusterer, 'clustered', function(clusters) {
+        kakao.maps.event.addListener(window.clusterer, 'clustered', function (clusters) {
           clusters.forEach(cluster => {
             var markers = cluster.getMarkers();
             if (markers.length === 0) return;
@@ -434,7 +464,7 @@
             $.ajax({
               url: "/api/Map/RegionList",
               type: "GET",
-              data: { region: regionName },
+              data: {region: regionName},
               headers: {
                 'X-CSRF-Token': $('[name=_csrf]').val()
               },
@@ -464,7 +494,6 @@
       }
     });
   }
-
   // 검색 결과 테이블을 생성하는 함수
   function updateSearchResults(data) {
     const searchResults = $("#search-results"); // 테이블 tbody 요소 선택
@@ -482,13 +511,120 @@
     // 데이터 추가
     data.forEach((item, index) => {
       const row = `
-            <tr>
+            <tr data-realid="${item.REALID || ''}" data-realadd="${item.REALADD || '정보 없음'}">
                 <td>${index + 1}</td>
-                <td>${item.REALADD || "정보 없음"}</td>
+                <td class="clickable-td">${item.REALADD || "정보 없음"}</td>
             </tr>
         `;
       searchResults.append(row);
     });
+  }
+
+  // 클릭 이벤트를 테이블에 위임하여 동적으로 생성된 요소에도 적용 가능
+  $(document).on("click", ".clickable-td", function () {
+    const parentRow = $(this).closest("tr");
+    const realid = parentRow.data("realid");
+    const address = parentRow.data("realadd");
+
+    // `REALID` 값이 없으면 요청하지 않음
+    if (!realid) {
+      Alert.alert('',"잘못된 데이터입니다.");
+      return;
+    }
+
+    handleClick(realid, address);
+  });
+
+  // 클릭 이벤트 핸들러 함수 (REALID와 주소 전달)
+  function handleClick(realid, address) {
+    $.ajax({
+      url: "/api/Map/getOwn",
+      type: "GET",
+      data: { realid: 318 }, // 동적으로 전달된 realid 사용 //하드코딩으로 보여주기 아직 데이터가 없음
+      headers: {
+        'X-CSRF-Token': $('[name=_csrf]').val()
+      },
+      success: function (response) {
+        if (response.success) {
+          // 스크롤을 맨 위로 초기화
+          updatePopupContent(response.data, address);
+          $('.list-card-wrap').scrollTop(0);
+        } else {
+          Alert.alert('',"해당 물건에 대한 정보를 찾을 수 없습니다.");
+        }
+      },
+      error: function (xhr, status, error) {
+        // 에러 처리
+        Alert.alert("서버와의 통신 중 오류가 발생했습니다.");
+      }
+    });
+  }
+
+  function updatePopupContent(ownData, address) {
+    let popup = document.getElementById('popup-own');
+    let overlay = document.querySelector('.popup-overlay');
+    let listContainer = document.querySelector('.list-card-wrap');
+    let addressField = document.querySelector('#popup-own .ticket-tit dd'); // 주소 넣을 곳
+
+    // 기존 내용 초기화 (중복 방지)
+    listContainer.innerHTML = '';
+
+    // 주소 업데이트
+    addressField.textContent = address || '주소 정보 없음';
+
+    // 데이터 없을 경우
+    if (!ownData || ownData.length === 0) {
+      listContainer.innerHTML = '<p style="text-align: center; padding: 10px;">해당 물건의 등기부등본 정보가 없습니다.</p>';
+    } else {
+      ownData.forEach(item => {
+        let cardHtml = `
+                <div class="card-box card-blue">
+                    <div class="card-cont">
+                        <dl>
+                            <dt>구분</dt>
+                            <dd><span class="sta-blue">을구</span></dd>
+                        </dl>
+                        <dl>
+                            <dt>순위 번호</dt>
+                            <dd>${item.RankNo || ''}</dd>
+                        </dl>
+                        <dl>
+                            <dt>등기목적</dt>
+                            <dd>${item.RgsAimCont || ''}</dd>
+                        </dl>
+                        <dl>
+                            <dt>접수</dt>
+                            <dd>${item.Receve || ''}</dd>
+                        </dl>
+                        <dl>
+                            <dt>등기원인</dt>
+                            <dd>${item.RgsCaus || ''}</dd>
+                        </dl>
+                        <dl>
+                            <dt colspan="2" style="width: 100%; text-align: left;">권리자 및 기타사항</dt>
+                        </dl>
+                        <dl>
+                            <dd colspan="2" style="width: 100%; text-align: left;">${item.NomprsAndEtc || ''}</dd>
+                        </dl>
+                    </div>
+                </div>
+            `;
+
+        // 생성된 카드 추가
+        listContainer.innerHTML += cardHtml;
+      });
+    }
+
+    // 팝업 활성화
+    if (popup && overlay) {
+      popup.classList.add('active');
+      overlay.style.display = 'block';
+    } else {
+      console.error('popup-own 또는 popup-overlay 요소를 찾을 수 없습니다.');
+    }
+
+    // 스크롤 초기화 (팝업이 길어질 경우)
+    popup.scrollTop = 0;
   }
 
   //지역 불러오기 ###########
@@ -787,6 +923,11 @@
       console.warn("⚠ 클러스터러가 아직 초기화되지 않음.");
     }
   }
+
+  $('.btn-popup-close').on('click', function() {
+    $('.popup-overlay').fadeOut(200);
+    $('.popup-wrapper').removeClass('active');
+  });
 
 
 </script>

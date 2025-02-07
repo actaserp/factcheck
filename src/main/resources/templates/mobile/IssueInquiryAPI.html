@@ -99,6 +99,7 @@
   <div th:insert="~{mobile/mobile_menu :: mobile_menu}"></div>
   <!-- [모바일] 컨덴츠  -->
   <div class="mobile-layout-contents">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
     <!--- (레이아웃) Contents 영역 -->
     <div class="layout-contents">
       <!-- 검색 영역  -->
@@ -653,12 +654,34 @@
 
           const cardBox = button.closest('.card-box');
 
+          const realId = cardBox.getAttribute('data-realid');
           const realAdd = cardBox.getAttribute('data-realadd');
           const resido = cardBox.getAttribute('data-resido') || '';
           const regdate = cardBox.getAttribute('data-regdate') || '';
           const regugun = cardBox.getAttribute('data-regugun') || '';
           const rejimok = cardBox.getAttribute('data-rejimok') || '';
           const rearea = cardBox.getAttribute('data-rearea') || '';
+
+          // AJAX 요청을 추가하여 데이터 저장
+          $.ajax({
+            url: '/api/IssueInquiry/SaveViewHistory', // 서버의 저장 API 엔드포인트
+            type: 'POST',
+            dataType: 'text',
+            data: {
+              realId: realId,
+            },
+            headers: {
+              'X-CSRF-Token': $('[name=_csrf]').val()
+            },
+
+            success: function(response) {
+              console.log("조회 기록 저장 성공:", response);
+            },
+            error: function(xhr, status, error) {
+              console.error("조회 기록 저장 실패:", status, error);
+              console.error("응답 내용:", xhr.responseText);
+            }
+          });
 
 
           // 팝업 타이틀 업데이트

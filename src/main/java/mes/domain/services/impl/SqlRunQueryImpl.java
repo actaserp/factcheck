@@ -85,5 +85,6 @@ public class SqlRunQueryImpl implements SqlRunner {
     	T rr= this.jdbcTemplate.queryForObject(sql, dicParam, mapper); 
     	return rr;    	
     }
+
     
 }

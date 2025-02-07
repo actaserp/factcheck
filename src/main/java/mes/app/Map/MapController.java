@@ -181,6 +181,7 @@ public class MapController {
 
   @GetMapping("/getOwn")
   public ResponseEntity<Map<String, Object>> getOwn(@RequestParam int realid) {
+    log.info("realid={}", realid);
     Map<String, Object> response = new HashMap<>();
     try {
       List<Map<String, Object>> results = mapService.getOwn(realid);

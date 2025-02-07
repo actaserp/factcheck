@@ -95,7 +95,7 @@ public class MapService {
 
         // MSSQL용 SQL 작성 (문자열 연결은 `+` 사용)
         StringBuilder sql = new StringBuilder("""
-          SELECT REALADD, RELASTDATE
+          SELECT REALADD, RELASTDATE, REALID
           FROM TB_REALINFO
           WHERE RESIDO LIKE :region + '%'
             AND REGUGUN LIKE :gugun + '%'

@@ -561,105 +561,19 @@
 
         listAddressWrap.innerHTML = htmlContent;
 
-        /*$("#addressWrap").off("click").on("click", ".btn-popup-open[data-popup='popup-history']", function () {
-          const cardBox = $(this).closest('.card-box');
-          const realAdd = cardBox.attr('data-realadd');
-          const realId = cardBox.attr('data-realid');
-
-          if (!realId) {
-            console.error("realId가 존재하지 않습니다.");
-            return;
-          }
-
-          // 팝업 타이틀 업데이트
-          $("#popup-history .popup-title h3").text(`${realAdd} 상세내용`);
-
-          // 팝업 열기
-          $("#popup-history").addClass("open");
-
-          // 모든 탭 숨기고 'main' 탭만 활성화
-          $(".tab-item").removeClass("active");
-          $("#dynamic-table").addClass("active"); // 동적으로 테이블을 업데이트할 단일 섹션 사용
-
-          // AJAX 요청 (realId로 상세 정보 조회)
-          $.ajax({
-            url: "/api/IssueInquiry",
-            type: "GET",
-            data: { realId: realId },
-            dataType: "json",
-            success: function (response) {
-              if (response.success) {
-                const history = response.history;
-
-                // 표제부(main) 데이터 설정
-                data.main.body = `
-                    <tr>
-                        <th>접수</th>
-                        <td colspan="3">${history.REQDATE || "정보 없음"}</td>
-                    </tr>
-                    <tr>
-                        <th>소재지번, 건물명칭 및 번호</th>
-                        <td colspan="3">${history.address || "정보 없음"}</td>
-                    </tr>
-                    <tr>
-                        <th>소재지번</th>
-                        <td colspan="3">${history.REALADD || "정보 없음"}</td>
-                    </tr>
-                    <tr>
-                        <th>지목</th>
-                        <td>${history.REJIMOK || "정보 없음"}</td>
-                        <th>면적</th>
-                        <td>${history.REAREA || "정보 없음"}</td>
-                    </tr>
-                `;
-
-                // 갑구(sub1) 데이터 설정
-                data.sub1.body = history.ownerships.map(ownership => `
-                    <tr>
-                        <td>${ownership.index || ""}</td>
-                        <td>${ownership.Receve || ""}</td>  <!--접수-->
-                        <td>${ownership.RgsAimCont || ""}</td>  <!--등기 목적 -->
-                        <td>${ownership.RgsCaus || ""}</td> <!--등기 원인-->
-                        <td>${ownership.NomprsAndEtc || ""}</td><!--권리자 밒 기타사항-->
-                    </tr>
-                `).join("");
-
-                // 을구(sub2) 데이터 설정
-                data.sub2.body = history.rights.map(right => `
-                    <tr>
-                        <td>${right.index || ""}</td>
-                        <td>${right.purpose || ""}</td>
-                        <td>${right.receiptDate || ""}</td>
-                        <td>${right.reason || ""}</td>
-                        <td>${right.details || ""}</td>
-                    </tr>
-                `).join("");
-
-                // 초기 테이블 표시 (표제부 기준)
-                changeTable('main');
-              } else {
-                console.error("데이터 조회 실패:", response.message);
-              }
-            },
-            error: function (xhr, status, error) {
-              console.error("AJAX 요청 실패:", status, error);
-              console.error("응답 내용:", xhr.responseText);
-            }
-          });
-        });*/
         listAddressWrap.addEventListener('click', (event) => {
           const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
           if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
 
           const cardBox = button.closest('.card-box');
 
+          const realId = cardBox.getAttribute('data-realId');
           const realAdd = cardBox.getAttribute('data-realadd');
           const resido = cardBox.getAttribute('data-resido') || '';
           const regdate = cardBox.getAttribute('data-regdate') || '';
           const regugun = cardBox.getAttribute('data-regugun') || '';
           const rejimok = cardBox.getAttribute('data-rejimok') || '';
           const rearea = cardBox.getAttribute('data-rearea') || '';
-
 
           // 팝업 타이틀 업데이트
           const popupTitle = document.querySelector("#popup-history .popup-title h3");
@@ -713,9 +627,6 @@
               additionalRow.innerHTML = `<td colspan="4">${value.trim()}</td>`; // 각 값은 새로운 행으로 추가
             });
           }
-
-
-
 
           // 팝업 열기
           const popupHistory = document.getElementById("popup-history");

@@ -1,6 +1,7 @@
 package mes.app.IssueInquiry.service;
 
 import lombok.extern.slf4j.Slf4j;
+import mes.domain.entity.User;
 import mes.domain.services.SqlRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -95,8 +96,28 @@ public class IssueInquiryService {
         ORDER BY
          RELASTDATE DESC
         """);
-    log.info("등기부API 발급 List SQL: {}", sql);
-    log.info("SQL Parameters: {}", params.getValues());
+//    log.info("등기부API 발급 List SQL: {}", sql);
+//    log.info("SQL Parameters: {}", params.getValues());
     return sqlRunner.getRows(sql.toString(), params);
   }
+
+  public List<Map<String, Object>> SaveViewHistory(int REALID, User user) {
+    MapSqlParameterSource params = new MapSqlParameterSource();
+    params.addValue("REALID", REALID);
+    params.addValue("userid", user.getUsername());
+
+    String sql = """
+        INSERT INTO TB_SEARCHINFO (USERID, REQDATE, REALID) 
+        VALUES (:userid, GETDATE(), :REALID);
+        """;
+
+//    log.info("등기부API 조회 저장 SQL: {}", sql);
+//    log.info("SQL Parameters: {}", params.getValues());
+
+    sqlRunner.execute(sql, params);  // 🚀 INSERT 실행 (결과 반환 필요 없음)
+
+    log.info("조회 기록 저장 완료 - realId: {}, user: {}", REALID, user.getUsername());
+    return null;
+  }
+
 }
