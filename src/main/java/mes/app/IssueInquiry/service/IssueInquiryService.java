@@ -1,0 +1,69 @@
+package mes.app.IssueInquiry.service;
+
+import lombok.extern.slf4j.Slf4j;
+import mes.domain.services.SqlRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+@Service
+public class IssueInquiryService {
+
+  @Autowired
+  SqlRunner sqlRunner;
+
+  public List<Map<String, Object>> getList(String startDate, String endDate, String searchKeywords) {
+    MapSqlParameterSource params = new MapSqlParameterSource();
+    StringBuilder sql = new StringBuilder("""
+        select
+        *
+        from TB_REALINFO
+        where 1=1
+        """);
+    if (startDate != null && !startDate.isEmpty()) {
+      sql.append(" AND RELASTDATE >= :startDate ");
+      params.addValue("startDate", startDate);
+    }
+    if (endDate != null && !endDate.isEmpty()) {
+      sql.append(" AND RELASTDATE <= :endDate ");
+      params.addValue("endDate", endDate);
+    }
+    if (searchKeywords != null && !searchKeywords.isEmpty()) {
+      sql.append(" AND REALADD LIKE :searchKeywords ");
+      params.addValue("searchKeywords", "%" + searchKeywords + "%");
+    }
+    sql.append("""
+        ORDER BY
+         RELASTDATE DESC
+        """);
+    log.info("등기부 발급 List SQL: {}", sql);
+      log.info("SQL Parameters: {}", params.getValues());
+    return sqlRunner.getRows(sql.toString(), params);
+  }
+
+  public List<Map<String, Object>> getDetails(String REALID) {
+    MapSqlParameterSource params = new MapSqlParameterSource();
+    StringBuilder sql = new StringBuilder("""
+        select
+       *
+        from TB_REALINFO
+        where 1=1
+        """);
+    if (REALID != null && !REALID.isEmpty()) {
+      sql.append(" AND REALID LIKE :REALID ");
+      params.addValue("REALID", "%" + REALID + "%");
+    }
+    sql.append("""
+        ORDER BY
+         RELASTDATE DESC
+        """);
+//    log.info("발급 상세 내역 List SQL: {}", sql);
+//    log.info("SQL Parameters: {}", params.getValues());
+    return sqlRunner.getRows(sql.toString(), params);
+  }
+
+}

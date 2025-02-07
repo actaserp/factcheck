@@ -47,6 +47,11 @@ public class MobileController {
         return "mobile/view-list";
     }
 
+    @GetMapping("/IssueInquiry")
+    public String IssueInquiry(Model model) {
+        model.addAttribute("currentPage", "IssueInquiry");
+        return "mobile/IssueInquiry";
+    }
 
     @GetMapping("/UserInfo")
     public String UserInfo(Model model) {
