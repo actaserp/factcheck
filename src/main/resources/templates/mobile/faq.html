@@ -122,11 +122,11 @@
                     renderFAQ(response.data);
                     fetchCommonCodes(374);
                 } else {
-                    alert("FAQ에 대한 정보를 찾을 수 없습니다.");
+                    Alert.alert("FAQ에 대한 정보를 찾을 수 없습니다.");
                 }
             },
             error: function (xhr, status, error) {
-                alert("서버와의 통신 중 오류가 발생했습니다.");
+                Alert.alert("서버와의 통신 중 오류가 발생했습니다.");
             }
         });
     }
