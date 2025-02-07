@@ -64,9 +64,9 @@
         <header>
             <div class="left">
                 <div class="hd-btn">
-<!--                    <a href="javascript:void(0);" onclick="history.back();" title="뒤로가기">-->
-<!--                        <img src="/images/icon/btn-prev.svg" alt="뒤로가기 아이콘">-->
-<!--                    </a>-->
+                    <!--                    <a href="javascript:void(0);" onclick="history.back();" title="뒤로가기">-->
+                    <!--                        <img src="/images/icon/btn-prev.svg" alt="뒤로가기 아이콘">-->
+                    <!--                    </a>-->
                 </div>
             </div>
             <div class="center">
@@ -90,115 +90,246 @@
             <!-- 컨텐츠 영역  -->
             <div class="contents-wrap">
                 <form id="userForm" autocomplete="off">
-                <div class="write-wrap">
-                    <dl>
-                        <dt>
-                            <label for="login_id">
-                                ID
-                            </label>
-                        </dt>
-                        <dd>
-                            <div class="input-clear">
-                                <input type="text" id="login_id" name="login_id" readonly>
-                                <input type="hidden" id="id" name="id"/>
-                            </div>
-                        </dd>
-                    </dl>
-                    <dl>
-                        <dt>
-                            <label for="name">
-                                성명
-                            </label>
-                        </dt>
-                        <dd>
-                            <div class="input-clear">
-                                <input type="text" id="name" name="name">
-                            </div>
-                        </dd>
-                    </dl>
-                    <dl>
-                        <dt>
-                            <label>
-                                변경 비밀번호
-                            </label>
-                        </dt>
-                        <dd>
-                            <div class="input-clear">
-                                <input type="password" id="PasswordChange" name="PasswordChange" placeholder="비밀번호">
-                                <i class="toggle-password" data-target="PasswordChange"></i>
-                            </div>
-                        </dd>
-                    </dl>
-                    <dl>
-                        <dt>
-                            <label>
-                                비밀번호 확인
-                            </label>
-                        </dt>
-                        <dd>
-                            <div class="input-clear">
-                                <input type="password" id="PasswordChangeChk" name="PasswordChangeChk" placeholder="비밀번호 확인">
-                                <i class="toggle-password" data-target="PasswordChangeChk"></i>
-                            </div>
-                        </dd>
-                    </dl>
-                    <dl>
-                        <dt>
-                            <label for="phone">
-                                핸드폰
-                            </label>
-                        </dt>
-                        <dd>
-                            <input type="text" id="phone" name="phone">
-                        </dd>
-                    </dl>
-                    <dl>
-                        <dt>
-                            <label for="email">
-                                이메일
-                            </label>
-                        </dt>
-                        <dd>
-                            <div class="input-clear">
-                                <input type="text" id="email" name="email">
-                            </div>
-                        </dd>
-                    </dl>
-                </div>
+                    <div class="write-wrap">
+                        <dl>
+                            <dt>
+                                <label for="login_id">
+                                    ID
+                                    <span id="ssoCd"></span>
+                                </label>
+                            </dt>
+                            <dd>
+                                <div class="input-clear">
+                                    <input type="text" id="login_id" name="login_id" readonly>
+                                </div>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                <label for="name">
+                                    성명<span class="eq">*</span>
+                                </label>
+                            </dt>
+                            <dd>
+                                <div class="input-clear">
+                                    <input type="text" id="name" name="name">
+                                </div>
+                            </dd>
+                        </dl>
+
+<!--                        <dl>-->
+<!--                            <dt>-->
+<!--                                <label>-->
+<!--                                    비밀번호-->
+<!--                                </label>-->
+<!--                            </dt>-->
+<!--                            <dd>-->
+<!--                                <div class="input-clear">-->
+<!--                                    <input type="password" id="PasswordChange" name="PasswordChange" placeholder="비밀번호"-->
+<!--                                           autocomplete="off">-->
+<!--                                    <i class="toggle-password" data-target="PasswordChange"></i>-->
+<!--                                </div>-->
+<!--                            </dd>-->
+<!--                        </dl>-->
+<!--                        <dl>-->
+<!--                            <dt>-->
+<!--                                <label>-->
+<!--                                    비밀번호 확인-->
+<!--                                </label>-->
+<!--                            </dt>-->
+<!--                            <dd>-->
+<!--                                <div class="input-clear">-->
+<!--                                    <input type="password" id="PasswordChangeChk" name="PasswordChangeChk"-->
+<!--                                           placeholder="비밀번호 확인" autocomplete="off">-->
+<!--                                    <i class="toggle-password" data-target="PasswordChangeChk"></i>-->
+<!--                                </div>-->
+<!--                            </dd>-->
+<!--                        </dl>-->
+
+                        <dl>
+                            <dt>
+                                <label for="birthYear">
+                                    생년월일
+                                </label>
+                            </dt>
+                            <dd>
+                                <div class="input-clear">
+                                    <input type="date" id="birthYear" name="birthYear">
+                                </div>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                <label for="sexYn">
+                                    성별
+                                </label>
+                            </dt>
+                            <dd>
+                                <div class="input-clear">
+                                    <select id="sexYn" name="sexYn">
+                                        <option value="1">남자</option>
+                                        <option value="2">여자</option>
+                                    </select>
+                                </div>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                <label for="postno">주소<span class="eq">*</span></label>
+                            </dt>
+                            <dd>
+                                <div class="flex-row" style="display: flex">
+                                    <input type="text" id="postno" name="postno" placeholder="우편번호" style="width: 85px;"
+                                           readonly>
+                                    <input type="text" id="address1" name="address1" placeholder="도로명주소"
+                                           onclick="openAddressSearch()">
+                                </div>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                <label for="userHp">
+                                    핸드폰<span class="eq">*</span>
+                                </label>
+                            </dt>
+                            <dd>
+                                <input type="text" id="userHp" name="userHp">
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                <label for="userMail">
+                                    이메일<span class="eq">*</span>
+                                </label>
+                            </dt>
+                            <dd>
+                                <div class="input-clear">
+                                    <input type="text" id="userMail" name="userMail" disabled>
+                                </div>
+                            </dd>
+                        </dl>
+                    </div>
                 </form>
             </div> <!--// contents-wrap end-->
             <div class="button-wrap">
                 <button class="btn-navy" id="btnSaveAuth" onclick="upUserInfo()">수정</button>
             </div>
         </div> <!--//layout-contents end -->
-
     </div> <!-- //mobile-layout-contents end-->
-</div> <!-- //page-wrapper end-->
 
+    <div class="mobile-layout-popup">
+
+        <div class="popup-wrapper" id="popup-addr">
+            <div id="searchPage" style="display:none;min-height: 500px;">
+                <div id="postcodeLayer" style="width:100%; height:400px;"></div>
+            </div>
+            <div class="popup-button">
+                <button class="btn-popup-close btn-navy">취소</button>
+            </div>
+        </div>
+    </div>
+</div> <!-- //page-wrapper end-->
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+    function openAddressSearch() {
+        let popup = document.getElementById('popup-addr');
+        const postcodeLayer = document.getElementById('postcodeLayer');
+        const searchPage = document.getElementById('searchPage');
+
+        if (popup) {
+            popup.classList.add('active'); // 팝업 활성화
+            // 주소 검색 화면 표시
+            searchPage.style.display = 'block';
+        } else {
+            console.error('popup1 또는 popup-overlay 요소를 찾을 수 없습니다.');
+        }
+
+        // Daum Postcode API 실행
+        new daum.Postcode({
+            oncomplete: function (data) {
+                var roadAddr = data.roadAddress; // 도로명 주소
+                var extraRoadAddr = '';
+
+                // 법정동 정보 추가
+                if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                    extraRoadAddr += data.bname;
+                }
+                // 건물명 정보 추가
+                if (data.buildingName !== '' && data.apartment === 'Y') {
+                    extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                // 괄호로 감싸기
+                if (extraRoadAddr !== '') {
+                    extraRoadAddr = ' (' + extraRoadAddr + ')';
+                }
+
+                // 우편번호와 주소 업데이트
+                document.getElementById('postno').value = data.zonecode;
+                document.getElementById('address1').value = roadAddr + extraRoadAddr;
+
+                // 검색 완료 후 레이어 숨기기
+                closeAddressSearch();
+            },
+            onresize: function (size) {
+                // 동적 스타일 적용
+                const layers = document.querySelectorAll('[id^="__daum__layer_"]');
+                layers.forEach(layer => {
+                    layer.style.width = '100%';
+                    layer.style.height = '500px';
+                    layer.style.overflow = 'hidden';
+                    layer.style.backgroundColor = '#fff';
+                });
+            }
+        }).embed(postcodeLayer);
+    }
+
+    function closeAddressSearch() {
+        const searchPage = document.getElementById('searchPage');
+
+        if (searchPage) {
+            // 검색 레이어 숨기기
+            searchPage.style.display = 'none';
+        }
+        $('.popup-wrapper').removeClass('active');
+    }
+
+
+</script>
 <script type="text/javascript">
 
-    $(document).ready(function () {
+    document.readyState === 'complete' ? init() : window.onload = init;
 
+    function init() {
         UserInfo();
+    }
 
-    });
 
     function UserInfo() {
-        let popup = document.getElementById('popup1');
-        let wrapper = document.getElementById('wrapper1');
 
         $.ajax({
-            url: '/account/myinfo', // 사용자 정보를 가져올 URL
+            url: '/mobile/myinfo', // 사용자 정보를 가져올 URL
             type: 'GET',
             dataType: 'json', // 응답 데이터 형식 지정
             success: function (response) {
                 // AJAX 호출 성공 시 처리할 로직
                 if (response && response.data) {
-                    $('#id').val(response.data.id);
-                    $('#login_id').val(response.data.login_id); // ID 필드 채우기
-                    $('#name').val(response.data.name); // 이름 필드 채우기
-                    $('#email').val(response.data.email);
-                    $('#phone').val(response.data.phone);
+                    $('#login_id').val(response.data.userId); // ID 필드 채우기
+                    $('#name').val(response.data.userNm); // 이름 필드 채우기
+                    $('#birthYear').val(formatDate(response.data.birthYear));
+                    $('#sexYn').val(response.data.sexYn);
+                    $('#postno').val(response.data.postCd);
+                    $('#address1').val(response.data.userAddr);
+                    $('#userHp').val(formatPhoneNumber(response.data.userHp));
+                    $('#userMail').val(response.data.userMail);
+
+                    // ssocd가 null이 아닐 경우 비밀번호 변경 입력 필드 숨김
+                    if (response.data.ssoCd !== null) {
+                        // $("#PasswordChange, #PasswordChangeChk").prop("disabled", true);
+                        $('#ssoCd').text('(' + response.data.ssoCd + ' 로그인)');
+                    } else {
+                        // $("#PasswordChange, #PasswordChangeChk").prop("disabled", false);
+                        $('#ssoCd').text("");
+                    }
                 }
                 // console.log('사용자 정보 가져오기 성공: ', response);
             },
@@ -208,41 +339,50 @@
             }
         });
 
-        // popup.style.display = 'block';
-        // wrapper.style.display = 'block';
     }
 
+    function formatDate(dateString) {
+        if (!dateString || dateString.length !== 6) return ""; // 예외 처리
+
+        let year = parseInt(dateString.substring(0, 2), 10);
+        let month = dateString.substring(2, 4);
+        let day = dateString.substring(4, 6);
+
+        // 2000년 이후 출생자는 20XX, 2000년 이전은 19XX로 변환
+        let fullYear = (year >= 50) ? `19${year}` : `20${year}`;
+
+        return `${fullYear}-${month}-${day}`;
+    }
+
+
     function upUserInfo() {
-        const id = $('#id').val();
-        const loginId = $('#login_id').val();
-        const name = $('#name').val();
-        const password = $('#PasswordChange').val();
-        const passwordChk = $('#PasswordChangeChk').val();
-        const phone = $('#phone').val();
-        const email = $('#email').val();
+        const userId = $('#login_id').val();
+        const userNm = $('#name').val();
+        const birthYear = $('#birthYear').val();
+        const sexYn = $('#sexYn').val();
+        const postCd = $('#postno').val();
+        const userAddr = $('#address1').val();
+        const userHp = $('#userHp').val().replace(/-/g, "");
+        const userMail = $('#userMail').val();
 
-        // 비밀번호 확인 로직 추가
-        if (password !== passwordChk) {
-            Alert.alert('', '비밀번호가 일치하지 않습니다.');
-            return;
-        }
-
-        if (!loginId || !name || !phone || !email) {
+        if (!userId || !userNm || !userHp || !userMail) {
             Alert.alert('', '모든 필수 항목을 입력해주세요.');
             return;
         }
 
         $.ajax({
-            url: '/account/userInfo/update', // 사용자 정보 업데이트 URL
+            url: '/mobile/userInfo/update', // 사용자 정보 업데이트 URL
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
-                id:id,
-                login_id: loginId,
-                name: name,
-                password: password,
-                phone: phone,
-                email: email
+                userId: userId,
+                userNm: userNm,
+                birthYear: birthYear,
+                sexYn: sexYn,
+                postCd: postCd,
+                userAddr: userAddr,
+                userHp: userHp,
+                userMail: userMail
             }),
             headers: {
                 'X-CSRF-Token': $('[name=_csrf]').val() // CSRF 토큰 추가
@@ -276,6 +416,54 @@
             }
         });
     });
+
+    $('.btn-popup-close').on('click', function () {
+        $('.popup-overlay').fadeOut(200);
+        $('.popup-wrapper').removeClass('active');
+    });
+
+    function formatPhoneNumber(number) {
+        if (!number) return "";
+        let rawNumber = number.replace(/\D/g, ""); // 숫자만 유지
+        if (rawNumber.length === 11) {
+            return rawNumber.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
+        } else if (rawNumber.length === 10) {
+            return rawNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+        }
+        return rawNumber; // 변환 불가능한 경우 원본 반환
+    }
+
+    $(document).ready(function () {
+        let userHpInput = $("#userHp");
+
+        // 🔥 입력 필드가 포커스를 받을 때 '-' 제거
+        userHpInput.on("focus", function () {
+            let rawNumber = $(this).val().replace(/-/g, ""); // 하이픈 제거
+            $(this).val(rawNumber);
+        });
+
+        // 🔥 입력 필드에서 포커스를 잃으면 '-' 추가하여 포맷 적용
+        userHpInput.on("blur", function () {
+            let rawNumber = $(this).val().replace(/\D/g, ""); // 숫자만 남김
+            let formattedNumber = formatPhoneNumber(rawNumber);
+            $(this).val(formattedNumber);
+        });
+
+        // 🔥 입력할 때 자동으로 하이픈이 적용되도록 처리
+        userHpInput.on("input", function () {
+            let rawNumber = $(this).val().replace(/\D/g, ""); // 숫자만 유지
+            $(this).val(rawNumber);
+        });
+
+        // 🔥 페이지가 로드될 때 즉시 하이픈 추가
+        let initialUserHp = userHpInput.val();
+        if (initialUserHp) {
+            userHpInput.val(formatPhoneNumber(initialUserHp));
+        }
+    });
+
+
+
 </script>
 </body>
 </html>

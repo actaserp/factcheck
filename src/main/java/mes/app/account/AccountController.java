@@ -17,6 +17,7 @@ import mes.domain.model.AjaxResult;
 import mes.domain.repository.UserCodeRepository;
 import mes.domain.repository.UserGroupRepository;
 import mes.domain.repository.UserRepository;
+import mes.domain.repository.actasRepository.TB_USERINFORepository;
 import mes.domain.repository.actasRepository.TB_XuserRepository;
 import mes.domain.security.CustomAuthenticationToken;
 import mes.domain.security.Pbkdf2Sha256;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
+import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -85,6 +87,9 @@ public class AccountController {
   private UserGroupRepository userGroupRepository;
   @Autowired
   JdbcTemplate jdbcTemplate;
+
+  @Autowired
+  TB_USERINFORepository tb_userinfoRepository;
 
   private Boolean flag;
   private Boolean flag_pw;
@@ -248,6 +253,128 @@ public class AccountController {
     result.data = dicData;
     return result;
   }
+
+  @GetMapping("/mobile/myinfo")
+  public AjaxResult getMobileUserInfo(Authentication auth) {
+    AjaxResult result = new AjaxResult();
+    User user = (User) auth.getPrincipal();
+    TB_USERINFO userInfo = userInfoService.getUserInfo(user.getUsername());
+    result.data =userInfo;
+    return result;
+  }
+
+  @PostMapping("/mobile/userInfo/update")
+  @Transactional
+  public AjaxResult mobileUpdateInfo(@RequestBody Map<String, Object> requestData, Authentication auth) {
+    AjaxResult result = new AjaxResult();
+
+    try {
+      // 현재 로그인한 사용자 ID 가져오기
+      User user = (User) auth.getPrincipal();
+      String userId = user.getUsername();
+
+      // 사용자 정보 조회
+      TB_USERINFO existingUser = tb_userinfoRepository.findById(userId)
+              .orElseThrow(() -> new EntityNotFoundException("사용자 정보를 찾을 수 없습니다."));
+
+      // 요청 데이터에서 수정할 값 가져오기
+      String userNm = (String) requestData.get("userNm");
+      String birthYear = (String) requestData.get("birthYear");
+      String sexYn = (String) requestData.get("sexYn");
+      String postCd = (String) requestData.get("postCd");
+      String userAddr = (String) requestData.get("userAddr");
+      String userHp = (String) requestData.get("userHp");
+      String userMail = (String) requestData.get("userMail");
+      String loginPw = (String) requestData.get("loginPw"); // 변경 비밀번호 (null일 수 있음)
+      System.out.println(birthYear);
+      int ageNum = 0;
+      if (birthYear != null && !birthYear.isEmpty()) {
+        try {
+          LocalDate birthDate;
+          // 먼저 yyyy-MM-DD 형식으로 파싱 시도
+          if (birthYear.length() == 10) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            birthDate = LocalDate.parse(birthYear, formatter);
+          }
+          // yyyy-MM 형식으로 파싱 시도
+          else if (birthYear.length() == 7) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+            birthDate = LocalDate.parse(birthYear, formatter);
+          } else {
+            throw new IllegalArgumentException("유효하지 않은 birthYear 형식: " + birthYear);
+          }
+
+          // 나이 계산
+          LocalDate currentDate = LocalDate.now();
+          ageNum = Period.between(birthDate, currentDate).getYears();
+          System.out.println(ageNum);
+        } catch (Exception e) {
+          log.error("생년월일 처리 중 오류 발생 - birthYear: {}", birthYear, e);
+          throw e;
+        }
+      }
+      if (birthYear != null && !birthYear.isEmpty()) {
+        try {
+          // yyyy-MM-dd 형식을 LocalDate로 변환
+          DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+          LocalDate birthDate = LocalDate.parse(birthYear, inputFormatter);
+
+          // yyMMdd 형식으로 변환
+          DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyMMdd");
+          birthYear = birthDate.format(outputFormatter);
+
+        } catch (Exception e) {
+          log.error("birthYear 가공 중 오류 발생 - 입력값: {}", birthYear, e);
+          throw e; // 필요한 경우 예외 처리
+        }
+      }
+      if (userAddr != null && !userAddr.isEmpty()) {
+        // 주소를 파싱하여 시도와 구군 추출
+        Map<String, String> addressParts = parseAddress(userAddr);
+        String userIDO = addressParts.getOrDefault("userIDO", ""); // 시도
+        String userGU = addressParts.getOrDefault("userGU", "");   // 구군
+      }
+
+      // 주소에서 시도와 구군 추출
+      String userIDO = "";
+      String userGU = "";
+      if (userAddr != null && !userAddr.isEmpty()) {
+        Map<String, String> addressParts = parseAddress(userAddr);
+        userIDO = addressParts.getOrDefault("userIDO", ""); // 시도
+        userGU = addressParts.getOrDefault("userGU", "");   // 구군
+      }
+
+      // 필드 업데이트 (필수 값)
+      existingUser.setUserNm(userNm);
+      existingUser.setBirthYear(birthYear);
+      existingUser.setSexYn(sexYn);
+      existingUser.setPostCd(postCd);
+      existingUser.setUserAddr(userAddr);
+      existingUser.setUserHp(userHp);
+      existingUser.setUserMail(userMail);
+      existingUser.setAgeNum(ageNum);
+      existingUser.setUserIDO(userIDO);
+      existingUser.setUserGU(userGU);
+      existingUser.setInDatem(LocalDateTime.now());
+
+      // 비밀번호 변경 (입력값이 있을 경우에만 변경)
+      if (loginPw != null && !loginPw.isEmpty()) {
+        existingUser.setLoginPw(loginPw); // 비밀번호 저장 (해싱 필요하면 여기서 추가)
+      }
+
+      // 사용자 정보 저장
+      tb_userinfoRepository.save(existingUser);
+
+      result.success = true;
+      result.message = "사용자 정보가 성공적으로 업데이트되었습니다.";
+    } catch (Exception e) {
+      result.success = false;
+      result.message = "저장 중 오류가 발생했습니다: " + e.getMessage();
+    }
+
+    return result;
+  }
+
 
   @PostMapping("/account/userInfo/update")
   @Transactional
