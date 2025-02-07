@@ -575,7 +575,11 @@
                             $('.list-box').append(borderDiv);
                         }
                     }
-                    // ✅ 최종 값 업데이트
+
+                    // 스크롤을 맨 위로 초기화
+                    $('.list-box').scrollTop(0);
+
+                    // 최종 값 업데이트
                     selectedPath = {...selectedTempPath};
                     updateTempSelectedPath();
                     updateSelectedPath();
