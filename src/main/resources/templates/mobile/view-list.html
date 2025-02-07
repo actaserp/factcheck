@@ -600,11 +600,11 @@
     function handleListItemClick(item){
 
         let realid = item.REALID;
-        console.log('realid', realid);
+        // console.log('realid', realid);
         $.ajax({
             url: "/api/Map/getOwn",
             type: "GET",
-            data: { realid: 318},
+            data: { realid: 318}, // realid 로 바꾸면 됨
             headers: {
                 'X-CSRF-Token': $('[name=_csrf]').val()
             },
@@ -654,23 +654,25 @@
                         </dl>
                         <dl>
                             <dt>순위 번호</dt>
-                            <dd>${item.RankNo || 'N/A'}</dd>
+                            <dd>${item.RankNo || ''}</dd>
                         </dl>
                         <dl>
                             <dt>등기목적</dt>
-                            <dd>${item.RgsAimCont || 'N/A'}</dd>
+                            <dd>${item.RgsAimCont || ''}</dd>
                         </dl>
                         <dl>
                             <dt>접수</dt>
-                            <dd>${item.Receve || 'N/A'}</dd>
+                            <dd>${item.Receve || ''}</dd>
                         </dl>
                         <dl>
                             <dt>등기원인</dt>
-                            <dd>${item.RgsCaus || 'N/A'}</dd>
+                            <dd>${item.RgsCaus || ''}</dd>
                         </dl>
                         <dl>
-                            <dt>권리자 및 기타사항</dt>
-                            <dd>${item.NomprsAndEtc || 'N/A'}</dd>
+                            <dt colspan="2" style="width: 100%;text-align: left;">권리자 및 기타사항</dt>
+                        </dl>
+                        <dl>
+                            <dd colspan="2" style="width: 100%;text-align: left;">${item.NomprsAndEtc || ''}</dd>
                         </dl>
                     </div>
                 </div>
