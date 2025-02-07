@@ -149,7 +149,7 @@ public class AccountController {
     result.data = data;
 
     // 사용자 조회
-    Optional<User> optionalUser = userRepository.findByUsername(username);
+    Optional<User> optionalUser = userRepository.findIsActiveUserByUsername(username);
     if (optionalUser.isEmpty()) {
       data.put("code", "NOUSER");
       return result;
@@ -368,8 +368,8 @@ public class AccountController {
 
       // XUSERS 정보 설정 및 저장
       TB_XUSERS xusers = TB_XUSERS.builder()
-          .passwd1(password != null ? password : user.getPassword())
-          .passwd2(password != null ? password : user.getPassword())
+//          .passwd1(password != null ? password : user.getPassword())
+//          .passwd2(password != null ? password : user.getPassword())
           .shapass(Pbkdf2Sha256.encode(password != null ? password : user.getPassword()))
           .pernm(name)
           .useyn("1")
@@ -444,7 +444,7 @@ public class AccountController {
 
     AjaxResult result = new AjaxResult();
 
-    Optional<User> user = userRepository.findByUsername(userid);
+    Optional<User> user = userRepository.findIsActiveUserByUsername(userid);
 
     if (!user.isPresent()) {
 
@@ -527,8 +527,8 @@ public class AccountController {
         jdbcTemplate.execute("SET IDENTITY_INSERT user_profile OFF");
 
         TB_XUSERS xusers = TB_XUSERS.builder()
-            .passwd1(password)
-            .passwd2(password)
+//            .passwd1(password)
+//            .passwd2(password)
             .shapass(Pbkdf2Sha256.encode(password))
             .pernm(name)
             .useyn("1")
@@ -681,7 +681,7 @@ public class AccountController {
             .postCd(postno)
             .userAddr(address)
             .userMail(email)
-            .loginPw(password)
+//            .loginPw(Pbkdf2Sha256.encode(password))
             .useYn("1")  //1:사용 0:미사용
             .inDatem(LocalDateTime.now())
             .userIDO(userIDO) // 시도

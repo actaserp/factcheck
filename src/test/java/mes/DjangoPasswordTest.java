@@ -22,7 +22,7 @@ public class DjangoPasswordTest {
 	@Test
 	public void password_Pbkdf2Sha256_Test() {
 		
-		Optional<User> optAdminUser = this.userRepository.findByUsername("admin");		
+		Optional<User> optAdminUser = this.userRepository.findIsActiveUserByUsername("admin");
 		if(optAdminUser.isEmpty()==false) {			
 			User adminUser = optAdminUser.get();
 			String password = adminUser.getPassword();

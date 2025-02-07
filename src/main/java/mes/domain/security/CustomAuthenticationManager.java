@@ -28,7 +28,7 @@ public class CustomAuthenticationManager implements AuthenticationManager{
 		 String username = authentication.getName();
 	     String password = authentication.getCredentials().toString();
 	     
-	     Optional<User> optUser = this.userRepository.findByUsername(username);
+	     Optional<User> optUser = this.userRepository.findIsActiveUserByUsername(username);
 	     if(optUser.isPresent()) {
 	    	 User user = optUser.get();
 	    	 boolean valid = Pbkdf2Sha256.verification(password, user.getPassword());

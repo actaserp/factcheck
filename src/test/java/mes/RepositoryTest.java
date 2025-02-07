@@ -49,7 +49,7 @@ public class RepositoryTest {
 	
 	@Test
     public void userTest() {    	
-		Optional<User> optAdminUser = this.userRepository.findByUsername("admin");
+		Optional<User> optAdminUser = this.userRepository.findIsActiveUserByUsername("admin");
 
 			if(optAdminUser.isEmpty()==false) {
 				User adminUser = optAdminUser.get();

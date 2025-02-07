@@ -34,7 +34,7 @@ public class SystemServiceTest {
 	@Test
 	public void webmenuTest() {
 		
-		Optional<User> optAdminUser = this.userRepository.findByUsername("admin");		
+		Optional<User> optAdminUser = this.userRepository.findIsActiveUserByUsername("admin");
 		if(optAdminUser.isEmpty()==false) {
 			User adminUser = optAdminUser.get();
 			//System.out.println(adminUser);  

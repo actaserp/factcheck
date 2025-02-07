@@ -17,7 +17,8 @@ import javax.transaction.Transactional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
-	Optional<User> findByUsername(String username);
+	@Query("SELECT u FROM User u WHERE u.username = :username AND u.active = true")
+	Optional<User> findIsActiveUserByUsername(@Param("username") String username);
 	User getUserById(int id);
 
 	void deleteByUsername(String username);

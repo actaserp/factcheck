@@ -126,7 +126,7 @@ public class AuthListController {
 
 
 
-        boolean username_chk = this.userRepository.findByUsername(userid).isEmpty();
+        boolean username_chk = this.userRepository.findIsActiveUserByUsername(userid).isEmpty();
 
 
         Timestamp today = new Timestamp(System.currentTimeMillis());
@@ -201,7 +201,7 @@ public class AuthListController {
 
         for(String param : paramList){
 
-            Optional<User> user = userRepository.findByUsername(param);
+            Optional<User> user = userRepository.findIsActiveUserByUsername(param);
             System.out.println(user);
             if(user.isPresent()){
                 userRepository.deleteByUsername(param);

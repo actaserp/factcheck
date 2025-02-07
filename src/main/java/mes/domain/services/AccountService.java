@@ -30,7 +30,7 @@ public class AccountService {
 			return user;
 		}			
 		
-		Optional<User> optUser = this.userRepository.findByUsername(username);
+		Optional<User> optUser = this.userRepository.findIsActiveUserByUsername(username);
 		
 		if(optUser.isEmpty()==false) {
 			user = optUser.get();
