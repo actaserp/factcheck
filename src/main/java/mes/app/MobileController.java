@@ -1,7 +1,12 @@
 package mes.app;
 
+import lombok.Getter;
 import mes.app.MobileUsr.AppInfo.Notice.NoticeBoardService;
+import mes.app.account.service.TB_USERINFOService;
 import mes.domain.DTO.NoticeResponseDto;
+import mes.domain.entity.User;
+import mes.domain.entity.actasEntity.TB_USERINFO;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -17,10 +22,13 @@ import java.util.List;
 public class MobileController {
 
     private final NoticeBoardService noticeBoardService;
+    private final TB_USERINFOService userinfoService;
 
-    public MobileController(NoticeBoardService noticeBoardService) {
+
+    public MobileController(NoticeBoardService noticeBoardService, TB_USERINFOService userinfoService) {
         this.noticeBoardService = noticeBoardService;
 
+        this.userinfoService = userinfoService;
     }
 
 
@@ -108,17 +116,20 @@ public class MobileController {
     }
 
     @GetMapping("/version")
-    public String versionPage() {
+    public String versionPage(Model model) {
+        model.addAttribute("currentPage", "version");
         return "mobile/appInfo/version"; // "address_search/search_sub.html"로 매핑 }
     }
 
     @GetMapping("/terms")
-    public String TermsPage() {
+    public String TermsPage(Model model) {
+        model.addAttribute("currentPage", "terms");
         return "mobile/appInfo/terms"; // "address_search/search_sub.html"로 매핑 }
     }
 
     @GetMapping("/danger")
-    public String DangerPage() {
+    public String DangerPage(Model model) {
+        model.addAttribute("currentPage", "danger");
         return "mobile/appInfo/danger"; // "address_search/search_sub.html"로 매핑 }
     }
 
@@ -126,18 +137,20 @@ public class MobileController {
     public String piechart() {return "mobile/pie_chart"; }// "mobile/ticket-list.html"로 매핑}
 
     @GetMapping("/risk")
-    public String LiskPage() {
+    public String LiskPage(Model model) {
+        model.addAttribute("currentPage", "risk");
         return "mobile/appInfo/risk"; // "address_search/search_sub.html"로 매핑 }
     }
 
     @GetMapping("/notice")
-    public String NoticePage() {
+    public String NoticePage(Model model) {
+        model.addAttribute("currentPage", "notice");
         return "mobile/appInfo/notice"; // "address_search/search_sub.html"로 매핑 }
     }
 
 
     @GetMapping("/notice/view")
-    public String NoticePage(ModelMap modelMap, @RequestParam Integer id) {
+    public String NoticePage(Model modelMap, @RequestParam Integer id) {
 
 
         NoticeResponseDto detail = noticeBoardService.NoticeView(id);
@@ -149,10 +162,54 @@ public class MobileController {
         }else{
             modelMap.addAttribute("fileflag", false);
         }
-
+        modelMap.addAttribute("currentPage", "notice");
         modelMap.addAttribute("notice", detail);
 
         return "mobile/appInfo/noticeView";
+    }
+
+    @GetMapping("/withdraw")
+    public String WithDrawPage(Model model){
+
+        ///TB_USERINFOService
+
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        TB_USERINFO userInfo = userinfoService.getUserInfo(user.getUsername());
+
+        //System.out.println(user);
+        TempDto userDto = new TempDto(user.getUsername(),
+                user.getEmail(),
+                user.getPhone(),
+                userInfo.getUserAddr(),
+                user.getFirst_name(),
+                userInfo.getAgeNum());
+        model.addAttribute("currentPage", "withdraw");
+        model.addAttribute("user", userDto);
+
+        return "mobile/appInfo/withdraw";
+
+    }
+
+
+    @Getter
+    public class TempDto{
+        private String username;
+        private String email;
+        private String tel;
+        private String address;
+        private String nickname;
+        private Integer age;
+
+        public TempDto(String username, String email, String phone, String adr, String nick, Integer age){
+            this.username = username;
+            this.email = email;
+            this.tel = phone;
+            this.address = adr;
+            this.nickname = nick;
+            this.age = age;
+        }
+
     }
 
 }

@@ -8,9 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 import mes.app.account.service.TB_xuserService;
 import mes.domain.entity.User;
 import mes.domain.entity.UserGroup;
+import mes.domain.entity.actasEntity.TB_USERINFO;
 import mes.domain.entity.actasEntity.TB_XUSERS;
 import mes.domain.repository.UserGroupRepository;
 import mes.domain.repository.UserRepository;
+import mes.domain.repository.actasRepository.TB_USERINFORepository;
 import mes.domain.security.Pbkdf2Sha256;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -32,6 +34,9 @@ public class UserService {
     TB_xuserService XusersService;
     @Autowired
     private UserGroupRepository userGroupRepository;
+
+    @Autowired
+    TB_USERINFORepository userinfoRepository;
 
     // 사용자 리스트 조회
     /*public List<Map<String, Object>> getUserList(boolean superUser,String username, String email, String pernm, String userGroupId) {
@@ -395,5 +400,26 @@ public class UserService {
     public Optional<User> findById(Integer id) {
         return userRepository.findById(id);
     }
+
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findIsActiveUserByUsername(username);
+    }
+
+    //회원 탈퇴
+    @Transactional
+    public Boolean withdrawUser(User user, TB_USERINFO userinfo){
+
+        try{
+            user.setActive(false);
+
+            userinfo.setUseYn("0");
+
+            return true;
+        }catch(Exception e){
+            System.err.println("회원 탈퇴 처리 중 오류 발생: " + e.getMessage());
+            throw e;
+        }
+    }
+
 
 }

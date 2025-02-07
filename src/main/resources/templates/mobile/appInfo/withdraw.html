@@ -14,8 +14,9 @@
 
     .input-box {
         width: 80%;
-        border: none; border-bottom: 1px solid black;
-        border-radius: 0;
+        /*//border: none; border-bottom: 1px solid black;
+        //border-radius: 0;
+        */
     }
     .mg-t10 {
         margin-top: 20px;
@@ -24,6 +25,7 @@
         min-width: 45px;
         margin-right: 10px;
     }
+
 
 </style>
 <head>
@@ -83,25 +85,35 @@
 
             <!-- 컨텐츠 영역  -->
             <div class="contents-wrap">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <div class="list-top-wrap">
                     <div class="list-num" style="margin-top: 15px">
                         <p>앱정보 > 회원 탈퇴</p>
                     </div>
                 </div>
 
-                <div style="margin-top: 50px">
+                <div th:if="${user != null}" style="margin-top: 50px">
+                    <input type="hidden" id="username" th:value="${user.username}" readonly class="input-box"/>
                     <h1 style="text-align: center; ">내 정보</h1>
                     <div class="mg-t10">
-                        <label class="spanBox">닉네임: </label><input  type="text" class="input-box"/>
+                        <label class="spanBox">닉네임: </label>
+                        <input type="text" th:value="${user.nickname}" readonly class="input-box"/>
                     </div>
                     <div class="mg-t10">
-                        <label class="spanBox">연령: </label><input  type="text" class="input-box"/>
+                        <label class="spanBox">연령: </label>
+                        <input  type="text" th:value="${user.age}" readonly class="input-box"/>
                     </div>
                     <div class="mg-t10">
-                        <label class="spanBox">주소: </label><input  type="text" class="input-box"/>
+                        <label class="spanBox">주소: </label>
+                        <input  type="text" th:value="${user.address}" readonly class="input-box"/>
                     </div>
                     <div class="mg-t10">
-                        <label class="spanBox">연락처: </label><input  type="text" class="input-box"/>
+                        <label class="spanBox">연락처: </label>
+                        <input  type="text" th:value="${user.tel}" readonly class="input-box"/>
+                    </div>
+
+                    <div style="width: 100%; display: flex; justify-content: center;">
+                        <button id="btnWithdraw" style="width: 50%; margin: 30px auto auto;">계정 탈퇴</button>
                     </div>
                 </div>
 
@@ -123,6 +135,40 @@
 
     function init() {
 
+    }
+
+    $('#btnWithdraw').click(function(){
+        Alert.confirm('', '정말 탈퇴 하시겠습니까?', function(){
+            let data = {
+                '_csrf': csrfToken,
+                'id' : $('#username').val()
+            }
+            let fnSuccess = function (res) {
+                if (res.success) {
+                    Alert.alert('', '탈퇴 되었습니다.', function(){
+                        window.location = '/logout';
+                    });
+                }
+            }
+            AjaxUtil.postAsyncData('/api/withdraw/resign', data, fnSuccess);
+        })
+    })
+
+    function sendAjaxRequest(url, data) {
+        $.ajax({
+            url: '/api/FAQ/save',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-Token': $('[name=_csrf]').val() // CSRF 토큰을 헤더에 추가
+            },
+            success: handleAjaxResponse,
+            error: function () {
+                Alert.alert('', '에러가발생하였습니다.');
+            }
+        });
     }
 
     // $(document).ready(function () {
