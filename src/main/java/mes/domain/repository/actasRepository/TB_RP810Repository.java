@@ -1,6 +1,5 @@
 package mes.domain.repository.actasRepository;
 
-import mes.domain.entity.actasEntity.TB_RP710;
 import mes.domain.entity.actasEntity.TB_RP810;
 import mes.domain.entity.actasEntity.TB_RP810_PK;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Optional;
 
 public interface TB_RP810Repository extends JpaRepository<TB_RP810, TB_RP810_PK> {
 

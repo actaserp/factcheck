@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FILEINFORepository extends JpaRepository<TB_FILEINFO, Integer> {
@@ -18,4 +19,5 @@ public interface FILEINFORepository extends JpaRepository<TB_FILEINFO, Integer> 
     @Query("SELECT f FROM TB_FILEINFO f WHERE f.FILEORNM = :fileornm AND f.bbsseq = :bbsseq")
     TB_FILEINFO findBySvnmAndSeq(@Param("fileornm") String fileornm, @Param("bbsseq") int bbsseq);
 
+    List<TB_FILEINFO> findByBbsseq(Integer id);
 }
