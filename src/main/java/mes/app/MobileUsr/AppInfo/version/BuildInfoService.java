@@ -1,4 +1,4 @@
-package mes.app.MobileUsr.AppInfo.version;
+package mes.app.MobileUsr.AppInfo.Version;
 
 import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.DatabindException;
