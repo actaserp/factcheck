@@ -22,7 +22,7 @@ public class UserDto {
     private String divinm;
 
 
-    public UserDto toDto(User userEntity) {
+    public static UserDto toDto(User userEntity) {
         UserDto userDto = new UserDto();
         userDto.setId(userEntity.getId());
         userDto.setUsername(userEntity.getUsername());
@@ -36,6 +36,15 @@ public class UserDto {
         userDto.setAgencycd(userEntity.getAgencycd());
         userDto.setDivinm(userEntity.getDivinm());
         return userDto;
+    }
+
+    public static UserDto of(String username, String nickname, String email, String phone) {
+        UserDto userDto = new UserDto();
+        userDto.setUsername(username);
+        userDto.setFirst_name(nickname);
+        userDto.setEmail(email);
+        userDto.setTel(phone);
+        return userDto; // ✅ 새로운 객체 반환 (안전함)
     }
 
 }

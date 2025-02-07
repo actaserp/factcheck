@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 public abstract class FileDownloadHandler {
 
-    public ResponseEntity<Resource> download(String filepath, Object requestData, String displaFileName){
+    public ResponseEntity<Resource> download(String filepath, Object requestData, String displayFileName){
 
         try{
             Resource resource = createResource(filepath, requestData);
@@ -22,7 +22,7 @@ public abstract class FileDownloadHandler {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
-            String encodedFileName = URLEncoder.encode(displaFileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+            String encodedFileName = URLEncoder.encode(displayFileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFileName);
