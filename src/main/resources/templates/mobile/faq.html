@@ -34,6 +34,15 @@
     button:hover, .btn:hover{
         border: 0 !important;
     }
+
+    .aco-cont{
+        border-top: 1px solid #EFEFEF !important;
+    }
+
+    .search-wrap .srch-cont dl{
+        border-bottom: 1px solid #333 !important;
+    }
+
 </style>
 <head>
     <meta charset="UTF-8">
@@ -204,11 +213,11 @@
                     </div>
                 `;
 
-                faqItem.querySelector(".aco-hd").addEventListener("click", function (event) {
-                    event.preventDefault();
-                    let content = faqItem.querySelector(".srch-cont");
-                    content.style.display = content.style.display === "none" ? "block" : "none";
-                });
+                // faqItem.querySelector(".aco-hd").addEventListener("click", function (event) {
+                //     event.preventDefault();
+                //     let content = faqItem.querySelector(".srch-cont");
+                //     content.style.display = content.style.display === "none" ? "block" : "none";
+                // });
 
                 faqGroup.appendChild(faqItem);
             });
@@ -222,6 +231,15 @@
             filterFAQByTab(firstTab.getAttribute("data-tab"));
         }
     }
+    $(document).on("click", ".aco-hd", function () {
+        // 클릭된 아코디언 항목의 컨텐츠 토글
+        $(this).next('.aco-cont').slideToggle();
+        // 다른 아코디언 항목의 컨텐츠는 접히도록 함
+        $('.aco-cont').not($(this).next()).slideUp();
+        // 활성 클래스 추가 및 제거
+        $(this).toggleClass('active');
+        $('.aco-hd').not($(this)).removeClass('active');
+    });
 
     function filterFAQByTab(tabId) {
         document.querySelectorAll("[data-tab-content]").forEach(group => {

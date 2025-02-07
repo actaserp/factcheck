@@ -610,7 +610,10 @@
             },
             success: function (response) {
                 if (response.success) {
+                    // 스크롤을 맨 위로 초기화
+
                     updatePopupContent(response.data, item);
+                    $('.list-card-wrap').scrollTop(0);
 
                 } else {
                     alert("해당 물건에 대한 정보를 찾을 수 없습니다.");
