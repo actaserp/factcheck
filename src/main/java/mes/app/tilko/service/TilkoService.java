@@ -531,4 +531,7 @@ public class TilkoService {
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
     }
 
+    // fileinfo 저장
+
+
 }

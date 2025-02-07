@@ -200,6 +200,32 @@ public class TilkoParsing {
         return resultMap;
     }
 
+    // Register 데이터 테이블(TB_REALINFOXML) 파싱 메서드
+    public static Map<String, String> TB_REALINFOXMLparsing(Map<String, String> RegisterList) {
 
+        Map<String, String> resultMap = new HashMap<>();
+        return resultMap;
+    }
+    // Register 갑구 소유권 사항(TB_REALAOWN) 파싱 메서드
+
+    // Register 을구 소유권 사항(TB_REALBOWN) 파싱 메서드
+
+    // Register 공동담보목록(TB_REGISTERDATAG) 파싱 메서드
+
+    // Register 담보목록(TB_REGISTERDATAGITEMS) 파싱 메서드
+
+    // Register 공동 전세목록(TB_REGISTERDATAH) 파싱 메서드
+
+    // Register 매매목록(TB_REGISTERDATAJ) 파싱 메서드
+
+    // Register 매매목록(TB_REGISTERDATAJITEMS) 파싱 메서드
+
+    // Summary 데이터 테이블(TB_REALSUMMARY) 파싱 메서드
+
+    // Summary 소유지분현황(갑구)(TB_SummaryDataA) 파싱 메서드
+
+    // Summary 소유지분을 제회한 소유권에 관한 사항(갑구)(TB_SUMMARYDATAK) 파싱 메서드
+
+    // Summary 저당권 및 전세권 등(을구)(TB_SUMMARYDATAE) 파싱 메서드
 
 }

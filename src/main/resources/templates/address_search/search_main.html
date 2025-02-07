@@ -91,13 +91,13 @@
                         <label for="address2">상세 주소:</label>
                         <input type="text" id="address2" placeholder="상세주소를 검색"><br>
                     </div>
-                    <button onclick="searchGoyuList()" style="margin-top: 10px">고유번호 확인</button>
+                    <button onclick="searchGoyuList()" style="margin-top: 10px">상세주소 확인</button>
                 </dl>
             </div> <!--// contents-wrap end-->
             <div id="addressWrap" class="contents-wrap">
 
             </div>
-            <button onclick="searchdatetest()" style="margin-top: 10px">test</button>
+<!--            <button onclick="searchdatetest()" style="margin-top: 10px">test</button>-->
         </div> <!--//layout-contents end -->
 
     </div> <!-- //mobile-layout-contents end-->
@@ -264,11 +264,11 @@
         tempDiv.innerHTML = html;
         return tempDiv.textContent || tempDiv.innerText || "";
     }
-
+    // pdf 데이터 조회 및 파싱 저장 메서드 호출
     function searchaddress(data) {
         console.log("data : ", data)
         $.ajax({
-            url: '/api/tilko/searchaddress',
+            url: '/api/tilko/downloadPDF',
             type: 'GET',
             data: {
                 "GoyuNUM" : data.pin,

@@ -3,7 +3,12 @@ import mes.domain.entity.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.*;
@@ -53,4 +58,25 @@ public class UtilClass {
         return user.getFirst_name();
     }
 
+    public static File saveFileToTemp(MultipartFile file) throws IOException {
+        // 원본 파일명에서 확장자 추출
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
+        // 확장자를 동적으로 설정하여 임시 파일 생성
+        File tempFile = File.createTempFile("uploaded-", extension);
+        file.transferTo(tempFile); // 파일을 임시 파일로 변환
+
+        return tempFile;
+    }
+
+    public static File saveFileToTempAsFile(File file) throws IOException {
+        File tempFile = File.createTempFile("uploaded-", ".pdf");
+        Files.copy(file.toPath(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        return tempFile;
+    }
 }
