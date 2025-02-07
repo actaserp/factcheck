@@ -8,6 +8,7 @@
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
+
 </style>
 <head>
   <meta charset="UTF-8">
@@ -60,7 +61,7 @@
   <!-- [모바일] 컨덴츠  -->
   <div class="mobile-layout-contents">
     <!--- (레이아웃) Contents 영역 -->
-    <div class="layout-contents" style="width:100%;height:100vh;">
+    <div class="layout-contents" style="width:100%;height:auto;">
       <!-- 컨텐츠 영역  -->
       <div class="contents-wrap">
         <div>
@@ -75,9 +76,22 @@
 
         <div id="map" style="width:100%;height: 65vh ; flex-grow: 1;"></div>
 
-        <div style="margin-top: 5%">
-          <ol id="search-results" class="list-group list-group-numbered" style="font-size: 15px;"></ol>
+        <div class="table-container">
+          <table class="table table-striped" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+            <tr>
+              <th style="width: 10%; text-align: center;">NO</th>
+              <th style="width: 60%; text-align: left;">주소</th>
+              <th style="width: 30%; text-align: right;">발급일</th>
+            </tr>
+            </thead>
+            <tbody id="search-results">
+            <!-- 데이터가 여기에 삽입됨 -->
+            </tbody>
+          </table>
         </div>
+
+
       </div>  <!--// contents-wrap end-->
     </div> <!--//layout-contents end -->
   </div> <!-- //mobile-layout-contents end-->
@@ -112,7 +126,7 @@
           </div>
         </div>
         <div class="popup-button">
-          <button class="btn-navy" id="btnSaveAuth" onclick="moveToSelectedRegion()">지역 검색</button>
+          <button type="button" class="btn-navy" id="btnSaveAuth" onclick="moveToSelectedRegion()">지역 검색</button>
         </div>
       </form>
     </div>
@@ -452,23 +466,30 @@
     });
   }
 
+  // 검색 결과 테이블을 생성하는 함수
   function updateSearchResults(data) {
-    const searchResults = $("#search-results"); // 리스트 요소 선택
-    searchResults.empty(); // 기존 목록 삭제
+    const searchResults = $("#search-results"); // 테이블 tbody 요소 선택
+    searchResults.empty(); // 기존 데이터 초기화
 
     if (!data || data.length === 0) {
-      searchResults.append("<li class='list-group-item'> 지역 검색 결과가 없습니다.</li>");
+      searchResults.append(`
+            <tr>
+                <td colspan="2" style="text-align: center;">지역 검색 결과가 없습니다.</td>
+            </tr>
+        `);
       return;
     }
 
-    // 새로운 리스트 아이템 추가
+    // 데이터 추가
     data.forEach((item, index) => {
-      const listItem = `<li class="list-group-item">
-                    ${index + 1}. ${item.REALADD}
-                    <span style="float: right;">${item.RELASTDATE}</span>
-                  </li>`;
-
-      searchResults.append(listItem);
+      const row = `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${item.REALADD || "정보 없음"}</td>
+                <td>${item.RELASTDATE || "정보 없음"}</td>
+            </tr>
+        `;
+      searchResults.append(row);
     });
   }
 
