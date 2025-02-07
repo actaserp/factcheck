@@ -85,7 +85,7 @@
         </a>
       </div>
       <div class="center" style="margin-left:35px;">
-        <h2>내가 발급한 등기부 조회</h2>
+        <h2>등기부 API 조회</h2>
       </div>
       <div class="right">
         <a href="#" title="전체메뉴" class="btn-menu">
@@ -473,7 +473,7 @@
   // 데이터를 받아와 카드 렌더링
   function fetchListData() {
     $.ajax({
-      url: '/api/IssueInquiry/List',
+      url: '/api/IssueInquiryAPI/List',
       type: 'GET',
       data: {
         'startDate': $('#startDate').val(),
@@ -583,7 +583,7 @@
 
           // AJAX 요청 (realId로 상세 정보 조회)
           $.ajax({
-            url: "/api/IssueInquiry",
+            url: "/api/IssueInquiryAPI",
             type: "GET",
             data: { realId: realId },
             dataType: "json",

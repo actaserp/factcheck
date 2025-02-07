@@ -2,10 +2,8 @@ package mes.app.IssueInquiry;
 
 import lombok.extern.slf4j.Slf4j;
 import mes.app.IssueInquiry.service.IssueInquiryService;
-import mes.domain.entity.User;
 import mes.domain.model.AjaxResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,11 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
-
 @Slf4j
 @RestController
-@RequestMapping("/api/IssueInquiry")
-public class IssueInquiryController {
+@RequestMapping("/api/IssueInquiryAPI")
+public class IssueInquiryAPIController {
 
   @Autowired
   IssueInquiryService issueInquiryService;
@@ -25,17 +22,13 @@ public class IssueInquiryController {
   @GetMapping("/List")
   public AjaxResult getList(@RequestParam(value = "startDate") String startDate,
                             @RequestParam(value = "endDate") String endDate,
-                            @RequestParam(value = "SearchKeywords", required = false) String SearchKeywords,
-                            Authentication auth) {
+                            @RequestParam(value = "SearchKeywords", required = false) String SearchKeywords) {
 
     AjaxResult result = new AjaxResult();
 
-
-
-    log.info("등기부 발급 조회 등어옴 startDate={}, endDate={}, SearchKeywords={} ", startDate, endDate, SearchKeywords);
+    log.info("등기부 api 조회 들어옴 startDate={}, endDate={}, SearchKeywords={} ", startDate, endDate, SearchKeywords);
     try {
-      User user = (User)auth.getPrincipal();
-      List<Map<String, Object>> getList = issueInquiryService.getList(startDate, endDate, SearchKeywords, user.getUsername());
+      List<Map<String, Object>> getList = issueInquiryService.getAPIList(startDate, endDate, SearchKeywords);
 
       result.success = true;
       result.message = "데이터 조회 성공";
@@ -70,4 +63,5 @@ public class IssueInquiryController {
 
     return result;
   }
+
 }

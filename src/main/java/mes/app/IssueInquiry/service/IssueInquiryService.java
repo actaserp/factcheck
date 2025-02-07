@@ -16,7 +16,7 @@ public class IssueInquiryService {
   @Autowired
   SqlRunner sqlRunner;
 
-  public List<Map<String, Object>> getList(String startDate, String endDate, String searchKeywords) {
+  public List<Map<String, Object>> getList(String startDate, String endDate, String searchKeywords, String userID) {
     MapSqlParameterSource params = new MapSqlParameterSource();
     StringBuilder sql = new StringBuilder("""
         select
@@ -35,6 +35,10 @@ public class IssueInquiryService {
     if (searchKeywords != null && !searchKeywords.isEmpty()) {
       sql.append(" AND REALADD LIKE :searchKeywords ");
       params.addValue("searchKeywords", "%" + searchKeywords + "%");
+    }
+    if (userID != null && !userID.isEmpty()) {
+      sql.append("  and USERID = :userID ");
+      params.addValue("userID",userID );
     }
     sql.append("""
         ORDER BY
@@ -66,4 +70,33 @@ public class IssueInquiryService {
     return sqlRunner.getRows(sql.toString(), params);
   }
 
+  //등기부 api 조회
+  public List<Map<String, Object>> getAPIList(String startDate, String endDate, String searchKeywords) {
+    MapSqlParameterSource params = new MapSqlParameterSource();
+    StringBuilder sql = new StringBuilder("""
+        select
+        *
+        from TB_REALINFO
+        where 1=1
+        """);
+    if (startDate != null && !startDate.isEmpty()) {
+      sql.append(" AND RELASTDATE >= :startDate ");
+      params.addValue("startDate", startDate);
+    }
+    if (endDate != null && !endDate.isEmpty()) {
+      sql.append(" AND RELASTDATE <= :endDate ");
+      params.addValue("endDate", endDate);
+    }
+    if (searchKeywords != null && !searchKeywords.isEmpty()) {
+      sql.append(" AND REALADD LIKE :searchKeywords ");
+      params.addValue("searchKeywords", "%" + searchKeywords + "%");
+    }
+    sql.append("""
+        ORDER BY
+         RELASTDATE DESC
+        """);
+    log.info("등기부API 발급 List SQL: {}", sql);
+    log.info("SQL Parameters: {}", params.getValues());
+    return sqlRunner.getRows(sql.toString(), params);
+  }
 }

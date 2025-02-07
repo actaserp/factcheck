@@ -40,6 +40,11 @@ public class MobileController {
         model.addAttribute("currentPage", "kakaoMap2");
         return "mobile/kakaoMap2";
     }
+    @GetMapping("/mlogin")
+    public String mlogin(Model model) {
+        model.addAttribute("currentPage", "mlogin");
+        return "/mobile/mlogin";
+    }
 
     @GetMapping("/view-list")
     public String viewList(Model model) {
@@ -51,6 +56,12 @@ public class MobileController {
     public String IssueInquiry(Model model) {
         model.addAttribute("currentPage", "IssueInquiry");
         return "mobile/IssueInquiry";
+    }
+
+    @GetMapping("/IssueInquiryAPI")
+    public String IssueInquiryAPI(Model model) {
+        model.addAttribute("currentPage", "IssueInquiryAPI");
+        return "mobile/IssueInquiryAPI";
     }
 
     @GetMapping("/UserInfo")
