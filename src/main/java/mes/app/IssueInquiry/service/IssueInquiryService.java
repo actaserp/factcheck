@@ -45,8 +45,8 @@ public class IssueInquiryService {
         ORDER BY
          RELASTDATE DESC
         """);
-    log.info("등기부 발급 List SQL: {}", sql);
-      log.info("SQL Parameters: {}", params.getValues());
+    // log.info("등기부 발급 List SQL: {}", sql);
+      //log.info("SQL Parameters: {}", params.getValues());
     return sqlRunner.getRows(sql.toString(), params);
   }
 
@@ -118,6 +118,28 @@ public class IssueInquiryService {
 
     log.info("조회 기록 저장 완료 - realId: {}, user: {}", REALID, user.getUsername());
     return null;
+  }
+
+  public String findPdfFilenameByRealId(int realId) {
+    MapSqlParameterSource params = new MapSqlParameterSource();
+    // realId를 SQL 파라미터로 추가
+    params.addValue("realId", realId);
+
+    StringBuilder sql = new StringBuilder("""
+        select PDFFILENAME from TB_REALINFO
+        where REALID = :realId
+        """);
+
+    // SQL 쿼리 실행 후, 결과에서 첫 번째 행의 PDFFILENAME 값 추출
+    List<Map<String, Object>> result = sqlRunner.getRows(sql.toString(), params);
+
+    if (result != null && !result.isEmpty()) {
+      // 첫 번째 행에서 PDFFILENAME 값 추출
+      return (String) result.get(0).get("PDFFILENAME");
+    } else {
+      // 결과가 없을 경우
+      return null;
+    }
   }
 
 }

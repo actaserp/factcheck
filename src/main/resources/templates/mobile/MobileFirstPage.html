@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<style>
+    .btn-clear {
+        display: none !important; /* 강제로 숨김 */
+    }
+
+    .btn-close {
+        display: none !important; /* 강제로 숨김 */
+    }
+
+</style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>>FACT CHECK - 모바일</title>
+  <link rel="shortcut icon" href="/img/favicon.ico">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/> <!-- Slide css -->
+  <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css">
+  <link rel="stylesheet" type="text/css" href="/assets_mobile/css/import.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+  <script src="/assets_mobile/js/ui.js"></script> <!-- Common js -->
+  <script th:inline="javascript">
+    var sandanData = /*[[${session.sandanList}]]*/ [];
+  </script>
+
+
+  <script type="text/javascript" src="/resource/ax5ui/ax5ui.all.min.js?v=1000"></script>
+
+  <script type="text/javascript" src="/js/ax5commUtil.js?v=1070"></script>
+
+  <script src="/js/common.js?v=1060"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+</head>
+
+<body>
+<div class="mobile-wrapper page-ticket-list"><!-- ★페이지 Class명 -->
+  <!-- [모바일] 헤더  -->
+  <div class="mobile-layout-header">
+    <header>
+      <div class="left">
+        <h2>FACT CHECK</h2>
+      </div>
+    </header>
+  </div> <!-- //mobile-layout-header end-->
+
+  <!-- [모바일] 메뉴  -->
+  <div th:insert="~{mobile/mobile_menu :: mobile_menu}"></div>
+  <!-- [모바일] 컨덴츠  -->
+  <div class="mobile-layout-contents">
+    <!--- (레이아웃) Contents 영역 -->
+    <div class="layout-contents">
+      <!-- 검색 영역  -->
+      <div class="search-wrap">
+
+      </div>
+      <!-- 컨텐츠 영역  -->
+      <div class="contents-wrap">
+        <dl style="margin-bottom: 10px">
+          <button onclick="openModal()" style="margin-bottom: 10px">주소 검색</button>
+
+          <div id="postcodeModal" class="modal" style="display: none">
+            <div class="modal-content">
+              <div style="display: flex">
+                <div class="modal-header">주소 검색</div>
+                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto">×</button>
+              </div>
+              <div id="postcodeContainer" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <div>
+            <input type="hidden" id="postno" readonly>
+            <label for="address1">도로명 주소:</label>
+            <input type="text" id="address1" readonly><br>
+            <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
+          </div>
+          <div>
+            <label for="address2">상세 주소:</label>
+            <input type="text" id="address2" placeholder="상세주소를 검색"><br>
+          </div>
+          <button onclick="searchGoyuList()" style="margin-top: 10px">상세 주소 확인</button>
+        </dl>
+      </div> <!--// contents-wrap end-->
+    </div> <!--//layout-contents end -->
+
+  </div> <!-- //mobile-layout-contents end-->
+</div> <!-- //page-wrapper end-->
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script th:inline="javascript">
+  // // Thymeleaf에서 값 설정: Null 체크와 기본값 처리
+  // var groupid = [[${session.groupid != null ? session.groupid : 'null'}]];
+  // var id = /*[[${id != null ? id : 'null'}]]*/;
+  // var groupname = /*[[${groupname != null ? groupname : 'null'}]]*/;
+  // var username = /*[[${username != null ? username : 'null'}]]*/;
+  //
+  // // 로컬스토리지에 값 유지 (null 또는 빈 문자열은 저장하지 않음)
+  // if (groupid && groupid !== 'null') localStorage.setItem('groupid', groupid);
+  // if (id && id !== 'null') localStorage.setItem('id', id);
+  // if (username && username !== 'null') localStorage.setItem('username', username);
+  // if (groupname && groupname !== 'null') localStorage.setItem('groupname', groupname);
+</script>
+<script>
+  function openModal() {
+    document.getElementById('postcodeModal').style.display = 'block';
+
+    new daum.Postcode({
+      oncomplete: function (data) {
+        var roadAddr = data.roadAddress;
+        var extraRoadAddr = '';
+
+        if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+          extraRoadAddr += data.bname;
+        }
+        if (data.buildingName !== '' && data.apartment === 'Y') {
+          extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+        }
+        if (extraRoadAddr !== '') {
+          extraRoadAddr = ' (' + extraRoadAddr + ')';
+        }
+
+        document.getElementById('postno').value = data.zonecode;
+        document.getElementById('address1').value = roadAddr;
+
+        var guideTextBox = document.getElementById("guide");
+        if (data.autoRoadAddress) {
+          var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
+          guideTextBox.innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
+          guideTextBox.style.display = 'block';
+        } else if (data.autoJibunAddress) {
+          var expJibunAddr = data.autoJibunAddress;
+          guideTextBox.innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
+          guideTextBox.style.display = 'block';
+        } else {
+          guideTextBox.innerHTML = '';
+          guideTextBox.style.display = 'none';
+        }
+
+        closeModal();
+      },
+      onresize: function (size) {
+        // 동적 스타일 적용
+        const layers = document.querySelectorAll('[id^="__daum__layer_"]');
+        layers.forEach(layer => {
+          layer.style.width = '100%';
+          layer.style.height = '500px';
+          layer.style.overflow = 'hidden';
+          layer.style.backgroundColor = '#fff';
+        });
+      }
+
+    }).embed(document.getElementById('postcodeContainer'));
+  }
+
+  function closeModal() {
+    document.getElementById('postcodeModal').style.display = 'none';
+  }
+</script>
+<script type="text/javascript">
+
+  // 상세주소 조회
+  function searchGoyuList() {
+    isUserLoggedIn(function (isLoggedIn) {
+      if (!isLoggedIn) {
+        Alert.alert('', "로그인이 필요합니다. 로그인 페이지로 이동합니다.");
+        window.location.href = "/mobile/mlogin"; // 로그인 페이지로 리디렉션
+        return;
+      }
+
+      let data2 = [];
+      if (document.getElementById('address1').value === "") {
+        Alert.alert('', '주소를 선택해주세요');
+        return false;
+      }
+
+      $.ajax({
+        url: '/api/tilko/searchGoyuList',
+        type: 'GET',
+        data: {
+          'address1': $('#address1').val() + " " + $('#address2').val()
+        },
+        async: false,
+        success: function (data) {
+          data2 = data.data;
+          console.log("data2", data);
+
+          const listAddressWrap = document.getElementById('addressWrap');
+          const availableColors = [
+            'card-blue', 'card-green', 'card-black',
+            'card-red', 'card-yellow', 'card-purple'
+          ];
+          listAddressWrap.innerHTML = ''; // 기존 내용을 초기화
+
+          // 색상을 순환적으로 할당하기 위한 인덱스
+          let colorIndex = 0;
+          let htmlContent = '';
+
+          // Gubun 데이터에서 '토지' 데이터 제외 후 화면에 출력
+          data2.forEach(data => {
+            const cardColor = availableColors[colorIndex];
+            colorIndex = (colorIndex + 1) % availableColors.length;
+
+            if (data.Gubun !== '토지') {
+              // 버튼 처리
+              let buttonsHtml = `<button class="btn btn-popup-open"
+                                                    data-popup="popup-history" title="등기부">
+                                                등기부 조회
+                                            </button>`;
+
+              // rd_addr_detail에서 태그 제거 후 적용
+              let cleanAddress = stripHtmlTags(data.rd_addr_detail).replace(/\s+/g, '');
+
+              htmlContent += `
+                            <div class="card-box ${cardColor}" data-Goyu="${data.pin}">
+                                <div class="card-cont">
+                                    <dl><dt>고유번호</dt><dd>${data.pin}</dd></dl>
+                                    <dl><dt>주소</dt><dd>${cleanAddress}</dd></dl>
+                                    <dl><dt>구분</dt><dd>${data.real_cls_cd}</dd></dl>
+                                    <dl><dt>상태</dt><dd>${data.use_cls_cd}</dd></dl>
+                                </div>
+                                ${buttonsHtml}
+                            </div>
+                        `;
+            } else {
+              console.log("토지데이터 제외됨");
+            }
+          });
+
+          listAddressWrap.insertAdjacentHTML('beforeend', htmlContent);
+
+          // 이벤트 위임 추가
+          listAddressWrap.addEventListener('click', (event) => {
+            const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+            if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
+
+            const cardBox = button.closest('.card-box');
+            const goyuNum = cardBox.getAttribute('data-Goyu');
+
+            // 데이터 찾기
+            const item = data2.find(d => d.pin === goyuNum);
+            if (item) {
+              searchaddress(item);
+            }
+          });
+        }
+      });
+    });
+  }
+
+  // HTML 태그 제거 함수
+  function stripHtmlTags(html) {
+    let tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || "";
+  }
+
+  // 사용자 데이터를 가져오는 함수
+  function isUserLoggedIn(callback) {
+    $.ajax({
+      url: '/account/userinfo2',
+      type: 'GET',
+      dataType: 'json',
+      success: function (response) {
+        if (response.success) {
+          console.log("로그인 상태: 사용자 정보 확인됨");
+          callback(true);
+        } else {
+          console.error("로그인되지 않음:", response.message);
+          callback(false);
+        }
+      },
+      error: function (xhr, status, error) {
+        console.error("로그인 체크 실패:", status, error);
+
+        if (xhr.status === 401) {
+          try {
+            // 응답이 비어 있는 경우 대비 (JSON 파싱 오류 방지)
+            let response = xhr.responseText && xhr.responseText.trim() ? JSON.parse(xhr.responseText) : {};
+            let redirectUrl = response.redirectUrl || "/mobile/mlogin"; // 기본적으로 /mobile/mlogin 사용
+
+            console.log("401 Unauthorized 발생 → " + redirectUrl + " 으로 이동");
+            alert("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
+
+            // 🚀 강제 이동
+            window.location.replace(redirectUrl);
+          } catch (e) {
+            console.error("JSON 파싱 오류:", e);
+            window.location.replace("/mobile/mlogin"); // JSON 파싱 실패 시 기본 로그인 페이지로 이동
+          }
+        } else {
+          console.error("예상치 못한 오류 발생:", xhr.responseText);
+        }
+        callback(false);
+      }
+    });
+  }
+
+  function searchaddress(data) {
+    console.log("data : ", data)
+    $.ajax({
+      url: '/api/tilko/searchaddress',
+      type: 'GET',
+      data: {
+        "GoyuNUM": data.pin,
+        "address": data.rd_addr
+      },
+      async: false,
+      success: function (response) {
+        let data2 = response.data;
+        console.log("data2", data2);
+
+        // API 응답에서 필요한 값 추출 후 sessionStorage에 저장
+        let resultMap = {
+          "REALSCORE": data2.REALSCORE,
+          "GRADE": data2.GRADE,
+          "COMMENT": data2.COMMENT,
+          "ADDRESS": data2.ADDRESS
+        };
+        sessionStorage.setItem("resultMap", JSON.stringify(resultMap));
+
+        // search_card 페이지로 이동
+        window.location.href = "search_card";
+      },
+      error: function (error) {
+        console.error("Error in API call:", error);
+      }
+    });
+  }
+
+
+</script>
+</body>
+</html>

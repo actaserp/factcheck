@@ -434,7 +434,37 @@
     </div>
   </div>
 
+  <div class="mobile-layout-popup" id="popup-register">
+    <div class="popup-overlay"></div>
+    <div class="popup-wrapper">
+      <div class="popup-title">
+        <h3>등기부 등본</h3>
+      </div>
+      <div class="popup-contents">
+        <div class="table-wrap">
+          <div class="write-wrap">
+            <div class="row">
+              <section>
+                <div class="tab-wrap">
+                  <!-- PDF를 보여주는 iframe -->
+                  <div id="pdf-container" style="width: 100%; height: 500px; border: 1px solid #ddd;">
+                    <iframe id="pdf-viewer" width="100%" height="100%" style="border: none;"></iframe>
+                  </div>
 
+                  <!-- 저장하기 버튼 -->
+                  <div style="margin-top: 10px;">
+                    <button type="button" id="savePdfButton">
+                      저장하기
+                    </button>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </div> <!-- //page-wrapper end-->
 
@@ -515,7 +545,11 @@
 
           let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="상세보기">
                             상세보기
-                        </button>`;
+                        </button>
+                      <button class="btn btn-register-view" data-popup="popup-register" title="등기부보기">
+                          등기부보기
+                      </button>
+                        `;
 
           // 날짜 포맷 변경
           const formattedDate = item.RELASTDATE.substring(0, 4) + '-' + item.RELASTDATE.substring(4, 6) + '-' + item.RELASTDATE.substring(6, 8);
@@ -563,11 +597,10 @@
 
         listAddressWrap.addEventListener('click', (event) => {
           const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+          const registerButton = event.target.closest('.btn-register-view[data-popup="popup-register"]');
           if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
 
           const cardBox = button.closest('.card-box');
-
-          const realId = cardBox.getAttribute('data-realId');
           const realAdd = cardBox.getAttribute('data-realadd');
           const resido = cardBox.getAttribute('data-resido') || '';
           const regdate = cardBox.getAttribute('data-regdate') || '';
@@ -628,6 +661,37 @@
             });
           }
 
+
+            if (registerButton) {
+              const cardBox = registerButton.closest(".card-box");
+              if (!cardBox) return;
+              const realId = cardBox.getAttribute("data-realid");
+              const popup = document.getElementById("popup-register");
+              if (!popup) return;
+
+              popup.classList.add("open"); // 팝업 열기
+
+              $.ajax({
+                url: `/api/register-info/pdf?realId=${realId}`,
+                type: "GET",
+                success: function (data) {
+                  console.log("PDF URL:", data.pdfUrl);
+
+                  // 📌 PDF 파일을 iframe에 로드
+                  const pdfViewer = document.getElementById("pdf-viewer");
+                  pdfViewer.src = data.pdfUrl;
+
+                  // 📌 저장 버튼의 다운로드 링크 설정
+                  document.getElementById("savePdfButton").setAttribute("data-pdf-url", data.pdfUrl);
+                },
+                error: function (xhr, status, error) {
+                  console.error("PDF 요청 실패:", status, error);
+                }
+              });
+
+              return;
+            }
+
           // 팝업 열기
           const popupHistory = document.getElementById("popup-history");
           popupHistory.classList.add("open");
@@ -653,12 +717,91 @@
       }
     });
   }
+  document.getElementById("addressWrap").addEventListener("click", (event) => {
+    const registerButton = event.target.closest('.btn-register-view[data-popup="popup-register"]');
+    if (registerButton) {
+      console.log("등기부보기 버튼 클릭됨!");
 
-  /*  // 데이터 찾기
-                 const item = data2.find(d => d.pin === goyuNum);
-                 if (item) {
-                     searchaddress(item);
-                 }*/
+      const cardBox = registerButton.closest(".card-box");
+      if (!cardBox) return;
+
+      const realId = cardBox.getAttribute("data-realid");
+      const popup = document.getElementById("popup-register");
+
+      if (!popup) {
+        console.error("팝업 요소를 찾을 수 없습니다: popup-register");
+        return;
+      }
+
+      // ✅ 팝업을 보이도록 스타일 변경
+      const popupRegister = document.getElementById("popup-register");
+      popupRegister.classList.add("open");
+      popup.style.display = "block";
+
+      console.log("팝업 열기 시도:", popup);
+
+      // 📌 AJAX 요청으로 PDF URL 가져오기
+      $.ajax({
+        url: `/api/IssueInquiry/pdf`,
+        type: "GET",
+        data: {
+          realId: realId,
+        },
+        headers: {
+          'X-CSRF-Token': $('[name=_csrf]').val()
+        },
+        success: function (data) {
+          console.log("PDF URL:", data.pdfUrl);
+
+          // 📌 PDF 파일을 iframe에 로드
+          const pdfViewer = document.getElementById("pdf-viewer");
+          if (pdfViewer) {
+            pdfViewer.src = data.pdfUrl;
+          } else {
+            console.error("PDF 뷰어 요소를 찾을 수 없습니다.");
+          }
+
+          // 📌 저장 버튼의 다운로드 링크 설정
+          const saveButton = document.getElementById("savePdfButton");
+          if (saveButton) {
+            saveButton.setAttribute("data-pdf-url", data.pdfUrl);
+          } else {
+            console.error("저장 버튼을 찾을 수 없습니다.");
+          }
+        },
+        error: function (xhr, status, error) {
+          console.error("PDF 요청 실패:", status, error);
+        }
+      });
+    }
+  });
+
+  // 📌 저장하기 버튼 클릭 시 PDF 다운로드
+  document.getElementById("savePdfButton").addEventListener("click", function () {
+    const pdfUrl = this.getAttribute("data-pdf-url");
+    if (pdfUrl) {
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.download = "등기부_등본.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert("PDF 파일을 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+    }
+  });
+
+  // 📌 팝업 닫기 기능 추가
+  document.querySelectorAll(".btn-popup-close").forEach((button) => {
+    button.addEventListener("click", function () {
+      const popup = button.closest(".mobile-layout-popup");
+      if (popup) {
+        popup.classList.remove("open");
+        popup.style.display = "none";
+      }
+    });
+  });
+
   function openModal(popupId) {
     let popup = document.getElementById(popupId);
     let overlay = document.querySelector('.popup-overlay');
