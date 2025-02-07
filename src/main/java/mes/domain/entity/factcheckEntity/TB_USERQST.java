@@ -28,9 +28,9 @@ public class TB_USERQST {
     @Column
     String FLAG;
     @Column
-    int QSTSORT;
+    Integer QSTSORT;
     @Column
-    int CHSEQ;
+    Integer CHSEQ;
     @Column
     String QSTTEL;
     @Column

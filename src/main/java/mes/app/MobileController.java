@@ -212,4 +212,10 @@ public class MobileController {
 
     }
 
+    @GetMapping("/inquiry")
+    public String InquiryPage(Model model) {
+        model.addAttribute("currentPage", "inquiry");
+        return "mobile/appInfo/inquiry"; // "address_search/search_sub.html"로 매핑 }
+    }
+
 }

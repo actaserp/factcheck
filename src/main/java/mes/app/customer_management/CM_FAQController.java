@@ -36,6 +36,8 @@ public class CM_FAQController {
         result.data = items;
         return result;
     }
+
+
     // 문의/답변 등록
     @PostMapping("/save")
     public AjaxResult saveFAQ(@RequestParam Map<String, String> params,
