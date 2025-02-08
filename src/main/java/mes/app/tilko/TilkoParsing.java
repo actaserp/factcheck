@@ -200,32 +200,267 @@ public class TilkoParsing {
         return resultMap;
     }
 
-    // Register 데이터 테이블(TB_REALINFOXML) 파싱 메서드
-    public static Map<String, String> TB_REALINFOXMLparsing(Map<String, String> RegisterList) {
+    // Register 공동담보목록(TB_REGISTERDATAG) 파싱 메서드
+    public static Map<String, String> REGDATAGparsing(Map<String, String> RegisterList) {
 
         Map<String, String> resultMap = new HashMap<>();
         return resultMap;
     }
-    // Register 갑구 소유권 사항(TB_REALAOWN) 파싱 메서드
 
-    // Register 을구 소유권 사항(TB_REALBOWN) 파싱 메서드
 
-    // Register 공동담보목록(TB_REGISTERDATAG) 파싱 메서드
+    // 날짜 추출 메서드 (YYYY/MM/DD 형식)
+    public static String extractDate(String text) {
+        Pattern pattern = Pattern.compile("(\\d{4})년(\\d{2})월(\\d{2})일");
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            return matcher.group(1) + "/" + matcher.group(2) + "/" + matcher.group(3);
+        }
+        return null;
+    }
 
-    // Register 담보목록(TB_REGISTERDATAGITEMS) 파싱 메서드
+    // 시간 추출 메서드 (HHMMSS 형식)
+    public static String extractTime(String text) {
+        Pattern pattern = Pattern.compile("(\\d{2})시(\\d{2})분(\\d{2})초");
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            return matcher.group(1) + matcher.group(2) + matcher.group(3);
+        }
+        return null;
+    }
+    // 관할등기소 추출
+    public static String extractJurisdictionOffice(String text) {
+        Pattern pattern = Pattern.compile("관할등기소\\s*\\|\\s*([^|]+)\\s*\\|\\s*([^|]+)");
+        Matcher matcher = pattern.matcher(text);
+        return matcher.find() ? matcher.group(1).trim() + " " + matcher.group(2).trim() : "정보 없음";
+    }
+    // 갑구 소유권에 관한 사항 json형식으로 파싱parseeulguTable
+    public static Map<String, Object> parseGabguTable(List<String> tableData) {
+        List<Map<String, Object>> parsedData = new ArrayList<>();
+        List<Map<String, Object>> TradeAmount = new ArrayList<>(); // 🟢 내부에서 생성
+        Map<String, Object> currentRow = new HashMap<>();
+        String lastTradeAmount = null; // 마지막 매매 거래가액 저장
 
-    // Register 공동 전세목록(TB_REGISTERDATAH) 파싱 메서드
+        for (String row : tableData) {
+            String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
 
-    // Register 매매목록(TB_REGISTERDATAJ) 파싱 메서드
+            if (columns.length < 5) continue; // 최소 5개 필드가 있어야 유효한 데이터
 
-    // Register 매매목록(TB_REGISTERDATAJITEMS) 파싱 메서드
+            // 순위번호(RankNo)가 존재하면 새로운 데이터 시작
+            if (!columns[0].trim().isEmpty()) {
+                // 이전 데이터 저장 후 초기화
+                if (!currentRow.isEmpty()) {
+                    parsedData.add(new HashMap<>(currentRow));
+                }
+                currentRow.clear();
+                currentRow.put("RankNo", columns[0].trim());
+                currentRow.put("RgsAimCont", columns[1].trim());
+                currentRow.put("Receve", columns[2].trim());
+                currentRow.put("RgsCaus", columns[3].trim());
+                currentRow.put("NomprsAndEtc", columns[4].trim());
 
-    // Summary 데이터 테이블(TB_REALSUMMARY) 파싱 메서드
+                // "매매" 포함 여부 확인 → TradeAmount에 추가
+                if (columns[3].contains("매매")) {
+                    Map<String, Object> tradeEntry = new HashMap<>();
+                    tradeEntry.put("RgsCaus", columns[3].trim());
 
-    // Summary 소유지분현황(갑구)(TB_SummaryDataA) 파싱 메서드
+                    // 거래가액(Amount) 추출
+                    String[] details = columns[4].split(" ");
+                    for (String detail : details) {
+                        if (detail.startsWith("금")) { // "금136,000,000원" 같은 데이터 찾기
+                            try {
+                                String amountStr = detail.replaceAll("[^0-9]", ""); // 숫자만 추출
+                                tradeEntry.put("Amount", Long.parseLong(amountStr));
+                                lastTradeAmount = amountStr; // 마지막 거래가액 저장
+                                break;
+                            } catch (NumberFormatException e) {
+                                // 숫자 변환 실패시 무시
+                            }
+                        }
+                    }
+                    TradeAmount.add(tradeEntry);
+                }
+            } else {
+                // 순위번호가 없는 경우 → 이전 데이터와 병합
+                currentRow.put("NomprsAndEtc", currentRow.get("NomprsAndEtc") + " " + columns[4].trim());
+            }
+        }
 
-    // Summary 소유지분을 제회한 소유권에 관한 사항(갑구)(TB_SUMMARYDATAK) 파싱 메서드
+        // 마지막 데이터 저장
+        if (!currentRow.isEmpty()) {
+            parsedData.add(currentRow);
+        }
 
-    // Summary 저당권 및 전세권 등(을구)(TB_SUMMARYDATAE) 파싱 메서드
+        // 마지막 거래가액을 Amount로 설정
+        if (!TradeAmount.isEmpty() && lastTradeAmount != null) {
+            Map<String, Object> lastTradeEntry = TradeAmount.get(TradeAmount.size() - 1);
+            lastTradeEntry.put("Amount", Long.parseLong(lastTradeAmount));
+        }
+
+        // 리턴 타입을 Map으로 변경하여 parsedData와 TradeAmount 모두 반환
+        Map<String, Object> result = new HashMap<>();
+        result.put("parsedData", parsedData);
+        result.put("TradeAmount", TradeAmount);
+
+        return result;
+    }
+
+
+    public static Map<String, Object> parseeulguTable(List<String> tableData) {
+        List<Map<String, Object>> parsedData = new ArrayList<>();
+        List<Map<String, Object>> collateralData = new ArrayList<>(); // 🟢 "담보" 데이터 저장
+        List<Map<String, Object>> leaseData = new ArrayList<>(); // 🟢 "전세" 데이터 저장
+        Map<String, Object> currentRow = new HashMap<>();
+
+        for (String row : tableData) {
+            String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
+
+            if (columns.length < 5) continue; // 최소 5개 필드가 있어야 유효한 데이터
+
+            // 순위번호(RankNo)가 존재하면 새로운 데이터 시작
+            if (!columns[0].trim().isEmpty()) {
+                // 이전 데이터 저장 후 초기화
+                if (!currentRow.isEmpty()) {
+                    parsedData.add(new HashMap<>(currentRow));
+                }
+                currentRow.clear();
+                currentRow.put("RankNo", columns[0].trim());
+                currentRow.put("RgsAimCont", columns[1].trim());
+                currentRow.put("Receve", columns[2].trim());
+                currentRow.put("RgsCaus", columns[3].trim());
+                currentRow.put("NomprsAndEtc", columns[4].trim());
+
+                // "담보"가 포함된 경우 → TB_REGISTERDATAGITEMS에 추가
+                if (columns[3].contains("담보")) {
+                    Map<String, Object> collateralEntry = new HashMap<>();
+                    collateralEntry.put("RankNo", columns[0].trim());
+                    collateralEntry.put("CrtResn", ""); //
+                    collateralEntry.put("DstInfo", ""); //
+                    collateralEntry.put("SeqNo", "1"); // 일단 기본값 (추후 업데이트 가능)
+                    collateralEntry.put("EstateRightDisplay", columns[4].trim());
+                    collateralData.add(collateralEntry);
+                }
+
+                // "전세"가 포함된 경우 → TB_REGISTERDATAHITEMS에 추가
+                if (columns[3].contains("전세")) {
+                    Map<String, Object> leaseEntry = new HashMap<>();
+                    leaseEntry.put("RankNo", columns[0].trim());
+                    leaseEntry.put("CrtResn", columns[3].trim()); // 설정 사유
+                    leaseEntry.put("DstInfo",""); //
+                    leaseEntry.put("SeqNo", "1"); // 일단 기본값 (추후 업데이트 가능)
+                    leaseEntry.put("EstateRightDisplay",  columns[4].trim());
+                    leaseData.add(leaseEntry);
+                }
+            } else {
+                // 순위번호가 없는 경우 → 이전 데이터와 병합
+                currentRow.put("NomprsAndEtc", currentRow.get("NomprsAndEtc") + " " + columns[4].trim());
+            }
+        }
+
+        // 마지막 데이터 저장
+        if (!currentRow.isEmpty()) {
+            parsedData.add(currentRow);
+        }
+
+        // 결과를 Map으로 반환
+        Map<String, Object> result = new HashMap<>();
+        result.put("parsedData", parsedData);
+        result.put("collateralData", collateralData); // "담보" 데이터
+        result.put("leaseData", leaseData); // "전세" 데이터
+
+        return result;
+    }
+
+    // 파싱데이터에서 특정 키워드 갑구 을구 의 시작 인덱스 찾는 메서드
+    public static int findStartIndex(List<String> tableData, String keyword) {
+        for (int i = 0; i < tableData.size(); i++) {
+            if (tableData.get(i).contains(keyword)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    // Summary 데이터 파싱 메서드
+    public static Map<String, Object> parseSummaryTable(List<String> tableData) {
+        List<Map<String, Object>> summaryDataA = new ArrayList<>(); // 등기명의인 데이터
+        List<Map<String, Object>> summaryDataK = new ArrayList<>(); // 두 번째 순위번호 데이터
+        List<Map<String, Object>> summaryDataE = new ArrayList<>(); // 세 번째 순위번호 데이터
+
+        boolean isParsingA = false, isParsingK = false, isParsingE = false;
+
+        for (String row : tableData) {
+            String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
+
+            if (columns.length < 2) continue; // 최소 2개 필드가 있어야 유효한 데이터
+
+            // "등기명의인"이 시작되면 A 데이터 저장
+            if (columns[0].contains("등기명의인")) {
+                isParsingA = true;
+                isParsingK = false;
+                isParsingE = false;
+                continue; // 헤더 스킵
+            }
+
+            // 두 번째 "순위번호" 등장하면 K 데이터 저장
+            if (columns[0].equals("순위번호") && !isParsingK && !isParsingE) {
+                isParsingA = false;
+                isParsingK = true;
+                continue; // 헤더 스킵
+            }
+
+            // 세 번째 "순위번호" 등장하면 E 데이터 저장
+            if (columns[0].equals("순위번호") && isParsingK) {
+                isParsingK = false;
+                isParsingE = true;
+                continue; // 헤더 스킵
+            }
+
+            // TB_SummaryDataA (등기명의인 테이블)
+            if (isParsingA) {
+                if (columns.length >= 5) {
+                    Map<String, Object> entry = new HashMap<>();
+                    entry.put("RegisteredHolder", columns[0].trim());
+                    entry.put("RegistrationNumber", columns[1].trim());
+                    entry.put("FinalShare", columns[2].trim());
+                    entry.put("Address", columns[3].trim());
+                    entry.put("RankNo", columns[4].trim());
+                    summaryDataA.add(entry);
+                }
+            }
+
+            // TB_SUMMARYDATAK (두 번째 순위번호 테이블)
+            if (isParsingK) {
+                if (columns.length >= 5) {
+                    Map<String, Object> entry = new HashMap<>();
+                    entry.put("RankNo", columns[0].trim());
+                    entry.put("Purpose", columns[1].trim());
+                    entry.put("ReceiptInfo", columns[2].trim());
+                    entry.put("Information", columns[3].trim());
+                    entry.put("TargetOwner", columns[4].trim());
+                    summaryDataK.add(entry);
+                }
+            }
+
+            // TB_SUMMARYDATAE (세 번째 순위번호 테이블)
+            if (isParsingE) {
+                if (columns.length >= 5) {
+                    Map<String, Object> entry = new HashMap<>();
+                    entry.put("RankNo", columns[0].trim());
+                    entry.put("Purpose", columns[1].trim());
+                    entry.put("ReceiptInfo", columns[2].trim());
+                    entry.put("Information", columns[3].trim());
+                    entry.put("TargetOwner", columns[4].trim());
+                    summaryDataE.add(entry);
+                }
+            }
+        }
+
+        // ✅ 결과를 Map으로 반환
+        Map<String, Object> result = new HashMap<>();
+        result.put("SummaryDataAMap", summaryDataA);
+        result.put("SummaryDataKMap", summaryDataK);
+        result.put("SummaryDataEMap", summaryDataE);
+
+        return result;
+    }
 
 }

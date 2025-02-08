@@ -173,7 +173,7 @@ public class TilkoService {
 
     }
 
-    // dataJ저장
+    // dataJ저장(매매정보)
     public void savedataJ(Map<String, Object> dataHNum) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
@@ -186,13 +186,15 @@ public class TilkoService {
     }
 
     // dataJ 하위 TradeAmount저장
-    public void saveTradeAmount(Map<String, Object> dataHNum) {
+    public void saveTradeAmount(Map<String, Object> TradeAmount) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         String sql = """
-                
+                INSERT INTO TB_TradeAmount (REALID, Amount, UpdateResn)
+                        VALUES (:REALID, :Amount,"")
                 """;
-        params.addValue("dataJNum", dataHNum.get("data"));
+        params.addValue("REALID", TradeAmount.get("REALID"));
+        params.addValue("Amount", TradeAmount.get("Amount"));
         int realMaxNum = this.sqlRunner.execute(sql,params);
 
     }
@@ -530,8 +532,5 @@ public class TilkoService {
 
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
     }
-
-    // fileinfo 저장
-
 
 }

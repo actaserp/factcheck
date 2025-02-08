@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mes.app.UtilClass;
 import mes.app.actas_inspec.service.PDFTableProcessor;
+import mes.app.tilko.TilkoParsing;
 import mes.domain.DTO.TB_RP620Dto;
 import mes.domain.DTO.TB_RP621Dto;
 import mes.domain.DTO.TB_RP622Dto;
@@ -28,35 +29,41 @@ import java.util.*;
 
 public class LTSAController {
 
+    TilkoParsing tilkoParsing;
+
     public Map<String, Object> uploadPDF(File file) throws IOException {
 
-        Map<String, Object> resultList = new HashMap<>();
+        Map<String, Object> resultMap = new HashMap<>();
 
-        // 임시 파일 생성 및 저장
-        // 확장자를 동적으로 설정하여 임시 파일 생성
-//        extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-//        File tempFile = File.createTempFile("uploaded-", extension);
-//        file.transferTo(tempFile);
         File tempFile = UtilClass.saveFileToTempAsFile(file);
 
         Map<String, String> dtoValue = new HashMap<>();
         List<String> totalList = new ArrayList<>();
 
-        String pdfFirstPageContent = "";
+        String pdfPageContent = "";
+        List<String> pdfListContent;
 
         // 각 테이블 별 넣어야 하는 데이터들 파싱 리스트
         // 부동산 등기부 등본 기본 데이터
-        Map<String, String> RegisterList = new HashMap<>();
-        Map<String, String> RegisterDataGList = new HashMap<>();
-        Map<String, String> RegisterDataGItemsList = new HashMap<>();
-        Map<String, String> RegisterDataHList = new HashMap<>();
-        Map<String, String> RegisterDataHItemsList = new HashMap<>();
-        Map<String, String> RegisterDataJList = new HashMap<>();
+        Map<String, Object> RegisterMap = new HashMap<>();
+        Map<String, Object> REALAOWNMap = new HashMap<>();
+        List<Map<String, Object>> GabguData = new ArrayList<>();
+        boolean isParsingGabgu = false; // `갑구`소유권에 관한 사항 데이터 수집 여부
+        Map<String, Object> REALBOWNMap = new HashMap<>();
+        List<Map<String, Object>> eulguData = new ArrayList<>();
+        boolean isParsingeulgu = false; // `을구`소유권이외에 관한 사항 데이터 수집 여부
+        Map<String, Object> RegisterDataGMap = new HashMap<>();
+        List<Map<String, Object>> RegisterDataGItemsList = new ArrayList<>();// 담보
+        Map<String, Object> RegisterDataHMap = new HashMap<>();
+        List<Map<String, Object>> RegisterDataHItemsList = new ArrayList<>(); // 전세
+        List<Map<String, Object>> RegisterDataJMap = new ArrayList<>();
+        List<Map<String, Object>> TradeAmount = new ArrayList<>();
 
         // 주요 등기사항 요약
-        Map<String, String> SummaryDataEList = new HashMap<>();
-        Map<String, String> SummaryDataKList = new HashMap<>();
-        Map<String, String> SummaryDataAList = new HashMap<>();
+        Map<String, Object> Summary = new HashMap<>(); // 부동산 등기부정보
+        List<Map<String, Object>> SummaryDataEMap = new ArrayList<>(); // 저당권 및 전세권 등 (을구)
+        List<Map<String, Object>> SummaryDataKMap = new ArrayList<>(); // 소유지분을 제외한 소유권에 관한 사항(갑구)
+        List<Map<String, Object>> SummaryDataAMap = new ArrayList<>(); // 소유지분현황(갑구)
 
         //TODO: 운영 환경에서만
         //PDF를 이미지로 변환
@@ -72,63 +79,131 @@ public class LTSAController {
                 ImageIO.write(image, "jpg", imageFile);
 
                 Map<String, Object> item = OCRDataProcessingToString(imageFile);
-                pdfFirstPageContent = item.get("일반데이터").toString();
-                System.out.println("일반데이터 : " + pdfFirstPageContent);
+                pdfPageContent = item.get("일반데이터").toString();
+                pdfListContent = (List<String>) item.get("표데이터");
+                System.out.println("일반데이터 : " + pdfPageContent);
+                if (pdfListContent == null || pdfListContent.isEmpty()) {
+                    System.out.println("표데이터가 없습니다. 페이지 " + (pageIndex + 1));
+                    continue; // 다음 페이지로 넘어감
+                }
                 // 일반데이터에서 텍스트를 찾아서 각 데이터에 맞게 분배
-                // 1. 데이터를 `|` 기준으로 나누기
-                String[] rows = pdfFirstPageContent.split("\\|");
+                if (pageIndex == 0) {
+                // 날짜 및 시간 추출
+                String WksbiBalDate = tilkoParsing.extractDate(pdfPageContent);
+                String WksbiBalNoTime = tilkoParsing.extractTime(pdfPageContent);
+                RegisterMap.put("WksbiBalDate",WksbiBalDate);
+                RegisterMap.put("WksbiBalNoTime",WksbiBalNoTime);
+                RegisterMap.put("IssOffice","법원행정처 등기정보중앙관리소");
+                RegisterMap.put("IssNo",""); // 발급번호 (열람용, 발급용 구분 발급용 300원추가결제 해당 발급번호로 3개월이내 5회 무료추가발급 가능)
+                RegisterMap.put("SumYn","Y");
+                }
+                // 표데이터에서 갑구 확인 후 수집시작 / 갑구에서 매매 데이터 같이 수집
+                int gabguStartIndex = tilkoParsing.findStartIndex(pdfListContent, "갑 구");
+                int eulguStartIndex = tilkoParsing.findStartIndex(pdfListContent, "을 구");
+                if (gabguStartIndex != -1) {
+                    isParsingGabgu = true;
+                }
+                // `갑구` 데이터 수집
+                if (isParsingGabgu) {
+                    Map<String, Object> result = tilkoParsing.parseGabguTable(pdfListContent);
+                    List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData");
+                    List<Map<String, Object>> TradeDATA = (List<Map<String, Object>>) result.get("TradeAmount");
 
-                // 2. 데이터 분류 및 저장
-                for (int i = 0; i < rows.length; i++) {
-                    if (rows[i].contains("등기명의인")) {
-                        // 소유자 정보 (갑구) 저장
-                        RegisterList.put("등기명의인", rows[i + 1]);
-                        RegisterList.put("등록번호", rows[i + 2]);
-                        RegisterList.put("지분", rows[i + 3]);
-                        RegisterList.put("주소", rows[i + 4]);
-                        RegisterList.put("순위번호", rows[i + 5]);
-                    } else if (rows[i].contains("순위번호") && i + 5 < rows.length) {
-                        // 소유권 외 기타 사항 (갑구) 저장
-                        SummaryDataEList.put("순위번호", rows[i + 1]);
-                        SummaryDataEList.put("등기목적", rows[i + 2]);
-                        SummaryDataEList.put("접수정보", rows[i + 3]);
-                        SummaryDataEList.put("주요등기사항", rows[i + 4]);
-                        SummaryDataEList.put("대상소유자", rows[i + 5]);
-                    } else if (rows[i].contains("근저당권설정")) {
-                        // 근저당권 정보 (을구) 저장
-                        SummaryDataKList.put("순위번호", rows[i - 1]); // 근저당 설정 앞에 순위번호 존재
-                        SummaryDataKList.put("등기목적", rows[i]);
-                        SummaryDataKList.put("접수정보", rows[i + 1]);
-                        SummaryDataKList.put("주요등기사항", rows[i + 2]);
-                        SummaryDataKList.put("대상소유자", rows[i + 3]);
+                    // 매매된 금액이 있는지 확인
+                    if (!TradeDATA.isEmpty()) {
+                        System.out.println("마지막 매매 거래가액: " + TradeDATA.get(TradeDATA.size() - 1).get("Amount"));
+                    }
+
+                    GabguData.addAll(parsedData);
+                    if (!TradeDATA.isEmpty()) {
+                        System.out.println("마지막 매매 거래가액: " + TradeDATA.get(TradeDATA.size() - 1).get("Amount"));
+                        TradeAmount.add(TradeDATA.get(TradeDATA.size() - 1));
+                    } else {
+                        System.out.println("TradeDATA가 비어 있음: 매매 데이터 없음");
                     }
                 }
+                // 표데이터에서 을구 시작시 갑구 수집 중단 후 을구 수집 시작 / 을구 담보, 전세 데이터 같이 수집
+                if (eulguStartIndex != -1) {
+                    isParsingGabgu = false;
+                    isParsingeulgu = false;
+                }
+                // `을구` 데이터 수집
+                if (isParsingeulgu) {
+                    Map<String, Object> result = tilkoParsing.parseeulguTable(pdfListContent);
 
-                // 3. 결과 출력
-                System.out.println("등기명의인 데이터: " + RegisterList);
-                System.out.println("주요 등기사항 요약: " + SummaryDataEList);
-                System.out.println("근저당권 정보: " + SummaryDataKList);
+                    List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData"); // 을구 데이터
+                    List<Map<String, Object>> collateralData = (List<Map<String, Object>>) result.get("collateralData"); // 담보 데이터
+                    List<Map<String, Object>> leaseData = (List<Map<String, Object>>) result.get("leaseData"); // 전세 데이터
 
-                List<String> table = (List<String>) item.get("표데이터");
-                System.out.println("표데이터 : " + table);
-                totalList.addAll(table);
+                    eulguData.addAll(parsedData);
+                    if (!collateralData.isEmpty()) {
+                        RegisterDataGItemsList.add(collateralData.get(collateralData.size() - 1));
+                    } else {
+                        System.out.println("담보 데이터가 없습니다.");
+                    }
+
+                    if (!leaseData.isEmpty()) {
+                        RegisterDataHItemsList.add(leaseData.get(leaseData.size() - 1));
+                    } else {
+                        System.out.println("전세 데이터가 없습니다.");
+                    }
+
+
+                }
+                // 마지막에서 두 번째 페이지에서 관할등기소 정보 추출
+                if (pageIndex == totalPages - 2) {
+                    String WksbiJrisdictionOffice = tilkoParsing.extractJurisdictionOffice(pdfPageContent);
+                    RegisterMap.put("WksbiJrisdictionOffice", WksbiJrisdictionOffice);
+                }
+                // 마지막 페이지에서 Summary데이터 추출
+                if (pageIndex == totalPages - 1) {
+                    Map<String, Object> summaryResult = tilkoParsing.parseSummaryTable(pdfListContent);
+
+                    List<Map<String, Object>> summaryDataA = (List<Map<String, Object>>) summaryResult.get("SummaryDataAMap");
+                    List<Map<String, Object>> summaryDataK = (List<Map<String, Object>>) summaryResult.get("SummaryDataKMap");
+                    List<Map<String, Object>> summaryDataE = (List<Map<String, Object>>) summaryResult.get("SummaryDataEMap");
+
+                    if (summaryDataA != null) {
+                        SummaryDataAMap.addAll(summaryDataA);
+                    } else {
+                        System.out.println("SummaryDataAMap이 비어 있습니다.");
+                    }
+
+                    if (summaryDataK != null) {
+                        SummaryDataKMap.addAll(summaryDataK);
+                    } else {
+                        System.out.println("SummaryDataKMap이 비어 있습니다.");
+                    }
+
+                    if (summaryDataE != null) {
+                        SummaryDataEMap.addAll(summaryDataE);
+                    } else {
+                        System.out.println("SummaryDataEMap이 비어 있습니다.");
+                    }
+
+                }
+
             }
+            REALAOWNMap.put("REALAOWNDATA", GabguData);// 갑구에 대한 데이터 정리
+            REALBOWNMap.put("REALBOWNDATA", eulguData);// 을구에 대한 데이터 정리
             System.out.println("총 데이터 : "+ totalList);
+            resultMap.put("RegisterMap", RegisterMap);
+            resultMap.put("REALAOWNMap", REALAOWNMap);
+            resultMap.put("REALBOWNMap", REALBOWNMap);
+            resultMap.put("TradeAmount", TradeAmount);
+            resultMap.put("RegisterDataGItemsList", RegisterDataGItemsList);
+            resultMap.put("RegisterDataHItemsList", RegisterDataHItemsList);
+            resultMap.put("SummaryDataEMap", SummaryDataEMap);
+            resultMap.put("SummaryDataKMap", SummaryDataKMap);
+            resultMap.put("SummaryDataAMap", SummaryDataAMap);
         } finally {
             if(tempFile.exists()){
                 tempFile.delete();
             }
         }
-
         //TODO: 운영 환경에서만 끝.
-
-
-        SaveProcessor(totalList, dtoValue);
-
-        return resultList;
+        return resultMap;
     }
-
-
     // 파싱데이터 저장 로직
     private void SaveProcessor(List<String> table, Map<String, String> dtoValue) {
 
