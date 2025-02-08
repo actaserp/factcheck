@@ -4,11 +4,43 @@
     .btn-clear {
         display: none !important; /* 강제로 숨김 */
     }
+
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
 
+    .mobile-layout-contents {
+        display: flex;
+        flex-direction: column;
+        height: 100vh; /* 화면 전체 높이를 차지 */
+    }
+
+    .layout-contents {
+        display: flex;
+        flex-direction: column;
+        height: 100%; /* 부모의 100% 높이 차지 */
+    }
+
+    .search-wrap {
+        height: 30%; /* 30% 높이 차지 */
+        overflow: auto; /* 내용이 많아지면 스크롤 */
+    }
+
+    .contents-wrap {
+        height: 50%; /* 50% 높이 차지 */
+        overflow: auto; /* 내용이 많아지면 스크롤 */
+        margin-bottom: 10%;
+    }
+
+    .chart-wrap {
+        width: 100%; /* 차트 영역이 부모 영역에 맞춰지도록 */
+        height: 100%; /* 차트 영역이 부모 영역에 맞춰지도록 */
+    }
+
+
+
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -64,44 +96,27 @@
         <div class="layout-contents">
             <!-- 검색 영역  -->
             <div class="search-wrap">
+                <div class="srch-btn">
+                    <button class="btn-dark" onclick="searchdata()">가져오기</button>
+                </div>
+                <div id="addressWrap" class="contents-wrap">
 
+                </div>
             </div>
+
             <!-- 컨텐츠 영역  -->
             <div class="contents-wrap">
-                <dl style="margin-bottom: 10px">
-                    <button onclick="openModal()" style="margin-bottom: 10px">주소 검색</button>
-
-                    <div id="postcodeModal" class="modal" style="display: none">
-                        <div class="modal-content">
-                            <div style="display: flex">
-                                <div class="modal-header">주소 검색</div>
-                                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto">×</button>
-                            </div>
-                            <div id="postcodeContainer" style="width: 100%;"></div>
-                        </div>
+                <div>
+                    <div class="chart-wrap">
+                        <canvas id="SignupOfWeek" style="width: 740px; height: 550px;"></canvas>
                     </div>
-
-                    <div>
-                        <input type="hidden" id="postno" readonly>
-                        <label for="address1">도로명 주소:</label>
-                        <input type="text" id="address1" readonly><br>
-                        <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
-                    </div>
-                    <div>
-                        <label for="address2">상세 주소:</label>
-                        <input type="text" id="address2" placeholder="상세주소를 검색"><br>
-                    </div>
-                    <button onclick="searchGoyuList()" style="margin-top: 10px">고유번호 확인</button>
-                </dl>
+                </div>
             </div> <!--// contents-wrap end-->
-            <div id="addressWrap" class="contents-wrap">
-
-            </div>
-            <button onclick="searchdatetest()" style="margin-top: 10px">test</button>
         </div> <!--//layout-contents end -->
-
     </div> <!-- //mobile-layout-contents end-->
 </div> <!-- //page-wrapper end-->
+
+
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script th:inline="javascript">
     // // Thymeleaf에서 값 설정: Null 체크와 기본값 처리
@@ -117,203 +132,99 @@
     // if (groupname && groupname !== 'null') localStorage.setItem('groupname', groupname);
 </script>
 <script>
-    function openModal() {
-        document.getElementById('postcodeModal').style.display= 'block';
+    // 차트가 그려질 캔버스 요소를 가져옵니다.
+    var ctx = document.getElementById('SignupOfWeek').getContext('2d');
 
-        new daum.Postcode({
-            oncomplete: function(data) {
-                var roadAddr = data.roadAddress;
-                var extraRoadAddr = '';
-
-                if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
-                    extraRoadAddr += data.bname;
+    // Chart.js로 원형 차트를 생성합니다.
+    var chart = new Chart(ctx, {
+        type: 'pie', // 'pie' 타입을 사용하여 원형 차트를 생성
+        data: {
+            labels: ['근저당권', '압류', '신탁', '전세권', '기타'], // 차트에 표시될 레이블
+            datasets: [{
+                label: '일주일 간의 가입자 수', // 데이터셋 레이블
+                data: [10, 20, 30, 15, 25], // 각 항목에 해당하는 데이터
+                backgroundColor: [
+                    '#F27983', '#BDD9A0', '#F2CA80', '#F2A35E', '#F28F6B' // 각 항목에 대한 배경 색상
+                ],
+                borderColor: '#ffffff', // 테두리 색상
+                borderWidth: 1 // 테두리 두께
+            }]
+        },
+        options: {
+            responsive: true, // 반응형 설정
+            plugins: {
+                legend: {
+                    position: 'bottom', // 범례 위치
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            return tooltipItem.label + ': ' + tooltipItem.raw + '%'; // 툴팁에 표시될 값 포맷
+                        }
+                    }
                 }
-                if (data.buildingName !== '' && data.apartment === 'Y') {
-                    extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-                }
-                if (extraRoadAddr !== '') {
-                    extraRoadAddr = ' (' + extraRoadAddr + ')';
-                }
-
-                document.getElementById('postno').value = data.zonecode;
-                document.getElementById('address1').value = roadAddr;
-
-                var guideTextBox = document.getElementById("guide");
-                if (data.autoRoadAddress) {
-                    var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
-                    guideTextBox.innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
-                    guideTextBox.style.display = 'block';
-                } else if (data.autoJibunAddress) {
-                    var expJibunAddr = data.autoJibunAddress;
-                    guideTextBox.innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
-                    guideTextBox.style.display = 'block';
-                } else {
-                    guideTextBox.innerHTML = '';
-                    guideTextBox.style.display = 'none';
-                }
-
-                closeModal();
-            },
-            onresize: function(size) {
-                // 동적 스타일 적용
-                const layers = document.querySelectorAll('[id^="__daum__layer_"]');
-                layers.forEach(layer => {
-                    layer.style.width = '100%';
-                    layer.style.height = '500px';
-                    layer.style.overflow = 'hidden';
-                    layer.style.backgroundColor = '#fff';
-                });
             }
-
-        }).embed(document.getElementById('postcodeContainer'));
-    }
-
-    function closeModal() {
-        document.getElementById('postcodeModal').style.display= 'none';
-    }
-</script>
-<script type="text/javascript">
-
-    // 고유번호 조회
-    function searchGoyuList() {
-        let data2 = [];
-        if (document.getElementById('address1').value === "") {
-            Alert.alert('', '주소를 선택해주세요');
-            return false;
         }
-        $.ajax({
-            url: '/api/tilko/searchGoyuList',
-            type: 'GET',
-            data: {
-                'address1': $('#address1').val() + " " + $('#address2').val()
-            },
-            async: false,
-            success: function (data) {
-                data2 = data.data;
-                console.log("data2", data);
-                console.log("data2", data2);
-                const listAddressWrap = document.getElementById('addressWrap');
-                const availableColors = ['card-blue', 'card-green', 'card-black', 'card-red', 'card-yellow', 'card-purple'];
-                listAddressWrap.innerHTML = ''; // 기존 내용을 초기화
-                // 색상을 순환적으로 할당하기 위한 인덱스
-                let colorIndex = 0;
-                let htmlContent = '';
+    });
 
-                // Gubun 데이터에서 '토지' 데이터 제외 화면에 출력
-                data2.forEach(data => {
-                    const cardColor = availableColors[colorIndex];
-                    colorIndex = (colorIndex + 1) % availableColors.length;
-                    if(data.Gubun !== '토지') {
-                        // 버튼 처리
-                        let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="등기부">
-                            등기부 조회
-                        </button>`;
-                        // rd_addr_detail에서 태그 제거 후 적용
-                        let cleanAddress = stripHtmlTags(data.rd_addr_detail).replace(/\s+/g, ''); // 공백 제거
+    document.readyState === 'complete' ? init() : window.onload = init;
 
-                        htmlContent += `
-                        <div class="card-box ${cardColor}" data-Goyu="${data.pin}">
-                            <div class="card-cont">
-                                <dl>
-                                    <dt>고유번호</dt>
-                                    <dd>${data.pin}</dd>
-                                </dl>
-                                <dl>
-                                    <dt>주소</dt>
-                                    <dd>${cleanAddress}</dd>
-                                </dl>
-                                <dl>
-                                    <dt>구분</dt>
-                                    <dd>${data.real_cls_cd}</dd>
-                                </dl>
-                                <dl>
-                                    <dt>상태</dt>
-                                    <dd>${data.use_cls_cd}</dd>
-                                </dl>
-                            </div>
-                                ${buttonsHtml}
-                        </div>
-                        `;
-
-                    }else{
-                        console.log("토지데이터")
-                    }
-                })
-                listAddressWrap.insertAdjacentHTML('beforeend', htmlContent);
-
-                // 이벤트 위임 추가
-                listAddressWrap.addEventListener('click', (event) => {
-                    const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
-                    if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
-
-                    const cardBox = button.closest('.card-box');
-                    const goyuNum = cardBox.getAttribute('data-Goyu');
-
-                    // 데이터 찾기
-                    const item = data2.find(d => d.pin === goyuNum);
-                    if (item) {
-                        searchaddress(item);
-                    }
-                });
-            }
+    function init() {
+        const zoomIcons = document.querySelectorAll('.chart-wrap .material-symbols-outlined');
+        zoomIcons.forEach(icon => {
+            icon.style.display = 'none'; // 또는 icon.style.visibility = 'hidden';
         });
     }
-    // HTML 태그 제거 함수
-    function stripHtmlTags(html) {
-        let tempDiv = document.createElement("div");
-        tempDiv.innerHTML = html;
-        return tempDiv.textContent || tempDiv.innerText || "";
-    }
 
-    function searchaddress(data) {
-        console.log("data : ", data)
+    function searchdata() {
         $.ajax({
-            url: '/api/tilko/searchaddress',
+            url: '/api/mobile_production/pie_chart',
             type: 'GET',
-            data: {
-                "GoyuNUM" : data.pin,
-                "address" : data.rd_addr
-            },
-            async: false,
             success: function (response) {
-                let data2 = response.data;
-                console.log("data2", data2);
+                console.log(response);
 
-                // API 응답에서 필요한 값 추출 후 sessionStorage에 저장
-                let resultMap = {
-                    "REALSCORE": data2.REALSCORE,
-                    "GRADE": data2.GRADE,
-                    "COMMENT": data2.COMMENT,
-                    "ADDRESS": data2.ADDRESS
-                };
-                sessionStorage.setItem("resultMap", JSON.stringify(resultMap));
+                let addressWrap = document.getElementById("addressWrap");
+                addressWrap.innerHTML = "";
 
-                // search_card 페이지로 이동
-                window.location.href = "search_card";
+                if (response.success && Array.isArray(response.data)) {
+                    response.data.forEach(item => {
+                        let realAdd = item.REALADD || "주소 없음";
+                        let realScore = item.REALSCORE !== undefined ? item.REALSCORE : "점수 없음";
+                        let sReqDate = item.Sreqdate ? item.Sreqdate.split("T")[0] : "날짜 없음";
+
+                        let entry = document.createElement("div");
+                        entry.innerHTML = `<p>주소: ${realAdd}</p>
+                                       <p>점수: ${realScore}</p>
+                                       <p>조회날짜: ${sReqDate}</p>
+                                       <hr>`;
+                        addressWrap.appendChild(entry);
+                    });
+
+                    // 데이터 개수가 3개 이상이면 스크롤 활성화
+                    if (response.data.length >= 3) {
+                        addressWrap.style.maxHeight = "180px";
+                        addressWrap.style.overflowY = "auto";
+                        addressWrap.style.border = "1px solid #ddd";
+                        addressWrap.style.padding = "10px";
+                    } else {
+                        // 데이터가 3개 미만이면 스타일 초기화
+                        addressWrap.style.maxHeight = "";
+                        addressWrap.style.overflowY = "";
+                        addressWrap.style.border = "";
+                        addressWrap.style.padding = "";
+                    }
+                } else {
+                    addressWrap.innerHTML = "<p>데이터가 없습니다.</p>";
+                }
             },
             error: function (error) {
-                console.error("Error in API call:", error);
+                console.error("데이터 불러오기 실패:", error);
+                document.getElementById("addressWrap").innerHTML = "<p>데이터를 불러오지 못했습니다.</p>";
             }
         });
     }
-    function searchdatetest() {
-        console.log("data : ", )
-        $.ajax({
-            url: '/api/tilkotest/searchGoyuList',
-            type: 'GET',
-            data: {
-            },
-            async: false,
-            success: function (data) {
-                data2 = data.data;
-                console.log("data2", data2);
 
-            },
-            error: function (error) {
-                console.error("Error in API call:", error);
-            }
-        });
-    }
+
 
 </script>
 </body>

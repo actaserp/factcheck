@@ -78,4 +78,19 @@ public class ProductionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버에서 데이터를 처리하는 중 오류가 발생했습니다.");
         }
     }
+
+    @GetMapping("/pie_chart")
+    public AjaxResult getList(Authentication auth){
+        AjaxResult result = new AjaxResult();
+
+        User user = (User) auth.getPrincipal();
+        String userid = String.valueOf(user.getId());
+
+        List<Map<String, Object>> items = productionService.getSeachList(userid);
+
+        result.data = items;
+
+        return result;
+    }
+
 }
