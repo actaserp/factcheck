@@ -91,16 +91,41 @@ public class TilkoService {
 
         int realMaxNum = this.sqlRunner.execute(sql,params);
     }
-    // dataH저장
-    public void savedataH(String dataHNum) {
+    // TB_REGISTERDATAHITEMS 테이블에 데이터 저장
+    public void savedataH(Map<String, Object> dataMap) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         String sql = """
-                
-                """;
-        params.addValue("dataHNum", dataHNum);
-        int realMaxNum = this.sqlRunner.execute(sql,params);
+        INSERT INTO TB_REGISTERDATAHITEMS (
+            REALID,
+            SeqNo,
+            EstateRightDisplay,
+            OwnJuris,
+            RankNo,
+            CrtResn,
+            DstInfo
+        ) VALUES (
+            :REALID,
+            :SeqNo,
+            :EstateRightDisplay,
+            :OwnJuris,
+            :RankNo,
+            :CrtResn,
+            :DstInfo
+        );
+        """;
 
+        // Map 데이터를 SQL 파라미터에 매핑
+        params.addValue("REALID", dataMap.get("REALID"));
+        params.addValue("SeqNo", dataMap.getOrDefault("SeqNo", "1")); // 기본값 1 (중복 방지 필요)
+        params.addValue("EstateRightDisplay", dataMap.get("EstateRightDisplay"));
+        params.addValue("OwnJuris", dataMap.get("OwnJuris"));
+        params.addValue("RankNo", dataMap.get("RankNo"));
+        params.addValue("CrtResn", dataMap.get("CrtResn"));
+        params.addValue("DstInfo", dataMap.get("DstInfo"));
+
+        int insertedRows = this.sqlRunner.execute(sql, params);
+        System.out.println("Inserted into TB_REGISTERDATAHITEMS: " + insertedRows + " row(s)");
     }
 
     // dataHitems저장
@@ -198,30 +223,42 @@ public class TilkoService {
         int realMaxNum = this.sqlRunner.execute(sql,params);
 
     }
-
-    // dataJ 하위 Items 저장
-    public void saveItemsdata(Map<String, Object> dataHNum) {
+    // TB_REGISTERDATAGITEMS 테이블에 데이터 저장
+    public void saveRegisterDataG(Map<String, Object> dataMap) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         String sql = """
-                
-                """;
-        params.addValue("dataJNum", dataHNum.get("data"));
-        int realMaxNum = this.sqlRunner.execute(sql,params);
+        INSERT INTO TB_REGISTERDATAGITEMS (
+            REALID,
+            SeqNo,
+            EstateRightDisplay,
+            OwnJuris,
+            RankNo,
+            CrtResn,
+            DstInfo
+        ) VALUES (
+            :REALID,
+            :SeqNo,
+            :EstateRightDisplay,
+            :OwnJuris,
+            :RankNo,
+            :CrtResn,
+            :DstInfo
+        );
+        """;
 
+        // Map 데이터를 SQL 파라미터에 매핑
+        params.addValue("REALID", dataMap.get("REALID"));
+        params.addValue("SeqNo", dataMap.getOrDefault("SeqNo", "1")); // 기본값 1
+        params.addValue("EstateRightDisplay", dataMap.get("EstateRightDisplay"));
+        params.addValue("OwnJuris", dataMap.get("OwnJuris"));
+        params.addValue("RankNo", dataMap.get("RankNo"));
+        params.addValue("CrtResn", dataMap.get("CrtResn"));
+        params.addValue("DstInfo", dataMap.get("DstInfo"));
+
+        int insertedRows = this.sqlRunner.execute(sql, params);
     }
 
-    // dataJ 하위 없는 경우
-    public void savedataJItems(Map<String, Object> dataHNum) {
-        MapSqlParameterSource params = new MapSqlParameterSource();
-
-        String sql = """
-                
-                """;
-        params.addValue("dataJNum", dataHNum.get("data"));
-        int realMaxNum = this.sqlRunner.execute(sql,params);
-
-    }
     // Summary저장
     public void saveSummary(Map<String, Object> summaryData) {
         MapSqlParameterSource params = new MapSqlParameterSource();

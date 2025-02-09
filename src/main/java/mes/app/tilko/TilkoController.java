@@ -904,7 +904,7 @@ public class TilkoController {
                     List<Map<String, Object>> RegisterDataGItemsList = (List<Map<String, Object>>) pdfParsingMap.get("RegisterDataGItemsList");
                     // 전세
                     Map<String, Object> RegisterDataHMap = (Map<String, Object>) pdfParsingMap.get("RegisterDataHMap");
-                    Map<String, Object> RegisterDataHItemsMap = (Map<String, Object>) pdfParsingMap.get("RegisterDataHItemsMap");
+                    List<Map<String, Object>> RegisterDataHItemsMap = (List<Map<String, Object>>) pdfParsingMap.get("RegisterDataHItemsMap");
                     // 매매
                     List<Map<String, Object>> TradeAmount = (List<Map<String, Object>>) pdfParsingMap.get("TradeAmount");
 
@@ -984,8 +984,34 @@ public class TilkoController {
                         item.put("REALID", REALID);
                         tilkoService.saveTradeAmount(item);
                     }
-
-
+                    for (Map<String, Object> item : RegisterDataGItemsList){
+                        item.put("REALID", REALID);
+                        tilkoService.saveRegisterDataG(item);
+                    }
+                    for (Map<String, Object> item : RegisterDataHItemsMap){
+                        item.put("REALID", REALID);
+                        tilkoService.savedataH(item);
+                    }
+                    for (Map<String, Object> item : SummaryDataEMap){
+                        item.put("REALID", REALID);
+                        tilkoService.saveSummaryDataE(item);
+                    }
+                    for (Map<String, Object> item : SummaryDataKMap){
+                        item.put("REALID", REALID);
+                        tilkoService.saveRegisterDataK(item);
+                    }
+                    for (Map<String, Object> item : SummaryDataAMap){
+                        item.put("REALID", REALID);
+                        tilkoService.saveSummaryDataA(item);
+                    }
+                    // 카드 출력시 필요 데이터
+                    Map<String, Object> resultMap = new HashMap<>();
+                    resultMap.put("REALSCORE", resultScore.get("REALSCORE"));
+                    resultMap.put("GRADE", resultScore.get("GRADE"));
+                    resultMap.put("COMMENT", resultScore.get("COMMENT"));
+                    resultMap.put("ADDRESS", address);
+                    result.data = resultMap;
+                    result.message = "등기부등본 정상조회";
                 } catch (IllegalArgumentException e) {
                     result.message = "오류발생";
                     return result;

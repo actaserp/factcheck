@@ -97,24 +97,27 @@ public class LTSAController {
                 RegisterMap.put("IssNo",""); // 발급번호 (열람용, 발급용 구분 발급용 300원추가결제 해당 발급번호로 3개월이내 5회 무료추가발급 가능)
                 RegisterMap.put("SumYn","Y");
                 }
-                // 표데이터에서 갑구 확인 후 수집시작 / 갑구에서 매매 데이터 같이 수집
+                // 표데이터에서 갑구 확인 인덱스
                 int gabguStartIndex = tilkoParsing.findStartIndex(pdfListContent, "갑 구");
                 int eulguStartIndex = tilkoParsing.findStartIndex(pdfListContent, "을 구");
+
                 if (gabguStartIndex != -1) {
-                    isParsingGabgu = true;
-                }
-                // `갑구` 데이터 수집
-                if (isParsingGabgu) {
-                    Map<String, Object> result = tilkoParsing.parseGabguTable(pdfListContent);
+                    // `갑구` 시작부터 `을구` 시작 전까지 잘라서 `parseGabguTable()` 호출
+                    List<String> gabguDataSubset = pdfListContent.subList(gabguStartIndex,
+                            (eulguStartIndex != -1) ? eulguStartIndex : pdfListContent.size());
+
+                    Map<String, Object> result = tilkoParsing.parseGabguTable(gabguDataSubset);
                     List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData");
                     List<Map<String, Object>> TradeDATA = (List<Map<String, Object>>) result.get("TradeAmount");
 
-                    // 매매된 금액이 있는지 확인
+                    // ✅ 매매된 금액 확인
                     if (!TradeDATA.isEmpty()) {
                         System.out.println("마지막 매매 거래가액: " + TradeDATA.get(TradeDATA.size() - 1).get("Amount"));
                     }
 
+                    // ✅ 수집한 갑구 데이터 저장
                     GabguData.addAll(parsedData);
+
                     if (!TradeDATA.isEmpty()) {
                         System.out.println("마지막 매매 거래가액: " + TradeDATA.get(TradeDATA.size() - 1).get("Amount"));
                         TradeAmount.add(TradeDATA.get(TradeDATA.size() - 1));
@@ -122,20 +125,17 @@ public class LTSAController {
                         System.out.println("TradeDATA가 비어 있음: 매매 데이터 없음");
                     }
                 }
-                // 표데이터에서 을구 시작시 갑구 수집 중단 후 을구 수집 시작 / 을구 담보, 전세 데이터 같이 수집
+                // ✅ 을구 데이터만 추출하여 처리
                 if (eulguStartIndex != -1) {
-                    isParsingGabgu = false;
-                    isParsingeulgu = false;
-                }
-                // `을구` 데이터 수집
-                if (isParsingeulgu) {
-                    Map<String, Object> result = tilkoParsing.parseeulguTable(pdfListContent);
+                    List<String> eulguDataSubset = pdfListContent.subList(eulguStartIndex, pdfListContent.size());
 
-                    List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData"); // 을구 데이터
-                    List<Map<String, Object>> collateralData = (List<Map<String, Object>>) result.get("collateralData"); // 담보 데이터
-                    List<Map<String, Object>> leaseData = (List<Map<String, Object>>) result.get("leaseData"); // 전세 데이터
+                    Map<String, Object> result = tilkoParsing.parseeulguTable(eulguDataSubset);
+                    List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData");
+                    List<Map<String, Object>> collateralData = (List<Map<String, Object>>) result.get("collateralData");
+                    List<Map<String, Object>> leaseData = (List<Map<String, Object>>) result.get("leaseData");
 
                     eulguData.addAll(parsedData);
+
                     if (!collateralData.isEmpty()) {
                         RegisterDataGItemsList.add(collateralData.get(collateralData.size() - 1));
                     } else {
@@ -147,8 +147,6 @@ public class LTSAController {
                     } else {
                         System.out.println("전세 데이터가 없습니다.");
                     }
-
-
                 }
                 // 마지막에서 두 번째 페이지에서 관할등기소 정보 추출
                 if (pageIndex == totalPages - 2) {

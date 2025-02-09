@@ -233,10 +233,10 @@ public class TilkoParsing {
         Matcher matcher = pattern.matcher(text);
         return matcher.find() ? matcher.group(1).trim() + " " + matcher.group(2).trim() : "정보 없음";
     }
-    // 갑구 소유권에 관한 사항 json형식으로 파싱parseeulguTable
+    // 갑구 소유권에 관한 사항 수집
     public static Map<String, Object> parseGabguTable(List<String> tableData) {
         List<Map<String, Object>> parsedData = new ArrayList<>();
-        List<Map<String, Object>> TradeAmount = new ArrayList<>(); // 🟢 내부에서 생성
+        List<Map<String, Object>> TradeAmount = new ArrayList<>(); // 내부에서 생성
         Map<String, Object> currentRow = new HashMap<>();
         String lastTradeAmount = null; // 마지막 매매 거래가액 저장
 
@@ -304,7 +304,7 @@ public class TilkoParsing {
         return result;
     }
 
-
+    // 을구 데이터 수집
     public static Map<String, Object> parseeulguTable(List<String> tableData) {
         List<Map<String, Object>> parsedData = new ArrayList<>();
         List<Map<String, Object>> collateralData = new ArrayList<>(); // 🟢 "담보" 데이터 저장
