@@ -551,12 +551,22 @@ public class TilkoService {
         SELECT Value
         FROM user_code
         WHERE Parent_id = 386;
-    """;
+        """;
 
         // SQL 실행
         Map<String, Object> resultRow = this.sqlRunner.getRow(sql, params);
+
+        // 숫자만 추출 후 저장
+        if (resultRow != null && resultRow.get("Value") != null) {
+            String valueStr = resultRow.get("Value").toString().replaceAll("[^0-9]", ""); // 숫자만 추출
+            int value = valueStr.isEmpty() ? 0 : Integer.parseInt(valueStr); // 값이 없으면 기본값 0
+
+            resultRow.put("Value", value); // 숫자 값으로 덮어쓰기
+        }
+
         return resultRow;
     }
+
 
 
     // api 사용 로그 쌓기

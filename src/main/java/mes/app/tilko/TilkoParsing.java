@@ -73,7 +73,7 @@ public class TilkoParsing {
         return null; // Return null if no amount is found
     }
 
-    // 구축물별 구분 메서드
+    // 건축물 분류 메서드
     public static String assortArchitec(String input) {
         // 1. 주요 카테고리 분류
         if (input.contains("단독주택")) {
@@ -99,6 +99,42 @@ public class TilkoParsing {
         }
         if (input.contains("학원")) {
             return "학원";
+        }
+        if (input.contains("도서관")) {
+            return "도서관";
+        }
+        if (input.contains("연구소")) {
+            return "연구소";
+        }
+        if (input.contains("문화 및 집회시설")) {
+            return "문화 및 집회시설";
+        }
+        if (input.contains("종교시설")) {
+            return "종교시설";
+        }
+        if (input.contains("의료시설")) {
+            return "의료시설";
+        }
+        if (input.contains("노유자시설")) {
+            return "노유자시설";
+        }
+        if (input.contains("공장")) {
+            return "공장";
+        }
+        if (input.contains("창고시설")) {
+            return "창고시설";
+        }
+        if (input.contains("운동시설")) {
+            return "운동시설";
+        }
+        if (input.contains("상가주택")) {
+            return "상가주택";
+        }
+        if (input.contains("오피스텔")) {
+            return "오피스텔";
+        }
+        if (input.contains("복합건축물")) {
+            return "복합건축물";
         }
 
         return "분류되지 않음"; // 어떤 카테고리에도 해당하지 않는 경우
@@ -462,5 +498,50 @@ public class TilkoParsing {
 
         return result;
     }
+
+    public static Map<String, Object> extractGubun(List<String> tableData) {
+        Map<String, Object> buildingData = new HashMap<>();
+        StringBuilder buildingDetails = new StringBuilder(); // 건물 내역 병합용
+        boolean collecting = false; // 데이터 수집 여부 플래그
+
+        // 디버깅: 데이터 크기 확인
+        System.out.println("extractGubun() 호출됨, tableData 크기: " + tableData.size());
+
+        // 🔥 첫 번째 행(제목 행) 제외 (리스트 크기가 2 이상일 때만 subList 사용)
+        if (tableData.size() > 1) {
+            tableData = tableData.subList(1, tableData.size());
+        } else {
+            return new HashMap<>(); // 빈 데이터 반환
+        }
+
+        for (String row : tableData) {
+            String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
+
+            if (columns.length < 5) continue; // 최소 5개 필드 존재해야 유효
+
+            // 표시번호(표의 시작점) 확인
+            if (!columns[0].trim().isEmpty() && !collecting) {
+                collecting = true; // 데이터 수집 시작
+                buildingData.put("seq", columns[0].trim());
+                buildingData.put("call", columns[1].trim());
+                buildingData.put("archtec", columns[2].trim());
+                buildingData.put("cause", columns[4].trim());
+                buildingDetails.append(columns[3].trim()); // 건물 내역 추가
+            }
+            // 추가적인 건물 내역 정보 병합
+            else if (collecting) {
+                if (!columns[3].trim().equals("null")) {
+                    buildingDetails.append(" ").append(columns[3].trim());
+                }
+            }
+        }
+
+        // 최종적으로 병합된 건물 내역 저장
+        buildingData.put("건물내역", buildingDetails.toString());
+
+        return buildingData;
+    }
+
+
 
 }

@@ -897,8 +897,10 @@ public class TilkoController {
 
                     // 부동산 등기부등본 기본 데이터(Register) 파싱 로직
                     Map<String, Object> RegisterMap = (Map<String, Object>) pdfParsingMap.get("RegisterMap");
-                    List<Map<String, Object>> REALAOWNDATA = (List<Map<String, Object>>) pdfParsingMap.get("REALAOWNDATA");
-                    List<Map<String, Object>> REALBOWNDATA = (List<Map<String, Object>>) pdfParsingMap.get("REALBOWNDATA");
+                    Map<String, Object> REALAOWNMap = (Map<String, Object>) pdfParsingMap.get("REALAOWNMap");
+                    Map<String, Object> REALBOWNMap = (Map<String, Object>) pdfParsingMap.get("REALBOWNMap");
+                    List<Map<String, Object>> REALAOWNDATA = (List<Map<String, Object>>) REALAOWNMap.get("REALAOWNDATA");
+                    List<Map<String, Object>> REALBOWNDATA = (List<Map<String, Object>>) REALBOWNMap.get("REALBOWNDATA");
                     //담보
                     Map<String, Object> RegisterDataGMap = (Map<String, Object>) pdfParsingMap.get("RegisterDataGMap");
                     List<Map<String, Object>> RegisterDataGItemsList = (List<Map<String, Object>>) pdfParsingMap.get("RegisterDataGItemsList");
@@ -909,12 +911,13 @@ public class TilkoController {
                     List<Map<String, Object>> TradeAmount = (List<Map<String, Object>>) pdfParsingMap.get("TradeAmount");
 
                     // 부동산 등기부등본 주요 등기사항 요약(Summary) 파싱 로직
+                    Map<String, Object> SummaryData = new HashMap<>();
                     List<Map<String, Object>> SummaryDataEMap = (List<Map<String, Object>>) pdfParsingMap.get("SummaryDataEMap");
                     List<Map<String, Object>> SummaryDataKMap = (List<Map<String, Object>>) pdfParsingMap.get("SummaryDataKMap");
                     List<Map<String, Object>> SummaryDataAMap = (List<Map<String, Object>>) pdfParsingMap.get("SummaryDataAMap");
 
                     // 구축물
-                    Map<String, Object> gubunDataAMap = (Map<String, Object>) pdfParsingMap.get("gubunDataAMap");
+                    Map<String, Object> gubunDataAMap = (Map<String, Object>) pdfParsingMap.get("gubunData");
                     String archtec = tilkoParsing.assortArchitec(String.valueOf(gubunDataAMap.get("archtec")));
 
                     // 파싱후 REALINFO 테이블에 우선 저장 후 id 값 가져오기
@@ -943,12 +946,27 @@ public class TilkoController {
                     tbRealinfo.setReAmount(null);
                     tbRealinfo.setReSeq(null);
                     // REALBOWNDATA의 마지막 요소에서 "RgsCaus" 가져와서 저장
-                    if (REALAOWNDATA != null && !REALAOWNDATA.isEmpty()) {
+                    // 채권최고액 파싱
+                    if (REALBOWNDATA != null && !REALBOWNDATA.isEmpty()) {
                         Map<String, Object> lasteulguDATA = REALBOWNDATA.get(REALBOWNDATA.size() - 1);
-                        tbRealinfo.setReMaxAmt((Float) lasteulguDATA.get("RgsCaus"));
+                        String rgsCausValue = (String) lasteulguDATA.get("NomprsAndEtc");
+                        String amount = tilkoParsing.parseAmount(rgsCausValue);
+                        if (amount != null && !amount.isEmpty()) {
+                            try {
+                                // 문자열을 Float로 변환
+                                tbRealinfo.setReMaxAmt(Float.parseFloat(amount));
+                            } catch (NumberFormatException e) {
+                                // 변환 실패 시 처리
+                                tbRealinfo.setReMaxAmt(null);
+                                e.printStackTrace(); // 예외 로그 출력
+                            }
+                        } else {
+                            tbRealinfo.setReMaxAmt(null);
+                        }
                     } else {
                         tbRealinfo.setReMaxAmt(null);
                     }
+
                     // 공통코드 데이터 불러오기
                     List<Map<String, Object>> comcode = tilkoService.getComcode();
                     // 차감 최저점수 불러오기
@@ -970,7 +988,18 @@ public class TilkoController {
                     } else {
                         throw new RuntimeException("REALINFO 저장 실패");
                     }
+                    // RealSummaryData 저장
+                    SummaryData.put("REALID", REALID);
+                    SummaryData.put("UniqueNo", GoyuNUM);
+                    SummaryData.put("Gubun", archtec);  // 건축물 구분
+                    SummaryData.put("Address", address);
+                    SummaryData.put("PrintDate", formattedDate);
+                    tilkoService.saveSummary(SummaryData);
+
                     RegisterMap.put("REALID", REALID);
+                    RegisterMap.put("PinNo", GoyuNUM);
+                    RegisterMap.put("WksbiAddress", address);
+                    RegisterMap.put("Address", address);
                     tilkoService.saveTilkoXML(RegisterMap);
                     for (Map<String, Object> item : REALAOWNDATA){
                         item.put("REALID", REALID);
@@ -1179,5 +1208,331 @@ public class TilkoController {
         } catch (Exception e) {
             e.getMessage();
         }
+    }
+
+    // pdf파일 다운로드(test)
+    @GetMapping("/downloadPDF2")
+    public AjaxResult downloadPDF2(@RequestParam(value = "GoyuNUM")String GoyuNUM,
+                                  @RequestParam(value = "address")String address,
+                                  Authentication authentication) throws IOException, ParseException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+        TilkoController tc = new TilkoController();
+        LTSAController ltsaCont = new LTSAController();
+        AjaxResult result = new AjaxResult();
+        User user = (User)authentication.getPrincipal();
+        LocalDate today = LocalDate.now();
+
+        String irosID = "aarmani";
+        String irosPWD = "jky@6400";
+        String irosNUM1 = "O3275071";
+        String irosNUM2 = "3112";
+        String irosNUM3 = "jky6400";
+        // 등기물건 고유번호(GoyuNUM)
+        String GoyuAddressNUM = GoyuNUM;
+
+        // 기타 데이터 (공백일경우 기본값 IsSummary제외 "N")
+        String CmortFlag = "N";
+        String TradeSeqFlag = "N";
+        String AbsCls = "11";
+        String RgsMttrSmry = "1"; // 유효사항만 포함 여부
+
+        // RSA Public Key 조회
+        String rsaPublicKey = tc.getPublicKey();
+        System.out.println("rsaPublicKey: " + rsaPublicKey);
+
+
+        // AES Secret Key 및 IV 생성
+        byte[] aesKey = new byte[16];
+        new Random().nextBytes(aesKey);
+
+        byte[] aesIv = new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+        try {
+            // AES Key를 RSA Public Key로 암호화
+            String aesCipherKey = rsaEncrypt(aesKey, rsaPublicKey);
+            System.out.println("aesCipherKey: " + aesCipherKey);
+
+
+            // API URL 설정
+            // pdf data + Txkey(트랜잭션 key)
+            String url = tc.apiHost + "api/v2.0/Iros2IdLogin/RealtyRegistry";
+
+
+            // API 요청 파라미터 설정
+            org.json.simple.JSONObject json = new org.json.simple.JSONObject();
+
+            org.json.simple.JSONObject auth = new org.json.simple.JSONObject();
+            auth.put("UserId", tc.aesEncrypt(irosID, aesKey, aesIv));
+            auth.put("UserPassword", tc.aesEncrypt(irosPWD, aesKey, aesIv));
+
+            json.put("Auth", auth);
+            json.put("EmoneyNo1", tc.aesEncrypt(irosNUM1, aesKey, aesIv));
+            json.put("EmoneyNo2", tc.aesEncrypt(irosNUM2, aesKey, aesIv));
+            json.put("EmoneyPwd", tc.aesEncrypt(irosNUM3, aesKey, aesIv));
+            json.put("Pin", GoyuAddressNUM);
+            json.put("CmortFlag", CmortFlag);
+            json.put("TradeSeqFlag", TradeSeqFlag);
+            json.put("AbsCls", AbsCls);
+            json.put("RgsMttrSmry", RgsMttrSmry);
+
+            System.out.println("Request Payload: " + json.toJSONString());
+
+            // API 호출
+//            OkHttpClient client = new OkHttpClient();
+//
+//            Request request = new Request.Builder()
+//                    .url(url)
+//                    .addHeader("API-KEY", tc.apiKey)
+//                    .addHeader("ENC-KEY", aesCipherKey)
+//                    .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toJSONString())).build();
+//
+//            Response response = client.newCall(request).execute();
+//            String responseStr = response.body().string();
+////            System.out.println("responseStr: " + responseStr);
+//            // JSON 파싱
+//            org.json.JSONObject responseJson = new org.json.JSONObject(responseStr);
+//
+//            // "XmlData" 섹션 가져오기
+////        Object xmlDataObject = responseJson.opt("XmlData");
+////        if (xmlDataObject instanceof String && !((String) xmlDataObject).isEmpty()) {
+////            // XML 데이터를 JSON 객체로 변환
+////            org.json.JSONObject jsonData = XML.toJSONObject((String) xmlDataObject);
+//
+//            // 트랜잭션 키 가져오기
+//            Object transactionKeyObject = responseJson.opt("ApiTxKey");
+//            org.json.JSONObject transactionKey = transactionKeyObject instanceof org.json.JSONObject
+//                    ? (org.json.JSONObject) transactionKeyObject
+//                    : null;
+//
+//
+//
+//            // "PdfData" 섹션 가져오기 (PdfData의 길이가 너무 길어 String 선언 없이 저장)
+//            String pdfBase64 = responseJson.optString("PdfData", null);
+
+//            if (pdfBase64 == null) {
+//                result.message = "pdf데이터가 존재하지 않습니다.";
+//            } else {
+//                try {
+//                    if (pdfBase64 == null || pdfBase64.isEmpty()) {
+//                        System.out.println("PDF 데이터가 존재하지 않습니다.");
+//                        responseJson.put("Message", "PDF 데이터가 존재하지 않습니다.");
+//                    }
+//                    // Base64 디코딩하여 PDF 파일 저장
+//                    byte[] pdfBytes = Base64.getDecoder().decode(pdfBase64);
+//
+//                    String osName = System.getProperty("os.name").toLowerCase();
+//
+//                    String uploadDir;
+//                    String outputFilePath;
+                    String testFilePath = "c:\\temp\\registerFiles\\청주 유효 등기부등본.pdf";
+//                    String saveFileNM = "";
+//
+//                    if (osName.contains("win")) {
+//                        // Windows 환경
+//                        uploadDir = "c:\\temp\\registerFiles\\";
+//                    } else if (osName.contains("android")) {
+//                        // Android 환경
+//                        String userHome = System.getProperty("user.home");
+//                        uploadDir = userHome + "/registerFiles/";
+//                    } else if (osName.contains("mac") || osName.contains("ios")) {
+//                        // macOS 또는 iOS 환경
+//                        String userHome = System.getProperty("user.home");
+//                        uploadDir = userHome + "/registerFiles/";
+//                    } else {
+//                        throw new UnsupportedOperationException("지원되지 않는 운영체제입니다: " + osName);
+//                    }
+//                    // 디렉토리 생성
+//                    File directory = new File(uploadDir);
+//                    if (!directory.exists()) {
+//                        directory.mkdirs();
+//                    }
+//                    // 파일 이름 db 저장 및 생성 id 값 가져와 1.name.pdf 형식으로 서버에 저장
+//                    // "구"가 포함된 패턴 찾기
+//                    Pattern pattern = Pattern.compile(".*?구");
+//                    Matcher matcher = pattern.matcher(address);
+                    // pdfFile table에 저장되는 이름(서버에는 id 포함된 saveFileNM 저장)
+//                    String pdfMidNM = matcher.find() ? matcher.group() + "_등기부등본.pdf" : "조회_등기부등본.pdf";
+//                    TB_PDFSEQ pdfRecord = new TB_PDFSEQ();
+//                    pdfRecord.setPdfFilename(pdfMidNM);
+//                    TB_PDFSEQ savedRecord = pdfseqRepository.save(pdfRecord);
+//                    saveFileNM = savedRecord.getSeq() + "." + pdfMidNM;
+//                    outputFilePath = uploadDir + saveFileNM;
+//
+//                    try (OutputStream os = new FileOutputStream(outputFilePath)) {
+//                        os.write(pdfBytes);
+//                        System.out.println("PDF 파일이 성공적으로 저장되었습니다: " + outputFilePath);
+//                    }
+//                    result.message = "PDF 파일이 성공적으로 저장되었습니다: " + outputFilePath;
+//
+//                    // pdf 파일 데이터 파싱 api 호출
+//                    File pdfFile = new File(outputFilePath);
+//                    System.out.println("pdfFile : " + pdfFile);
+                    File file = new File(testFilePath);
+
+                    Map<String, Object> pdfParsingMap = ltsaCont.uploadPDF(file);
+                    System.out.println("parsingDATA : " + pdfParsingMap);
+                    String testFileNM = "0.청주 유효 등기부등본.pdf";
+
+                    // 부동산 등기부등본 기본 데이터(Register) 파싱 로직
+                    Map<String, Object> RegisterMap = (Map<String, Object>) pdfParsingMap.get("RegisterMap");
+                    Map<String, Object> REALAOWNMap = (Map<String, Object>) pdfParsingMap.get("REALAOWNMap");
+                    Map<String, Object> REALBOWNMap = (Map<String, Object>) pdfParsingMap.get("REALBOWNMap");
+                    List<Map<String, Object>> REALAOWNDATA = (List<Map<String, Object>>) REALAOWNMap.get("REALAOWNDATA");
+                    List<Map<String, Object>> REALBOWNDATA = (List<Map<String, Object>>) REALBOWNMap.get("REALBOWNDATA");
+                    //담보
+                    Map<String, Object> RegisterDataGMap = (Map<String, Object>) pdfParsingMap.get("RegisterDataGMap");
+                    List<Map<String, Object>> RegisterDataGItemsList = (List<Map<String, Object>>) pdfParsingMap.get("RegisterDataGItemsList");
+                    // 전세
+                    Map<String, Object> RegisterDataHMap = (Map<String, Object>) pdfParsingMap.get("RegisterDataHMap");
+                    List<Map<String, Object>> RegisterDataHItemsList = (List<Map<String, Object>>) pdfParsingMap.get("RegisterDataHItemsList");
+                    // 매매
+                    List<Map<String, Object>> TradeAmount = (List<Map<String, Object>>) pdfParsingMap.get("TradeAmount");
+
+                    // 부동산 등기부등본 주요 등기사항 요약(Summary) 파싱 로직
+                    Map<String, Object> SummaryData = new HashMap<>();
+                    List<Map<String, Object>> SummaryDataEMap = (List<Map<String, Object>>) pdfParsingMap.get("SummaryDataEMap");
+                    List<Map<String, Object>> SummaryDataKMap = (List<Map<String, Object>>) pdfParsingMap.get("SummaryDataKMap");
+                    List<Map<String, Object>> SummaryDataAMap = (List<Map<String, Object>>) pdfParsingMap.get("SummaryDataAMap");
+
+                    // 구축물
+            Map<String, Object> gubunDataAMap = (Map<String, Object>) pdfParsingMap.get("gubunData");
+            String archtec = (gubunDataAMap != null && gubunDataAMap.get("archtec") != null)
+                    ? tilkoParsing.assortArchitec(String.valueOf(gubunDataAMap.get("archtec")))
+                    : "";
+
+
+            // 파싱후 REALINFO 테이블에 우선 저장 후 id 값 가져오기
+                    TB_REALINFO tbRealinfo = new TB_REALINFO();
+                    tbRealinfo.setUserId(user.getUsername());
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                    String formattedDate = today.format(formatter);
+                    tbRealinfo.setRegDate(formattedDate);
+                    tbRealinfo.setReqDate(formattedDate);
+                    tbRealinfo.setRealAdd(address);
+                    Map<String, String> parsedResult = tilkoParsing.parseAddress(address);
+                    tbRealinfo.setResido(parsedResult.get("RESIDO"));
+                    tbRealinfo.setReguGun(parsedResult.get("REGUGUN"));
+                    // REALAOWNDATA의 마지막 요소에서 "RgsAimCont" 가져와서 저장
+                    if (REALAOWNDATA != null && !REALAOWNDATA.isEmpty()) {
+                        Map<String, Object> lastGabguDATA = REALAOWNDATA.get(REALAOWNDATA.size() - 1);
+                        tbRealinfo.setRemok((String) lastGabguDATA.get("RgsAimCont"));
+                        tbRealinfo.setRewon((String) lastGabguDATA.get("RgsCaus"));
+                    } else {
+                        tbRealinfo.setRemok("");
+                        tbRealinfo.setRewon("");
+                    }
+                    tbRealinfo.setRewonDate(formattedDate);
+                    tbRealinfo.setRejimok("");
+                    tbRealinfo.setReArea(null);
+                    tbRealinfo.setReAmount(null);
+                    tbRealinfo.setReSeq(null);
+                    // REALBOWNDATA의 마지막 요소에서 "RgsCaus" 가져와서 저장
+                    // 채권최고액 파싱
+
+                    if (REALBOWNDATA != null && !REALBOWNDATA.isEmpty()) {
+                        Map<String, Object> lasteulguDATA = REALBOWNDATA.get(REALBOWNDATA.size() - 1);
+                        String rgsCausValue = (String) lasteulguDATA.get("NomprsAndEtc");
+                        String amount = tilkoParsing.parseAmount(rgsCausValue);
+                        if (amount != null && !amount.isEmpty()) {
+                            try {
+                                // 문자열을 Float로 변환
+                                tbRealinfo.setReMaxAmt(Float.parseFloat(amount));
+                            } catch (NumberFormatException e) {
+                                // 변환 실패 시 처리
+                                tbRealinfo.setReMaxAmt(null);
+                                e.printStackTrace(); // 예외 로그 출력
+                            }
+                        } else {
+                            tbRealinfo.setReMaxAmt(null);
+                        }
+                    } else {
+                        tbRealinfo.setReMaxAmt(null);
+                    }
+
+                    // 공통코드 데이터 불러오기
+                    List<Map<String, Object>> comcode = tilkoService.getComcode();
+                    // 차감 최저점수 불러오기
+                    Map<String, Object> lessScore = tilkoService.getLessScore();
+                    // 점수계산
+                    Map<String, Object> resultScore = tilkoParsing.calScore(SummaryDataEMap,
+                            comcode,
+                            Integer.parseInt(lessScore.get("Value").toString()) // 안전한 변환 적용
+                    );
+                    tbRealinfo.setRealScore((Integer) resultScore.get("REALSCORE"));
+                    tbRealinfo.setRealPoint(1);
+                    tbRealinfo.setRealLastDate(formattedDate);
+                    tbRealinfo.setRealGubun(archtec);
+                    tbRealinfo.setPdfFilename(testFileNM);
+                    // REALINFO 저장
+                    TB_REALINFO saveinfo = realinfoRepository.save(tbRealinfo);
+                    int REALID;
+                    if (saveinfo != null && saveinfo.getRealId() != 0) {
+                        REALID = saveinfo.getRealId();
+                    } else {
+                        throw new RuntimeException("REALINFO 저장 실패");
+                    }
+                    // RealSummaryData 저장
+                    SummaryData.put("REALID", REALID);
+                    SummaryData.put("UniqueNo", GoyuNUM);
+                    SummaryData.put("Gubun", archtec);  // 건축물 구분
+                    SummaryData.put("Address", address);
+                    SummaryData.put("PrintDate", formattedDate);
+                    tilkoService.saveSummary(SummaryData);
+
+                    RegisterMap.put("REALID", REALID);
+                    RegisterMap.put("PinNo", GoyuNUM);
+                    RegisterMap.put("WksbiAddress", address);
+                    RegisterMap.put("Address", address);
+                    tilkoService.saveTilkoXML(RegisterMap);
+                    for (Map<String, Object> item : REALAOWNDATA){
+                        item.put("REALID", REALID);
+                        tilkoService.saveRegisterDataK(item);
+                    }
+                    for (Map<String, Object> item : REALBOWNDATA){
+                        item.put("REALID", REALID);
+                        tilkoService.savedataE(item);
+                    }
+                    for (Map<String, Object> item : TradeAmount){
+                        item.put("REALID", REALID);
+                        tilkoService.saveTradeAmount(item);
+                    }
+                    for (Map<String, Object> item : RegisterDataGItemsList){
+                        item.put("REALID", REALID);
+                        tilkoService.saveRegisterDataG(item);
+                    }
+                    for (Map<String, Object> item : RegisterDataHItemsList){
+                        item.put("REALID", REALID);
+                        tilkoService.savedataH(item);
+                    }
+                    for (Map<String, Object> item : SummaryDataEMap){
+                        item.put("REALID", REALID);
+                        tilkoService.saveSummaryDataE(item);
+                    }
+                    for (Map<String, Object> item : SummaryDataKMap){
+                        item.put("REALID", REALID);
+                        tilkoService.saveRegisterDataK(item);
+                    }
+                    for (Map<String, Object> item : SummaryDataAMap){
+                        item.put("REALID", REALID);
+                        tilkoService.saveSummaryDataA(item);
+                    }
+                    // 카드 출력시 필요 데이터
+                    Map<String, Object> resultMap = new HashMap<>();
+                    resultMap.put("REALSCORE", resultScore.get("REALSCORE"));
+                    resultMap.put("GRADE", resultScore.get("GRADE"));
+                    resultMap.put("COMMENT", resultScore.get("COMMENT"));
+                    resultMap.put("ADDRESS", address);
+                    result.data = resultMap;
+                    result.message = "등기부등본 정상조회";
+                } catch (IllegalArgumentException e) {
+                    result.message = "오류발생" + e.getMessage();
+                    return result;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+//            }
+//        } catch (NoSuchAlgorithmException e) {
+//            throw new RuntimeException(e);
+//        }
+        return result;
     }
 }

@@ -58,6 +58,7 @@ public class LTSAController {
         List<Map<String, Object>> RegisterDataHItemsList = new ArrayList<>(); // 전세
         List<Map<String, Object>> RegisterDataJMap = new ArrayList<>();
         List<Map<String, Object>> TradeAmount = new ArrayList<>();
+        Map<String, Object> gubunData = new HashMap<>();
 
         // 주요 등기사항 요약
         Map<String, Object> Summary = new HashMap<>(); // 부동산 등기부정보
@@ -82,72 +83,96 @@ public class LTSAController {
                 pdfPageContent = item.get("일반데이터").toString();
                 pdfListContent = (List<String>) item.get("표데이터");
                 System.out.println("일반데이터 : " + pdfPageContent);
+
                 if (pdfListContent == null || pdfListContent.isEmpty()) {
                     System.out.println("표데이터가 없습니다. 페이지 " + (pageIndex + 1));
                     continue; // 다음 페이지로 넘어감
                 }
                 // 일반데이터에서 텍스트를 찾아서 각 데이터에 맞게 분배
+                // 첫번째 페이지
                 if (pageIndex == 0) {
-                // 날짜 및 시간 추출
-                String WksbiBalDate = tilkoParsing.extractDate(pdfPageContent);
-                String WksbiBalNoTime = tilkoParsing.extractTime(pdfPageContent);
-                RegisterMap.put("WksbiBalDate",WksbiBalDate);
-                RegisterMap.put("WksbiBalNoTime",WksbiBalNoTime);
-                RegisterMap.put("IssOffice","법원행정처 등기정보중앙관리소");
-                RegisterMap.put("IssNo",""); // 발급번호 (열람용, 발급용 구분 발급용 300원추가결제 해당 발급번호로 3개월이내 5회 무료추가발급 가능)
-                RegisterMap.put("SumYn","Y");
+                    // 날짜 및 시간 추출
+                    String WksbiBalDate = tilkoParsing.extractDate(pdfPageContent);
+                    String WksbiBalNoTime = tilkoParsing.extractTime(pdfPageContent);
+                    gubunData = tilkoParsing.extractGubun(pdfListContent);
+                    RegisterMap.put("WksbiBalDate",WksbiBalDate);
+                    RegisterMap.put("WksbiBalNoTime",WksbiBalNoTime);
+                    RegisterMap.put("IssOffice","법원행정처 등기정보중앙관리소");
+                    RegisterMap.put("IssNo",""); // 발급번호 (열람용, 발급용 구분 발급용 300원추가결제 해당 발급번호로 3개월이내 5회 무료추가발급 가능)
+                    RegisterMap.put("SumYn","Y");
                 }
                 // 표데이터에서 갑구 확인 인덱스
                 int gabguStartIndex = tilkoParsing.findStartIndex(pdfListContent, "갑 구");
                 int eulguStartIndex = tilkoParsing.findStartIndex(pdfListContent, "을 구");
+                int eulguEndIndex = tilkoParsing.findStartIndex(pdfListContent, "등기명의인");
+                // `을구` 인덱스가 없으면 리스트 끝까지
+                int endIdx = (eulguStartIndex != -1) ? eulguStartIndex : eulguEndIndex;
+
+
 
                 if (gabguStartIndex != -1) {
-                    // `갑구` 시작부터 `을구` 시작 전까지 잘라서 `parseGabguTable()` 호출
-                    List<String> gabguDataSubset = pdfListContent.subList(gabguStartIndex,
-                            (eulguStartIndex != -1) ? eulguStartIndex : pdfListContent.size());
-
-                    Map<String, Object> result = tilkoParsing.parseGabguTable(gabguDataSubset);
-                    List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData");
-                    List<Map<String, Object>> TradeDATA = (List<Map<String, Object>>) result.get("TradeAmount");
-
-                    // ✅ 매매된 금액 확인
-                    if (!TradeDATA.isEmpty()) {
-                        System.out.println("마지막 매매 거래가액: " + TradeDATA.get(TradeDATA.size() - 1).get("Amount"));
+                    int startIdx = gabguStartIndex + 1; // 인덱스 조정
+                    // 방어 코드 추가: endIdx가 잘못된 경우 조정
+                    if (endIdx == -1 || endIdx <= startIdx || endIdx > pdfListContent.size()) {
+                        endIdx = pdfListContent.size();
                     }
 
-                    // ✅ 수집한 갑구 데이터 저장
-                    GabguData.addAll(parsedData);
+                    // 방어 코드: 잘못된 인덱스 체크
+                    if (startIdx < pdfListContent.size() && startIdx < endIdx) {
+                        List<String> gabguDataSubset = pdfListContent.subList(startIdx, endIdx);
 
-                    if (!TradeDATA.isEmpty()) {
-                        System.out.println("마지막 매매 거래가액: " + TradeDATA.get(TradeDATA.size() - 1).get("Amount"));
-                        TradeAmount.add(TradeDATA.get(TradeDATA.size() - 1));
+                        Map<String, Object> result = tilkoParsing.parseGabguTable(gabguDataSubset);
+                        List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData");
+                        List<Map<String, Object>> TradeDATA = (List<Map<String, Object>>) result.get("TradeAmount");
+
+                        if (!TradeDATA.isEmpty()) {
+                            System.out.println("마지막 매매 거래가액: " + TradeDATA.get(TradeDATA.size() - 1).get("Amount"));
+                            TradeAmount.add(TradeDATA.get(TradeDATA.size() - 1));
+                        } else {
+                            System.out.println("TradeDATA가 비어 있음: 매매 데이터 없음");
+                        }
+
+                        GabguData.addAll(parsedData);
                     } else {
-                        System.out.println("TradeDATA가 비어 있음: 매매 데이터 없음");
+                        System.out.println(" gabguStartIndex가 비정상적이므로 데이터 추출 안 함.");
                     }
+                } else {
+                    System.out.println(" 갑구 데이터 없음.");
                 }
-                // ✅ 을구 데이터만 추출하여 처리
                 if (eulguStartIndex != -1) {
-                    List<String> eulguDataSubset = pdfListContent.subList(eulguStartIndex, pdfListContent.size());
-
-                    Map<String, Object> result = tilkoParsing.parseeulguTable(eulguDataSubset);
-                    List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData");
-                    List<Map<String, Object>> collateralData = (List<Map<String, Object>>) result.get("collateralData");
-                    List<Map<String, Object>> leaseData = (List<Map<String, Object>>) result.get("leaseData");
-
-                    eulguData.addAll(parsedData);
-
-                    if (!collateralData.isEmpty()) {
-                        RegisterDataGItemsList.add(collateralData.get(collateralData.size() - 1));
-                    } else {
-                        System.out.println("담보 데이터가 없습니다.");
+                    int startIdx = eulguStartIndex + 1;
+                    // 방어 코드 추가: endIdx가 잘못된 경우 조정
+                    if (eulguEndIndex == -1 || eulguEndIndex <= startIdx || eulguEndIndex > pdfListContent.size()) {
+                        eulguEndIndex = pdfListContent.size();
                     }
+                    if (startIdx < pdfListContent.size()  && startIdx < eulguEndIndex) {
+                        List<String> eulguDataSubset = pdfListContent.subList(startIdx, pdfListContent.size());
 
-                    if (!leaseData.isEmpty()) {
-                        RegisterDataHItemsList.add(leaseData.get(leaseData.size() - 1));
+                        Map<String, Object> result = tilkoParsing.parseeulguTable(eulguDataSubset);
+                        List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData");
+                        List<Map<String, Object>> collateralData = (List<Map<String, Object>>) result.get("collateralData");
+                        List<Map<String, Object>> leaseData = (List<Map<String, Object>>) result.get("leaseData");
+
+                        eulguData.addAll(parsedData);
+
+                        if (!collateralData.isEmpty()) {
+                            RegisterDataGItemsList.add(collateralData.get(collateralData.size() - 1));
+                        } else {
+                            System.out.println("담보 데이터가 없습니다.");
+                        }
+
+                        if (!leaseData.isEmpty()) {
+                            RegisterDataHItemsList.add(leaseData.get(leaseData.size() - 1));
+                        } else {
+                            System.out.println("전세 데이터가 없습니다.");
+                        }
                     } else {
-                        System.out.println("전세 데이터가 없습니다.");
+                        System.out.println("⚠️ eulguStartIndex가 비정상적이므로 데이터 추출 안 함.");
                     }
+                } else {
+                    System.out.println("⚠️ 을구 데이터 없음.");
                 }
+
                 // 마지막에서 두 번째 페이지에서 관할등기소 정보 추출
                 if (pageIndex == totalPages - 2) {
                     String WksbiJrisdictionOffice = tilkoParsing.extractJurisdictionOffice(pdfPageContent);
@@ -194,6 +219,10 @@ public class LTSAController {
             resultMap.put("SummaryDataEMap", SummaryDataEMap);
             resultMap.put("SummaryDataKMap", SummaryDataKMap);
             resultMap.put("SummaryDataAMap", SummaryDataAMap);
+            resultMap.put("gubunData", gubunData);
+        } catch (IOException e) {
+            System.out.println("🚨 PDF 처리 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
         } finally {
             if(tempFile.exists()){
                 tempFile.delete();
