@@ -4,11 +4,55 @@
     .btn-clear {
         display: none !important; /* 강제로 숨김 */
     }
-
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
+    .search-container {
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+    }
 
+    .search-container input {
+        flex: 1;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .search-container button {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    .search-guide {
+        padding: 10px;
+        font-size: 14px;
+        color: #666;
+    }
+    #searcharea {
+        display: flex;         /* 한 줄 정렬 */
+        align-items: center;   /* 세로 중앙 정렬 */
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 100%;
+        max-width: 400px; /* 원하는 크기로 조정 */
+    }
+    #searcharea input {
+        flex-grow: 1;        /* 남은 공간을 모두 차지 */
+        border: none;
+        outline: none;
+        font-size: 16px;
+    }
+
+    .search-icon {
+        font-size: 20px;
+        cursor: pointer;
+        padding-left: 45px;
+    }
 </style>
 <head>
   <meta charset="UTF-8">
@@ -60,31 +104,37 @@
       <!-- 컨텐츠 영역  -->
       <div class="contents-wrap">
         <dl style="margin-bottom: 10px">
-          <button onclick="openModal()" style="margin-bottom: 10px">주소 검색</button>
-
+          <!--                    <button onclick="openModal()" style="margin-bottom: 10px">주소 검색</button>-->
+          <div class="search-container">
+            <input type="hidden" id="postno">
+            <h2>주소 검색</h2>
+            <div id="searcharea">
+              <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
+              <input type="text" id="address1" placeholder="검색할 부동산 주소 입력" onfocus="openModal()">
+              <span class="search-icon" id="searchIcon" onclick="openModal()">🔍</span>
+            </div>
+          </div>
           <div id="postcodeModal" class="modal" style="display: none">
             <div class="modal-content">
               <div style="display: flex">
-                <div class="modal-header">주소 검색</div>
-                <button class="modal-close" onclick="closeModal()"
-                        style="width: 30px; margin-left: auto">×
-                </button>
+                <div class="modal-header"></div>
+                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto">×</button>
               </div>
               <div id="postcodeContainer" style="width: 100%;"></div>
             </div>
           </div>
+          <div>
+            <label for="address2"></label>
+            <input type="text" id="address2" placeholder="상세주소 입력"><br>
+          </div>
+          <!-- 검색 가이드 -->
+          <div class="search-guide">
+            <p>* 부동산 소재지번 또는 도로명, 동/호로 검색하면 정확한 결과를 얻을 수 있습니다.</p>
+            <p>* 미등기인 경우 주소 조회 및 등록이 되지 않습니다.</p>
+          </div>
 
-          <div>
-            <input type="hidden" id="postno" readonly>
-            <label for="address1">도로명 주소:</label>
-            <input type="text" id="address1" readonly><br>
-            <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
-          </div>
-          <div>
-            <label for="address2">상세 주소:</label>
-            <input type="text" id="address2" placeholder="상세주소를 검색"><br>
-          </div>
-          <button onclick="searchGoyuList()" style="margin-top: 10px">상세 주소 확인</button>
+
+          <button onclick="searchGoyuList()" style="margin-top: 10px">물건 선택</button>
         </dl>
       </div> <!--// contents-wrap end-->
     </div> <!--//layout-contents end -->
@@ -107,10 +157,11 @@
 </script>
 <script>
   function openModal() {
-    document.getElementById('postcodeModal').style.display = 'block';
-
+    document.getElementById('postcodeModal').style.display= 'block';
+    document.getElementById('searcharea').style.display= 'none';
+    document.getElementById("searchIcon").style.display = "none";
     new daum.Postcode({
-      oncomplete: function (data) {
+      oncomplete: function(data) {
         var roadAddr = data.roadAddress;
         var extraRoadAddr = '';
 
@@ -127,23 +178,9 @@
         document.getElementById('postno').value = data.zonecode;
         document.getElementById('address1').value = roadAddr;
 
-        var guideTextBox = document.getElementById("guide");
-        if (data.autoRoadAddress) {
-          var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
-          guideTextBox.innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
-          guideTextBox.style.display = 'block';
-        } else if (data.autoJibunAddress) {
-          var expJibunAddr = data.autoJibunAddress;
-          guideTextBox.innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
-          guideTextBox.style.display = 'block';
-        } else {
-          guideTextBox.innerHTML = '';
-          guideTextBox.style.display = 'none';
-        }
-
         closeModal();
       },
-      onresize: function (size) {
+      onresize: function(size) {
         // 동적 스타일 적용
         const layers = document.querySelectorAll('[id^="__daum__layer_"]');
         layers.forEach(layer => {
@@ -158,7 +195,8 @@
   }
 
   function closeModal() {
-    document.getElementById('postcodeModal').style.display = 'none';
+    document.getElementById('postcodeModal').style.display= 'none';
+    document.getElementById('searcharea').style.display= 'block';
   }
 </script>
 <script type="text/javascript">
