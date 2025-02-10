@@ -60,7 +60,14 @@ public class QnAController {
             Optional<TB_USERQST> answer = qnAService.AnswerSearchBy(tbUserqst.getQSTSEQ());
 
             List<TB_USERQST> items = new ArrayList<>();
-            answer.ifPresent(items::add);
+
+            if(answer.isPresent()){
+
+                result.success = false;
+                result.message = "답변이 달린 글은 삭제가 불가능 합니다.";
+                return result;
+            }
+
             items.add(tbUserqst);
 
             qnAService.deleteQna(items);

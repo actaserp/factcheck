@@ -76,12 +76,17 @@
         gap: 5px; /* "미답변"과 X 버튼 간격 조정 */
     }
 
-    .status-text {
+    .status-Red {
         margin-left: 10px;
         color: tomato;
         font-weight: bold;
     }
 
+    .status-Blue {
+        margin-left: 10px;
+        color: dodgerblue;
+        font-weight: bold;
+    }
     .delete-btn {
         color: black;
         border: none;
@@ -231,9 +236,10 @@
         faqData.forEach(item => {
             console.log("🔹 추가할 항목:", item);
 
+            let deleteButton = item.answer ? '' : `<button class="delete-btn" data-qstseq="${item.QSTSEQ}">X</button>`
 
-            let answerStatus = item.answer ? '' : `
-            <span class="status-text">미답변</span>
+            let answerStatus = item.answer ? `<span class="status-Blue">답변완료</span>` : `
+            <span class="status-Red">미답변</span>
         `;
 
             let toggleButton = item.answer ? `
@@ -249,7 +255,7 @@
                 <span class="qst-text" title="${item.QSTTEXT}">${item.QSTTEXT}</span>
                 <span class="answer-status">
                     ${answerStatus}
-                        <button class="delete-btn" data-qstseq="${item.QSTSEQ}">X</button>
+                        ${deleteButton}
                 </span>
                 ${toggleButton}
             </div>
