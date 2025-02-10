@@ -164,6 +164,31 @@
 <script type="text/javascript">
 
   // 상세주소 조회
+  function saveAddressToLocalStorage() {
+    const address1 = $('#address1').val().trim(); // 도로명 주소
+    const address2 = $('#address2').val().trim(); // 상세 주소
+
+    if (!address1) {
+      alert('주소를 입력해주세요.');
+      return;
+    }
+
+    // 개별적으로 저장
+    localStorage.setItem('savedAddress1', address1);
+    localStorage.setItem('savedAddress2', address2);
+
+    console.log('주소 저장 완료:', address1, address2);
+  }
+
+  // 이벤트 등록 (버튼 클릭 시 실행)
+  $(document).ready(function () {
+    $(document).on('click', 'button[onclick="searchGoyuList()"]', function () {
+      saveAddressToLocalStorage(); // 주소 저장
+      searchGoyuList(); // 원래 실행할 함수 호출
+    });
+  });
+
+
   function searchGoyuList() {
 
     let data2 = [];

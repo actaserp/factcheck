@@ -222,6 +222,59 @@
 </script>
 <script type="text/javascript">
 
+    $(document).ready(function () {
+        // 1.저장된 주소 불러오기 (페이지 로드 시 실행)
+        loadAddressFromLocalStorage();
+
+        // 2.검색 버튼 클릭 시 이벤트 처리
+        $(document).on('click', 'button[onclick="searchGoyuList()"]', function (e) {
+            e.preventDefault(); // 기본 동작 방지
+            handleSearchButtonClick(); // 검색 버튼 처리 함수 실행
+        });
+    });
+
+    // 페이지 로드 시 로컬스토리지에서 주소 불러오기
+    function loadAddressFromLocalStorage() {
+        const savedAddress1 = localStorage.getItem('savedAddress1') || ""; // 도로명 주소
+        const savedAddress2 = localStorage.getItem('savedAddress2') || ""; // 상세 주소
+
+        $('#address1').val(savedAddress1);
+        $('#address2').val(savedAddress2);
+
+        console.log('주소 불러오기 완료:', savedAddress1, savedAddress2);
+    }
+
+    // 주소를 로컬스토리지에 저장
+    function saveAddressToLocalStorage() {
+        const address1 = $('#address1').val().trim();
+        const address2 = $('#address2').val().trim();
+
+        if (!address1) {
+            alert('도로명 주소를 입력해주세요.');
+            return;
+        }
+
+        localStorage.setItem('savedAddress1', address1);
+        localStorage.setItem('savedAddress2', address2);
+
+        console.log('주소 저장 완료:', address1, address2);
+    }
+
+    // 검색 버튼 클릭 시 실행될 함수
+    function handleSearchButtonClick() {
+        saveAddressToLocalStorage(); // 새 주소 저장
+        clearPreviousSearchResults(); // 기존 검색 결과 삭제
+        searchGoyuList(); // 새로운 검색 실행
+    }
+
+    // 기존 검색 결과 삭제 (올바른 삭제 방식)
+    function clearPreviousSearchResults() {
+        $('#addressWrap').empty(); // 기존 검색 결과 삭제
+        localStorage.removeItem('savedAddress1'); // 도로명 주소 삭제
+        localStorage.removeItem('savedAddress2'); // 상세 주소 삭제
+    }
+
+
     // 고유번호 조회
     function searchGoyuList() {
         let data2 = [];
