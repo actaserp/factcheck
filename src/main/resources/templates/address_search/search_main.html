@@ -7,6 +7,52 @@
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
+     .search-container {
+         align-items: center;
+         padding: 10px;
+         border-bottom: 1px solid #ccc;
+     }
+
+    .search-container input {
+        flex: 1;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .search-container button {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    .search-guide {
+        padding: 10px;
+        font-size: 14px;
+        color: #666;
+    }
+    #searcharea {
+        display: flex;         /* 한 줄 정렬 */
+        align-items: center;   /* 세로 중앙 정렬 */
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 100%;
+        max-width: 400px; /* 원하는 크기로 조정 */
+    }
+    #searcharea input {
+        flex-grow: 1;        /* 남은 공간을 모두 차지 */
+        border: none;
+        outline: none;
+        font-size: 16px;
+    }
+
+    .search-icon {
+        font-size: 20px;
+        cursor: pointer;
+        padding-left: 45px;
+    }
 
 </style>
 <head>
@@ -69,35 +115,48 @@
             <!-- 컨텐츠 영역  -->
             <div class="contents-wrap">
                 <dl style="margin-bottom: 10px">
-                    <button onclick="openModal()" style="margin-bottom: 10px">주소 검색</button>
-
+<!--                    <button onclick="openModal()" style="margin-bottom: 10px">주소 검색</button>-->
+                    <div class="search-container">
+                        <input type="hidden" id="postno">
+                        <h2>주소 검색</h2>
+                        <div id="searcharea">
+                            <input type="text" id="address1" placeholder="검색할 부동산 주소 입력" onfocus="openModal()">
+                            <span class="search-icon" onclick="openModal()">🔍</span>
+                        </div>
+                    </div>
                     <div id="postcodeModal" class="modal" style="display: none">
                         <div class="modal-content">
                             <div style="display: flex">
-                                <div class="modal-header">주소 검색</div>
+                                <div class="modal-header"></div>
                                 <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto">×</button>
                             </div>
                             <div id="postcodeContainer" style="width: 100%;"></div>
                         </div>
                     </div>
+                    <div>
+                        <label for="address2"></label>
+                        <input type="text" id="address2" placeholder="상세주소 입력"><br>
+                    </div>
+                    <!-- 검색 가이드 -->
+                    <div class="search-guide">
+                        <p>* 부동산 소재지번 또는 도로명, 동/호로 검색하면 정확한 결과를 얻을 수 있습니다.</p>
+                        <p>* 미등기인 경우 주소 조회 및 등록이 되지 않습니다.</p>
+                    </div>
 
-                    <div>
-                        <input type="hidden" id="postno" readonly>
-                        <label for="address1">도로명 주소:</label>
-                        <input type="text" id="address1" readonly><br>
-                        <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
-                    </div>
-                    <div>
-                        <label for="address2">상세 주소:</label>
-                        <input type="text" id="address2" placeholder="상세주소를 검색"><br>
-                    </div>
-                    <button onclick="searchGoyuList()" style="margin-top: 10px">상세주소 확인</button>
+
+                    <button onclick="searchGoyuList()" style="margin-top: 10px">물건 선택</button>
                 </dl>
             </div> <!--// contents-wrap end-->
             <div id="addressWrap" class="contents-wrap">
 
             </div>
-            <button onclick="searchdatatest()" style="margin-top: 10px">test</button>
+            <!-- 로딩 화면 -->
+            <div id="loadingSpinner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 9999;">
+                <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">
+                    <span>🔄 검색 중...</span>
+                </div>
+            </div>
+<!--            <button onclick="searchdatatest()" style="margin-top: 10px">test</button>-->
         </div> <!--//layout-contents end -->
 
     </div> <!-- //mobile-layout-contents end-->
@@ -119,6 +178,7 @@
 <script>
     function openModal() {
         document.getElementById('postcodeModal').style.display= 'block';
+        document.getElementById('searcharea').style.display= 'none';
 
         new daum.Postcode({
             oncomplete: function(data) {
@@ -170,6 +230,7 @@
 
     function closeModal() {
         document.getElementById('postcodeModal').style.display= 'none';
+        document.getElementById('searcharea').style.display= 'block';
     }
 </script>
 <script type="text/javascript">
@@ -267,6 +328,8 @@
     // pdf 데이터 조회 및 파싱 저장 메서드 호출(등기부등본 조회 메서드)
     function searchaddress(data) {
         console.log("data : ", data)
+        // 로딩 화면 표시
+        document.getElementById('loadingSpinner').style.display = 'flex';
         $.ajax({
             url: '/api/tilko/downloadPDF',
             type: 'GET',
@@ -290,6 +353,9 @@
 
                 // search_card 페이지로 이동
                 window.location.href = "search_card";
+            },complete: function () {
+                // 🔥 AJAX 요청 완료 후 로딩 화면 숨김
+                document.getElementById('loadingSpinner').style.display = 'none';
             },
             error: function (error) {
                 console.error("Error in API call:", error);
@@ -302,7 +368,7 @@
             type: 'GET',
             data: {
                 "GoyuNUM" : '123123123',
-                "address" : '충청북도 청주시 상당구'
+                "address" : '서울특별시 금천구'
             },
             async: false,
             success: function (response) {

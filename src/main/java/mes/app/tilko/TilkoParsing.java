@@ -164,6 +164,8 @@ public class TilkoParsing {
             values.put("REGSTAND", code.get("REGSTAND").toString());
             values.put("REGSTAMT", code.get("REGSTAMT") != null ? Double.parseDouble(code.get("REGSTAMT").toString()) : 1.0);
             values.put("REGMAXNUM", code.get("REGMAXNUM") != null ? Integer.parseInt(code.get("REGMAXNUM").toString()) : 0);
+            values.put("REGCOMMENT", code.get("REGCOMMENT").toString());
+            values.put("REGASNAME", code.get("REGASNAME").toString());
             regMap.put(regnm, values);
         }
 

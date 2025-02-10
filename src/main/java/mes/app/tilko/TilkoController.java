@@ -747,6 +747,9 @@ public class TilkoController {
         User user = (User)authentication.getPrincipal();
         LocalDate today = LocalDate.now();
 
+        // 기존 유저 조회정보에서 동일한 주소가 있는지 확인후 없다면 통신 있다면 자료 가져오기
+//        tilkoService.
+
         String irosID = "aarmani";
         String irosPWD = "jky@6400";
         String irosNUM1 = "O3275071";
@@ -906,7 +909,7 @@ public class TilkoController {
                     List<Map<String, Object>> RegisterDataGItemsList = (List<Map<String, Object>>) pdfParsingMap.get("RegisterDataGItemsList");
                     // 전세
                     Map<String, Object> RegisterDataHMap = (Map<String, Object>) pdfParsingMap.get("RegisterDataHMap");
-                    List<Map<String, Object>> RegisterDataHItemsMap = (List<Map<String, Object>>) pdfParsingMap.get("RegisterDataHItemsMap");
+                    List<Map<String, Object>> RegisterDataHItemsList = (List<Map<String, Object>>) pdfParsingMap.get("RegisterDataHItemsList");
                     // 매매
                     List<Map<String, Object>> TradeAmount = (List<Map<String, Object>>) pdfParsingMap.get("TradeAmount");
 
@@ -1018,7 +1021,7 @@ public class TilkoController {
                         item.put("REALID", REALID);
                         tilkoService.saveRegisterDataG(item);
                     }
-                    for (Map<String, Object> item : RegisterDataHItemsMap){
+                    for (Map<String, Object> item : RegisterDataHItemsList){
                         item.put("REALID", REALID);
                         tilkoService.savedataH(item);
                     }
@@ -1324,7 +1327,7 @@ public class TilkoController {
 //
 //                    String uploadDir;
 //                    String outputFilePath;
-                    String testFilePath = "c:\\temp\\registerFiles\\3.충청북도 청주시 상당구_등기부등본.pdf";
+                    String testFilePath = "c:\\temp\\registerFiles\\2.서울특별시 금천구_등기부등본.pdf";
 //                    String saveFileNM = "";
 //
 //                    if (osName.contains("win")) {
@@ -1371,7 +1374,7 @@ public class TilkoController {
 
                     Map<String, Object> pdfParsingMap = ltsaCont.uploadPDF(file);
                     System.out.println("parsingDATA : " + pdfParsingMap);
-                    String testFileNM = "0.상당구 등기부등본.pdf";
+                    String testFileNM = "0.금천구 등기부등본.pdf";
 
                     // 부동산 등기부등본 기본 데이터(Register) 파싱 로직
                     Map<String, Object> RegisterMap = (Map<String, Object>) pdfParsingMap.get("RegisterMap");

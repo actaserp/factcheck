@@ -112,7 +112,7 @@
                     <div class="swiper-slide">
                         <section class="CntOfRegisterCard">
                             <div class="title">
-                                <h3>금일 등기열람건수</h3>
+                                <h3>금일 등기발급건수</h3>
                                 <a href="#" title="더보기" class="btn-plus"></a>
                             </div>
                             <dl>
@@ -179,7 +179,7 @@
                                 <a href="#tab2" title="탈퇴현황" style="padding: 3px 10px 3px 10px;">탈퇴현황</a>
                             </li>
                             <li>
-                                <a href="#tab3" title="등기열람건수" style="padding: 3px 10px 3px 10px;">등기열람건수</a>
+                                <a href="#tab3" title="등기발급건수" style="padding: 3px 10px 3px 10px;">등기발급건수</a>
                             </li>
                             <li>
                                 <a href="#tab4" title="상위검색지역" style="padding: 3px 10px 3px 10px;">상위검색지역</a>
@@ -216,7 +216,7 @@
                                 <!--                                <span class="material-symbols-outlined" style="position: absolute; top: 17px; right: 3px; cursor: pointer; z-index: 10; color: rgb(179, 179, 179);" onclick="openModal('revenueChart')">zoom_out_map</span>-->
                                 <div id="noDataMessage3" style="width: 740px; text-align: center; font-size: 16px; color: gray; display: flex;
                                                                 justify-content: center; align-items: center; height: 280px;">
-                                    등기열람현황이 없습니다.
+                                    등기발급현황이 없습니다.
                                 </div>
                             </div>
                         </div>
@@ -807,7 +807,7 @@
                         }));
                     }
 
-                    // 등기열람건수 데이터
+                    // 등기발급건수 데이터
                     let CntOfRegister = data2.CntOfRegister;
                     const noDataMessage3 = document.getElementById('noDataMessage3');
                     const canvasElement3 = document.getElementById('Signout');
