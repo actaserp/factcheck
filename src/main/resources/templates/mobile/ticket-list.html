@@ -821,67 +821,114 @@
                         }
                     }
 
-
+                // 갑구
                     const rankNoAData = cardBox.getAttribute('data-ranknoA');
-                    const rankNoBData = cardBox.getAttribute('data-ranknoB');
-
                     let parsedRankNoAData = JSON.parse(rankNoAData);
-                    let parsedRankNoBData = JSON.parse(rankNoBData);
-
                     if (typeof parsedRankNoAData === "string") {
                         parsedRankNoAData = JSON.parse(parsedRankNoAData);
                     }
-
-                    if (typeof parsedRankNoBData === "string") {
-                        parsedRankNoBData = JSON.parse(parsedRankNoBData);
-                    }
-
                     const dataArray = Array.isArray(parsedRankNoAData) ? parsedRankNoAData : [parsedRankNoAData];
-                    const dataBrray = Array.isArray(parsedRankNoBData) ? parsedRankNoBData : [parsedRankNoBData];
-
 
                     const sub1Table = document.querySelector("#sub1 table tbody");
                     sub1Table.innerHTML = "";
+
+
+                    if (dataArray.length === 0) {
+                        // 첫 번째 빈 행 추가
+                        const emptyRow1 = sub1Table.insertRow();
+                        for (let i = 0; i < 4; i++) {
+                            const emptyCell = emptyRow1.insertCell();
+                            emptyCell.innerHTML = "&nbsp;"; // 공백 추가해서 빈칸이 유지되도록 설정
+                        }
+
+                        // 두 번째 행 추가 (권리자 및 기타사항)
+                        const emptyRow2 = sub1Table.insertRow();
+                        const headerCell = document.createElement("th");
+                        headerCell.textContent = "권리자 및 기타사항";
+                        headerCell.style.cssText = "font-size: 11px; border-right: 1px solid #E6E6E6; border-bottom: 1px solid #E6E6E6; text-align: center; padding: 5px;";
+                        emptyRow2.appendChild(headerCell);
+
+                        // 나머지 셀 생성
+                        const etcCell = emptyRow2.insertCell();
+                        etcCell.colSpan = 3;
+                        etcCell.innerHTML = "&nbsp;"; // 공백 추가
+                        etcCell.style.cssText = "border-bottom: 1px solid #E6E6E6; padding: 5px;";
+                    }
+
+                    // 데이터가 있을 경우 처리
                     dataArray.forEach(data => {
                         const row1 = sub1Table.insertRow();
-                        row1.insertCell(0).textContent = data.RankNo_a || "";
-                        row1.insertCell(1).textContent = data.RgsAimCont_a || "";
-                        row1.insertCell(2).textContent = data.Receve_a || "";
-                        row1.insertCell(3).textContent = data.RgsCaus_a || "";
+                        row1.insertCell().textContent = data.RankNo_a ?? "";
+                        row1.insertCell().textContent = data.RgsAimCont_a ?? "";
+                        row1.insertCell().textContent = data.Receve_a ?? "";
+                        row1.insertCell().textContent = data.RgsCaus_a ?? "";
 
                         const row2 = sub1Table.insertRow();
-                        const headerCell = row2.insertCell(0);
+                        const headerCell = document.createElement("th");
                         headerCell.textContent = "권리자 및 기타사항";
                         headerCell.style.fontSize = "11px";
                         headerCell.style.borderRight = "1px solid #E6E6E6";
                         headerCell.style.borderBottom = "1px solid #E6E6E6";
-                        /*headerCell.classList.add("write-table"); // 기존 테이블 스타일 적용*/
+                        row2.appendChild(headerCell);
 
-                        const etcCell = row2.insertCell(1);
+                        const etcCell = row2.insertCell();
                         etcCell.colSpan = 3;
-                        etcCell.textContent = data.NomprsAndEtc_a || "";
+                        etcCell.textContent = data.NomprsAndEtc_a ?? "";
                     });
 
+
+//을구
+                    const rankNoBData = cardBox.getAttribute('data-ranknoB');
+                    let parsedRankNoBData = JSON.parse(rankNoBData);
+                    if (typeof parsedRankNoBData === "string") {
+                        parsedRankNoBData = JSON.parse(parsedRankNoBData);
+                    }
+                    const dataBrray = Array.isArray(parsedRankNoBData) ? parsedRankNoBData : [parsedRankNoBData];
                     const sub2Table = document.querySelector("#sub2 table tbody");
                     sub2Table.innerHTML = "";
+
+                    if (dataBrray.length === 0) {
+                        // 첫 번째 빈 행 추가
+                        const emptyRow1 = sub2Table.insertRow();
+                        for (let i = 0; i < 4; i++) {
+                            const emptyCell = emptyRow1.insertCell();
+                            emptyCell.innerHTML = "&nbsp;";
+                        }
+
+                        // 두 번째 행 추가 (권리자 및 기타사항)
+                        const emptyRow2 = sub2Table.insertRow();
+                        const headerCell = document.createElement("th");
+                        headerCell.textContent = "권리자 및 기타사항";
+                        headerCell.style.cssText = "font-size: 11px; border-right: 1px solid #E6E6E6; border-bottom: 1px solid #E6E6E6; text-align: center; padding: 5px;";
+                        emptyRow2.appendChild(headerCell);
+
+                        // 나머지 셀 생성
+                        const etcCell = emptyRow2.insertCell();
+                        etcCell.colSpan = 3;
+                        etcCell.innerHTML = "&nbsp;"; // 공백 추가
+                        etcCell.style.cssText = "border-bottom: 1px solid #E6E6E6; padding: 5px;";
+                    }
+
+
+                    // 데이터가 있을 경우 처리
                     dataBrray.forEach(data => {
                         const row1 = sub2Table.insertRow();
-                        row1.insertCell(0).textContent = data.RankNo_b || "";
-                        row1.insertCell(1).textContent = data.RgsAimCont_b || "";
-                        row1.insertCell(2).textContent = data.Receve_b || "";
-                        row1.insertCell(3).textContent = data.RgsCaus_b || "";
+                        row1.insertCell().textContent = data.RankNo_b ?? "";
+                        row1.insertCell().textContent = data.RgsAimCont_b ?? "";
+                        row1.insertCell().textContent = data.Receve_b ?? "";
+                        row1.insertCell().textContent = data.RgsCaus_b ?? "";
 
                         const row2 = sub2Table.insertRow();
-                        const headerCell = row2.insertCell(0);
+                        const headerCell = document.createElement("th");
                         headerCell.textContent = "권리자 및 기타사항";
                         headerCell.style.fontSize = "11px";
                         headerCell.style.borderRight = "1px solid #E6E6E6";
                         headerCell.style.borderBottom = "1px solid #E6E6E6";
-                        /*headerCell.classList.add("write-table"); // 기존 테이블 스타일 적용*/
+                        row2.appendChild(headerCell);
 
-                        const etcCell = row2.insertCell(1);
+                        const etcCell = row2.insertCell();
                         etcCell.colSpan = 3;
-                        etcCell.textContent = data.NomprsAndEtc_b || "";
+                        etcCell.textContent = data.NomprsAndEtc_b ?? "";
                     });
 
 
@@ -910,24 +957,7 @@
             }
         });
     }
-    /*const aimcontA = cardBox.getAttribute('data-aimcontA') || '';
-                       const receveA = cardBox.getAttribute('data-receveA') || '';
-                       const rgscausA = cardBox.getAttribute('data-rgscausA') || '';
-                       const etcA = cardBox.getAttribute('data-etcA') || '';
 
-                       // 갑구에 데이터를 삽입하는 부분
-                       const sub1Table = document.querySelector("#sub1 table tbody");
-
-                       // 기존 테이블의 첫 번째 행을 선택하고 데이터 삽입
-                       const firstRow = sub1Table.rows[0];  // 첫 번째 <tr> (표시번호, 등기목적 등)
-                       firstRow.cells[0].textContent = ranknoA;  // 첫 번째 <td>
-                       firstRow.cells[1].textContent = aimcontA;  // 두 번째 <td>
-                       firstRow.cells[2].textContent = receveA;  // 세 번째 <td>
-                       firstRow.cells[3].textContent = rgscausA;  // 네 번째 <td>
-
-                       // 두 번째 행에 권리자 및 기타사항 추가
-                       const secondRow = sub1Table.rows[1];  // 두 번째 <tr> (권리자 및 기타사항)
-                       secondRow.cells[1].textContent = etcA;  // 두 번째 <td>에 해당하는 부분*/
 
 
     function handleSearch() {
@@ -939,57 +969,6 @@
     function closeSearch() {
         document.querySelector('.btn-aco').click();
     }
-
-    /*
-     <div>
-                                    <a href="#" class="btn" title="검색" onclick="searchCltcd()"
-                                       style="background-color: #022D60; color: #fff; text-decoration: none; border-radius: 4px; width: 80px;">
-                                        검색
-                                    </a>
-                                </div>
-
-
-    function searchCltcd() {
-        $.ajax({
-            url: '/api/mobile_production/search_cltcd',
-            type: 'GET',
-            data: {
-                'search_cltnm': $('#searchcltnm').val(),
-            },
-            success: function (data) {
-                console.log(data.data);
-                // 거래처명 업데이트
-                document.getElementById("cltcdText").textContent = document.getElementById("searchcltnm").value;
-                const data2 = data.data;
-                const selectElement = document.getElementById("selectcltcd");
-                // 기존 옵션 제거
-                selectElement.innerHTML = ''; // 모든 옵션 제거
-                // "선택" 기본 옵션 추가
-                const defaultOption = document.createElement("option");
-                defaultOption.value = ""; // 빈 값
-                defaultOption.textContent = "선택"; // 기본 메시지
-                defaultOption.disabled = true; // 선택 불가능
-                defaultOption.selected = true; // 기본 선택 상태
-                selectElement.appendChild(defaultOption);
-                // 새로운 옵션 생성 및 추가
-                data2.forEach(item => {
-                    const option = document.createElement("option");
-                    option.value = item.cltcd; // 거래처 코드
-                    option.textContent = item.cltnm; // 거래처명
-                    selectElement.appendChild(option);
-                });
-
-                // 명시적으로 선택 상태 초기화
-                selectElement.selectedIndex = 0; // 항상 첫 번째 옵션("선택")이 선택되도록 설정
-            },
-            error: function (error) {
-                console.error("Error fetching data:", error);
-            }
-        });
-
-        // 팝업 열기
-        openModal('popup1');
-    }*/
 
 </script>
 </body>
