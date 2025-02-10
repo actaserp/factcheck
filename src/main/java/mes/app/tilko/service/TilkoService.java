@@ -580,4 +580,21 @@ public class TilkoService {
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
     }
 
+    // 저장되어있는 고유번호 확인
+    public Map<String, Object> getSavedGoyu(String id, String address) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("USERID", id)       // 바인딩 값 추가
+                .addValue("REALADD", address);
+        String sql = """
+                SELECT * FROM TB_REALINFO
+                WHERE USERID = :USERID
+                AND REALADD = :REALADD
+                """;
+
+
+        Map<String, Object> selectMap = this.sqlRunner.getRow(sql,params);
+        System.out.println(selectMap);
+        return selectMap;
+    }
+
 }

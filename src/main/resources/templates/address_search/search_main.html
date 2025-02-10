@@ -120,8 +120,9 @@
                         <input type="hidden" id="postno">
                         <h2>주소 검색</h2>
                         <div id="searcharea">
+                            <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
                             <input type="text" id="address1" placeholder="검색할 부동산 주소 입력" onfocus="openModal()">
-                            <span class="search-icon" onclick="openModal()">🔍</span>
+                            <span class="search-icon" id="searchIcon" onclick="openModal()">🔍</span>
                         </div>
                     </div>
                     <div id="postcodeModal" class="modal" style="display: none">
@@ -179,7 +180,7 @@
     function openModal() {
         document.getElementById('postcodeModal').style.display= 'block';
         document.getElementById('searcharea').style.display= 'none';
-
+        document.getElementById("searchIcon").style.display = "none";
         new daum.Postcode({
             oncomplete: function(data) {
                 var roadAddr = data.roadAddress;
@@ -197,20 +198,6 @@
 
                 document.getElementById('postno').value = data.zonecode;
                 document.getElementById('address1').value = roadAddr;
-
-                var guideTextBox = document.getElementById("guide");
-                if (data.autoRoadAddress) {
-                    var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
-                    guideTextBox.innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
-                    guideTextBox.style.display = 'block';
-                } else if (data.autoJibunAddress) {
-                    var expJibunAddr = data.autoJibunAddress;
-                    guideTextBox.innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
-                    guideTextBox.style.display = 'block';
-                } else {
-                    guideTextBox.innerHTML = '';
-                    guideTextBox.style.display = 'none';
-                }
 
                 closeModal();
             },

@@ -747,8 +747,40 @@ public class TilkoController {
         User user = (User)authentication.getPrincipal();
         LocalDate today = LocalDate.now();
 
-        // 기존 유저 조회정보에서 동일한 주소가 있는지 확인후 없다면 통신 있다면 자료 가져오기
-//        tilkoService.
+        // 기존 유저 조회정보에서 동일한 고유번호가 있는지 확인후 없다면 통신 있다면 자료 가져오기
+        Map<String, Object> savedGoyu = tilkoService.getSavedGoyu(user.getUsername(), address);
+        if (savedGoyu != null && !savedGoyu.isEmpty()) {
+            // 카드 출력시 필요 데이터
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("REALSCORE", savedGoyu.get("REALSCORE"));
+            // 등급 설정
+            String Grade;
+            Integer savedScore = (Integer) savedGoyu.get("REALSCORE");
+            if (savedScore >= 90) {
+                Grade = "S";
+            } else if (savedScore >= 80) {
+                Grade = "A";
+            } else if (savedScore >= 70) {
+                Grade = "B";
+            } else if (savedScore >= 60) {
+                Grade = "C";
+            } else if (savedScore >= 50) {
+                Grade = "D";
+            } else if (savedScore >= 40) {
+                Grade = "E";
+            } else {
+                Grade = "F";
+            }
+            resultMap.put("GRADE", Grade);
+            resultMap.put("COMMENT", "");
+            resultMap.put("ADDRESS", address);
+            result.data = resultMap;
+            result.message = "기존 조회데이터가 존재합니다.";
+            return result;
+        }else{
+            System.out.println("새로 데이터를 조회합니다.");
+        }
+
 
         String irosID = "aarmani";
         String irosPWD = "jky@6400";

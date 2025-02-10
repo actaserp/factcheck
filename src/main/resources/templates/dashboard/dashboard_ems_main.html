@@ -170,7 +170,7 @@
             <div class="col wp50">
                 <section>
                     <div class="title-wrap">
-                        <h3>일주일 가입자현황</h3>
+                        <h3 id="weektitle">주간 통계</h3>
                         <ul class="tab-links-sub">
                             <li>
                                 <a href="#tab1" title="일주일" id="weekPeriod" style="padding: 3px 10px 3px 10px;">10.1~10.7(주간)</a>
@@ -686,14 +686,30 @@
                             const day = dateStr.slice(8, 10);  // 'yyyy-MM-dd'에서 일 추출
                             return `${month}.${day}`;
                         };
+                        // 오늘 날짜 계산
+                        const today = new Date();
+                        const lastWeek = new Date();
+                        lastWeek.setDate(today.getDate() - 7);
+
+                        // 형식 변환
+                        const formattedDateRange2 = `${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)}`;
+
+                        // 'yyyy-MM-dd' 포맷으로 변환
+                        const todayStr = today.toISOString().slice(0, 10);
+                        const lastWeekStr = lastWeek.toISOString().slice(0, 10);
                         // 형식 변환
                         const formattedDateRange = `${formatDate(firstDate)}~${formatDate(lastDate)}`;
                         // id가 'weekPeriod'인 요소를 찾습니다.
-                        const weekPeriodElement = document.getElementById('weekPeriod');
+                        const weekPeriodElement = document.getElementById('weekPeriod');weektitle
+                        const weektitleElement = document.getElementById('weektitle');
 
                         // 요소의 텍스트를 수정합니다.
                         if (weekPeriodElement) {
-                            weekPeriodElement.textContent = `${formattedDateRange}(주간)`;
+                            weekPeriodElement.textContent = `${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)} (주간)`;
+                        }
+                        if (weektitleElement) {
+                            weektitleElement.textContent = `주간 통계 (${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)})`;
+
                         }
                         // 새로운 차트 데이터
                         const SignupOfWeekData = {
