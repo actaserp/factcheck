@@ -192,8 +192,7 @@ public class UM_userchartContoller {
       @RequestParam(value = "sexYn",required = false) String sexYn,
       @RequestParam(value = "selectedColumn",required = false) String selectedColumn // 선택한 열(예: "아파트", "오피스")
   ) {
-    //log.info("엑셀 다운_들어온 데이터: dateType={}, yearMonth={}, region={}, district={}, sexYn={}, selectedColumn={}",
-        dateType, yearMonth, region, district, sexYn, selectedColumn);
+    //log.info("엑셀 다운_들어온 데이터: dateType={}, yearMonth={}, region={}, district={}, sexYn={}, selectedColumn={}", dateType, yearMonth, region, district, sexYn, selectedColumn);
 
     // 📌 성별(sex) 값 변환 ("남자" → 1, "여자" → 2)
     Integer sexCode = null;
