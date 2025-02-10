@@ -77,11 +77,11 @@ public class ClientRegistryService {
 
             sql.append("""
         ORDER BY
-          tu.USERNM ASC
+           tu.INDATEM DESC
         """);
 
-//      log.info("회원관리List SQL: {}", sql);
-//      log.info("SQL Parameters: {}", params.getValues());
+      log.info("회원관리List SQL: {}", sql);
+      log.info("SQL Parameters: {}", params.getValues());
 
       return sqlRunner.getRows(sql.toString(), params);
   }
