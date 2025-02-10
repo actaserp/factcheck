@@ -39,8 +39,29 @@ public class MapService {
 
     public List<Map<String, Object>> getList(String resido, String regugun) {
         MapSqlParameterSource params = new MapSqlParameterSource();
+
+        // 광역시/특별시인지 확인
+        boolean isSpecialCity = resido.endsWith("특별시") || resido.endsWith("광역시");
+
+        if (regugun != null && !regugun.isEmpty()) {
+            String[] parts = regugun.split(" "); // 공백 기준으로 나누기
+            if (!isSpecialCity && parts.length > 0) {
+                resido = resido + " " + parts[0]; // 도 + 시 형태로 변환 (서울특별시는 그대로 둠)
+            }
+            // 마지막 단어가 "구" 또는 "군"으로 끝나는 경우만 regugun에 설정
+            String lastPart = parts[parts.length - 1];
+            if (lastPart.endsWith("구") || lastPart.endsWith("군")) {
+                regugun = lastPart;
+            } else {
+                regugun = null; // 구/군이 없으면 null로 설정
+            }
+        }
+
         params.addValue("resido", resido);
         params.addValue("regugun", regugun);
+
+        System.out.println("resido" + resido);
+        System.out.println("regugun" + regugun);
 
         String sql = """
         SELECT

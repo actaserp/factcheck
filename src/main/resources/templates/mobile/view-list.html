@@ -604,7 +604,7 @@
         $.ajax({
             url: "/api/Map/getOwn",
             type: "GET",
-            data: { realid: 318}, // realid 로 바꾸면 됨
+            data: { realid: realid}, // realid 로 바꾸면 됨
             headers: {
                 'X-CSRF-Token': $('[name=_csrf]').val()
             },
@@ -616,13 +616,13 @@
                     $('.list-card-wrap').scrollTop(0);
 
                 } else {
-                    Alert.alert("해당 물건에 대한 정보를 찾을 수 없습니다.");
+                    Alert.alert("", "해당 물건에 대한 정보를 찾을 수 없습니다.");
 
                 }
             },
             error: function (xhr, status, error) {
                 // 에러 처리
-                Alert.alert("서버와의 통신 중 오류가 발생했습니다.");
+                Alert.alert("", "서버와의 통신 중 오류가 발생했습니다.");
             }
         });
 
@@ -634,49 +634,56 @@
         let listContainer = document.querySelector('.list-card-wrap');
         let addressField = document.querySelector('#popup-own .ticket-tit dd'); // 주소 넣을 곳
 
-        // 주소 업데이트
-        addressField.textContent = listData.SHORT_ADDR || '주소 정보 없음';
+        // 주소 업데이트 (null 또는 undefined일 경우 빈 문자열)
+        addressField.textContent = listData?.SHORT_ADDR ?? '주소 정보 없음';
 
         // 팝업 초기화
         listContainer.innerHTML = '';
 
         // 데이터 없을 경우
-        if (ownData.length === 0) {
+        if (!ownData || ownData.length === 0) {
             listContainer.innerHTML = '<p style="text-align: center; padding: 10px;">해당 물건의 등기부등본 정보가 없습니다.</p>';
         } else {
             ownData.forEach(item => {
+
+                let formatValue = (value) => {
+                    return value === null || value === undefined || value.toString().trim().toLowerCase() === "null"
+                        ? '' // 빈칸 처리
+                        : value;
+                };
+
                 let cardHtml = `
-                <div class="card-box card-blue">
-                    <div class="card-cont">
-                        <dl>
-                            <dt>구분</dt>
-                            <dd><span class="sta-blue">을구</span></dd>
-                        </dl>
-                        <dl>
-                            <dt>순위 번호</dt>
-                            <dd>${item.RankNo || ''}</dd>
-                        </dl>
-                        <dl>
-                            <dt>등기목적</dt>
-                            <dd>${item.RgsAimCont || ''}</dd>
-                        </dl>
-                        <dl>
-                            <dt>접수</dt>
-                            <dd>${item.Receve || ''}</dd>
-                        </dl>
-                        <dl>
-                            <dt>등기원인</dt>
-                            <dd>${item.RgsCaus || ''}</dd>
-                        </dl>
-                        <dl>
-                            <dt colspan="2" style="width: 100%;text-align: left;">권리자 및 기타사항</dt>
-                        </dl>
-                        <dl>
-                            <dd colspan="2" style="width: 100%;text-align: left;">${item.NomprsAndEtc || ''}</dd>
-                        </dl>
-                    </div>
+            <div class="card-box card-blue">
+                <div class="card-cont">
+                    <dl>
+                        <dt>구분</dt>
+                        <dd><span class="sta-blue">을구</span></dd>
+                    </dl>
+                    <dl>
+                        <dt>순위 번호</dt>
+                        <dd>${formatValue(item?.RankNo)}</dd>
+                    </dl>
+                    <dl>
+                        <dt>등기목적</dt>
+                        <dd>${formatValue(item?.RgsAimCont)}</dd>
+                    </dl>
+                    <dl>
+                        <dt>접수</dt>
+                        <dd>${formatValue(item?.Receve)}</dd>
+                    </dl>
+                    <dl>
+                        <dt>등기원인</dt>
+                        <dd>${formatValue(item?.RgsCaus)}</dd>
+                    </dl>
+                    <dl>
+                        <dt colspan="2" style="width: 100%;text-align: left;">권리자 및 기타사항</dt>
+                    </dl>
+                    <dl>
+                        <dd colspan="2" style="width: 100%;text-align: left;">${formatValue(item?.NomprsAndEtc)}</dd>
+                    </dl>
                 </div>
-            `;
+            </div>
+        `;
 
                 // 생성된 카드 추가
                 listContainer.innerHTML += cardHtml;
@@ -694,7 +701,6 @@
         // 스크롤 초기화 (팝업이 길어질 경우)
         popup.scrollTop = 0;
     }
-
 
 
     function toggleView() {
