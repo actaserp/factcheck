@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,32 +36,36 @@ public class IssueInquiryController {
   public AjaxResult getList(@RequestParam(value = "startDate") String startDate,
                             @RequestParam(value = "endDate") String endDate,
                             @RequestParam(value = "SearchKeywords", required = false) String SearchKeywords,
+                            @RequestParam(value = "realId", required = false) Integer realId,
                             Authentication auth) {
 
     AjaxResult result = new AjaxResult();
 
+    // realId가 null이면 기본값 0으로 설정
+    if (realId == null) {
+      realId = 0;
+    }
 
+    log.info("등기부 발급 조회 요청: startDate={}, endDate={}, SearchKeywords={}, realId={} ", startDate, endDate, SearchKeywords, realId);
 
-    log.info("등기부 발급 조회 등어옴 startDate={}, endDate={}, SearchKeywords={} ", startDate, endDate, SearchKeywords);
     try {
-      User user = (User)auth.getPrincipal();
-      List<Map<String, Object>> getList = issueInquiryService.getList(startDate, endDate, SearchKeywords, user.getUsername());
+      User user = (User) auth.getPrincipal();
+      List<Map<String, Object>> getList = issueInquiryService.getList(startDate, endDate, SearchKeywords, user.getUsername(), realId);
 
       result.success = true;
       result.message = "데이터 조회 성공";
       result.data = getList;
-
     } catch (Exception e) {
       // 예외 처리
+      log.error("데이터 조회 중 오류 발생", e);
       result.success = false;
       result.message = "데이터 조회 중 오류 발생: " + e.getMessage();
     }
 
     return result;
-
   }
 
-  @GetMapping("")
+  @GetMapping("/DetailsList")
   public AjaxResult DetailsList(@RequestParam(value = "realId") String REALID) {
     AjaxResult result = new AjaxResult();
 
@@ -104,7 +111,67 @@ public class IssueInquiryController {
   }
 
   // PDF 파일 조회 API
+  @CrossOrigin(origins = "*")
   @GetMapping("/pdf")
+  public ResponseEntity<byte[]> getPdf(@RequestParam(value = "realId") int realId) {
+    log.info("📄 PDF 조회 요청: realId={}", realId);
+
+    try {
+      // 1. DB에서 PDF 파일명 조회
+      Optional<String> optionalPdfFileName = issueInquiryService.findPdfFilenameByRealId(realId);
+
+      if (optionalPdfFileName.isEmpty()) {
+        log.warn("📌 PDF 파일명을 찾을 수 없음: realId={}", realId);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+      }
+
+      // 2. 파일명 인코딩 및 디코딩
+      String pdfFileName = optionalPdfFileName.get();
+      String encodedFileName = URLEncoder.encode(pdfFileName, StandardCharsets.UTF_8); // 🔥 인코딩 추가
+      String decodedFileName = URLDecoder.decode(encodedFileName, StandardCharsets.UTF_8); // 🔥 디코딩 추가
+
+      log.info("📌 원본 파일명: {}", pdfFileName);
+      log.info("📌 인코딩된 파일명: {}", encodedFileName);
+      log.info("📌 디코딩된 파일명: {}", decodedFileName);
+
+      // 3. 운영체제별 저장 경로 설정
+      String osName = System.getProperty("os.name").toLowerCase();
+      String uploadDir;
+
+      if (osName.contains("win")) {
+        uploadDir = "C:\\temp\\registerFiles\\"; // Windows 환경
+      } else {
+        String userHome = System.getProperty("user.home");
+        uploadDir = userHome + "/registerFiles/"; // Mac, Linux, Android 환경
+      }
+
+      // 4. PDF 파일 경로 설정 및 존재 여부 확인
+      Path pdfPath = Paths.get(uploadDir, decodedFileName);
+      log.info("📌 PDF 파일 경로: {}", pdfPath.toString());
+
+      if (!Files.exists(pdfPath)) {
+        log.warn("📌 파일이 존재하지 않음: {}", pdfPath.toString());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+      }
+
+      // 5. PDF 파일 읽기 및 반환
+      byte[] pdfBytes = Files.readAllBytes(pdfPath);
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_PDF);
+      headers.setContentDisposition(ContentDisposition.inline()
+          .filename(pdfFileName, StandardCharsets.UTF_8).build());
+
+      return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    } catch (IOException e) {
+      log.error("📌 파일을 읽는 중 오류 발생", e);
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (Exception e) {
+      log.error("📌 서버 내부 오류 발생", e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+  }
+
+  /*@GetMapping("/pdf")
   public ResponseEntity<byte[]> getPdf(@RequestParam(value = "realId") int realId) {
     log.info("📄 PDF 조회 요청: realId={}", realId);
 
@@ -154,7 +221,7 @@ public class IssueInquiryController {
       log.error("서버 내부 오류 발생", e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
-  }
+  }*/
 
 
   @GetMapping("/checkLogin")

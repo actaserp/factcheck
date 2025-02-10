@@ -18,50 +18,140 @@ public class IssueInquiryService {
   @Autowired
   SqlRunner sqlRunner;
 
-  public List<Map<String, Object>> getList(String startDate, String endDate, String searchKeywords, String userID) {
+  public List<Map<String, Object>> getList(String startDate, String endDate, String searchKeywords, String userID, int realId) {
     MapSqlParameterSource params = new MapSqlParameterSource();
     StringBuilder sql = new StringBuilder("""
-        select
-        *
-        from TB_REALINFO
-        where 1=1
+         select
+          *
+          from TB_REALINFO
+          where 1=1
         """);
+
+    // startDate 필터링
     if (startDate != null && !startDate.isEmpty()) {
       sql.append(" AND RELASTDATE >= :startDate ");
       params.addValue("startDate", startDate);
     }
+
+    // endDate 필터링
     if (endDate != null && !endDate.isEmpty()) {
       sql.append(" AND RELASTDATE <= :endDate ");
       params.addValue("endDate", endDate);
     }
+
+    // 주소 검색어 필터링 (부분 검색 가능)
     if (searchKeywords != null && !searchKeywords.isEmpty()) {
       sql.append(" AND REALADD LIKE :searchKeywords ");
       params.addValue("searchKeywords", "%" + searchKeywords + "%");
     }
-    if (userID != null && !userID.isEmpty()) {
-      sql.append("  and USERID = :userID ");
-      params.addValue("userID",userID );
+    // realId 필터링
+    if (realId > 0) {
+      sql.append(" AND realId = :realId ");
+      params.addValue("realId", realId);
     }
-    sql.append("""
-        ORDER BY
-         RELASTDATE DESC
-        """);
-    // log.info("등기부 발급 List SQL: {}", sql);
-      //log.info("SQL Parameters: {}", params.getValues());
+
+    // 특정 사용자 ID 필터링
+    if (userID != null && !userID.isEmpty()) {
+      sql.append(" AND USERID = :userID ");
+      params.addValue("userID", userID);
+    }
+
+    // 최신 날짜순으로 정렬
+    sql.append(" ORDER BY RELASTDATE DESC ");
+
+    // 로그 출력 (디버깅 용도)
+    log.info("등기부 발급 List SQL: {}", sql);
+    log.info("SQL Parameters: {}", params.getValues());
+
     return sqlRunner.getRows(sql.toString(), params);
   }
+
+  /*StringBuilder sql = new StringBuilder("""
+        SELECT
+            ri.REALID,
+            ri.USERID,
+            ri.REQDATE,
+            ri.REALADD,
+            ri.REGDATE,
+            ri.RESIDO,
+            ri.REGUGUN,
+            ri.REMOK,
+            ri.REWON,
+            ri.REWONDATE,
+            ri.REJIMOK,
+            ri.REAREA,
+            ri.REAMOUNT,
+            ri.RESEQ,
+            ri.REMAXAMT,
+            ri.INDATEM,
+            ri.REALSCORE,
+            ri.REALPOINT,
+            ri.RELASTDATE,
+            ri.REALGUBUN,
+            ri.PDFFILENAME,
+            -- TB_REALAOWN 데이터
+            ra.RankNo AS RankNo_A,
+            ra.RgsAimCont AS RgsAimCont_A,
+            ra.Receve AS Receve_A,
+            ra.RgsCaus AS RgsCaus_A,
+            ra.NomprsAndEtc AS NomprsAndEtc_A,
+            -- TB_REALBOWN 데이터
+            rb.RankNo AS RankNo_B,
+            rb.RgsAimCont AS RgsAimCont_B,
+            rb.Receve AS Receve_B,
+            rb.RgsCaus AS RgsCaus_B,
+            rb.NomprsAndEtc AS NomprsAndEtc_B
+        FROM MOB_FACTCHK.dbo.TB_REALINFO ri
+        LEFT JOIN MOB_FACTCHK.dbo.TB_REALAOWN ra ON ri.REALID = ra.REALID
+        LEFT JOIN MOB_FACTCHK.dbo.TB_REALBOWN rb ON ri.REALID = rb.REALID
+        WHERE 1=1
+    """);*/
+
+
 
   public List<Map<String, Object>> getDetails(String REALID) {
     MapSqlParameterSource params = new MapSqlParameterSource();
     StringBuilder sql = new StringBuilder("""
-        select
-       *
-        from TB_REALINFO
-        where 1=1
+         SELECT
+           ri.REALID,
+           ri.USERID,
+           ri.REQDATE,
+           ri.REALADD,
+           ri.REGDATE,
+           ri.RESIDO,
+           ri.REGUGUN,
+           ri.REMOK,
+           ri.REWON,
+           ri.REWONDATE,
+           ri.REJIMOK,
+           ri.REAREA,
+           ri.REAMOUNT,
+           ri.RESEQ,
+           ri.REMAXAMT,
+           ri.INDATEM,
+           ri.REALSCORE,
+           ri.REALPOINT,
+           ri.RELASTDATE,
+           ri.REALGUBUN,
+           ri.PDFFILENAME,
+          COALESCE(ra.RankNo, '-') AS RankNo_A,
+          COALESCE(ra.RgsAimCont, '-') AS RgsAimCont_A,
+          COALESCE(ra.Receve, '-') AS Receve_A,
+          COALESCE(ra.RgsCaus, '-') AS RgsCaus_A,
+          COALESCE(ra.NomprsAndEtc, '-') AS NomprsAndEtc_A,
+          COALESCE(rb.RankNo, '-') AS RankNo_B,
+          COALESCE(rb.RgsAimCont, '-') AS RgsAimCont_B,
+          COALESCE(rb.Receve, '-') AS Receve_B,
+          COALESCE(rb.RgsCaus, '-') AS RgsCaus_B,
+          COALESCE(rb.NomprsAndEtc, '-') AS NomprsAndEtc_B
+       FROM MOB_FACTCHK.dbo.TB_REALINFO ri
+       LEFT JOIN MOB_FACTCHK.dbo.TB_REALAOWN ra ON ri.REALID = ra.REALID
+       LEFT JOIN MOB_FACTCHK.dbo.TB_REALBOWN rb ON ri.REALID = rb.REALID
+       WHERE 1=1
         """);
     if (REALID != null && !REALID.isEmpty()) {
-      sql.append(" AND REALID LIKE :REALID ");
-      params.addValue("REALID", "%" + REALID + "%");
+      sql.append(" AND ri.REALID = :REALID ");
+      params.addValue("REALID", REALID);
     }
     sql.append("""
         ORDER BY
