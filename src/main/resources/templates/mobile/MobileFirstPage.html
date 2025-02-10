@@ -66,7 +66,9 @@
             <div class="modal-content">
               <div style="display: flex">
                 <div class="modal-header">주소 검색</div>
-                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto">×</button>
+                <button class="modal-close" onclick="closeModal()"
+                        style="width: 30px; margin-left: auto">×
+                </button>
               </div>
               <div id="postcodeContainer" style="width: 100%;"></div>
             </div>
@@ -163,57 +165,68 @@
 
   // 상세주소 조회
   function searchGoyuList() {
-    isUserLoggedIn(function (isLoggedIn) {
-      if (!isLoggedIn) {
-        Alert.alert('', "로그인이 필요합니다. 로그인 페이지로 이동합니다.");
-        window.location.href = "/mobile/mlogin"; // 로그인 페이지로 리디렉션
-        return;
-      }
 
-      let data2 = [];
-      if (document.getElementById('address1').value === "") {
-        Alert.alert('', '주소를 선택해주세요');
-        return false;
-      }
+    let data2 = [];
+    if (document.getElementById('address1').value === "") {
+      Alert.alert('', '주소를 선택해주세요');
+      return false;
+    }
+    $.ajax({
+      url: '/api/IssueInquiry/checkLogin',
+      type: 'GET',
+      async: true, //비동기 방식으로 변경
+      success: function(response) {
+        console.log("로그인 체크 결과:", response);
 
-      $.ajax({
-        url: '/api/tilko/searchGoyuList',
-        type: 'GET',
-        data: {
-          'address1': $('#address1').val() + " " + $('#address2').val()
-        },
-        async: false,
-        success: function (data) {
-          data2 = data.data;
-          console.log("data2", data);
+        if (!response.isLoggedIn) {
+          // 비회원이면 로그인 페이지로 이동
+          console.log("비회원이므로 /mobile/mlogin으로 이동");
+          window.location.href = '/mobile/mlogin';
+        } else {
+          console.log("회원이므로 조회 요청 실행");
+        }
 
-          const listAddressWrap = document.getElementById('addressWrap');
-          const availableColors = [
-            'card-blue', 'card-green', 'card-black',
-            'card-red', 'card-yellow', 'card-purple'
-          ];
-          listAddressWrap.innerHTML = ''; // 기존 내용을 초기화
+        $.ajax({
+          url: '/api/tilko/searchGoyuList',
+          type: 'GET',
+          data: {
+            'address1': $('#address1').val() + " " + $('#address2').val()
+          },
+          headers: {
+            'X-CSRF-Token': $('[name=_csrf]').val()
+          },
+          async: false,
+          success: function (data) {
+            data2 = data.data;
+            console.log("data2", data);
 
-          // 색상을 순환적으로 할당하기 위한 인덱스
-          let colorIndex = 0;
-          let htmlContent = '';
+            const listAddressWrap = document.getElementById('addressWrap');
+            const availableColors = [
+              'card-blue', 'card-green', 'card-black',
+              'card-red', 'card-yellow', 'card-purple'
+            ];
+            listAddressWrap.innerHTML = ''; // 기존 내용을 초기화
 
-          // Gubun 데이터에서 '토지' 데이터 제외 후 화면에 출력
-          data2.forEach(data => {
-            const cardColor = availableColors[colorIndex];
-            colorIndex = (colorIndex + 1) % availableColors.length;
+            // 색상을 순환적으로 할당하기 위한 인덱스
+            let colorIndex = 0;
+            let htmlContent = '';
 
-            if (data.Gubun !== '토지') {
-              // 버튼 처리
-              let buttonsHtml = `<button class="btn btn-popup-open"
+            // Gubun 데이터에서 '토지' 데이터 제외 후 화면에 출력
+            data2.forEach(data => {
+              const cardColor = availableColors[colorIndex];
+              colorIndex = (colorIndex + 1) % availableColors.length;
+
+              if (data.Gubun !== '토지') {
+                // 버튼 처리
+                let buttonsHtml = `<button class="btn btn-popup-open"
                                                     data-popup="popup-history" title="등기부">
                                                 등기부 조회
                                             </button>`;
 
-              // rd_addr_detail에서 태그 제거 후 적용
-              let cleanAddress = stripHtmlTags(data.rd_addr_detail).replace(/\s+/g, '');
+                // rd_addr_detail에서 태그 제거 후 적용
+                let cleanAddress = stripHtmlTags(data.rd_addr_detail).replace(/\s+/g, '');
 
-              htmlContent += `
+                htmlContent += `
                             <div class="card-box ${cardColor}" data-Goyu="${data.pin}">
                                 <div class="card-cont">
                                     <dl><dt>고유번호</dt><dd>${data.pin}</dd></dl>
@@ -224,29 +237,33 @@
                                 ${buttonsHtml}
                             </div>
                         `;
-            } else {
-              console.log("토지데이터 제외됨");
-            }
-          });
+              } else {
+                console.log("토지데이터 제외됨");
+              }
+            });
 
-          listAddressWrap.insertAdjacentHTML('beforeend', htmlContent);
+            listAddressWrap.insertAdjacentHTML('beforeend', htmlContent);
 
-          // 이벤트 위임 추가
-          listAddressWrap.addEventListener('click', (event) => {
-            const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
-            if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
+            // 이벤트 위임 추가
+            listAddressWrap.addEventListener('click', (event) => {
+              const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+              if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
 
-            const cardBox = button.closest('.card-box');
-            const goyuNum = cardBox.getAttribute('data-Goyu');
+              const cardBox = button.closest('.card-box');
+              const goyuNum = cardBox.getAttribute('data-Goyu');
 
-            // 데이터 찾기
-            const item = data2.find(d => d.pin === goyuNum);
-            if (item) {
-              searchaddress(item);
-            }
-          });
-        }
-      });
+              // 데이터 찾기
+              const item = data2.find(d => d.pin === goyuNum);
+              if (item) {
+                searchaddress(item);
+              }
+            });
+          }
+        });
+      },
+      error: function() {
+        window.location.href = '/mobile/mlogin';  // 로그인 확인 API 오류 시 로그인 페이지로 이동
+      }
     });
   }
 
@@ -255,47 +272,6 @@
     let tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
     return tempDiv.textContent || tempDiv.innerText || "";
-  }
-
-  // 사용자 데이터를 가져오는 함수
-  function isUserLoggedIn(callback) {
-    $.ajax({
-      url: '/account/userinfo2',
-      type: 'GET',
-      dataType: 'json',
-      success: function (response) {
-        if (response.success) {
-          console.log("로그인 상태: 사용자 정보 확인됨");
-          callback(true);
-        } else {
-          console.error("로그인되지 않음:", response.message);
-          callback(false);
-        }
-      },
-      error: function (xhr, status, error) {
-        console.error("로그인 체크 실패:", status, error);
-
-        if (xhr.status === 401) {
-          try {
-            // 응답이 비어 있는 경우 대비 (JSON 파싱 오류 방지)
-            let response = xhr.responseText && xhr.responseText.trim() ? JSON.parse(xhr.responseText) : {};
-            let redirectUrl = response.redirectUrl || "/mobile/mlogin"; // 기본적으로 /mobile/mlogin 사용
-
-            console.log("401 Unauthorized 발생 → " + redirectUrl + " 으로 이동");
-            alert("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
-
-            // 🚀 강제 이동
-            window.location.replace(redirectUrl);
-          } catch (e) {
-            console.error("JSON 파싱 오류:", e);
-            window.location.replace("/mobile/mlogin"); // JSON 파싱 실패 시 기본 로그인 페이지로 이동
-          }
-        } else {
-          console.error("예상치 못한 오류 발생:", xhr.responseText);
-        }
-        callback(false);
-      }
-    });
   }
 
   function searchaddress(data) {

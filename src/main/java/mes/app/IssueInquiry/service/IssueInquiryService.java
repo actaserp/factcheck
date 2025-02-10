@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -120,26 +121,29 @@ public class IssueInquiryService {
     return null;
   }
 
-  public String findPdfFilenameByRealId(int realId) {
+  public Optional<String> findPdfFilenameByRealId(int realId) {
+    if (realId <= 0) {
+      return Optional.empty(); // 유효하지 않은 realId
+    }
+
     MapSqlParameterSource params = new MapSqlParameterSource();
-    // realId를 SQL 파라미터로 추가
     params.addValue("realId", realId);
 
-    StringBuilder sql = new StringBuilder("""
-        select PDFFILENAME from TB_REALINFO
-        where REALID = :realId
-        """);
+    String sql = "SELECT PDFFILENAME FROM TB_REALINFO WHERE REALID = :realId";
 
-    // SQL 쿼리 실행 후, 결과에서 첫 번째 행의 PDFFILENAME 값 추출
-    List<Map<String, Object>> result = sqlRunner.getRows(sql.toString(), params);
+    try {
+      // SQL 실행 후 결과 조회
+      List<Map<String, Object>> result = sqlRunner.getRows(sql, params);
 
-    if (result != null && !result.isEmpty()) {
-      // 첫 번째 행에서 PDFFILENAME 값 추출
-      return (String) result.get(0).get("PDFFILENAME");
-    } else {
-      // 결과가 없을 경우
-      return null;
+      if (!result.isEmpty() && result.get(0).get("PDFFILENAME") != null) {
+        return Optional.of((String) result.get(0).get("PDFFILENAME"));
+      }
+    } catch (Exception e) {
+      // 예외 발생 시 로그 출력 (개발 및 운영 시 오류 확인)
+      System.err.println("PDF 파일명을 조회하는 중 오류 발생: " + e.getMessage());
     }
+    return Optional.empty(); // 결과가 없으면 빈 Optional 반환
   }
+
 
 }

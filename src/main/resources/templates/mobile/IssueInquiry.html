@@ -156,41 +156,6 @@
 
   </div> <!-- //mobile-layout-contents end-->
 
-  <!--<div class="mobile-layout-popup" id="popup-history">
-    <div class="popup-overlay"></div>
-    <div class="popup-wrapper">
-      <div class="popup-title">
-        <h3>상세내용</h3>
-      </div>
-      <div class="popup-contents">
-        <div class="table-wrap">
-          <div class="write-wrap">
-            <div class="row">
-              <div class="tab-wrap">
-                <div class="tab-buttons">
-                  <button onclick="changeTable('main')">표제부</button>
-                  <button onclick="changeTable('sub1')">갑구</button>
-                  <button onclick="changeTable('sub2')">을구</button>
-                </div>
-
-                <section class="tab-item" id="dynamic-table">
-                  <table class="write-table"
-                         style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-                    <caption id="table-title" style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
-                    <thead id="table-head"></thead>
-                    <tbody id="table-body"></tbody>
-                  </table>
-                </section>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="popup-button">
-        <button class="btn-popup-close btn-navy">확인</button>
-      </div>
-    </div>
-  </div>-->
   <div class="mobile-layout-popup" id="popup-history" >
     <div class="popup-overlay"></div>
     <div class="popup-wrapper" >
@@ -433,38 +398,24 @@
       </div>
     </div>
   </div>
-
-  <div class="mobile-layout-popup" id="popup-register">
-    <div class="popup-overlay"></div>
+  <!-- PDF 보기 팝업 -->
+  <div class="mobile-layout-popup" id="popup-pdf-viewer">
     <div class="popup-wrapper">
       <div class="popup-title">
-        <h3>등기부 등본</h3>
+        <h3>PDF 문서 보기</h3>
+        <button class="btn-popup-close" onclick="closeModal('popup-pdf-viewer')">×</button>
       </div>
       <div class="popup-contents">
-        <div class="table-wrap">
-          <div class="write-wrap">
-            <div class="row">
-              <section>
-                <div class="tab-wrap">
-                  <!-- PDF를 보여주는 iframe -->
-                  <div id="pdf-container" style="width: 100%; height: 500px; border: 1px solid #ddd;">
-                    <iframe id="pdf-viewer" width="100%" height="100%" style="border: none;"></iframe>
-                  </div>
-
-                  <!-- 저장하기 버튼 -->
-                  <div style="margin-top: 10px;">
-                    <button type="button" id="savePdfButton">
-                      저장하기
-                    </button>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </div>
+        <div class="pdf-container">
+          <iframe id="pdfFrame" width="100%" height="500px"></iframe>
         </div>
+      </div>
+      <div class="popup-button">
+        <button class="btn-popup-close btn-navy" onclick="closeModal('popup-pdf-viewer')">닫기</button>
       </div>
     </div>
   </div>
+
 
 </div> <!-- //page-wrapper end-->
 
@@ -501,7 +452,7 @@
   }
 
   // 데이터를 받아와 카드 렌더링
-  function fetchListData() {
+  /*function fetchListData() {
     $.ajax({
       url: '/api/IssueInquiry/List',
       type: 'GET',
@@ -546,8 +497,8 @@
           let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="상세보기">
                             상세보기
                         </button>
-                      <button class="btn btn-register-view" data-popup="popup-register" title="등기부보기">
-                          등기부보기
+                      <button class="btn btn-register-view" onclick="openModal('popup-pdf-viewer', '/api/pdf/view?realId=${item.REALID}')">
+                          등기부 보기
                       </button>
                         `;
 
@@ -661,37 +612,6 @@
             });
           }
 
-
-            if (registerButton) {
-              const cardBox = registerButton.closest(".card-box");
-              if (!cardBox) return;
-              const realId = cardBox.getAttribute("data-realid");
-              const popup = document.getElementById("popup-register");
-              if (!popup) return;
-
-              popup.classList.add("open"); // 팝업 열기
-
-              $.ajax({
-                url: `/api/register-info/pdf?realId=${realId}`,
-                type: "GET",
-                success: function (data) {
-                  console.log("PDF URL:", data.pdfUrl);
-
-                  // 📌 PDF 파일을 iframe에 로드
-                  const pdfViewer = document.getElementById("pdf-viewer");
-                  pdfViewer.src = data.pdfUrl;
-
-                  // 📌 저장 버튼의 다운로드 링크 설정
-                  document.getElementById("savePdfButton").setAttribute("data-pdf-url", data.pdfUrl);
-                },
-                error: function (xhr, status, error) {
-                  console.error("PDF 요청 실패:", status, error);
-                }
-              });
-
-              return;
-            }
-
           // 팝업 열기
           const popupHistory = document.getElementById("popup-history");
           popupHistory.classList.add("open");
@@ -710,6 +630,137 @@
 
           const goyuNum = cardBox.getAttribute('data-Goyu');
         });
+      }
+
+        listAddressWrap.addEventListener('click', (event) => {
+          const pdfButton = event.target.closest('.btn-register-view');
+          if (pdfButton) {
+            const cardBox = pdfButton.closest('.card-box');
+            if (!cardBox) return;
+            const realId = cardBox.getAttribute("data-realid");
+
+            openModal('popup-pdf-viewer', `/api/pdf/view?realId=${realId}`);
+            return;
+          }
+        });
+      },
+      error: function (xhr, status, error) {
+        console.error("AJAX 요청 실패:", status, error);
+        console.error("응답 내용:", xhr.responseText);
+      }
+    });
+  }*/
+
+  // 데이터를 받아와 카드 렌더링
+  function fetchListData() {
+    $.ajax({
+      url: '/api/IssueInquiry/List',
+      type: 'GET',
+      data: {
+        'startDate': $('#startDate').val(),
+        'endDate': $('#endDate').val(),
+        'SearchKeywords': $('#SearchKeywords').val()
+      },
+      success: function (data) {
+        console.log("서버 응답 데이터:", data);
+        if (!data || !data.data || !Array.isArray(data.data)) {
+          console.error("데이터가 올바르지 않습니다.");
+          return;
+        }
+
+        // 목록 건수 업데이트
+        const listNumElement = document.querySelector('.list-num .blue');
+        if (listNumElement) {
+          listNumElement.textContent = `${data.data.length} 건`;
+        }
+
+        // 주소 리스트 업데이트
+        const listAddressWrap = document.getElementById('addressWrap');
+        if (!listAddressWrap) {
+          console.error("addressWrap 요소를 찾을 수 없습니다.");
+          return;
+        }
+
+        listAddressWrap.innerHTML = ''; // 기존 내용 초기화
+        const availableColors = ['card-blue', 'card-green', 'card-black', 'card-red', 'card-yellow', 'card-purple'];
+        let colorIndex = 0;
+        let htmlContent = '';
+
+        const selectedValue = $('#property').val();
+
+        data.data.forEach(item => {
+          const cardColor = availableColors[colorIndex];
+          colorIndex = (colorIndex + 1) % availableColors.length;
+
+          let buttonsHtml = `
+                    <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기">상세보기</button>
+                    <button class="btn btn-register-view" data-realid="${item.REALID}">등기부 보기</button>
+                `;
+
+          const formattedDate = item.RELASTDATE.substring(0, 4) + '-' + item.RELASTDATE.substring(4, 6) + '-' + item.RELASTDATE.substring(6, 8);
+          const formattedLastDate = item.RLASTDATE
+            ? item.RLASTDATE.substring(0, 4) + '-' + item.RLASTDATE.substring(4, 6) + '-' + item.RLASTDATE.substring(6, 8)
+            : '';
+
+          htmlContent += `
+                    <div class="card-box ${cardColor}" data-realadd="${item.REALADD}" data-realid="${item.REALID}">
+                        <div class="card-cont">
+                            <dl>
+                                <dt>주소</dt>
+                                <dd>${item.REALADD}</dd>
+                            </dl>
+                            ${ (selectedValue === "most_viewed_property" || selectedValue === "popular_property")
+            ? `<dl>
+                                    <dt>최근조회날짜</dt>
+                                    <dd>${formattedLastDate}</dd>
+                                  </dl>`
+            : `<dl>
+                                    <dt>조회날짜</dt>
+                                    <dd>${formattedDate}</dd>
+                                  </dl>`
+          }
+                            <dl>
+                                <dt>판정점수</dt>
+                                <dd>${item.REALSCORE}</dd>
+                            </dl>
+                            ${ (selectedValue === "most_viewed_property" || selectedValue === "popular_property")
+            ? `<dl>
+                                    <dt>조회수</dt>
+                                    <dd>${item.view_count}</dd>
+                                  </dl>`
+            : '' }
+                        </div>
+                        ${buttonsHtml}
+                    </div>
+                `;
+        });
+
+        listAddressWrap.innerHTML = htmlContent;
+
+        // 이벤트 위임을 사용하여 버튼 클릭 처리
+        listAddressWrap.addEventListener('click', (event) => {
+          const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+          const pdfButton = event.target.closest('.btn-register-view');
+
+          if (button) {
+            // 상세보기 버튼 클릭 시 동작
+            const cardBox = button.closest('.card-box');
+            const realAdd = cardBox.getAttribute('data-realadd');
+            const popupTitle = document.querySelector("#popup-history .popup-title h3");
+            if (popupTitle) {
+              popupTitle.textContent = `${realAdd} 상세내용`;
+            }
+
+            // 팝업 열기
+            document.getElementById("popup-history").classList.add("open");
+          }
+
+          if (pdfButton) {
+            // 등기부 보기 버튼 클릭 시 동작
+            const realId = pdfButton.getAttribute("data-realid");
+            openModal('popup-pdf-viewer', `/api/IssueInquiry/pdf?realId=${realId}`);
+          }
+        });
       },
       error: function (xhr, status, error) {
         console.error("AJAX 요청 실패:", status, error);
@@ -717,112 +768,49 @@
       }
     });
   }
-  document.getElementById("addressWrap").addEventListener("click", (event) => {
-    const registerButton = event.target.closest('.btn-register-view[data-popup="popup-register"]');
-    if (registerButton) {
-      console.log("등기부보기 버튼 클릭됨!");
 
-      const cardBox = registerButton.closest(".card-box");
-      if (!cardBox) return;
+  function openModal(popupId, pdfUrl) {
+    let popup = document.getElementById(popupId);
+    let overlay = document.querySelector('.popup-overlay');
+    let iframe = document.getElementById("pdfFrame");
 
-      const realId = cardBox.getAttribute("data-realid");
-      const popup = document.getElementById("popup-register");
-
-      if (!popup) {
-        console.error("팝업 요소를 찾을 수 없습니다: popup-register");
-        return;
-      }
-
-      // ✅ 팝업을 보이도록 스타일 변경
-      const popupRegister = document.getElementById("popup-register");
-      popupRegister.classList.add("open");
-      popup.style.display = "block";
-
-      console.log("팝업 열기 시도:", popup);
-
-      // 📌 AJAX 요청으로 PDF URL 가져오기
-      $.ajax({
-        url: `/api/IssueInquiry/pdf`,
-        type: "GET",
-        data: {
-          realId: realId,
-        },
-        headers: {
-          'X-CSRF-Token': $('[name=_csrf]').val()
-        },
-        success: function (data) {
-          console.log("PDF URL:", data.pdfUrl);
-
-          // 📌 PDF 파일을 iframe에 로드
-          const pdfViewer = document.getElementById("pdf-viewer");
-          if (pdfViewer) {
-            pdfViewer.src = data.pdfUrl;
-          } else {
-            console.error("PDF 뷰어 요소를 찾을 수 없습니다.");
-          }
-
-          // 📌 저장 버튼의 다운로드 링크 설정
-          const saveButton = document.getElementById("savePdfButton");
-          if (saveButton) {
-            saveButton.setAttribute("data-pdf-url", data.pdfUrl);
-          } else {
-            console.error("저장 버튼을 찾을 수 없습니다.");
-          }
-        },
-        error: function (xhr, status, error) {
-          console.error("PDF 요청 실패:", status, error);
+    // PDF URL이 존재하는지 확인
+    fetch(pdfUrl, { method: 'GET' }) // GET 요청으로 변경
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('PDF 파일을 찾을 수 없습니다.');
         }
+        // 파일이 존재하면 팝업 열기
+        if (popup && overlay) {
+          popup.classList.add('active');
+          overlay.style.display = 'block';
+          if (iframe) {
+            iframe.src = pdfUrl;
+          }
+        }
+      })
+      .catch(error => {
+        console.error(error.message);
+        Alert.alert('',"PDF 파일이 존재하지 않습니다."); // 알림 추가
       });
-    }
-  });
+  }
 
-  // 📌 저장하기 버튼 클릭 시 PDF 다운로드
-  document.getElementById("savePdfButton").addEventListener("click", function () {
-    const pdfUrl = this.getAttribute("data-pdf-url");
-    if (pdfUrl) {
-      const link = document.createElement("a");
-      link.href = pdfUrl;
-      link.download = "등기부_등본.pdf";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      alert("PDF 파일을 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
-    }
-  });
+  function closeModal(popupId) {
+    let popup = document.getElementById(popupId);
+    let overlay = document.querySelector('.popup-overlay');
+    let iframe = document.getElementById("pdfFrame");
 
-  // 📌 팝업 닫기 기능 추가
-  document.querySelectorAll(".btn-popup-close").forEach((button) => {
-    button.addEventListener("click", function () {
-      const popup = button.closest(".mobile-layout-popup");
-      if (popup) {
-        popup.classList.remove("open");
-        popup.style.display = "none";
+    if (popup && overlay) {
+      popup.classList.remove('active');
+      overlay.style.display = 'none';
+
+      // PDF URL 초기화 (다시 열 때 새로 로드되도록)
+      if (iframe) {
+        iframe.src = "";
       }
-    });
-  });
-
-  function openModal(popupId) {
-    let popup = document.getElementById(popupId);
-    let overlay = document.querySelector('.popup-overlay');
-
-    if (popup && overlay) {
-      popup.classList.add('active'); // 팝업 활성화
-      overlay.style.display = 'block'; // 오버레이 보이기
-    } else {
-      console.error('popup2 또는 popup-overlay 요소를 찾을 수 없습니다.');
     }
   }
 
-  function ModalClose(popupId) {
-    let popup = document.getElementById(popupId);
-    let overlay = document.querySelector('.popup-overlay');
-
-    if (popup && overlay) {
-      popup.classList.remove('active'); // 팝업 비활성화
-      overlay.style.display = 'none'; // 오버레이 숨기기
-    }
-  }
 
   function handleSearch() {
     fetchListData();

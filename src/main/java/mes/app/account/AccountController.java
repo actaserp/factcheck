@@ -100,7 +100,7 @@ public class AccountController {
   private TB_XuserRepository tB_XuserRepository;
 
 
-  @GetMapping("/login")
+ /* @GetMapping("/login")
   public ModelAndView loginPage(
       HttpServletRequest request,
       HttpServletResponse response,
@@ -126,6 +126,48 @@ public class AccountController {
     }
 
     return mv;
+  }*/
+ @GetMapping("/login")
+ public ModelAndView loginPage(
+     HttpServletRequest request,
+     HttpServletResponse response,
+     HttpSession session, Authentication auth) {
+
+   //User-Agent를 기반으로 모바일 여부 감지
+   String userAgent = request.getHeader("User-Agent").toLowerCase();
+   boolean isMobile = userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone");
+
+   // 세션을 이용해 모바일에서 한 번만 리디렉션되도록 설정
+   Boolean isMobileRedirected = (Boolean) session.getAttribute("isMobileRedirected");
+
+   if (isMobile && (isMobileRedirected == null || !isMobileRedirected)) {
+     session.setAttribute("isMobileRedirected", true);  // ✅ 모바일에서 리디렉션 상태 저장
+     return new ModelAndView("redirect:/MobileFirstPage");
+   }
+
+   // 모바일이면 "mlogin" 뷰 반환, 웹이면 "login" 뷰 반환
+   ModelAndView mv = new ModelAndView(isMobile ? "mlogin" : "login");
+
+   // 기존의 userinfo 및 gui 데이터를 추가
+   Map<String, Object> userInfo = new HashMap<>();
+   Map<String, Object> gui = new HashMap<>();
+
+   mv.addObject("userinfo", userInfo);
+   mv.addObject("gui", gui);
+
+   // 로그인되어 있는 경우 로그아웃 처리
+   if (auth != null) {
+     SecurityContextLogoutHandler handler = new SecurityContextLogoutHandler();
+     handler.logout(request, response, auth);
+   }
+
+   return mv;
+ }
+
+  @GetMapping("/MobileFirstPage")
+  public ModelAndView mobileFirstPage(HttpSession session) {
+    session.removeAttribute("isMobileRedirected");  // ✅ 모바일 첫 페이지에서 세션 값 초기화
+    return new ModelAndView("/mobile/MobileFirstPage");
   }
 
   @GetMapping("/logout")

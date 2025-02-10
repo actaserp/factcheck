@@ -7,14 +7,19 @@ import mes.domain.model.AjaxResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -98,38 +103,60 @@ public class IssueInquiryController {
 
   }
 
+  // PDF 파일 조회 API
   @GetMapping("/pdf")
-  public ResponseEntity<byte[]> getPdf(@RequestParam(value = "realId") int realId ){
+  public ResponseEntity<byte[]> getPdf(@RequestParam(value = "realId") int realId) {
+    log.info(" pdf조회 realId={}", realId);
     try {
-      // DB에서 realId에 해당하는 PDFFILENAME을 조회
-      String pdfFileName = issueInquiryService.findPdfFilenameByRealId(realId);
+      // realId에 해당하는 PDF 파일명 조회
+      Optional<String> optionalPdfFileName = issueInquiryService.findPdfFilenameByRealId(realId);
 
-      // PDFFILENAME이 null이면 404 응답 반환
-      if (pdfFileName == null || pdfFileName.isEmpty()) {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      // 파일명이 없으면 404 반환
+      if (optionalPdfFileName.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
       }
 
-      // PDF 파일 경로 (DB에서 찾아온 파일 이름 사용)
-      String pdfFilePath = "/path/to/pdf/" + pdfFileName;  // 실제 경로를 사용해야 함
+      String pdfFileName = optionalPdfFileName.get();
+      String pdfFilePath = "C:/pdf_storage/" + pdfFileName;
 
-      // PDF 파일을 바이트 배열로 읽기
       Path path = Paths.get(pdfFilePath);
+
+      if (!Files.exists(path)) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+      }
+
       byte[] pdfBytes = Files.readAllBytes(path);
 
-      // HTTP 응답 설정
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_PDF);
-      headers.setContentDisposition(ContentDisposition.builder("inline").filename(pdfFileName).build());
+      headers.setContentDisposition(ContentDisposition.inline().filename(pdfFileName).build());
 
       return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     } catch (IOException e) {
-      // 파일이 없거나 IO 오류 발생 시 404 반환
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
-      // 기타 예외 처리 (예: DB에서 파일 이름을 못 찾은 경우)
-      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
+
+  @GetMapping("/checkLogin")
+  public ResponseEntity<Map<String, Object>> checkLogin(HttpSession session, HttpServletResponse response) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    boolean isLoggedIn = authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal());
+
+    if (!isLoggedIn) {
+      // 비회원이면 로그인 페이지로 리디렉트
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .header("Location", "/mobile/mlogin")
+          .body(null);
+    }
+
+    Map<String, Object> responseBody = new HashMap<>();
+    responseBody.put("isLoggedIn", true);
+    return ResponseEntity.ok(responseBody);
+  }
+
 
 
 }
