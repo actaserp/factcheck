@@ -17,13 +17,6 @@
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
-    .mobile-layout-popup {
-        display: none;
-    }
-
-    .mobile-layout-popup.open {
-        display: block;
-    }
 
 
     .tab-item {
@@ -33,6 +26,7 @@
     .tab-item.active {
         display: block; /* 'active' 클래스가 있을 때만 해당 탭 내용을 표시 */
     }
+
 
     .tab-links {
         display: flex;
@@ -103,6 +97,13 @@
         color: #fff;
     }
 
+    .tab-links-sub {
+        display: flex;
+        margin-left: 1px;
+        margin-bottom: -1px;
+        overflow: hidden;
+    }
+
     .tab-links-sub li {
         position: relative;
     }
@@ -160,15 +161,38 @@
     .tab-links-sub li.active a {
         background-color: #2EC9D6;
         color: #fff;
-        font-weight: 70
+        font-weight: 700;
+        border: 1px solid #2EC9D6;
     }
+    .tab-contents > section, .tab-item1 > .row > section:first-child {
+        border-radius: 0 15px 15px 15px;
+    }
+
+    .tab-contents > .row > section {
+        border-radius: 0 15px 15px 15px;
+    }
+    table.write-table th, table.write-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    table.write-table td:first-child {
+        font-weight: bold;
+        background-color: #f8f9fa; /* 연한 회색 배경 */
+    }
+
+    table.write-table td[colspan="3"] {
+        font-weight: normal;
+    }
+
 
 </style>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>[KTFOMS] AI 기반 연료전지 인프라 구축 - 모바일</title>
-  <link rel="shortcut icon" href="/img/favicon.ico">
+  <title>FACT CHECK</title>
+  <link rel="icon" type="image/png" href="/images/logo/icon_FACT%20CHECK.png">
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/> <!-- Slide css -->
   <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css">
@@ -188,11 +212,12 @@
 
   <script src="/js/common.js?v=1060"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script><!-- PDF.js 라이브러리 추가 -->
   <script src="/js/Mobile.js"></script>
 </head>
 
 <body>
-<div class="mobile-wrapper page-ticket-list"><!-- ★페이지 Class명 -->
+<div class="mobile-wrapper page-IssueInquiry"><!-- ★페이지 Class명 -->
   <!-- [모바일] 헤더  -->
   <div class="mobile-layout-header">
     <header>
@@ -355,7 +380,7 @@
                 </section>
 
 
-                <section class="tab-item" id="sub1">
+               <!-- <section class="tab-item" id="sub1">
                   <table class="write-table"
                          style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                     <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
@@ -404,102 +429,35 @@
                     </tr>
                     </tbody>
                   </table>
-                </section>
+                </section>-->
 
+                <section class="tab-item" id="sub1">
+                  <table class="write-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                    <caption style="text-align: left; margin-bottom: 8px;">갑구 (소유권에 관한 사항)</caption>
+                    <thead>
+                    <tr>
+                      <th colspan="2" style="text-align: center;">갑 구 (소유권에 관한 사항)</th>
+                    </tr>
+                    </thead>
+                    <tbody id="sub1TableBody">
+                    <!-- JavaScript로 동적 데이터 삽입 -->
+                    </tbody>
+                  </table>
+                </section>
                 <section class="tab-item" id="sub2">
-                  <table class="write-table"
-                         style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-                    <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
+                  <table class="write-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                    <caption style="text-align: left; margin-bottom: 8px;">을 구 (소유권 이외의 권리에 관한 사항)</caption>
                     <thead>
                     <tr>
                       <th colspan="4" style="text-align: center;">을 구 (소유권 이외의 권리에 관한 사항)</th>
                     </tr>
-                    <tr>
-                      <th style="font-size: 11px;">
-                        표시번호
-                      </th>
-                      <th style="font-size: 11px;">
-                        등기목적
-                      </th>
-                      <th style="font-size: 11px;">
-                        접수
-                      </th>
-                      <th style="font-size: 11px;">
-                        등기원인
-                      </th>
-                    </tr>
                     </thead>
-                    <tbody>
-                    <tr>
-                      <td>
-                        1
-                      </td>
-                      <td>
-                        1번근저당권변경
-                      </td>
-                      <td>
-                        2022년1월27일 제9407호
-                      </td>
-                      <td>
-                        2022년1월13일 변경계약
-                      </td>
-                    </tr>
-                    <tr>
-                      <th colspan="1" style="font-size: 11px;">
-                        권리자 및 기타사항
-                      </th>
-                      <td colspan="3">
-                        &채권최고액 금108,000,000원&
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        2
-                      </td>
-                      <td>
-
-                      </td>
-                      <td>
-
-                      </td>
-                      <td>
-
-                      </td>
-                    </tr>
-                    <tr>
-                      <th colspan="1" style="font-size: 11px;">
-                        권리자 및 기타사항
-                      </th>
-                      <td colspan="3">
-                        1번 등기는 건물만에 관한 것임 2022년3월2일 부기
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        3
-                      </td>
-                      <td>
-                        1번근저당권변경
-                      </td>
-                      <td>
-
-                      </td>
-                      <td>
-                        2022년1월27일 근저당권변경계 약
-                      </td>
-                    </tr>
-                    <tr>
-                      <th colspan="1" style="font-size: 11px;">
-                        권리자 및 기타사항
-                      </th>
-                      <td colspan="3">
-                        채권최고액 금108,000,000원 공동담보 해제 2022년3월2일 부기
-                      </td>
-                    </tr>
+                    <tbody id="sub2TableBody">
+                    <!-- JavaScript로 데이터 삽입 -->
                     </tbody>
                   </table>
                 </section>
+
               </div>
             </section>
 
@@ -511,31 +469,42 @@
       </div>
     </div>
   </div>
-
   <!-- PDF 보기 팝업 -->
-  <div class="mobile-layout-popup" id="popup-pdf-viewer">
-    <div class="popup-overlay">
-      <div class="popup-wrapper">
-        <div class="popup-title">
-          <h3>PDF 문서 보기</h3>
-          <button class="btn-popup-close" onclick="closeModal('popup-pdf-viewer')">×</button>
-        </div>
-        <div class="popup-contents">
-          <div class="table-wrap">
-            <div class="write-wrap">
-              <div class="pdf-container">
-                <iframe id="pdfFrame" width="100%" height="500px"></iframe>
+  <div class="mobile-layout-popup">
+    <div class="popup-overlay"></div>
+    <div class="popup-wrapper" id="popup-pdf-viewer">
+      <div class="popup-title">
+        <h3>PDF 문서 보기</h3>
+      </div>
+      <div class="popup-contents">
+        <div class="table-wrap">
+          <div class="write-wrap">
+            <section>
+              <div class="tab-wrap" style="width: 100%;">
+                <!-- PDF 뷰어 -->
+                <section class="tab-item" id="pdfView" style="display: block;">
+                  <div id="pdfContainer" style="
+                          width: 100%;
+                          height: auto;
+                          padding: 10px;
+                          background: #f8f9fa;
+                          overflow-y: auto;
+                          max-height: 600px;">
+                    <!-- 📌 PDF 페이지가 동적으로 추가됩니다. -->
+                  </div>
+                </section>
               </div>
-            </div>
-            <div class="popup-button">
-              <button class="btn-download btn-navy" id="btnDownloadPdf">다운로드</button>
-              <button class="btn-popup-close btn-navy" onclick="closeModal('popup-pdf-viewer')">닫기</button>
-            </div>
+            </section>
           </div>
         </div>
       </div>
+      <div class="popup-button">
+        <button class="btn-download btn-navy" id="btnDownloadPdf" onclick="downloadPdf()">다운로드</button>
+        <button class="btn-popup-close btn-navy" onclick="closeModal('popup-pdf-viewer')">닫기</button>
+      </div>
     </div>
   </div>
+
 
 
 </div> <!-- //page-wrapper end-->
@@ -625,8 +594,8 @@
 
           htmlContent += `
                     <div class="card-box ${cardColor}" data-realadd="${item.REALADD}" data-resido="${item.RESIDO}" data-realid="${item.REALID}"
-                        data-regdate="${item.REGDATE}" data-regugun="${item.REGUGUN}" data-rejimok="${item.REJIMOK}" data-rearea="${item.REAREA}" data-PDFFILENAME="${item.PDFFILENAME}"
-                        data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}">
+                        data-regdate="${item.REGDATE}" data-regugun="${item.REGUGUN}" data-rejimok="${item.REJIMOK}" data-rearea="${item.REAREA}"
+                        data-PDFFILENAME="${item.PDFFILENAME}" data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}">
                         <div class="card-cont">
                             <dl>
                                 <dt>집합건물</dt>
@@ -678,7 +647,6 @@
             if (!cardBox) return;
 
             console.log("📌 상세보기 클릭됨! REALID:", realId);
-
             //AJAX 요청을 통해 상세 데이터 불러오기
             $.ajax({
               url: `/api/IssueInquiry/DetailsList?realId=${realId}`,
@@ -701,14 +669,14 @@
                 const regugun = cardBox.getAttribute('data-regugun') || '';
                 const rejimok = cardBox.getAttribute('data-rejimok') || '';
                 const rearea = cardBox.getAttribute('data-rearea') || '';
-                const uniqueNo = cardBox.getAttribute('data-uniqueNo');
-                const uniqueNoSafe = (uniqueNo === null || uniqueNo === "null") ? "" : uniqueNo;
+                const uniqueNo = data.UniqueNo ? data.UniqueNo : "";
+                const uniqueNoSafe = (uniqueNo === null || uniqueNo === "null") ? '' : uniqueNo;
                 const remaxamt = cardBox.getAttribute('data-remaxamt') || '';
-                const formattedRemaxamt = remaxamt
-                  ? Number(remaxamt).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  }) : '';
+                const numericRemaxamt = !isNaN(remaxamt) && remaxamt.trim() !== '' ? Number(remaxamt) : 0;
+                const formattedRemaxamt = numericRemaxamt.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
 
                 // 팝업 타이틀 업데이트
                 const popupTitle = document.querySelector("#popup-history .popup-title h3");
@@ -722,23 +690,27 @@
 
                 // 표제부
                 const tds = document.querySelectorAll("#popup-history td[colspan='3']");
-                if (tds.length > 0) {
-                  tds[0].textContent = formattedRegDate;
-                  tds[1].textContent = realAdd + " " + uniqueNoSafe;
-                  tds[2].textContent = resido + " " + regugun;
-                  tds[3].textContent = formattedRemaxamt;
+                if (tds.length >= 4) {  // 최소 4개 이상 있어야 함
+                  tds[0].textContent = formattedRegDate && formattedRegDate !== "null" ? formattedRegDate : "-";
+                  tds[1].textContent = realAdd && realAdd !== "null" ? realAdd + " " + (uniqueNoSafe && uniqueNoSafe !== "null" ? uniqueNoSafe : "-") : "-";
+                  tds[2].textContent = resido && resido !== "null" ? resido + " " + (regugun && regugun !== "null" ? regugun : "-") : "-";
+                  tds[3].textContent = formattedRemaxamt && formattedRemaxamt !== "null" ? formattedRemaxamt : "-";
                 } else {
-                  /*console.error("해당 요소를 찾을 수 없습니다.");*/
-                }
-                const rows = document.querySelector("#popup-history table tbody").getElementsByTagName("tr");
-                if (rows.length >= 4) {
-                  const tds = rows[3].getElementsByTagName("td");
-                  if (tds.length >= 2) {
-                    tds[0].textContent = rejimok;
-                    tds[1].textContent = rearea;
-                  }
+                  console.warn("해당 요소를 찾을 수 없거나 개수가 부족합니다.");
                 }
 
+                const rows = document.querySelector("#popup-history table tbody").getElementsByTagName("tr");
+                if (rows.length >= 4) {  // 4번째 행이 있는지 확인
+                  const tds = rows[3].getElementsByTagName("td");
+                  if (tds.length >= 2) {  // 최소 2개의 td가 있어야 함
+                    tds[0].textContent = rejimok && rejimok !== "null" ? rejimok : "-";
+                    tds[1].textContent = rearea && rearea !== "null" ? rearea : "-";
+                  } else {
+                    console.warn("4번째 행의 td 개수가 부족합니다.");
+                  }
+                } else {
+                  console.warn("4번째 행이 존재하지 않습니다.");
+                }
                 // 테이블 요소 가져오기
                 const sub1Table = document.querySelector("#sub1 table tbody");
                 const sub2Table = document.querySelector("#sub2 table tbody");
@@ -755,53 +727,65 @@
                 // 데이터를 배열로 받아서 중복 제거 후 사용
                 let details = Array.isArray(data.data) && data.data.length > 0 ? data.data : [];
 
+                const sub1TableBody = document.getElementById("sub1TableBody");
+
                 if (details.length === 0) {
                   console.warn("A등기 데이터 없음");
                 } else {
-                  //  중복 데이터 방지를 위한 Set()
-                  let uniqueEntries = new Set();
+                  let uniqueEntriesA = new Set();
 
-                  details.forEach((entry) => {
+                  details.forEach((entry, index) => {
                     let uniqueKey = `${entry.RankNo_A}-${entry.Receve_A}`;
 
-                    //  중복 검사: 같은 RankNo_A + Receve_A가 이미 있으면 건너뜀
-                    if (uniqueEntries.has(uniqueKey)) {
+                    if (uniqueEntriesA.has(uniqueKey)) {
                       return;
                     }
-                    uniqueEntries.add(uniqueKey);
+                    uniqueEntriesA.add(uniqueKey);
 
-                    const row1 = sub1Table.insertRow();
-                    row1.insertCell(0).textContent = entry.RankNo_A && entry.RankNo_A !== "null" ? entry.RankNo_A : "-";
-                    row1.insertCell(1).textContent = entry.RgsAimCont_A && entry.RgsAimCont_A !== "null" ? entry.RgsAimCont_A : "-";
-                    row1.insertCell(2).textContent = entry.Receve_A && entry.Receve_A !== "null" ? entry.Receve_A : "-";
-                    row1.insertCell(3).textContent = entry.RgsCaus_A && entry.RgsCaus_A !== "null" ? entry.RgsCaus_A : "-";
+                    // 1. 등기목적 행 (표시번호 포함)
+                    let row1 = sub1TableBody.insertRow();
+                    let cell1 = row1.insertCell(0);
+                    cell1.textContent = `${index + 1}. 등기목적`;
+                    cell1.style.fontWeight = "bold";
+                    let cell2 = row1.insertCell(1);
+                    cell2.textContent = entry.RgsAimCont_A && entry.RgsAimCont_A !== "null" ? entry.RgsAimCont_A : "-";
 
-                    const row2 = sub1Table.insertRow();
-                    const headerCell = row2.insertCell(0);
-                    headerCell.textContent = "권리자 및 기타사항";
+                    // 2. 접수 행
+                    let row2 = sub1TableBody.insertRow();
+                    let cell3 = row2.insertCell(0);
+                    cell3.textContent = "접수";
+                    cell3.style.fontWeight = "bold";
+                    let cell4 = row2.insertCell(1);
+                    cell4.textContent = entry.Receve_A && entry.Receve_A !== "null" ? entry.Receve_A : "-";
 
-                    headerCell.style.fontSize = "12px";  // 글자 크기 조정
-                    headerCell.style.fontWeight = "bold";  // 글자 굵게
-                    headerCell.style.border = "1px solid #E6E6E6";  // 테두리 전체 적용
-                    headerCell.style.backgroundColor = "#f8f9fa";  // 배경색 (연한 회색)
-                    headerCell.style.textAlign = "center";  // 텍스트 중앙 정렬
-                    headerCell.style.padding = "8px";  // 패딩 추가
+                    // 3. 등기원인 행
+                    let row3 = sub1TableBody.insertRow();
+                    let cell5 = row3.insertCell(0);
+                    cell5.textContent = "등기원인";
+                    cell5.style.fontWeight = "bold";
+                    let cell6 = row3.insertCell(1);
+                    cell6.textContent = entry.RgsCaus_A && entry.RgsCaus_A !== "null" ? entry.RgsCaus_A : "-";
 
-                    // 셀 크기 조정 (표 전체 폭을 맞추기 위해)
-                    headerCell.colSpan = 1;
-
-                    const etcCell = row2.insertCell(1);
-                    etcCell.colSpan = 3;
-                    etcCell.textContent = entry.NomprsAndEtc_A && entry.NomprsAndEtc_A !== "null" ? entry.NomprsAndEtc_A : "-";
+                    // 4. 권리자 및 기타사항 행 (별도 추가)
+                    if (entry.NomprsAndEtc_A && entry.NomprsAndEtc_A !== "null") {
+                      let row4 = sub1TableBody.insertRow();
+                      let cell7 = row4.insertCell(0);
+                      cell7.textContent = "권리자 및 기타사항";
+                      cell7.style.fontWeight = "bold";
+                      let cell8 = row4.insertCell(1);
+                      cell8.textContent = entry.NomprsAndEtc_A;
+                    }
                   });
                 }
+
+                const sub2TableBody = document.getElementById("sub2TableBody");
 
                 if (details.length === 0) {
                   console.warn("B등기 데이터 없음");
                 } else {
                   let uniqueEntriesB = new Set();
 
-                  details.forEach((entry) => {
+                  details.forEach((entry, index) => {
                     let uniqueKey = `${entry.RankNo_B}-${entry.Receve_B}`;
 
                     if (uniqueEntriesB.has(uniqueKey)) {
@@ -809,20 +793,43 @@
                     }
                     uniqueEntriesB.add(uniqueKey);
 
-                    const row1 = sub2Table.insertRow();
-                    row1.insertCell(0).textContent = entry.RankNo_B && entry.RankNo_B !== "null" ? entry.RankNo_B : "-";
-                    row1.insertCell(1).textContent = entry.RgsAimCont_B && entry.RgsAimCont_B !== "null" ? entry.RgsAimCont_B : "-";
-                    row1.insertCell(2).textContent = entry.Receve_B && entry.Receve_B !== "null" ? entry.Receve_B : "-";
-                    row1.insertCell(3).textContent = entry.RgsCaus_B && entry.RgsCaus_B !== "null" ? entry.RgsCaus_B : "-";
+                    // 1. 등기목적
+                    let row1 = sub2TableBody.insertRow();
+                    let cell1 = row1.insertCell(0);
+                    cell1.textContent = `${index + 1}. 등기목적`;
+                    cell1.style.fontWeight = "bold";
+                    let cell2 = row1.insertCell(1);
+                    cell2.textContent = entry.RgsAimCont_B && entry.RgsAimCont_B !== "null" ? entry.RgsAimCont_B : "-";
+                    cell2.colSpan = 3;
 
-                    const row2 = sub2Table.insertRow();
-                    const headerCell = row2.insertCell(0);
-                    headerCell.textContent = "권리자 및 기타사항";
-                    headerCell.colSpan = 1;
+                    // 2. 접수 (개별 칸)
+                    let row2 = sub2TableBody.insertRow();
+                    let cell3 = row2.insertCell(0);
+                    cell3.textContent = "접수";
+                    cell3.style.fontWeight = "bold";
+                    let cell4 = row2.insertCell(1);
+                    cell4.textContent = entry.Receve_B && entry.Receve_B !== "null" ? entry.Receve_B : "-";
+                    cell4.colSpan = 3;
 
-                    const etcCell = row2.insertCell(1);
-                    etcCell.colSpan = 3;
-                    etcCell.textContent = entry.NomprsAndEtc_B && entry.NomprsAndEtc_B !== "null" ? entry.NomprsAndEtc_B : "-";
+                    // 3. 등기원인 (개별 칸)
+                    let row3 = sub2TableBody.insertRow();
+                    let cell5 = row3.insertCell(0);
+                    cell5.textContent = "등기원인";
+                    cell5.style.fontWeight = "bold";
+                    let cell6 = row3.insertCell(1);
+                    cell6.textContent = entry.RgsCaus_B && entry.RgsCaus_B !== "null" ? entry.RgsCaus_B : "-";
+                    cell6.colSpan = 3;
+
+                    // 4. 권리자 및 기타사항 (개별 칸)
+                    if (entry.NomprsAndEtc_B && entry.NomprsAndEtc_B !== "null") {
+                      let row4 = sub2TableBody.insertRow();
+                      let cell7 = row4.insertCell(0);
+                      cell7.textContent = "권리자 및 기타사항";
+                      cell7.style.fontWeight = "bold";
+                      let cell8 = row4.insertCell(1);
+                      cell8.textContent = entry.NomprsAndEtc_B;
+                      cell8.colSpan = 3;
+                    }
                   });
                 }
 
@@ -839,7 +846,8 @@
             if (!realId) return;
 
             console.log("PDF 보기 클릭됨! REALID:", realId);
-            openModal('popup-pdf-viewer', `/api/IssueInquiry/pdf?realId=${realId}`);
+           // RegisterUser('popup-pdf-viewer', `/api/IssueInquiry/pdf?realId=${realId}`);
+            openModal('popup-pdf-viewer', `/api/IssueInquiry/pdf?realId=${realId}`, realId);
           }
         });
       },
@@ -849,53 +857,165 @@
       }
     });
   }
-  function openModal(popupId, pdfUrl) {
+  let currentRealId = null;
+
+  function openModal(popupId, pdfUrl = null, realId = null) {
     let popup = document.getElementById(popupId);
     let overlay = document.querySelector('.popup-overlay');
-    let iframe = document.getElementById("pdfFrame");
+    let container = document.getElementById("pdfContainer");
 
-    console.log("📌 PDF URL 확인:", pdfUrl);  // 🔍 디버깅용 로그 추가
+    console.log("📌 openModal 실행됨! popupId:", popupId, "PDF URL:", pdfUrl);
 
-    // ✅ 파일 경로의 전체 URL 인코딩이 아닌 `realId`만 인코딩
-    let finalPdfUrl = encodeURI(pdfUrl); // 전체 URL을 인코딩하면 안됨!
+    if (!popup) {
+      console.error(`📌 팝업 ID (${popupId})를 찾을 수 없습니다.`);
+      return;
+    }
 
-    fetch(finalPdfUrl, {method: 'GET'})
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('📌 PDF 파일을 찾을 수 없습니다.');
-        }
-        return response.blob();
-      })
-      .then(blob => {
-        let pdfBlobUrl = URL.createObjectURL(blob);
-        if (popup && overlay) {
-          popup.classList.add("open"); // 🔥 여기 수정! 팝업 열기
-          overlay.style.display = 'block';
-          if (iframe) {
-            iframe.src = pdfBlobUrl;
+    // 팝업 강제 표시
+    popup.style.display = "block";
+    setTimeout(() => {
+      popup.classList.add("active");
+      popup.style.opacity = "1";
+      popup.style.visibility = "visible";
+    }, 10);
+
+    if (overlay) {
+      overlay.style.display = "block";
+      overlay.classList.add("active");
+    }
+    if (realId) {
+      currentRealId = realId;
+      console.log("📌 전역 변수에 realId 저장 완료:", realId);
+    } else {
+      console.warn("📌 realId 값이 전달되지 않음!");
+    }
+
+    // PDF 파일이 존재하는지 확인 후 PDF.js로 렌더링
+    if (pdfUrl) {
+      console.log("📌 PDF URL 확인:", pdfUrl);
+
+      fetch(pdfUrl, { method: 'GET', mode: 'cors' })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('📌 PDF 파일을 찾을 수 없습니다.');
           }
-        }
-      })
-      .catch(error => {
-        console.error(error.message);
-        alert("📌 PDF 파일이 존재하지 않습니다.");
-      });
+          console.log("📌 PDF 파일 확인 완료:", pdfUrl);
+
+          // 기존 내용 초기화 후 PDF 렌더링
+          container.innerHTML = "";
+          showPdf(pdfUrl);
+        })
+        .catch(error => {
+          console.error(error.message);
+          alert("📌 PDF 파일이 존재하지 않습니다.");
+          container.innerHTML = "<p style='color:red;'>PDF를 불러올 수 없습니다.</p>";
+        });
+    }
   }
 
   function closeModal(popupId) {
-    let popup = document.getElementById(popupId);
+    let popup = document.getElementById('popup-pdf-viewer');
     let overlay = document.querySelector('.popup-overlay');
     let iframe = document.getElementById("pdfFrame");
 
-    if (popup && overlay) {
-      popup.classList.remove('active');
-      overlay.style.display = 'none';
+    console.log("📌 closeModal 실행됨! popupId:", popupId);
 
-      // PDF URL 초기화 (다시 열 때 새로 로드되도록)
-      if (iframe) {
-        iframe.src = "";
-      }
+    if (!popup) {
+      console.error(`📌 닫을 팝업 ID (${popupId})를 찾을 수 없습니다.`);
+      return;
     }
+
+    // 해당 팝업만 닫기
+    popup.classList.remove("active");
+    setTimeout(() => {
+      popup.style.display = "none";
+    }, 300);
+
+    // 팝업이 모두 닫혔을 경우, 오버레이도 닫기
+    let allActivePopups = document.querySelectorAll('.mobile-layout-popup.active');
+    if (allActivePopups.length === 0 && overlay) {
+      overlay.classList.remove("active");
+    }
+
+    // iframe 초기화 (PDF URL 제거)
+    if (iframe) {
+      iframe.src = "";
+    }
+  }
+
+  // 📌 PDF 다운로드 함수
+  function downloadPdf() {
+    if (!currentRealId) {
+      console.error("📌 다운로드할 PDF 파일을 찾을 수 없습니다. (realId 없음)");
+      alert("📌 다운로드할 PDF 파일을 찾을 수 없습니다.");
+      return;
+    }
+
+    console.log("📌 PDF 다운로드 시작: realId=", currentRealId);
+
+    // ✅ `pdfDownload` API 호출하여 다운로드 실행
+    let downloadUrl = `/api/IssueInquiry/pdfDownload?realId=${currentRealId}`;
+    console.log("📌 다운로드 URL:", downloadUrl);  // 🔍 디버깅 확인
+
+    // ✅ 강제 다운로드 실행
+    let anchor = document.createElement("a");
+    anchor.href = downloadUrl;
+    anchor.target = "_blank";
+    anchor.download = "등기부등본.pdf"; // ✅ 기본 파일명 설정 (서버에서 덮어씌움)
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  }
+
+  function showPdf(pdfUrl) {
+    console.log("📌 PDF.js를 사용하여 PDF 렌더링:", pdfUrl);
+
+    let container = document.getElementById("pdfContainer");
+    container.innerHTML = ""; // 기존 내용 초기화
+
+    // ✅ 스크롤 가능하도록 스타일 적용
+    container.style.overflowY = "auto";
+    container.style.maxHeight = "600px"; // 팝업 내에서 적절한 높이 유지
+
+    // ✅ PDF 파일 불러오기
+    pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+      console.log("📌 PDF 로드 완료. 총 페이지 수:", pdf.numPages);
+
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        pdf.getPage(pageNum).then(page => {
+          let viewport = page.getViewport({ scale: 2.5 }); // ✅ 해상도 증가 (기존 2.0 → 2.5)
+
+          // ✅ 팝업 너비에 맞춰 자동 조정
+          let scale = Math.min(container.clientWidth / viewport.width, 2.5);
+          let scaledViewport = page.getViewport({ scale: scale });
+
+          // ✅ 페이지별 <canvas> 생성
+          let canvas = document.createElement("canvas");
+          canvas.classList.add("pdf-page");
+          container.appendChild(canvas);
+
+          let context = canvas.getContext("2d");
+
+          // ✅ Canvas 크기 설정 (깨짐 방지)
+          canvas.width = scaledViewport.width * 2;  // 2배 확대
+          canvas.height = scaledViewport.height * 2;
+          canvas.style.width = `${scaledViewport.width}px`;
+          canvas.style.height = `${scaledViewport.height}px`;
+
+          // ✅ 고해상도 렌더링 (1.5배~2배 해상도로 그리기)
+          let renderContext = {
+            canvasContext: context,
+            viewport: scaledViewport,
+            transform: [2, 0, 0, 2, 0, 0] // ✅ 2배 해상도 설정 (깨짐 방지)
+          };
+
+          page.render(renderContext);
+        });
+      }
+    }).catch(error => {
+      console.error("📌 PDF 렌더링 오류:", error);
+      alert("📌 PDF를 불러올 수 없습니다.");
+    });
   }
 
 

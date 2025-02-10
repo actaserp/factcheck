@@ -105,7 +105,7 @@
       <!-- 검색 영역  -->
       <div class="search-wrap">
         <div class="srch-tit aco-hd">
-          <p>기본검색</p>
+          <p>팩트체크에서 발급한 등기부를 조회할 수 있습니다.</p>
           <a href="#" title="열기/닫기" class="btn-aco">
             <img src="/assets_mobile/images/icon/ico-down.svg" alt="열기/닫기">
           </a>
@@ -113,7 +113,7 @@
         <div class="srch-cont aco-cont">
           <dl>
             <dt>
-              조회일자<span class="eq">*</span>
+              발급일자<span class="eq">*</span>
             </dt>
             <dd>
               <ul class="date-box">
@@ -277,152 +277,33 @@
                     </table>
                   </section>
 
-
                   <section class="tab-item" id="sub1">
-                    <table class="write-table"
-                           style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-                      <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
+                    <table class="write-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                      <caption style="text-align: left; margin-bottom: 8px;">갑구 (소유권에 관한 사항)</caption>
                       <thead>
                       <tr>
-                        <th colspan="4" style="text-align: center;">갑 구 (소유권에 관한 사항)</th>
+                        <th colspan="2" style="text-align: center;">갑 구 (소유권에 관한 사항)</th>
                       </tr>
-                      <tr>
-                        <th>
-                          표시번호
-                        </th>
-                        <th>
-                          등기목적
-                        </th>
-                        <th>
-                          접수
-                        </th>
-                        <th>
-                          등기원인
-                        </th>
-                      </tr>
-
                       </thead>
-                      <tbody>
-
-                      <tr>
-                        <td>
-                          1
-                        </td>
-                        <td>
-                          공유자전원지분전부 이전
-                        </td>
-                        <td>
-                          1998년12월28일 제78258호
-                        </td>
-                        <td>
-                          2010년8월26일 신탁재산의귀속  신탁재산의 귀속
-                        </td>
-
-                      </tr>
-                      <tr>
-                        <th>권리자 및 기타사항</th>
-                        <td colspan="3">
-                          소유자  노순덕  530408-******* 서울 서초구 방배동 537-25 현대아트빌라 202호
-                        </td>
-                      </tr>
+                      <tbody id="sub1TableBody">
+                      <!-- JavaScript로 동적 데이터 삽입 -->
                       </tbody>
                     </table>
                   </section>
-
                   <section class="tab-item" id="sub2">
-                    <table class="write-table"
-                           style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-                      <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
+                    <table class="write-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                      <caption style="text-align: left; margin-bottom: 8px;">을 구 (소유권 이외의 권리에 관한 사항)</caption>
                       <thead>
                       <tr>
                         <th colspan="4" style="text-align: center;">을 구 (소유권 이외의 권리에 관한 사항)</th>
                       </tr>
-                      <tr>
-                        <th>
-                          표시번호
-                        </th>
-                        <th>
-                          등기목적
-                        </th>
-                        <th>
-                          접수
-                        </th>
-                        <th>
-                          등기원인
-                        </th>
-                      </tr>
                       </thead>
-                      <tbody>
-                      <tr>
-                        <td>
-                          1
-                        </td>
-                        <td>
-                          1번근저당권변경
-                        </td>
-                        <td>
-                          2022년1월27일 제9407호
-                        </td>
-                        <td>
-                          2022년1월13일 변경계약
-                        </td>
-                      </tr>
-                      <tr>
-                        <th colspan="1">
-                          권리자 및 기타사항
-                        </th>
-                        <td colspan="3">
-                          &채권최고액  금108,000,000원&
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td>
-                          2
-                        </td>
-                        <td>
-
-                        </td>
-                        <td>
-
-                        </td>
-                        <td>
-
-                        </td>
-                      </tr>
-                      <tr>
-                        <th colspan="1">
-                          권리자 및 기타사항
-                        </th>
-                        <td colspan="3">
-                          1번 등기는 건물만에 관한 것임 2022년3월2일  부기
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          3
-                        </td>
-                        <td>
-                          1번근저당권변경
-                        </td>
-                        <td>
-
-                        </td>
-                        <td>
-                          2022년1월27일 근저당권변경계 약
-                        </td>
-                      </tr>
-                      <tr>
-                        <th colspan="1">
-                          권리자 및 기타사항
-                        </th>
-                        <td colspan="3">
-                          채권최고액  금108,000,000원 공동담보 해제 2022년3월2일  부기
-                        </td>
-                      </tr>
+                      <tbody id="sub2TableBody">
+                      <!-- JavaScript로 데이터 삽입 -->
                       </tbody>
                     </table>
                   </section>
+
                 </div>
               </section>
             </div>
@@ -468,7 +349,7 @@
   document.getElementById('endDate').value = today;
 
   function init() {
-    fetchListData();
+    
   }
 
   // 데이터를 받아와 카드 렌더링
@@ -483,20 +364,18 @@
       },
       success: function (data) {
         console.log("서버 응답 데이터:", data);
-        console.log("작업목록:", data.data);
-        // 데이터가 올바른지 확인
         if (!data || !data.data || !Array.isArray(data.data)) {
           console.error("데이터가 올바르지 않습니다.");
           return;
         }
 
-        // 목록 건수 업데이트
+        // 📌 목록 건수 업데이트
         const listNumElement = document.querySelector('.list-num .blue');
         if (listNumElement) {
           listNumElement.textContent = `${data.data.length} 건`;
         }
 
-        // 주소 리스트 업데이트
+        // 📌 주소 리스트 업데이트
         const listAddressWrap = document.getElementById('addressWrap');
         if (!listAddressWrap) {
           console.error("addressWrap 요소를 찾을 수 없습니다.");
@@ -514,249 +393,272 @@
           const cardColor = availableColors[colorIndex];
           colorIndex = (colorIndex + 1) % availableColors.length;
 
-          let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="상세보기">
-                            상세보기
-                        </button>`;
+          let buttonsHtml = `
+                    <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기">상세보기 </button>
+                    `;
 
-          // 날짜 포맷 변경
           const formattedDate = item.RELASTDATE.substring(0, 4) + '-' + item.RELASTDATE.substring(4, 6) + '-' + item.RELASTDATE.substring(6, 8);
           const formattedLastDate = item.RLASTDATE
             ? item.RLASTDATE.substring(0, 4) + '-' + item.RLASTDATE.substring(4, 6) + '-' + item.RLASTDATE.substring(6, 8)
             : '';
 
           htmlContent += `
-                        <div class="card-box ${cardColor}" data-realadd="${item.REALADD}" data-realid="${item.REALID}">
-                            <div class="card-cont">
-                                <dl>
-                                    <dt>주소</dt>
-                                    <dd>${item.REALADD}</dd>
-                                </dl>
-                                 ${
+                    <div class="card-box ${cardColor}" data-realadd="${item.REALADD}" data-resido="${item.RESIDO}" data-realid="${item.REALID}"
+                        data-regdate="${item.REGDATE}" data-regugun="${item.REGUGUN}" data-rejimok="${item.REJIMOK}" data-rearea="${item.REAREA}"
+                        data-PDFFILENAME="${item.PDFFILENAME}" data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}">
+                        <div class="card-cont">
+                            <dl>
+                                <dt>집합건물</dt>
+                                <dd>${item.REALGUBUN}</dd>
+                            </dl>
+                            <dl>
+                                <dt>주소</dt>
+                                <dd>${item.REALADD}</dd>
+                            </dl>
+                            ${
             (selectedValue === "most_viewed_property" || selectedValue === "popular_property")
               ? `<dl>
-                                        <dt>최근조회날짜</dt>
-                                        <dd>${formattedLastDate}</dd>
-                                    </dl>`
+                                    <dt>최근조회날짜</dt>
+                                    <dd>${formattedLastDate}</dd>
+                                  </dl>`
               : `<dl>
-                                        <dt>조회날짜</dt>
-                                        <dd>${formattedDate}</dd>
-                                    </dl>`
+                                    <dt>조회날짜</dt>
+                                    <dd>${formattedDate}</dd>
+                                  </dl>`
           }
-                                 <dl>
-                                    <dt>판정점수</dt>
-                                    <dd>${item.REALSCORE}</dd>
-                                </dl>
-
-                              ${ (selectedValue === "most_viewed_property" || selectedValue === "popular_property") ? `
-                                <dl>
+                            <dl>
+                                <dt>판정점수</dt>
+                                <dd>${item.REALSCORE}</dd>
+                            </dl>
+                            ${
+            (selectedValue === "most_viewed_property" || selectedValue === "popular_property")
+              ? `<dl>
                                     <dt>조회수</dt>
-                                    <dd>${item.view_count}</dd>
-                                </dl>
-                                ` : '' }
-
-                            </div>
-                                ${buttonsHtml}
+                                    <dd>${item.record_count}</dd>
+                                  </dl>`
+              : ''
+          }
                         </div>
-                    `;
+                        ${buttonsHtml}
+                    </div>
+                `;
         });
 
         listAddressWrap.innerHTML = htmlContent;
 
-        /*$("#addressWrap").off("click").on("click", ".btn-popup-open[data-popup='popup-history']", function () {
-          const cardBox = $(this).closest('.card-box');
-          const realAdd = cardBox.attr('data-realadd');
-          const realId = cardBox.attr('data-realid');
-
-          if (!realId) {
-            console.error("realId가 존재하지 않습니다.");
-            return;
-          }
-
-          // 팝업 타이틀 업데이트
-          $("#popup-history .popup-title h3").text(`${realAdd} 상세내용`);
-
-          // 팝업 열기
-          $("#popup-history").addClass("open");
-
-          // 모든 탭 숨기고 'main' 탭만 활성화
-          $(".tab-item").removeClass("active");
-          $("#dynamic-table").addClass("active"); // 동적으로 테이블을 업데이트할 단일 섹션 사용
-
-          // AJAX 요청 (realId로 상세 정보 조회)
-          $.ajax({
-            url: "/api/IssueInquiryAPI",
-            type: "GET",
-            data: { realId: realId },
-            dataType: "json",
-            success: function (response) {
-              if (response.success) {
-                const history = response.history;
-
-                // 표제부(main) 데이터 설정
-                data.main.body = `
-                    <tr>
-                        <th>접수</th>
-                        <td colspan="3">${history.REQDATE || "정보 없음"}</td>
-                    </tr>
-                    <tr>
-                        <th>소재지번, 건물명칭 및 번호</th>
-                        <td colspan="3">${history.address || "정보 없음"}</td>
-                    </tr>
-                    <tr>
-                        <th>소재지번</th>
-                        <td colspan="3">${history.REALADD || "정보 없음"}</td>
-                    </tr>
-                    <tr>
-                        <th>지목</th>
-                        <td>${history.REJIMOK || "정보 없음"}</td>
-                        <th>면적</th>
-                        <td>${history.REAREA || "정보 없음"}</td>
-                    </tr>
-                `;
-
-                // 갑구(sub1) 데이터 설정
-                data.sub1.body = history.ownerships.map(ownership => `
-                    <tr>
-                        <td>${ownership.index || ""}</td>
-                        <td>${ownership.Receve || ""}</td>  <!--접수-->
-                        <td>${ownership.RgsAimCont || ""}</td>  <!--등기 목적 -->
-                        <td>${ownership.RgsCaus || ""}</td> <!--등기 원인-->
-                        <td>${ownership.NomprsAndEtc || ""}</td><!--권리자 밒 기타사항-->
-                    </tr>
-                `).join("");
-
-                // 을구(sub2) 데이터 설정
-                data.sub2.body = history.rights.map(right => `
-                    <tr>
-                        <td>${right.index || ""}</td>
-                        <td>${right.purpose || ""}</td>
-                        <td>${right.receiptDate || ""}</td>
-                        <td>${right.reason || ""}</td>
-                        <td>${right.details || ""}</td>
-                    </tr>
-                `).join("");
-
-                // 초기 테이블 표시 (표제부 기준)
-                changeTable('main');
-              } else {
-                console.error("데이터 조회 실패:", response.message);
-              }
-            },
-            error: function (xhr, status, error) {
-              console.error("AJAX 요청 실패:", status, error);
-              console.error("응답 내용:", xhr.responseText);
-            }
-          });
-        });*/
+        // 📌 이벤트 위임을 사용하여 버튼 클릭 처리
         listAddressWrap.addEventListener('click', (event) => {
           const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
-          if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
+          const pdfButton = event.target.closest('.btn-register-view');
 
-          const cardBox = button.closest('.card-box');
+          if (button) {
+            const cardBox = button.closest('.card-box');
+            const realId = cardBox.getAttribute('data-realid');
+            if (!cardBox) return;
 
-          const realId = cardBox.getAttribute('data-realid');
-          const realAdd = cardBox.getAttribute('data-realadd');
-          const resido = cardBox.getAttribute('data-resido') || '';
-          const regdate = cardBox.getAttribute('data-regdate') || '';
-          const regugun = cardBox.getAttribute('data-regugun') || '';
-          const rejimok = cardBox.getAttribute('data-rejimok') || '';
-          const rearea = cardBox.getAttribute('data-rearea') || '';
+            console.log("📌 상세보기 클릭됨! REALID:", realId);
+            //AJAX 요청을 통해 상세 데이터 불러오기
+            $.ajax({
+              url: `/api/IssueInquiry/DetailsList?realId=${realId}`,
+              data: {
+                'startDate': $('#startDate').val(),
+                'endDate': $('#endDate').val(),
+              },
+              type: 'GET',
+              success: function (data) {
+                console.log("서버에서 가져온 상세 데이터:", data);
 
-          // AJAX 요청을 추가하여 데이터 저장
-          $.ajax({
-            url: '/api/IssueInquiry/SaveViewHistory', // 서버의 저장 API 엔드포인트
-            type: 'POST',
-            dataType: 'text',
-            data: {
-              realId: realId,
-            },
-            headers: {
-              'X-CSRF-Token': $('[name=_csrf]').val()
-            },
+                // 팝업 제목 업데이트
+                document.querySelector("#popup-history .popup-title h3").textContent = data.REALADD + " 상세내용";
 
-            success: function(response) {
-              console.log("조회 기록 저장 성공:", response);
-            },
-            error: function(xhr, status, error) {
-              console.error("조회 기록 저장 실패:", status, error);
-              console.error("응답 내용:", xhr.responseText);
-            }
-          });
+                const cardBox = button.closest('.card-box');
 
+                const realAdd = cardBox.getAttribute('data-realadd');
+                const resido = cardBox.getAttribute('data-resido') || '';
+                const regdate = cardBox.getAttribute('data-regdate') || '';
+                const regugun = cardBox.getAttribute('data-regugun') || '';
+                const rejimok = cardBox.getAttribute('data-rejimok') || '';
+                const rearea = cardBox.getAttribute('data-rearea') || '';
+                const uniqueNo = data.UniqueNo ? data.UniqueNo : "";
+                const uniqueNoSafe = (uniqueNo === null || uniqueNo === "null") ? '' : uniqueNo;
+                const remaxamt = cardBox.getAttribute('data-remaxamt') || '';
+                const numericRemaxamt = !isNaN(remaxamt) && remaxamt.trim() !== '' ? Number(remaxamt) : 0;
+                const formattedRemaxamt = numericRemaxamt.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
 
-          // 팝업 타이틀 업데이트
-          const popupTitle = document.querySelector("#popup-history .popup-title h3");
-          if (popupTitle) {
-            popupTitle.textContent = `${realAdd} 상세내용`;
-          }
+                // 팝업 타이틀 업데이트
+                const popupTitle = document.querySelector("#popup-history .popup-title h3");
+                if (popupTitle) {
+                  popupTitle.textContent = `${realAdd} 상세내용`;
+                }
+                // 날짜 포맷 변경
+                const formattedRegDate = regdate
+                  ? regdate.substring(0, 4) + '년' + regdate.substring(4, 6) + '월' + regdate.substring(6, 8) + '일'
+                  : '';
 
-          // 날짜 포맷 변경
-          const formattedRegDate = regdate
-            ? regdate.substring(0, 4) + '년' + regdate.substring(4, 6) + '월' + regdate.substring(6, 8) + '일'
-            : '';
+                // 표제부
+                const tds = document.querySelectorAll("#popup-history td[colspan='3']");
+                if (tds.length >= 4) {  // 최소 4개 이상 있어야 함
+                  tds[0].textContent = formattedRegDate && formattedRegDate !== "null" ? formattedRegDate : "-";
+                  tds[1].textContent = realAdd && realAdd !== "null" ? realAdd + " " + (uniqueNoSafe && uniqueNoSafe !== "null" ? uniqueNoSafe : "-") : "-";
+                  tds[2].textContent = resido && resido !== "null" ? resido + " " + (regugun && regugun !== "null" ? regugun : "-") : "-";
+                  tds[3].textContent = formattedRemaxamt && formattedRemaxamt !== "null" ? formattedRemaxamt : "-";
+                } else {
+                  console.warn("해당 요소를 찾을 수 없거나 개수가 부족합니다.");
+                }
 
-          const tds = document.querySelectorAll("#popup-history td[colspan='3']");
-          if(tds.length > 0){
-            tds[0].textContent = formattedRegDate;
-            tds[1].textContent = realAdd;
-            tds[2].textContent = resido + " " + regugun;
-          }else {
-            console.error("해당 요소를 찾을 수 없습니다.");
-          }
-          const rows = document.querySelector("#popup-history table tbody").getElementsByTagName("tr");
-          if (rows.length >= 4) {
-            const tds = rows[3].getElementsByTagName("td");
-            if (tds.length >= 2) {
-              tds[0].textContent = rejimok;
-              tds[1].textContent = rearea;
-            }
-          }
+                const rows = document.querySelector("#popup-history table tbody").getElementsByTagName("tr");
+                if (rows.length >= 4) {  // 4번째 행이 있는지 확인
+                  const tds = rows[3].getElementsByTagName("td");
+                  if (tds.length >= 2) {  // 최소 2개의 td가 있어야 함
+                    tds[0].textContent = rejimok && rejimok !== "null" ? rejimok : "-";
+                    tds[1].textContent = rearea && rearea !== "null" ? rearea : "-";
+                  } else {
+                    console.warn("4번째 행의 td 개수가 부족합니다.");
+                  }
+                } else {
+                  console.warn("4번째 행이 존재하지 않습니다.");
+                }
+                // 테이블 요소 가져오기
+                const sub1Table = document.querySelector("#sub1 table tbody");
+                const sub2Table = document.querySelector("#sub2 table tbody");
 
-          const ranknoA = cardBox.getAttribute('data-ranknoA');
-          const aimcontA = cardBox.getAttribute('data-aimcontA') || '';
-          const receveA = cardBox.getAttribute('data-receveA') || '';
-          const rgscausA = cardBox.getAttribute('data-rgscausA') || '';
-          const etcA = cardBox.getAttribute('data-etcA') || '';
+                if (!sub1Table || !sub2Table) {
+                  console.error("오류: sub1Table 또는 sub2Table을 찾을 수 없습니다.");
+                  return;
+                }
 
-          const sub1Table = document.querySelector("#sub1 table tbody");
+                // 기존 테이블 데이터 초기화
+                sub1Table.innerHTML = "";
+                sub2Table.innerHTML = "";
 
+                // 데이터를 배열로 받아서 중복 제거 후 사용
+                let details = Array.isArray(data.data) && data.data.length > 0 ? data.data : [];
 
-          const firstRow = sub1Table.insertRow();
-          firstRow.innerHTML = `<td>${ranknoA}</td><td>${aimcontA}</td><td>${receveA}</td><td>${rgscausA}</td>`;
+                const sub1TableBody = document.getElementById("sub1TableBody");
 
+                if (details.length === 0) {
+                  console.warn("A등기 데이터 없음");
+                } else {
+                  let uniqueEntriesA = new Set();
 
-          const secondRow = sub1Table.insertRow();
-          secondRow.innerHTML = `<td colspan="4">${etcA}</td>`;
+                  details.forEach((entry, index) => {
+                    let uniqueKey = `${entry.RankNo_A}-${entry.Receve_A}`;
 
+                    if (uniqueEntriesA.has(uniqueKey)) {
+                      return;
+                    }
+                    uniqueEntriesA.add(uniqueKey);
 
-          if (etcA.includes(',')) {
-            const etcValues = etcA.split(','); // 쉼표로 구분된 여러 값 분리
-            etcValues.forEach(value => {
-              const additionalRow = sub1Table.insertRow();
-              additionalRow.innerHTML = `<td colspan="4">${value.trim()}</td>`; // 각 값은 새로운 행으로 추가
+                    // 1. 등기목적 행 (표시번호 포함)
+                    let row1 = sub1TableBody.insertRow();
+                    let cell1 = row1.insertCell(0);
+                    cell1.textContent = `${index + 1}. 등기목적`;
+                    cell1.style.fontWeight = "bold";
+                    let cell2 = row1.insertCell(1);
+                    cell2.textContent = entry.RgsAimCont_A && entry.RgsAimCont_A !== "null" ? entry.RgsAimCont_A : "-";
+
+                    // 2. 접수 행
+                    let row2 = sub1TableBody.insertRow();
+                    let cell3 = row2.insertCell(0);
+                    cell3.textContent = "접수";
+                    cell3.style.fontWeight = "bold";
+                    let cell4 = row2.insertCell(1);
+                    cell4.textContent = entry.Receve_A && entry.Receve_A !== "null" ? entry.Receve_A : "-";
+
+                    // 3. 등기원인 행
+                    let row3 = sub1TableBody.insertRow();
+                    let cell5 = row3.insertCell(0);
+                    cell5.textContent = "등기원인";
+                    cell5.style.fontWeight = "bold";
+                    let cell6 = row3.insertCell(1);
+                    cell6.textContent = entry.RgsCaus_A && entry.RgsCaus_A !== "null" ? entry.RgsCaus_A : "-";
+
+                    // 4. 권리자 및 기타사항 행 (별도 추가)
+                    if (entry.NomprsAndEtc_A && entry.NomprsAndEtc_A !== "null") {
+                      let row4 = sub1TableBody.insertRow();
+                      let cell7 = row4.insertCell(0);
+                      cell7.textContent = "권리자 및 기타사항";
+                      cell7.style.fontWeight = "bold";
+                      let cell8 = row4.insertCell(1);
+                      cell8.textContent = entry.NomprsAndEtc_A;
+                    }
+                  });
+                }
+
+                const sub2TableBody = document.getElementById("sub2TableBody");
+
+                if (details.length === 0) {
+                  console.warn("B등기 데이터 없음");
+                } else {
+                  let uniqueEntriesB = new Set();
+
+                  details.forEach((entry, index) => {
+                    let uniqueKey = `${entry.RankNo_B}-${entry.Receve_B}`;
+
+                    if (uniqueEntriesB.has(uniqueKey)) {
+                      return;
+                    }
+                    uniqueEntriesB.add(uniqueKey);
+
+                    // 1. 등기목적
+                    let row1 = sub2TableBody.insertRow();
+                    let cell1 = row1.insertCell(0);
+                    cell1.textContent = `${index + 1}. 등기목적`;
+                    cell1.style.fontWeight = "bold";
+                    let cell2 = row1.insertCell(1);
+                    cell2.textContent = entry.RgsAimCont_B && entry.RgsAimCont_B !== "null" ? entry.RgsAimCont_B : "-";
+                    cell2.colSpan = 3;
+
+                    // 2. 접수 (개별 칸)
+                    let row2 = sub2TableBody.insertRow();
+                    let cell3 = row2.insertCell(0);
+                    cell3.textContent = "접수";
+                    cell3.style.fontWeight = "bold";
+                    let cell4 = row2.insertCell(1);
+                    cell4.textContent = entry.Receve_B && entry.Receve_B !== "null" ? entry.Receve_B : "-";
+                    cell4.colSpan = 3;
+
+                    // 3. 등기원인 (개별 칸)
+                    let row3 = sub2TableBody.insertRow();
+                    let cell5 = row3.insertCell(0);
+                    cell5.textContent = "등기원인";
+                    cell5.style.fontWeight = "bold";
+                    let cell6 = row3.insertCell(1);
+                    cell6.textContent = entry.RgsCaus_B && entry.RgsCaus_B !== "null" ? entry.RgsCaus_B : "-";
+                    cell6.colSpan = 3;
+
+                    // 4. 권리자 및 기타사항 (개별 칸)
+                    if (entry.NomprsAndEtc_B && entry.NomprsAndEtc_B !== "null") {
+                      let row4 = sub2TableBody.insertRow();
+                      let cell7 = row4.insertCell(0);
+                      cell7.textContent = "권리자 및 기타사항";
+                      cell7.style.fontWeight = "bold";
+                      let cell8 = row4.insertCell(1);
+                      cell8.textContent = entry.NomprsAndEtc_B;
+                      cell8.colSpan = 3;
+                    }
+                  });
+                }
+
+                // 팝업 열기
+                document.getElementById("popup-history").classList.add("open");
+              },
+              error: function (xhr, status, error) {
+                console.error("상세 데이터 불러오기 실패:", error);
+              }
             });
           }
+          if (pdfButton) {  // PDF 보기 버튼이 클릭된 경우
+            const realId = pdfButton.getAttribute("data-realid");
+            if (!realId) return;
 
-
-
-
-          // 팝업 열기
-          const popupHistory = document.getElementById("popup-history");
-          popupHistory.classList.add("open");
-
-          // 모든 탭 내용을 숨깁니다
-          const tabItems = popupHistory.querySelectorAll('.tab-item');
-          tabItems.forEach(item => {
-            item.classList.remove('active');  // 모든 탭 내용 숨기기
-          });
-
-          // 'main' 탭만 활성화
-          const mainTab = popupHistory.querySelector('#main');
-          if (mainTab) {
-            mainTab.classList.add('active');  // 'main' 탭만 표시
+            console.log("PDF 보기 클릭됨! REALID:", realId);
+            // RegisterUser('popup-pdf-viewer', `/api/IssueInquiry/pdf?realId=${realId}`);
+            openModal('popup-pdf-viewer', `/api/IssueInquiry/pdf?realId=${realId}`, realId);
           }
-
-          const goyuNum = cardBox.getAttribute('data-Goyu');
         });
       },
       error: function (xhr, status, error) {

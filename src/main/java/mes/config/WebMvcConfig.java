@@ -20,11 +20,12 @@ public class WebMvcConfig implements WebMvcConfigurer{
     @Override
     public void addCorsMappings(CorsRegistry registry){
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:8040") // 모든 도메인 허용
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD")
-                .allowedHeaders("*")
-                .allowCredentials(true);
+            .allowedOriginPatterns("http://localhost:*") // 패턴을 사용해 와일드카드 적용
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD")
+            .allowedHeaders("*")
+            .allowCredentials(true);
     }
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/editorFile/**")
