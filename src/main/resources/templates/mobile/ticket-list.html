@@ -415,45 +415,43 @@
                                         <tr>
                                             <th colspan="4" style="text-align: center;">갑 구 (소유권에 관한 사항)</th>
                                         </tr>
-                                        <tr>
-                                            <th style="font-size: 11px;">
-                                                표시번호
-                                            </th>
-                                            <th style="font-size: 11px;">
-                                                등기목적
-                                            </th>
-                                            <th style="font-size: 11px;">
-                                                접수
-                                            </th>
-                                            <th style="font-size: 11px;">
-                                                등기원인
-                                            </th>
-                                        </tr>
-
                                         </thead>
                                         <tbody>
 
-                                        <tr>
-                                            <td>
+                                            <tr>
+                                                <th style="font-size: 11px;">
+                                                    등기목적
+                                                </th>
+                                                <td colspan="3">
 
-                                            </td>
-                                            <td>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th style="font-size: 11px;">
+                                                    접수
+                                                </th>
+                                                <td colspan="3">
 
-                                            </td>
-                                            <td>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th style="font-size: 11px;">
+                                                    등기원인
+                                                </th>
+                                                <td colspan="3">
 
-                                            </td>
-                                            <td>
+                                                </td>
+                                            </tr>
 
-                                            </td>
+                                            <tr>
+                                                <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
 
-                                        </tr>
-                                        <tr>
-                                            <th style="font-size: 11px;">권리자 및 기타사항</th>
-                                            <td colspan="3">
+                                            </tr>
+                                            <tr>
+                                                <td colspan="4">
 
-                                            </td>
-                                        </tr>
+                                                </td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </section>
@@ -466,87 +464,41 @@
                                         <tr>
                                             <th colspan="4" style="text-align: center;">을 구 (소유권 이외의 권리에 관한 사항)</th>
                                         </tr>
+                                        </thead>
+                                        <tbody>
+
                                         <tr>
-                                            <th style="font-size: 11px;">
-                                                표시번호
-                                            </th>
                                             <th style="font-size: 11px;">
                                                 등기목적
                                             </th>
+                                            <td colspan="3">
+
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <th style="font-size: 11px;">
                                                 접수
                                             </th>
+                                            <td colspan="3">
+
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <th style="font-size: 11px;">
                                                 등기원인
                                             </th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <td>
-                                                1
-                                            </td>
-                                            <td>
-                                                1번근저당권변경
-                                            </td>
-                                            <td>
-                                                2022년1월27일 제9407호
-                                            </td>
-                                            <td>
-                                                2022년1월13일 변경계약
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th colspan="1" style="font-size: 11px;">
-                                                권리자 및 기타사항
-                                            </th>
                                             <td colspan="3">
-                                                &채권최고액 금108,000,000원&
+
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td>
-                                                2
-                                            </td>
-                                            <td>
+                                            <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
 
-                                            </td>
-                                            <td>
-
-                                            </td>
-                                            <td>
-
-                                            </td>
                                         </tr>
                                         <tr>
-                                            <th colspan="1" style="font-size: 11px;">
-                                                권리자 및 기타사항
-                                            </th>
-                                            <td colspan="3">
-                                                1번 등기는 건물만에 관한 것임 2022년3월2일 부기
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                3
-                                            </td>
-                                            <td>
-                                                1번근저당권변경
-                                            </td>
-                                            <td>
+                                            <td colspan="4">
 
-                                            </td>
-                                            <td>
-                                                2022년1월27일 근저당권변경계 약
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th colspan="1" style="font-size: 11px;">
-                                                권리자 및 기타사항
-                                            </th>
-                                            <td colspan="3">
-                                                채권최고액 금108,000,000원 공동담보 해제 2022년3월2일 부기
                                             </td>
                                         </tr>
                                         </tbody>
@@ -642,7 +594,7 @@
         let endDate = $('#endDate').val();
         let property = $('#property').val();
 
-       /* console.log("전송할 데이터:", startDate, endDate, property); // 콘솔 확인*/
+        /* console.log("전송할 데이터:", startDate, endDate, property); // 콘솔 확인*/
 
         $.ajax({
             url: '/api/mobile_production/read_all',
@@ -653,7 +605,7 @@
                 'search_property': property
             },
             success: function (data) {
-               /* console.log(JSON.stringify(data, null, 2));*/
+                /* console.log(JSON.stringify(data, null, 2));*/
 
                 const propertyData = data[property];
 
@@ -684,7 +636,7 @@
                 const selectedValue = $('#property').val();
 
                 /*console.log("propertyData데이터확인"+propertyData);*/
-                 console.log(JSON.stringify(propertyData, null, 2));
+                /*console.log(JSON.stringify(propertyData, null, 2));*/
 
 
                 propertyData.forEach(item => {
@@ -697,9 +649,14 @@
 
                     // 날짜 포맷 변경
                     const formattedDate = item.REQDATE.substring(0, 4) + '-' + item.REQDATE.substring(4, 6) + '-' + item.REQDATE.substring(6, 8);
-                    const formattedLastDate = item.RELASTDATE
-                        ? item.RELASTDATE.substring(0, 4) + '-' + item.RELASTDATE.substring(4, 6) + '-' + item.RELASTDATE.substring(6, 8)
+                    const formattedLastDate = item.Sreqdate
+                        ? item.Sreqdate.substring(0, 10)
                         : '';
+
+                    /*<dl>
+                        <dt>사용자</dt>
+                        <dd>${item.USERNM}</dd>
+                    </dl>*/
 
                     htmlContent += `
                         <div class="card-box ${cardColor}" data-realadd="${item.REALADD}" data-resido="${item.RESIDO}" data-realid="${item.REALID}"
@@ -707,16 +664,27 @@
                     data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}">
 
                             <div class="card-cont">
-                                 <dl>
-                                    <dt>집합건물</dt>
-                                    <dd>${item.REALGUBUN}</dd>
-                                </dl>
+
+
+                                ${
+                        (selectedValue === "recent_property" || selectedValue === "most_viewed_property" || selectedValue === "popular_property")
+                            ? `<dl>
+                                        <dt>최근사용자</dt>
+                                        <dd>${item.USERNM}</dd>
+                                    </dl>`
+                            : `<dl>
+                                        <dt>사용자</dt>
+                                        <dd>${item.USERNM}</dd>
+                                    </dl>`
+                    }
+
                                 <dl>
                                     <dt>주소</dt>
                                     <dd>${item.REALADD}</dd>
                                 </dl>
+
                                  ${
-                        (selectedValue === "most_viewed_property" || selectedValue === "popular_property")
+                        (selectedValue === "recent_property" || selectedValue === "most_viewed_property" || selectedValue === "popular_property")
                             ? `<dl>
                                         <dt>최근조회날짜</dt>
                                         <dd>${formattedLastDate}</dd>
@@ -731,7 +699,7 @@
                                     <dd>${item.REALSCORE}</dd>
                                 </dl>
 
-                              ${(selectedValue === "most_viewed_property" || selectedValue === "popular_property") ? `
+                              ${(selectedValue === "recent_property" || selectedValue === "most_viewed_property" || selectedValue === "popular_property") ? `
                                 <dl>
                                     <dt>조회수</dt>
                                     <dd>${item.record_count}</dd>
@@ -753,7 +721,7 @@
                     const item = propertyData.find(dataItem => dataItem.REALID === Number(cardBox.dataset.realid)); // 문자열 비교를 위해 Number() 추가
                     if (item) {  // item이 undefined가 아닌 경우에만 속성 설정
                         cardBox.setAttribute('data-ranknoA', JSON.stringify(item.RankNo_a_data));
-                     /*   console.log("data-ranknoA 설정:", cardBox.dataset.realid, JSON.stringify(item.RankNo_a_data)); // 디버깅 로그 추가*/
+                        /*   console.log("data-ranknoA 설정:", cardBox.dataset.realid, JSON.stringify(item.RankNo_a_data)); // 디버깅 로그 추가*/
                     } else {
                         /*console.log("해당 REALID를 가진 데이터를 찾을 수 없습니다:", cardBox.dataset.realid); // 디버깅 로그 추가*/
                     }
@@ -764,7 +732,7 @@
                     const item = propertyData.find(dataItem => dataItem.REALID === Number(cardBox.dataset.realid)); // 문자열 비교를 위해 Number() 추가
                     if (item) {  // item이 undefined가 아닌 경우에만 속성 설정
                         cardBox.setAttribute('data-ranknoB', JSON.stringify(item.RankNo_b_data));
-                       /* console.log("data-ranknoB 설정:", cardBox.dataset.realid, JSON.stringify(item.RankNo_b_data)); // 디버깅 로그 추가*/
+                        /* console.log("data-ranknoB 설정:", cardBox.dataset.realid, JSON.stringify(item.RankNo_b_data)); // 디버깅 로그 추가*/
                     } else {
                         /*console.log("해당 REALID를 가진 데이터를 찾을 수 없습니다:", cardBox.dataset.realid); // 디버깅 로그 추가*/
                     }
@@ -781,15 +749,17 @@
                     const regdate = cardBox.getAttribute('data-regdate') || '';
                     const regugun = cardBox.getAttribute('data-regugun') || '';
                     const rejimok = cardBox.getAttribute('data-rejimok') || '';
-                    const rearea = cardBox.getAttribute('data-rearea') || '';
+                    const rearea = (rearea === null || rearea === "null") ? "" : rearea;
                     const uniqueNo = cardBox.getAttribute('data-uniqueNo');
                     const uniqueNoSafe = (uniqueNo === null || uniqueNo === "null") ? "" : uniqueNo;
                     const remaxamt = cardBox.getAttribute('data-remaxamt') || '';
-                    const formattedRemaxamt = remaxamt
-                        ? Number(remaxamt).toLocaleString(undefined, {
+                    const formattedRemaxamt = (remaxamt === null || remaxamt === "null")
+                        ? ""
+                        : Number(remaxamt).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
-                        }): '';
+                        });
+
 
                     // 팝업 타이틀 업데이트
                     const popupTitle = document.querySelector("#popup-history .popup-title h3");
@@ -821,7 +791,7 @@
                         }
                     }
 
-                // 갑구
+                    // 갑구
                     const rankNoAData = cardBox.getAttribute('data-ranknoA');
                     let parsedRankNoAData = JSON.parse(rankNoAData);
                     if (typeof parsedRankNoAData === "string") {
@@ -832,49 +802,66 @@
                     const sub1Table = document.querySelector("#sub1 table tbody");
                     sub1Table.innerHTML = "";
 
+                    // 공통 스타일을 위한 변수 설정
+                    const cellStyle = "font-size: 12px; border-right: 1px solid #E6E6E6; border-bottom: 1px solid #E6E6E6; text-align: center; padding: 5px;";
+                    const cellColSpan3Style = "border-bottom: 1px solid #E6E6E6; padding: 5px;";
+                    const cellColSpan4Style = "border-bottom: 1px solid #E6E6E6; padding: 5px;";
 
-                    if (dataArray.length === 0) {
-                        // 첫 번째 빈 행 추가
-                        const emptyRow1 = sub1Table.insertRow();
-                        for (let i = 0; i < 4; i++) {
-                            const emptyCell = emptyRow1.insertCell();
-                            emptyCell.innerHTML = "&nbsp;"; // 공백 추가해서 빈칸이 유지되도록 설정
-                        }
-
-                        // 두 번째 행 추가 (권리자 및 기타사항)
-                        const emptyRow2 = sub1Table.insertRow();
+                    // 공통으로 사용할 함수 생성
+                    function createTableRow(table, headerText, cellValue, colSpan = 3) {
+                        const row = table.insertRow();
                         const headerCell = document.createElement("th");
-                        headerCell.textContent = "권리자 및 기타사항";
-                        headerCell.style.cssText = "font-size: 11px; border-right: 1px solid #E6E6E6; border-bottom: 1px solid #E6E6E6; text-align: center; padding: 5px;";
-                        emptyRow2.appendChild(headerCell);
+                        headerCell.textContent = headerText;
+                        headerCell.style.cssText = cellStyle;
+                        row.appendChild(headerCell);
 
-                        // 나머지 셀 생성
-                        const etcCell = emptyRow2.insertCell();
-                        etcCell.colSpan = 3;
-                        etcCell.innerHTML = "&nbsp;"; // 공백 추가
-                        etcCell.style.cssText = "border-bottom: 1px solid #E6E6E6; padding: 5px;";
+                        const etcCell = row.insertCell();
+                        etcCell.colSpan = colSpan;
+                        etcCell.innerHTML = cellValue ?? "&nbsp;"; // null인 경우 공백 처리
+                        etcCell.style.cssText = cellColSpan3Style;
                     }
 
-                    // 데이터가 있을 경우 처리
-                    dataArray.forEach(data => {
-                        const row1 = sub1Table.insertRow();
-                        row1.insertCell().textContent = data.RankNo_a ?? "";
-                        row1.insertCell().textContent = data.RgsAimCont_a ?? "";
-                        row1.insertCell().textContent = data.Receve_a ?? "";
-                        row1.insertCell().textContent = data.RgsCaus_a ?? "";
+                    if (dataArray.length === 0) {
+                        // '등기목적', '접수', '등기원인' 항목을 한 번만 추가
+                        createTableRow(sub1Table, "등기목적", "&nbsp;", 3);
+                        createTableRow(sub1Table, "접수", "&nbsp;", 3);
+                        createTableRow(sub1Table, "등기원인", "&nbsp;", 3);
 
-                        const row2 = sub1Table.insertRow();
-                        const headerCell = document.createElement("th");
-                        headerCell.textContent = "권리자 및 기타사항";
-                        headerCell.style.fontSize = "11px";
-                        headerCell.style.borderRight = "1px solid #E6E6E6";
-                        headerCell.style.borderBottom = "1px solid #E6E6E6";
-                        row2.appendChild(headerCell);
+                        // '권리자 및 기타사항' 제목과 공백을 한 번만 추가
+                        const row4 = sub1Table.insertRow();
+                        const headerCell4 = document.createElement("th");
+                        headerCell4.textContent = "권리자 및 기타사항";
+                        headerCell4.style.cssText = "font-size: 11px; text-align: center; padding: 5px;";
+                        headerCell4.colSpan = 4;
+                        row4.appendChild(headerCell4);
 
-                        const etcCell = row2.insertCell();
-                        etcCell.colSpan = 3;
-                        etcCell.textContent = data.NomprsAndEtc_a ?? "";
-                    });
+                        const row5 = sub1Table.insertRow();
+                        const etcCell5 = row5.insertCell();
+                        etcCell5.colSpan = 4;
+                        etcCell5.innerHTML = "&nbsp;"; // 공백 추가
+                        etcCell5.style.cssText = cellColSpan4Style;
+                    }
+                    else {
+                        dataArray.forEach(data => {
+                            createTableRow(sub1Table, "등기목적", (data.RgsAimCont_a === "null" ? "" : data.RgsAimCont_a), 3);
+                            createTableRow(sub1Table, "접수", (data.Receve_a === "null" ? "" : data.Receve_a), 3);
+                            createTableRow(sub1Table, "등기원인", (data.RgsCaus_a === "null" ? "" : data.RgsCaus_a), 3);
+
+                            // 권리자 및 기타사항
+                            const row4 = sub1Table.insertRow();
+                            const headerCell = document.createElement("th");
+                            headerCell.textContent = "권리자 및 기타사항";
+                            headerCell.style.cssText = "font-size: 12px; text-align: center; border-right: 1px solid #E6E6E6; border-bottom: 1px solid #E6E6E6;";
+                            headerCell.colSpan = 4;
+                            row4.appendChild(headerCell);
+
+                            const row5 = sub1Table.insertRow();
+                            const etcCell = row5.insertCell();
+                            etcCell.colSpan = 4;
+                            etcCell.textContent = (data.NomprsAndEtc_a === "null" ? "" : data.NomprsAndEtc_a);
+                            etcCell.style.cssText = cellColSpan4Style;
+                        });
+                    }
 
 
 //을구
@@ -883,53 +870,51 @@
                     if (typeof parsedRankNoBData === "string") {
                         parsedRankNoBData = JSON.parse(parsedRankNoBData);
                     }
+
                     const dataBrray = Array.isArray(parsedRankNoBData) ? parsedRankNoBData : [parsedRankNoBData];
                     const sub2Table = document.querySelector("#sub2 table tbody");
                     sub2Table.innerHTML = "";
 
                     if (dataBrray.length === 0) {
-                        // 첫 번째 빈 행 추가
-                        const emptyRow1 = sub2Table.insertRow();
-                        for (let i = 0; i < 4; i++) {
-                            const emptyCell = emptyRow1.insertCell();
-                            emptyCell.innerHTML = "&nbsp;";
-                        }
+                        // '등기목적', '접수', '등기원인' 항목을 한 번만 추가
+                        createTableRow(sub2Table, "등기목적", "&nbsp;", 3);
+                        createTableRow(sub2Table, "접수", "&nbsp;", 3);
+                        createTableRow(sub2Table, "등기원인", "&nbsp;", 3);
 
-                        // 두 번째 행 추가 (권리자 및 기타사항)
-                        const emptyRow2 = sub2Table.insertRow();
-                        const headerCell = document.createElement("th");
-                        headerCell.textContent = "권리자 및 기타사항";
-                        headerCell.style.cssText = "font-size: 11px; border-right: 1px solid #E6E6E6; border-bottom: 1px solid #E6E6E6; text-align: center; padding: 5px;";
-                        emptyRow2.appendChild(headerCell);
+                        // '권리자 및 기타사항' 제목과 공백을 한 번만 추가
+                        const row4 = sub2Table.insertRow();
+                        const headerCell4 = document.createElement("th");
+                        headerCell4.textContent = "권리자 및 기타사항";
+                        headerCell4.style.cssText = "font-size: 11px; text-align: center; padding: 5px;";
+                        headerCell4.colSpan = 4;
+                        row4.appendChild(headerCell4);
 
-                        // 나머지 셀 생성
-                        const etcCell = emptyRow2.insertCell();
-                        etcCell.colSpan = 3;
-                        etcCell.innerHTML = "&nbsp;"; // 공백 추가
-                        etcCell.style.cssText = "border-bottom: 1px solid #E6E6E6; padding: 5px;";
+                        const row5 = sub2Table.insertRow();
+                        const etcCell5 = row5.insertCell();
+                        etcCell5.colSpan = 4;
+                        etcCell5.innerHTML = "&nbsp;"; // 공백 추가
+                        etcCell5.style.cssText = cellColSpan4Style;
+                    }else {
+                        dataBrray.forEach(data => {
+                            createTableRow(sub2Table, "등기목적", (data.RgsAimCont_b === "null" ? "" : data.RgsAimCont_b), 3);
+                            createTableRow(sub2Table, "접수", (data.Receve_b === "null" ? "" : data.Receve_b), 3);
+                            createTableRow(sub2Table, "등기원인", (data.RgsCaus_b === "null" ? "" : data.RgsCaus_b), 3);
+
+                            // 권리자 및 기타사항
+                            const row4 = sub2Table.insertRow();
+                            const headerCell = document.createElement("th");
+                            headerCell.textContent = "권리자 및 기타사항";
+                            headerCell.style.cssText = "font-size: 12px; text-align: center; border-right: 1px solid #E6E6E6; border-bottom: 1px solid #E6E6E6;";
+                            headerCell.colSpan = 4;
+                            row4.appendChild(headerCell);
+
+                            const row5 = sub2Table.insertRow();
+                            const etcCell = row5.insertCell();
+                            etcCell.colSpan = 4;
+                            etcCell.textContent = (data.NomprsAndEtc_b === "null" ? "" : data.NomprsAndEtc_b);
+                            etcCell.style.cssText = cellColSpan4Style;
+                        });
                     }
-
-
-                    // 데이터가 있을 경우 처리
-                    dataBrray.forEach(data => {
-                        const row1 = sub2Table.insertRow();
-                        row1.insertCell().textContent = data.RankNo_b ?? "";
-                        row1.insertCell().textContent = data.RgsAimCont_b ?? "";
-                        row1.insertCell().textContent = data.Receve_b ?? "";
-                        row1.insertCell().textContent = data.RgsCaus_b ?? "";
-
-                        const row2 = sub2Table.insertRow();
-                        const headerCell = document.createElement("th");
-                        headerCell.textContent = "권리자 및 기타사항";
-                        headerCell.style.fontSize = "11px";
-                        headerCell.style.borderRight = "1px solid #E6E6E6";
-                        headerCell.style.borderBottom = "1px solid #E6E6E6";
-                        row2.appendChild(headerCell);
-
-                        const etcCell = row2.insertCell();
-                        etcCell.colSpan = 3;
-                        etcCell.textContent = data.NomprsAndEtc_b ?? "";
-                    });
 
 
                     // 팝업 열기
@@ -957,7 +942,6 @@
             }
         });
     }
-
 
 
     function handleSearch() {

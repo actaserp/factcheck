@@ -33,7 +33,14 @@ public class ProductionController {
 
         AjaxResult result = new AjaxResult();
         User user = (User) auth.getPrincipal();
-        String userid = String.valueOf(user.getId());
+       /* String userid = String.valueOf(user.getId());*/
+        String username = String.valueOf(user.getUsername());
+
+
+        /*System.out.println("userid확인 "+userid);*/
+        System.out.println("username확인 "+username);
+
+
 
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -65,7 +72,7 @@ public class ProductionController {
             LOGGER.info("요청 데이터 - StartDate: " + formattedStartDate + ", EndDate: " + formattedEndDate + ", Property: " + property);
 
             // 데이터 조회
-            Map<String, Object> productionData = productionService.getlist(formattedStartDate, formattedEndDate, property,userid);
+            Map<String, Object> productionData = productionService.getlist(formattedStartDate, formattedEndDate, property,username);
 
             if (productionData == null || productionData.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).body("조회된 데이터가 없습니다.");
@@ -84,7 +91,7 @@ public class ProductionController {
         AjaxResult result = new AjaxResult();
 
         User user = (User) auth.getPrincipal();
-        String userid = String.valueOf(user.getId());
+        String userid = String.valueOf(user.getUsername());
 
         List<Map<String, Object>> items = productionService.getSeachList(userid);
 
