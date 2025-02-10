@@ -276,8 +276,8 @@ public class UM_userchartService {
 
         sql.append(") AS sub\nGROUP BY ").append(String.join(", ", groupByColumns));
 
-        //log.info("그리드 리스트 SQL: {}", sql.toString());
-        //log.info("SQL 매개변수: {}", params.getValues());
+//        log.info("그리드 리스트 SQL: {}", sql.toString());
+//        log.info("SQL 매개변수: {}", params.getValues());
 
         return sqlRunner.getRows(sql.toString(), params);
     }
@@ -319,22 +319,23 @@ public class UM_userchartService {
             params.addValue("selectedColumn", selectedColumn);
         }
 
-        // 날짜 검색 방식 수정
-        if (yearMonth != null && !yearMonth.isEmpty()) {
-            if (yearMonth.length() == 4) {  // 연도만 입력된 경우 (예: 2025)
-                sql.append(" AND LEFT(RELASTDATE, 4) = :yearMonth");
-            } else if (yearMonth.length() == 7) {  // 연도-월 입력된 경우 (예: 2025-01)
-                sql.append(" AND LEFT(RELASTDATE, 6) = REPLACE(:yearMonth, '-', '')");
-            } else if (yearMonth.length() == 10) {  // 연도-월-일 입력된 경우 (예: 2025-01-28)
-                sql.append(" AND RELASTDATE = REPLACE(:yearMonth, '-', '')");
-            }
-            params.addValue("yearMonth", yearMonth);
-        }
+       // 날짜 검색 방식 수정
+       if (yearMonth != null && !yearMonth.isEmpty()) {
+           if (yearMonth.length() == 4) {  // 연도만 입력된 경우 (예: 2025)
+               sql.append(" AND LEFT(RELASTDATE, 4) = :yearMonth");
+           } else if (yearMonth.length() == 6) {  // 연도-월 입력된 경우 (예: 202501)
+               sql.append(" AND LEFT(RELASTDATE, 6) = :yearMonth");
+           } else if (yearMonth.length() == 8) {  // 연도-월-일 입력된 경우 (예: 20250124)
+               sql.append(" AND RELASTDATE = :yearMonth");
+           }
+           params.addValue("yearMonth", yearMonth);
+       }
 
-        if (dateType != null && !dateType.isEmpty()) {
-            sql.append(" AND RELASTDATE = REPLACE(:dateType, '-', '')");
-            params.addValue("dateType", dateType);
-        }
+       // dateType 조건 추가
+       if (dateType != null && !dateType.isEmpty()) {
+           sql.append(" AND RELASTDATE = :dateType");
+           params.addValue("dateType", dateType);
+       }
 
         if (sexYn != null) {
             sql.append(" AND SEXYN = :sexYn");
@@ -345,8 +346,8 @@ public class UM_userchartService {
         sql.append(" )");
 
         // 디버깅 로그 추가
-        log.info("🔍 실행할 SQL: {}", sql.toString());
-        log.info("📌 SQL 매개변수: {}", params.getValues());
+//        log.info("🔍 실행할 SQL: {}", sql.toString());
+//        log.info("📌 SQL 매개변수: {}", params.getValues());
 
         return sqlRunner.getRows(sql.toString(), params);
     }
