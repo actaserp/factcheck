@@ -1074,6 +1074,7 @@ public class TilkoController {
                     resultMap.put("REALSCORE", resultScore.get("REALSCORE"));
                     resultMap.put("GRADE", resultScore.get("GRADE"));
                     resultMap.put("COMMENT", resultScore.get("COMMENT"));
+                    resultMap.put("REGASNAME", resultScore.get("REGASNAME"));
                     resultMap.put("ADDRESS", address);
                     result.data = resultMap;
                     result.message = "등기부등본 정상조회";

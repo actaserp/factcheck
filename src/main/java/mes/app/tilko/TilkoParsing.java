@@ -155,6 +155,7 @@ public class TilkoParsing {
         int finalScore = 100; // 기본 점수
         String Grade = "";
         List<String> comment = new ArrayList<>();
+        List<String> Deductions = new ArrayList<>();
 
         // REGNM(등기명칭)을 키로 REGSTAND(분류기준), REGSTAMT(기준금액), REGMAXNUM(최대 차감점수) 저장
         Map<String, Map<String, Object>> regMap = new HashMap<>();
@@ -166,8 +167,10 @@ public class TilkoParsing {
             values.put("REGMAXNUM", code.get("REGMAXNUM") != null ? Integer.parseInt(code.get("REGMAXNUM").toString()) : 0);
             values.put("REGCOMMENT", code.get("REGCOMMENT").toString());
             values.put("REGASNAME", code.get("REGASNAME").toString());
+            values.put("REGNM", code.get("REGNM").toString());
             regMap.put(regnm, values);
         }
+        System.out.println("regMap : "  + regMap);
 
         // 정규식 패턴 (채권최고액과 근저당권자 추출)
         Pattern amountPattern = Pattern.compile("채권최고액\\s+금([0-9,]+)원");
@@ -201,6 +204,13 @@ public class TilkoParsing {
             if (creditorMatcher.find()) {
                 creditor = creditorMatcher.group(1).trim();
             }
+
+            // 코멘트 추가
+            String regComment = regData.get("REGCOMMENT").toString();
+            comment.add(regComment);
+            // 감점사항 추가
+            String Deduction = regData.get("REGASNAME").toString();
+            Deductions.add(Deduction);
 
             if ("A1".equals(regstand) || ("A3".equals(regstand) && bondAmount > 0)) {
                 // A1 또는 A3(채권최고액이 있는 경우) 로직
@@ -252,6 +262,7 @@ public class TilkoParsing {
         resultMap.put("REALSCORE", finalScore);
         resultMap.put("GRADE", Grade);
         resultMap.put("COMMENT", comment);
+        resultMap.put("REGASNAME",Deductions);
         return resultMap;
     }
 
