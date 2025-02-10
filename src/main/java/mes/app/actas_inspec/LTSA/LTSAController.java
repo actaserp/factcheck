@@ -181,7 +181,7 @@ public class LTSAController {
                 }
                 // 마지막 페이지에서 Summary데이터 추출
                 if (pageIndex == totalPages - 1) {
-                    Map<String, Object> summaryResult = tilkoParsing.parseSummaryTable(pdfListContent);
+                    Map<String, Object> summaryResult = tilkoParsing.parseSummaryTable(pdfListContent, pdfPageContent);
 
                     List<Map<String, Object>> summaryDataA = (List<Map<String, Object>>) summaryResult.get("SummaryDataAMap");
                     List<Map<String, Object>> summaryDataK = (List<Map<String, Object>>) summaryResult.get("SummaryDataKMap");

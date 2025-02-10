@@ -756,6 +756,7 @@ public class TilkoController {
             // 등급 설정
             String Grade;
             Integer savedScore = (Integer) savedGoyu.get("REALSCORE");
+            String PDFFILENAME = (String) savedGoyu.get("PDFFILENAME");
             if (savedScore >= 90) {
                 Grade = "S";
             } else if (savedScore >= 80) {
@@ -773,7 +774,10 @@ public class TilkoController {
             }
             resultMap.put("GRADE", Grade);
             resultMap.put("COMMENT", "");
+            resultMap.put("REGASNAME", "");
             resultMap.put("ADDRESS", address);
+            resultMap.put("PDFFILENAME", PDFFILENAME);
+            resultMap.put("REALSCORE",savedScore);
             result.data = resultMap;
             result.message = "기존 조회데이터가 존재합니다.";
             return result;
@@ -1076,6 +1080,7 @@ public class TilkoController {
                     resultMap.put("COMMENT", resultScore.get("COMMENT"));
                     resultMap.put("REGASNAME", resultScore.get("REGASNAME"));
                     resultMap.put("ADDRESS", address);
+                    resultMap.put("PDFFILENAME", saveFileNM);
                     result.data = resultMap;
                     result.message = "등기부등본 정상조회";
                 } catch (IllegalArgumentException e) {

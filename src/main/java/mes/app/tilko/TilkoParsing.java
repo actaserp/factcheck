@@ -164,7 +164,7 @@ public class TilkoParsing {
             Map<String, Object> values = new HashMap<>();
             values.put("REGSTAND", code.get("REGSTAND").toString());
             values.put("REGSTAMT", code.get("REGSTAMT") != null ? Double.parseDouble(code.get("REGSTAMT").toString()) : 1.0);
-            values.put("REGMAXNUM", code.get("REGMAXNUM") != null ? Integer.parseInt(code.get("REGMAXNUM").toString()) : 0);
+            values.put("REGMAXNUM", code.get("REGMAXNUM") != null ? Integer.parseInt(code.get("REGMAXNUM").toString()) * 10000 : 0);
             values.put("REGCOMMENT", code.get("REGCOMMENT").toString());
             values.put("REGASNAME", code.get("REGASNAME").toString());
             values.put("REGNM", code.get("REGNM").toString());
@@ -471,12 +471,29 @@ public class TilkoParsing {
         return -1;
     }
     // Summary 데이터 파싱 메서드
-    public static Map<String, Object> parseSummaryTable(List<String> tableData) {
+    public static Map<String, Object> parseSummaryTable(List<String> tableData, String nomData) {
         List<Map<String, Object>> summaryDataA = new ArrayList<>(); // 등기명의인 데이터
-        List<Map<String, Object>> summaryDataK = new ArrayList<>(); // 두 번째 순위번호 데이터
-        List<Map<String, Object>> summaryDataE = new ArrayList<>(); // 세 번째 순위번호 데이터
+        List<Map<String, Object>> summaryDataK = new ArrayList<>(); // 소유지분제외 갑구 데이터
+        List<Map<String, Object>> summaryDataE = new ArrayList<>(); // 저당권 을구 데이터
 
         boolean isParsingA = false, isParsingK = false, isParsingE = false;
+        // 갑구와 을구의 기록사항 확인
+        if (nomData.split("2. |소유지분을 |제외한 |소유권에 |관한 |사항 |(갑구)")[1]
+                .split("3. |(근)저당권 및 전세권 등 |( 을구 )")[0]
+                .contains("|기록사항 |없음")) {
+            System.out.println("datak 데이터 수집 중단");
+        } else {
+            System.out.println("datak 데이터 수집 진행");
+            isParsingK = true;
+        }
+        if (nomData.split("3. |(근)저당권 및 전세권 등 |( 을구 )")[1]
+                .split("[참고사항]")[0]
+                .contains("|기록사항 |없음")) {
+            System.out.println("datak 데이터 수집 중단");
+        } else {
+            System.out.println("datak 데이터 수집 진행");
+            isParsingE = true;
+        }
 
         for (String row : tableData) {
             String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
