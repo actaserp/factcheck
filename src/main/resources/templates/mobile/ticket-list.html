@@ -749,7 +749,10 @@
                     const regdate = cardBox.getAttribute('data-regdate') || '';
                     const regugun = cardBox.getAttribute('data-regugun') || '';
                     const rejimok = cardBox.getAttribute('data-rejimok') || '';
-                    const rearea = (rearea === null || rearea === "null") ? "" : rearea;
+
+                    const rearea = cardBox.getAttribute('data-rearea') || '';
+                    const formattedrearea = (rearea === null || rearea === "null") ? "" : rearea;
+
                     const uniqueNo = cardBox.getAttribute('data-uniqueNo');
                     const uniqueNoSafe = (uniqueNo === null || uniqueNo === "null") ? "" : uniqueNo;
                     const remaxamt = cardBox.getAttribute('data-remaxamt') || '';
@@ -787,7 +790,7 @@
                         const tds = rows[3].getElementsByTagName("td");
                         if (tds.length >= 2) {
                             tds[0].textContent = rejimok;
-                            tds[1].textContent = rearea;
+                            tds[1].textContent = formattedrearea;
                         }
                     }
 
