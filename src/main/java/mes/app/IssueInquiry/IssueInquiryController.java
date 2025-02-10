@@ -106,38 +106,56 @@ public class IssueInquiryController {
   // PDF 파일 조회 API
   @GetMapping("/pdf")
   public ResponseEntity<byte[]> getPdf(@RequestParam(value = "realId") int realId) {
-    log.info(" pdf조회 realId={}", realId);
+    log.info("📄 PDF 조회 요청: realId={}", realId);
+
     try {
-      // realId에 해당하는 PDF 파일명 조회
+      // 1. DB에서 PDF 파일명 조회
       Optional<String> optionalPdfFileName = issueInquiryService.findPdfFilenameByRealId(realId);
 
-      // 파일명이 없으면 404 반환
       if (optionalPdfFileName.isEmpty()) {
+//        log.warn(" PDF 파일명을 찾을 수 없음: realId={}", realId);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
       }
 
       String pdfFileName = optionalPdfFileName.get();
-      String pdfFilePath = "C:/pdf_storage/" + pdfFileName;
+
+      // 2. 운영체제별 저장 경로 설정
+      String osName = System.getProperty("os.name").toLowerCase();
+      String uploadDir;
+
+      if (osName.contains("win")) {
+        uploadDir = "C:\\temp\\registerFiles\\"; // Windows 환경
+      } else {
+        String userHome = System.getProperty("user.home");
+        uploadDir = userHome + "/registerFiles/"; // Mac, Linux, Android 환경
+      }
+
+      // 3. PDF 파일 경로 설정 및 존재 여부 확인
+      String pdfFilePath = uploadDir + pdfFileName;
+      log.info("PDF 파일 경로: {}", pdfFilePath);
 
       Path path = Paths.get(pdfFilePath);
-
       if (!Files.exists(path)) {
+        log.warn("파일이 존재하지 않음: {}", pdfFilePath);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
       }
 
+      // 4. PDF 파일 읽기 및 반환
       byte[] pdfBytes = Files.readAllBytes(path);
-
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_PDF);
       headers.setContentDisposition(ContentDisposition.inline().filename(pdfFileName).build());
 
       return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     } catch (IOException e) {
+      log.error("파일을 읽는 중 오류 발생", e);
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
+      log.error("서버 내부 오류 발생", e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
+
 
   @GetMapping("/checkLogin")
   public ResponseEntity<Map<String, Object>> checkLogin(HttpSession session, HttpServletResponse response) {

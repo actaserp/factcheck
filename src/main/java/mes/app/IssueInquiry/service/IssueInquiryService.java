@@ -115,17 +115,13 @@ public class IssueInquiryService {
 //    log.info("등기부API 조회 저장 SQL: {}", sql);
 //    log.info("SQL Parameters: {}", params.getValues());
 
-    sqlRunner.execute(sql, params);  // 🚀 INSERT 실행 (결과 반환 필요 없음)
+    sqlRunner.execute(sql, params);  // INSERT 실행 (결과 반환 필요 없음)
 
     log.info("조회 기록 저장 완료 - realId: {}, user: {}", REALID, user.getUsername());
     return null;
   }
 
   public Optional<String> findPdfFilenameByRealId(int realId) {
-    if (realId <= 0) {
-      return Optional.empty(); // 유효하지 않은 realId
-    }
-
     MapSqlParameterSource params = new MapSqlParameterSource();
     params.addValue("realId", realId);
 
@@ -133,15 +129,17 @@ public class IssueInquiryService {
 
     try {
       // SQL 실행 후 결과 조회
+//      log.info("등기부API 발급 List SQL: {}", sql);
+//      log.info("SQL Parameters: {}", params.getValues());
       List<Map<String, Object>> result = sqlRunner.getRows(sql, params);
 
       if (!result.isEmpty() && result.get(0).get("PDFFILENAME") != null) {
         return Optional.of((String) result.get(0).get("PDFFILENAME"));
       }
     } catch (Exception e) {
-      // 예외 발생 시 로그 출력 (개발 및 운영 시 오류 확인)
-      System.err.println("PDF 파일명을 조회하는 중 오류 발생: " + e.getMessage());
+      log.info("PDF 파일명을 조회하는 중 오류 발생: {}", e.getMessage(), e);
     }
+
     return Optional.empty(); // 결과가 없으면 빈 Optional 반환
   }
 
