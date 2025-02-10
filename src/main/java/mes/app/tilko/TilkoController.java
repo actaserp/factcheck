@@ -918,7 +918,7 @@ public class TilkoController {
 
                     // 구축물
                     Map<String, Object> gubunDataAMap = (Map<String, Object>) pdfParsingMap.get("gubunData");
-                    String archtec = tilkoParsing.assortArchitec(String.valueOf(gubunDataAMap.get("archtec")));
+                    String archtec = tilkoParsing.assortArchitec(String.valueOf(gubunDataAMap.get("Archtec")));
 
                     // 파싱후 REALINFO 테이블에 우선 저장 후 id 값 가져오기
                     TB_REALINFO tbRealinfo = new TB_REALINFO();
@@ -967,14 +967,15 @@ public class TilkoController {
                         tbRealinfo.setReMaxAmt(null);
                     }
 
-                    // 공통코드 데이터 불러오기
+                    // 점수계산 분류 데이터 불러오기
                     List<Map<String, Object>> comcode = tilkoService.getComcode();
                     // 차감 최저점수 불러오기
                     Map<String, Object> lessScore = tilkoService.getLessScore();
                     // 점수계산
                     Map<String, Object> resultScore = tilkoParsing.calScore(SummaryDataEMap,
                             comcode,
-                            (Integer)lessScore.get("Value"));
+                            Integer.parseInt(lessScore.get("Value").toString()) // 안전한 변환 적용
+                    );
                     tbRealinfo.setRealScore((Integer) resultScore.get("REALSCORE"));
                     tbRealinfo.setRealPoint(1);
                     tbRealinfo.setRealLastDate(formattedDate);
@@ -1323,7 +1324,7 @@ public class TilkoController {
 //
 //                    String uploadDir;
 //                    String outputFilePath;
-                    String testFilePath = "c:\\temp\\registerFiles\\청주 유효 등기부등본.pdf";
+                    String testFilePath = "c:\\temp\\registerFiles\\3.충청북도 청주시 상당구_등기부등본.pdf";
 //                    String saveFileNM = "";
 //
 //                    if (osName.contains("win")) {
@@ -1370,7 +1371,7 @@ public class TilkoController {
 
                     Map<String, Object> pdfParsingMap = ltsaCont.uploadPDF(file);
                     System.out.println("parsingDATA : " + pdfParsingMap);
-                    String testFileNM = "0.청주 유효 등기부등본.pdf";
+                    String testFileNM = "0.상당구 등기부등본.pdf";
 
                     // 부동산 등기부등본 기본 데이터(Register) 파싱 로직
                     Map<String, Object> RegisterMap = (Map<String, Object>) pdfParsingMap.get("RegisterMap");
@@ -1395,8 +1396,8 @@ public class TilkoController {
 
                     // 구축물
             Map<String, Object> gubunDataAMap = (Map<String, Object>) pdfParsingMap.get("gubunData");
-            String archtec = (gubunDataAMap != null && gubunDataAMap.get("archtec") != null)
-                    ? tilkoParsing.assortArchitec(String.valueOf(gubunDataAMap.get("archtec")))
+            String archtec = (gubunDataAMap != null && gubunDataAMap.get("buildingDetails") != null)
+                    ? tilkoParsing.assortArchitec(String.valueOf(gubunDataAMap.get("buildingDetails")))
                     : "";
 
 
@@ -1448,7 +1449,7 @@ public class TilkoController {
                         tbRealinfo.setReMaxAmt(null);
                     }
 
-                    // 공통코드 데이터 불러오기
+                    // 점수계산 분류 데이터 불러오기
                     List<Map<String, Object>> comcode = tilkoService.getComcode();
                     // 차감 최저점수 불러오기
                     Map<String, Object> lessScore = tilkoService.getLessScore();

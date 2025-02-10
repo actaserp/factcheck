@@ -83,6 +83,7 @@ public class LTSAController {
                 pdfPageContent = item.get("일반데이터").toString();
                 pdfListContent = (List<String>) item.get("표데이터");
                 System.out.println("일반데이터 : " + pdfPageContent);
+                System.out.println("표데이터 : " + pdfListContent);
 
                 if (pdfListContent == null || pdfListContent.isEmpty()) {
                     System.out.println("표데이터가 없습니다. 페이지 " + (pageIndex + 1));

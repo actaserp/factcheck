@@ -229,6 +229,23 @@ public class TilkoParsing {
             finalScore = lessScore;
         }
 
+        // 등급 설정
+        if (finalScore >= 90) {
+            Grade = "S";
+        } else if (finalScore >= 80) {
+            Grade = "A";
+        } else if (finalScore >= 70) {
+            Grade = "B";
+        } else if (finalScore >= 60) {
+            Grade = "C";
+        } else if (finalScore >= 50) {
+            Grade = "D";
+        } else if (finalScore >= 40) {
+            Grade = "E";
+        } else {
+            Grade = "F";
+        }
+
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put("REALSCORE", finalScore);
         resultMap.put("GRADE", Grade);
@@ -265,9 +282,20 @@ public class TilkoParsing {
     }
     // 관할등기소 추출
     public static String extractJurisdictionOffice(String text) {
-        Pattern pattern = Pattern.compile("관할등기소\\s*\\|\\s*([^|]+)\\s*\\|\\s*([^|]+)");
+        // 개행을 포함한 모든 문자를 매칭하도록 (?s) 추가
+        System.out.println("text : " + text);
+        Pattern pattern = Pattern.compile("(?s)\\|\\s*관할등기소\\s*\\|\\s*([\\s\\S]+?)\\s*\\|\\s*([\\s\\S]+?)\\s*\\|");
         Matcher matcher = pattern.matcher(text);
-        return matcher.find() ? matcher.group(1).trim() + " " + matcher.group(2).trim() : "정보 없음";
+
+        if (matcher.find()) {
+            System.out.println("== 매칭 성공! ==");
+            System.out.println("1번째 그룹: " + matcher.group(1).trim());
+            System.out.println("2번째 그룹: " + matcher.group(2).trim());
+            return matcher.group(1).trim() + " " + matcher.group(2).trim();
+        } else {
+            System.out.println("== 매칭 실패! ==");
+            return "정보 없음";
+        }
     }
     // 갑구 소유권에 관한 사항 수집
     public static Map<String, Object> parseGabguTable(List<String> tableData) {
@@ -276,12 +304,19 @@ public class TilkoParsing {
         Map<String, Object> currentRow = new HashMap<>();
         String lastTradeAmount = null; // 마지막 매매 거래가액 저장
 
+        boolean isFirstRow = true; // 헤더 검출용 플래그
+
         for (String row : tableData) {
             String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
 
+            // 첫 번째 행이 헤더일 가능성이 높으므로 무시
+            if (isFirstRow) {
+                isFirstRow = false;
+                if (columns[0].contains("순위번호")) continue;
+            }
+
             if (columns.length < 5) continue; // 최소 5개 필드가 있어야 유효한 데이터
 
-            // 순위번호(RankNo)가 존재하면 새로운 데이터 시작
             if (!columns[0].trim().isEmpty()) {
                 // 이전 데이터 저장 후 초기화
                 if (!currentRow.isEmpty()) {
@@ -346,13 +381,20 @@ public class TilkoParsing {
         List<Map<String, Object>> collateralData = new ArrayList<>(); // 🟢 "담보" 데이터 저장
         List<Map<String, Object>> leaseData = new ArrayList<>(); // 🟢 "전세" 데이터 저장
         Map<String, Object> currentRow = new HashMap<>();
+        boolean isFirstRow = true; // 헤더 검출용 플래그
 
         for (String row : tableData) {
             String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
 
+            // 첫 번째 행이 헤더일 가능성이 높으므로 무시
+            if (isFirstRow) {
+                isFirstRow = false;
+                if (columns[0].contains("순위번호")) continue;
+            }
+
             if (columns.length < 5) continue; // 최소 5개 필드가 있어야 유효한 데이터
 
-            // 순위번호(RankNo)가 존재하면 새로운 데이터 시작
+
             if (!columns[0].trim().isEmpty()) {
                 // 이전 데이터 저장 후 초기화
                 if (!currentRow.isEmpty()) {
@@ -498,49 +540,44 @@ public class TilkoParsing {
 
         return result;
     }
-
+    // 구축물 파싱
     public static Map<String, Object> extractGubun(List<String> tableData) {
         Map<String, Object> buildingData = new HashMap<>();
-        StringBuilder buildingDetails = new StringBuilder(); // 건물 내역 병합용
-        boolean collecting = false; // 데이터 수집 여부 플래그
+        StringBuilder buildingDetails = new StringBuilder();
+        boolean collecting = false;
 
-        // 디버깅: 데이터 크기 확인
         System.out.println("extractGubun() 호출됨, tableData 크기: " + tableData.size());
 
-        // 🔥 첫 번째 행(제목 행) 제외 (리스트 크기가 2 이상일 때만 subList 사용)
         if (tableData.size() > 1) {
             tableData = tableData.subList(1, tableData.size());
         } else {
-            return new HashMap<>(); // 빈 데이터 반환
+            return new HashMap<>();
         }
 
         for (String row : tableData) {
-            String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
+            String[] columns = row.split("\\|");
 
-            if (columns.length < 5) continue; // 최소 5개 필드 존재해야 유효
+            if (columns.length < 4) continue; // 최소 4개 필드 존재해야 유효
 
-            // 표시번호(표의 시작점) 확인
+            // 건물 내역 시작점 확인
             if (!columns[0].trim().isEmpty() && !collecting) {
-                collecting = true; // 데이터 수집 시작
+                collecting = true;
                 buildingData.put("seq", columns[0].trim());
-                buildingData.put("call", columns[1].trim());
-                buildingData.put("archtec", columns[2].trim());
-                buildingData.put("cause", columns[4].trim());
-                buildingDetails.append(columns[3].trim()); // 건물 내역 추가
+                buildingData.put("address", columns[1].trim());
+                buildingDetails.append(columns[3].trim());
             }
-            // 추가적인 건물 내역 정보 병합
+            // 건물 내역이 이어지는 경우 계속 추가
             else if (collecting) {
-                if (!columns[3].trim().equals("null")) {
-                    buildingDetails.append(" ").append(columns[3].trim());
-                }
+                buildingDetails.append(" ").append(columns[3].trim());
             }
         }
 
-        // 최종적으로 병합된 건물 내역 저장
-        buildingData.put("건물내역", buildingDetails.toString());
+        // 최종 병합된 건물 내역 저장
+        buildingData.put("buildingDetails", buildingDetails.toString().trim());
 
         return buildingData;
     }
+
 
 
 

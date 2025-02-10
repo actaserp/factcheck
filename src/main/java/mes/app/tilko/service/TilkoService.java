@@ -83,7 +83,7 @@ public class TilkoService {
 
         // Map 데이터를 SQL 파라미터에 매핑
         params.addValue("REALID", jsonDataMap.get("REALID"));
-        params.addValue("RankNo", jsonDataMap.get("RankNo"));
+        params.addValue("RankNo", String.valueOf(jsonDataMap.get("RankNo")));
         params.addValue("RgsAimCont", jsonDataMap.get("RgsAimCont"));
         params.addValue("Receve", jsonDataMap.get("Receve"));
         params.addValue("RgsCaus", jsonDataMap.get("RgsCaus"));
@@ -188,7 +188,7 @@ public class TilkoService {
 
         // Map 데이터를 SQL 파라미터에 매핑
         params.addValue("REALID", dataMap.get("REALID"));
-        params.addValue("RankNo", dataMap.get("RankNo"));
+        params.addValue("RankNo", String.valueOf(dataMap.get("RankNo")));
         params.addValue("RgsAimCont", dataMap.get("RgsAimCont"));
         params.addValue("Receve", dataMap.get("Receve"));
         params.addValue("RgsCaus", dataMap.get("RgsCaus"));
