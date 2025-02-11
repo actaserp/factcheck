@@ -40,60 +40,66 @@ public class MapService {
     public List<Map<String, Object>> getList(String resido, String regugun) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
-        // 광역시/특별시인지 확인
-        boolean isSpecialCity = resido.endsWith("특별시") || resido.endsWith("광역시");
+        // 검색할 resido 추출
+        String searchResido;
+        String[] residoParts = resido.split(" "); // 공백 기준으로 분리
+
+        if (resido.endsWith("시") && residoParts.length > 1) {
+            // "충청북도 청주시" → "청주"
+            searchResido = residoParts[residoParts.length - 1].substring(0, 2);
+        } else {
+            // "서울특별시" → "서울", "경기도" → "경기", "충청북도" → "충청"
+            searchResido = resido.substring(0, 2);
+        }
 
         if (regugun != null && !regugun.isEmpty()) {
-            String[] parts = regugun.split(" "); // 공백 기준으로 나누기
-            if (!isSpecialCity && parts.length > 0) {
-                resido = resido + " " + parts[0]; // 도 + 시 형태로 변환 (서울특별시는 그대로 둠)
-            }
-            // 마지막 단어가 "구" 또는 "군"으로 끝나는 경우만 regugun에 설정
+            String[] parts = regugun.split(" ");
             String lastPart = parts[parts.length - 1];
             if (lastPart.endsWith("구") || lastPart.endsWith("군")) {
                 regugun = lastPart;
             } else {
-                regugun = null; // 구/군이 없으면 null로 설정
+                regugun = null;
             }
         }
 
-        params.addValue("resido", resido);
+        params.addValue("resido", "%" + searchResido + "%"); // LIKE 검색 적용
         params.addValue("regugun", regugun);
 
-        System.out.println("resido" + resido);
-        System.out.println("regugun" + regugun);
+        System.out.println("searchResido: " + searchResido);
+        System.out.println("regugun: " + regugun);
 
         String sql = """
-        SELECT
-            RESIDO, REGUGUN, REALSCORE, REALADD, REALID,
-            COUNT(*) OVER() AS total_count,
-            AVG(REALSCORE) OVER() AS avg_score,
+    SELECT
+        RESIDO, REGUGUN, REALSCORE, REALADD, REALID,
+        COUNT(*) OVER() AS total_count,
+        AVG(REALSCORE) OVER() AS avg_score,
 
-            CASE
-                WHEN CHARINDEX(' ', REALADD) > 0
-                THEN STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')
-                ELSE REALADD
-            END AS SHORT_ADDR_1,
+        CASE
+            WHEN CHARINDEX(' ', REALADD) > 0
+            THEN STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')
+            ELSE REALADD
+        END AS SHORT_ADDR_1,
 
-            CASE
-                WHEN :regugun IS NOT NULL
-                    AND CHARINDEX(' ',
-                        STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')) > 0
-                THEN STUFF(
-                    STUFF(REALADD, 1, CHARINDEX(' ', REALADD), ''),
-                    1, CHARINDEX(' ', STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')), ''
-                )
-                ELSE STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')
-            END AS SHORT_ADDR
+        CASE
+            WHEN :regugun IS NOT NULL
+                AND CHARINDEX(' ',
+                    STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')) > 0
+            THEN STUFF(
+                STUFF(REALADD, 1, CHARINDEX(' ', REALADD), ''),
+                1, CHARINDEX(' ', STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')), ''
+            )
+            ELSE STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')
+        END AS SHORT_ADDR
 
-        FROM TB_REALINFO
-        WHERE RESIDO = :resido
-        AND (COALESCE(:regugun, '') = '' OR REGUGUN = :regugun)
-        ORDER BY REALSCORE DESC;
+    FROM TB_REALINFO
+    WHERE RESIDO LIKE :resido
+    AND (COALESCE(:regugun, '') = '' OR REGUGUN = :regugun)
+    ORDER BY REALSCORE DESC;
     """;
 
         return sqlRunner.getRows(sql, params);
     }
+
 
     public List<Map<String, Object>> getOwn(int realid) {
         MapSqlParameterSource params = new MapSqlParameterSource();
