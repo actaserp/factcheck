@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 public class TilkoController {
 
     private static final String apiHost	= "https://api.tilko.net/";
-    private static final String apiKey	= "5c57dcdf0bbc4b4db262744be314c6c3";
+    private static final String apiKey	= "9f32eeb2d5404e69b57d23c137961d64";
     TilkoParsing tilkoParsing;
 
     @Autowired
