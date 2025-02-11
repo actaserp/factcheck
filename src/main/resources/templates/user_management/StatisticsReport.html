@@ -333,7 +333,8 @@
     ];
 
     // 하위 항목 배열
-    const subCategories = ['아파트', '빌라', '단독', '오피스', '기타'];
+    // const subCategories = ['아파트', '빌라', '단독', '오피스', '기타'];
+    const subCategories = ['아파트', '다세대주택', '단독주택', '오피스텔', '기타'];
 
     // 초기 컬럼 배열
     const columns = [
@@ -768,21 +769,20 @@
       {binding: 'total', header: '합계', width: 100, align: 'center'},
     ];
 
-    const ageGroups = ["20대 이하", "20대", "30대", "40대", "50대", "60대", "70대 이상"];
+    const ageGroups = ["19", "20대", "30대", "40대", "50대", "60대", "70대 이상"];
 
-
-    // 나이별 & 구축물별 컬럼 동적 추가
     ageGroups.forEach(age => {
       const ageKey = age.replace(/[^0-9]/g, ''); // 나이 숫자만 추출 (ex. "70대 이상" → "70")
       subCategories.forEach(type => {
         columns2.push({
-          binding: `age_${ageKey}_${type}`,  // 바인딩 키 예: "age_30_아파트"
+          binding: `age_${ageKey}_${type}`,  // 예: "age_19_아파트"
           header: `${type}`,         // 헤더 예: "아파트"
           width: 100,
           align: 'center'
         });
       });
     });
+
 
     function DefaultData(selectedRows = []) {
       let data = [];
@@ -822,7 +822,7 @@
         traditional: true,
         dataType: 'json',
         success: function (response) {
-          //console.log("API 응답 데이터:", response);
+          console.log("API 응답 데이터:", response);
           var data_renew = [];
           var cnt = 0;
 
@@ -841,14 +841,14 @@
 
               // 나이별 & 구축물별 데이터 동적 매핑
               ageGroups.forEach(age => {
-                const ageKey = age.replace(/[^0-9]/g, ''); // "70대 이상" → "70"
+                const ageKey = age.replace(/[^0-9]/g, '');
                 subCategories.forEach(type => {
                   const key = `age_${ageKey}_${type}`;
-                  rowData2[key] = item[key] === 0 ? '' : item[key] ?? ''; // 0이면 빈 문자열
-                  valueSum += rowData2[key] === '' ? 0 : rowData2[key]; // 총합 계산
+                  let cellValue = item[key] ?? 0; // undefined 방지
+                  rowData2[key] = cellValue === 0 ? '' : cellValue;
+                  valueSum += cellValue;
                 });
               });
-
               if (valueSum > 0) {
                 data_renew.push({
                   index: cnt,
@@ -874,7 +874,7 @@
             data.push(emptyRow);
           }
 
-          //console.log('최종 처리된 데이터:', data);
+          console.log('최종 처리된 데이터:', data);
 
           // 그리드에 데이터 적용
           viewdata = new wijmo.collections.CollectionView(data);
@@ -976,37 +976,39 @@
     }
     // 선택한 열(colIndex)이 속한 "나이" 헤더 가져오기
     function getMergedHeader2(colIndex) {
-      // 현재 선택한 열의 헤더 가져오기
-      let columnHeader = theGrid.columns[colIndex].header.trim();
+      if (colIndex < 0 || colIndex >= theGrid.columns.length) {
+        console.warn(`⚠️ 잘못된 colIndex: ${colIndex}`);
+        return "";
+      }
 
-      // 연령대 헤더 리스트 (예: "20대 이하", "20대", ...)
+      let columnHeader = theGrid.columns[colIndex]?.header?.trim() || "";
+      console.log(`🔍 현재 선택한 컬럼 헤더: "${columnHeader}"`);
+
       const ageGroups = ["20대 이하", "20대", "30대", "40대", "50대", "60대", "70대 이상"];
 
-      // 현재 열(`colIndex`)이 속한 연령대 찾기
       let matchedAgeGroup = ageGroups.find(age => columnHeader.includes(age));
 
-      // 현재 헤더에 연령대가 직접 포함되지 않았다면, 부모 헤더를 찾아야 함.
       if (!matchedAgeGroup) {
         let columnPanel = theGrid.columnHeaders;
-        let headerRowIndex = 0; // 병합된 헤더가 있는 첫 번째 행
+        let headerRowIndex = 0;
 
         try {
-          matchedAgeGroup = columnPanel.getCellData(headerRowIndex, colIndex).trim();
+          let cellData = columnPanel.getCellData(headerRowIndex, colIndex);
+          console.log(`🔍 병합된 헤더 데이터: "${cellData}"`);
+          matchedAgeGroup = cellData ? cellData.trim() : "";
         } catch (e) {
           console.error("⚠️ 연령대 헤더를 찾을 수 없음:", e);
-          matchedAgeGroup = ""; // 에러 발생 시 빈 문자열 반환
+          return "";
         }
       }
 
-      // 결과 반환 (연령대가 없으면 빈 문자열 반환)
       return ageGroups.includes(matchedAgeGroup) ? matchedAgeGroup : "";
     }
-
     function applyChanges() {
       const selectedRows = Array.from(
         document.querySelectorAll('#selection-container .form-check-input:checked')
       ).map((checkbox) => checkbox.value);
-     // console.log('선택된 열들:', selectedRows);
+     console.log('선택된 열들:', selectedRows);
       DefaultData(selectedRows);
 
       updateGridColumns(selectedRows);

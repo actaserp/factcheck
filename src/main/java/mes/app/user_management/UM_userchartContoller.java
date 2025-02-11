@@ -33,7 +33,7 @@ public class UM_userchartContoller {
                                   @RequestParam(value = "district" , required = false) String district,
                                   @RequestParam(value = "region", required = false) String region) {
     AjaxResult result = new AjaxResult();
-    //log.info("들어온 데이터[나이/구축물]: startDate={}, endDate={}, sexYn={},inDatem={}, district={}, region={} ", startDate, endDate, sexYn, inDatem, district, region);
+//    log.info("들어온 데이터[나이/구축물]: startDate={}, endDate={}, sexYn={},inDatem={}, district={}, region={} ", startDate, endDate, sexYn, inDatem, district, region);
 
     try {
 
@@ -56,6 +56,16 @@ public class UM_userchartContoller {
       // 원본 데이터 가져오기
       List<Map<String, Object>> rawData = userchartService.getGridListDynamic(startDate, endDate, sexYn, inDatem, district, region);
       //log.info("받아온 데이터 :{}", rawData);
+
+      // 데이터를 가공하여 'region'을 '지역(시)'로, 'district'를 '지역(구군)'으로 변환
+      for (Map<String, Object> row : rawData) {
+        if (row.containsKey("region") && row.get("region") != null) {
+          row.put("지역(시)", row.get("region").toString().trim());
+        }
+        if (row.containsKey("district") && row.get("district") != null) {
+          row.put("지역(구군)", row.get("district").toString().trim());
+        }
+      }
 
       for (Map<String, Object> row : rawData) {
         if (row.containsKey("sexYn") && row.get("sexYn") != null) {
@@ -135,23 +145,6 @@ public class UM_userchartContoller {
       List<Map<String, Object>> rawData = userchartService.getDynamicData(startDate, endDate, inDatem, sexYn, district);
 //      log.info("받은 데이터 _지역/구축물 : {}", rawData);
 
-      for (Map<String, Object> row : rawData) {
-        if (row.containsKey("sexYn") && row.get("sexYn") != null) {
-          String originalSex = row.get("sexYn").toString().trim();
-          switch (originalSex) {
-            case "1":
-              row.put("sexYn", "남자");
-              break;
-            case "2":
-              row.put("sexYn", "여자");
-              break;
-            default:
-              row.put("sexYn", "알 수 없음");
-              break;
-          }
-        }
-      }
-
       // 날짜 변환 처리
       for (Map<String, Object> row : rawData) {
         if (row.containsKey("inDatem") && row.get("inDatem") != null) {
@@ -192,7 +185,7 @@ public class UM_userchartContoller {
       @RequestParam(value = "sexYn",required = false) String sexYn,
       @RequestParam(value = "selectedColumn",required = false) String selectedColumn // 선택한 열(예: "아파트", "오피스")
   ) {
-    //log.info("엑셀 다운_들어온 데이터: dateType={}, yearMonth={}, region={}, district={}, sexYn={}, selectedColumn={}", dateType, yearMonth, region, district, sexYn, selectedColumn);
+    log.info("엑셀 다운_들어온 데이터: dateType={}, yearMonth={}, region={}, district={}, sexYn={}, selectedColumn={}", dateType, yearMonth, region, district, sexYn, selectedColumn);
 
     // 📌 성별(sex) 값 변환 ("남자" → 1, "여자" → 2)
     Integer sexCode = null;

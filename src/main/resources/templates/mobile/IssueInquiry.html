@@ -646,6 +646,27 @@
             if (!cardBox) return;
 
             console.log(" 상세보기 클릭됨! REALID:", realId);
+
+            /*$.ajax({
+              type: "POST",
+              url: "/api/IssueInquiry/SaveViewHistory",
+              data: { realId: realId },
+              headers: {
+                'X-CSRF-Token': $('[name=_csrf]').val()
+              },
+              dataType: "json",
+              success: function (response) {
+                if (response.success) {
+                  console.log("상세 데이터 저장 성공:", response.data);
+                } else {
+                  console.error("데이터 저장 실패:", response.message);
+                }
+              },
+              error: function (xhr, status, error) {
+                console.error("AJAX 요청 실패:", xhr.responseText);
+              }
+            });*/
+
             //AJAX 요청을 통해 상세 데이터 불러오기
             $.ajax({
               url: `/api/IssueInquiry/DetailsList?realId=${realId}`,
