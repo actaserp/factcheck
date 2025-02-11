@@ -746,40 +746,15 @@ public class TilkoController {
         AjaxResult result = new AjaxResult();
         User user = (User)authentication.getPrincipal();
         LocalDate today = LocalDate.now();
+        // 카드 출력시 필요 데이터
+        Map<String, Object> resultMap = new HashMap<>();
 
         // 기존 유저 조회정보에서 동일한 고유번호가 있는지 확인후 없다면 통신 있다면 자료 가져오기
-        Map<String, Object> savedGoyu = tilkoService.getSavedGoyu(user.getUsername(), address);
-        if (savedGoyu != null && !savedGoyu.isEmpty()) {
-            // 카드 출력시 필요 데이터
-            Map<String, Object> resultMap = new HashMap<>();
-            resultMap.put("REALSCORE", savedGoyu.get("REALSCORE"));
-            // 등급 설정
-            String Grade;
-            Integer savedScore = (Integer) savedGoyu.get("REALSCORE");
-            String PDFFILENAME = (String) savedGoyu.get("PDFFILENAME");
-            if (savedScore >= 90) {
-                Grade = "S";
-            } else if (savedScore >= 80) {
-                Grade = "A";
-            } else if (savedScore >= 70) {
-                Grade = "B";
-            } else if (savedScore >= 60) {
-                Grade = "C";
-            } else if (savedScore >= 50) {
-                Grade = "D";
-            } else if (savedScore >= 40) {
-                Grade = "E";
-            } else {
-                Grade = "F";
-            }
-            resultMap.put("GRADE", Grade);
-            resultMap.put("COMMENT", "");
-            resultMap.put("REGASNAME", "");
-            resultMap.put("ADDRESS", address);
-            resultMap.put("PDFFILENAME", PDFFILENAME);
-            resultMap.put("REALSCORE",savedScore);
-            result.data = resultMap;
+        boolean savedGoyu = tilkoService.isGoyuNumMatched(user.getUsername(), address, GoyuNUM);
+        if (savedGoyu) {
             result.message = "기존 조회데이터가 존재합니다.";
+            resultMap.put("GoyuNum", GoyuNUM);
+            result.data = resultMap;
             return result;
         }else{
             System.out.println("새로 데이터를 조회합니다.");
@@ -863,13 +838,11 @@ public class TilkoController {
 //            org.json.JSONObject jsonData = XML.toJSONObject((String) xmlDataObject);
 
             // 트랜잭션 키 가져오기
-            Object transactionKeyObject = responseJson.opt("ApiTxKey");
-            org.json.JSONObject transactionKey = transactionKeyObject instanceof org.json.JSONObject
-                    ? (org.json.JSONObject) transactionKeyObject
-                    : null;
-
-
-
+//            Object transactionKeyObject = responseJson.opt("ApiTxKey");
+//            org.json.JSONObject transactionKey = transactionKeyObject instanceof org.json.JSONObject
+//                    ? (org.json.JSONObject) transactionKeyObject
+//                    : null;
+            System.out.println("responseJson : " + responseJson);
             // "PdfData" 섹션 가져오기 (PdfData의 길이가 너무 길어 String 선언 없이 저장)
             String pdfBase64 = responseJson.optString("PdfData", null);
 
@@ -919,7 +892,7 @@ public class TilkoController {
                     TB_PDFSEQ pdfRecord = new TB_PDFSEQ();
                     pdfRecord.setPdfFilename(pdfMidNM);
                     TB_PDFSEQ savedRecord = pdfseqRepository.save(pdfRecord);
-                    saveFileNM = savedRecord.getSeq() + "." + pdfMidNM;
+                    saveFileNM = savedRecord.getSeq() + "." + user.getUsername()+ "_" + pdfMidNM;
                     outputFilePath = uploadDir + saveFileNM;
 
                     try (OutputStream os = new FileOutputStream(outputFilePath)) {
@@ -1020,6 +993,7 @@ public class TilkoController {
                     tbRealinfo.setRealLastDate(formattedDate);
                     tbRealinfo.setRealGubun(archtec);
                     tbRealinfo.setPdfFilename(saveFileNM);
+                    System.out.println("tbRealinfo : " + tbRealinfo);
                     // REALINFO 저장
                     TB_REALINFO saveinfo = realinfoRepository.save(tbRealinfo);
                     int REALID;
@@ -1067,14 +1041,14 @@ public class TilkoController {
                     }
                     for (Map<String, Object> item : SummaryDataKMap){
                         item.put("REALID", REALID);
-                        tilkoService.saveRegisterDataK(item);
+                        tilkoService.saveSummaryDataK(item);
                     }
                     for (Map<String, Object> item : SummaryDataAMap){
                         item.put("REALID", REALID);
                         tilkoService.saveSummaryDataA(item);
                     }
                     // 카드 출력시 필요 데이터
-                    Map<String, Object> resultMap = new HashMap<>();
+
                     resultMap.put("REALSCORE", resultScore.get("REALSCORE"));
                     resultMap.put("GRADE", resultScore.get("GRADE"));
                     resultMap.put("COMMENT", resultScore.get("COMMENT"));

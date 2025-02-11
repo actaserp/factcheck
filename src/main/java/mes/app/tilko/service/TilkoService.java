@@ -580,21 +580,28 @@ public class TilkoService {
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
     }
 
-    // 저장되어있는 고유번호 확인
-    public Map<String, Object> getSavedGoyu(String id, String address) {
+    public boolean isGoyuNumMatched(String id, String address, String GoyuNum) {
+        // SQL 실행을 위한 파라미터 설정
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("USERID", id)       // 바인딩 값 추가
-                .addValue("REALADD", address);
+                .addValue("USERID", id)
+                .addValue("REALADD", address)
+                .addValue("GoyuNum", GoyuNum);
+
+        // JOIN을 사용한 최적화된 SQL
         String sql = """
-                SELECT * FROM TB_REALINFO
-                WHERE USERID = :USERID
-                AND REALADD = :REALADD
-                """;
+            SELECT COUNT(*) AS matchCount
+            FROM TB_REALINFO A
+            JOIN TB_REALINFOXML B ON A.REALID = B.REALID
+            WHERE A.USERID = :USERID
+            AND A.REALADD = :REALADD
+            AND B.PinNo = :GoyuNum
+            """;
 
+        // 쿼리 실행
+        Map<String, Object> result = this.sqlRunner.getRow(sql, params);
 
-        Map<String, Object> selectMap = this.sqlRunner.getRow(sql,params);
-        System.out.println(selectMap);
-        return selectMap;
+        // matchCount가 1 이상이면 PinNo가 일치하는 데이터가 존재함
+        return result != null && ((Number) result.get("matchCount")).intValue() > 0;
     }
 
 }

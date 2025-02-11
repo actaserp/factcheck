@@ -38,7 +38,6 @@ public class LTSAController {
         File tempFile = UtilClass.saveFileToTempAsFile(file);
 
         Map<String, String> dtoValue = new HashMap<>();
-        List<String> totalList = new ArrayList<>();
 
         String pdfPageContent = "";
         List<String> pdfListContent;
@@ -48,10 +47,8 @@ public class LTSAController {
         Map<String, Object> RegisterMap = new HashMap<>();
         Map<String, Object> REALAOWNMap = new HashMap<>();
         List<Map<String, Object>> GabguData = new ArrayList<>();
-        boolean isParsingGabgu = false; // `갑구`소유권에 관한 사항 데이터 수집 여부
         Map<String, Object> REALBOWNMap = new HashMap<>();
         List<Map<String, Object>> eulguData = new ArrayList<>();
-        boolean isParsingeulgu = false; // `을구`소유권이외에 관한 사항 데이터 수집 여부
         Map<String, Object> RegisterDataGMap = new HashMap<>();
         List<Map<String, Object>> RegisterDataGItemsList = new ArrayList<>();// 담보
         Map<String, Object> RegisterDataHMap = new HashMap<>();
@@ -72,23 +69,23 @@ public class LTSAController {
             PDFRenderer pdfRenderer  = new PDFRenderer(document);
             int totalPages = document.getNumberOfPages();
             System.out.println("totalpage: " + totalPages);
+            // `갑 구` 데이터 이어받기 위한 플래그
+            boolean isParsingGabgu = false;
+            List<String> gabguDataSubset = new ArrayList<>(); // 현재 `갑 구` 데이터를 저장할 리스트
+
             for(int pageIndex = 0; pageIndex < totalPages; pageIndex++){
                 // 페이지를 이미지로 변환 (150 DPI 설정) 중요함... DPI는 해상도인데 해상도 달라지면 인식을 다르게 해서 배열이 꼬인다.
                 BufferedImage image = pdfRenderer.renderImageWithDPI(pageIndex, 96);
 
                 File imageFile = new File(tempFile.getParent(), "page-" + (pageIndex + 1) + ".jpg");
                 ImageIO.write(image, "jpg", imageFile);
-
+                // OCR데이터 추출
                 Map<String, Object> item = OCRDataProcessingToString(imageFile);
                 pdfPageContent = item.get("일반데이터").toString();
                 pdfListContent = (List<String>) item.get("표데이터");
                 System.out.println("일반데이터 : " + pdfPageContent);
                 System.out.println("표데이터 : " + pdfListContent);
 
-                if (pdfListContent == null || pdfListContent.isEmpty()) {
-                    System.out.println("표데이터가 없습니다. 페이지 " + (pageIndex + 1));
-                    continue; // 다음 페이지로 넘어감
-                }
                 // 일반데이터에서 텍스트를 찾아서 각 데이터에 맞게 분배
                 // 첫번째 페이지
                 if (pageIndex == 0) {
@@ -120,7 +117,6 @@ public class LTSAController {
 
                     // 방어 코드: 잘못된 인덱스 체크
                     if (startIdx < pdfListContent.size() && startIdx < endIdx) {
-                        List<String> gabguDataSubset = pdfListContent.subList(startIdx, endIdx);
 
                         Map<String, Object> result = tilkoParsing.parseGabguTable(gabguDataSubset);
                         List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData");
@@ -138,7 +134,7 @@ public class LTSAController {
                         System.out.println(" gabguStartIndex가 비정상적이므로 데이터 추출 안 함.");
                     }
                 } else {
-                    System.out.println(" 갑구 데이터 없음.");
+                    System.out.println("Register 갑구 데이터 없음.");
                 }
                 if (eulguStartIndex != -1) {
                     int startIdx = eulguStartIndex + 1;
@@ -171,7 +167,7 @@ public class LTSAController {
                         System.out.println("⚠️ eulguStartIndex가 비정상적이므로 데이터 추출 안 함.");
                     }
                 } else {
-                    System.out.println("⚠️ 을구 데이터 없음.");
+                    System.out.println("Register 을구 데이터 없음.");
                 }
 
                 // 마지막에서 두 번째 페이지에서 관할등기소 정보 추출
@@ -183,9 +179,9 @@ public class LTSAController {
                 if (pageIndex == totalPages - 1) {
                     Map<String, Object> summaryResult = tilkoParsing.parseSummaryTable(pdfListContent, pdfPageContent);
 
-                    List<Map<String, Object>> summaryDataA = (List<Map<String, Object>>) summaryResult.get("SummaryDataAMap");
-                    List<Map<String, Object>> summaryDataK = (List<Map<String, Object>>) summaryResult.get("SummaryDataKMap");
-                    List<Map<String, Object>> summaryDataE = (List<Map<String, Object>>) summaryResult.get("SummaryDataEMap");
+                    List<Map<String, Object>> summaryDataA = (List<Map<String, Object>>) summaryResult.get("summaryDataA");
+                    List<Map<String, Object>> summaryDataK = (List<Map<String, Object>>) summaryResult.get("summaryDataK");
+                    List<Map<String, Object>> summaryDataE = (List<Map<String, Object>>) summaryResult.get("summaryDataE");
 
                     if (summaryDataA != null) {
                         SummaryDataAMap.addAll(summaryDataA);
@@ -210,7 +206,6 @@ public class LTSAController {
             }
             REALAOWNMap.put("REALAOWNDATA", GabguData);// 갑구에 대한 데이터 정리
             REALBOWNMap.put("REALBOWNDATA", eulguData);// 을구에 대한 데이터 정리
-            System.out.println("총 데이터 : "+ totalList);
             resultMap.put("RegisterMap", RegisterMap);
             resultMap.put("REALAOWNMap", REALAOWNMap);
             resultMap.put("REALBOWNMap", REALBOWNMap);

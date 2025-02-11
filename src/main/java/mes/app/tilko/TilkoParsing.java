@@ -1,9 +1,6 @@
 package mes.app.tilko;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,13 +10,13 @@ public class TilkoParsing {
         Map<String, String> result = new HashMap<>();
 
         // Patterns for RESIDO and REGUGUN
-        Pattern residoPattern = Pattern.compile("(\\S+도\\s*)?\\S+시");
-        Pattern regugunPattern = Pattern.compile("시\\s(\\S+구)");
+        Pattern residoPattern = Pattern.compile("^(\\S+(?:\\s특별시|\\s광역시|도|시))");
+        Pattern regugunPattern = Pattern.compile("(\\S+시|특별시)\\s(\\S+구|군)");
 
         // Match RESIDO
         Matcher residoMatcher = residoPattern.matcher(address);
         if (residoMatcher.find()) {
-            result.put("RESIDO", residoMatcher.group());
+            result.put("RESIDO", residoMatcher.group(1));
         } else {
             result.put("RESIDO", null);
         }
@@ -27,7 +24,7 @@ public class TilkoParsing {
         // Match REGUGUN
         Matcher regugunMatcher = regugunPattern.matcher(address);
         if (regugunMatcher.find()) {
-            result.put("REGUGUN", regugunMatcher.group(1));
+            result.put("REGUGUN", regugunMatcher.group(2));
         } else {
             result.put("REGUGUN", null);
         }
@@ -296,17 +293,12 @@ public class TilkoParsing {
     // 관할등기소 추출
     public static String extractJurisdictionOffice(String text) {
         // 개행을 포함한 모든 문자를 매칭하도록 (?s) 추가
-        System.out.println("text : " + text);
         Pattern pattern = Pattern.compile("(?s)\\|\\s*관할등기소\\s*\\|\\s*([\\s\\S]+?)\\s*\\|\\s*([\\s\\S]+?)\\s*\\|");
         Matcher matcher = pattern.matcher(text);
 
         if (matcher.find()) {
-            System.out.println("== 매칭 성공! ==");
-            System.out.println("1번째 그룹: " + matcher.group(1).trim());
-            System.out.println("2번째 그룹: " + matcher.group(2).trim());
             return matcher.group(1).trim() + " " + matcher.group(2).trim();
         } else {
-            System.out.println("== 매칭 실패! ==");
             return "정보 없음";
         }
     }
@@ -472,85 +464,96 @@ public class TilkoParsing {
     }
     // Summary 데이터 파싱 메서드
     public static Map<String, Object> parseSummaryTable(List<String> tableData, String nomData) {
-        List<Map<String, Object>> summaryDataA = new ArrayList<>(); // 등기명의인 데이터
-        List<Map<String, Object>> summaryDataK = new ArrayList<>(); // 소유지분제외 갑구 데이터
-        List<Map<String, Object>> summaryDataE = new ArrayList<>(); // 저당권 을구 데이터
+        List<Map<String, Object>> summaryDataA = new ArrayList<>();
+        List<Map<String, Object>> summaryDataK = new ArrayList<>();
+        List<Map<String, Object>> summaryDataE = new ArrayList<>();
 
         boolean isParsingA = false, isParsingK = false, isParsingE = false;
-        // 갑구와 을구의 기록사항 확인
-        if (nomData.split("2. |소유지분을 |제외한 |소유권에 |관한 |사항 |(갑구)")[1]
-                .split("3. |(근)저당권 및 전세권 등 |( 을구 )")[0]
-                .contains("|기록사항 |없음")) {
-            System.out.println("datak 데이터 수집 중단");
+        boolean hasGabguData = false, hasEulguData = false;
+        boolean isGabguComplete = false;  // 갑구 데이터 종료 플래그
+
+        // **갑구와 을구 데이터 존재 여부 판단**
+        if (!nomData.replaceAll("[|\\s\\n\\t\\r]+", " ").contains("2. 소유지분을 제외한 소유권에 관한 사항 (갑구) - 기록사항 없음")) {
+            System.out.println("✅ 갑구 데이터 수집 진행");
+            hasGabguData = true;
         } else {
-            System.out.println("datak 데이터 수집 진행");
-            isParsingK = true;
+            System.out.println("❌ 갑구 데이터 없음");
         }
-        if (nomData.split("3. |(근)저당권 및 전세권 등 |( 을구 )")[1]
-                .split("[참고사항]")[0]
-                .contains("|기록사항 |없음")) {
-            System.out.println("datak 데이터 수집 중단");
+
+        if (!nomData.replaceAll("[|\\s\\n\\t\\r]+", " ").contains("3. (근)저당권 및 전세권 등 ( 을구 ) - 기록사항 없음")) {
+            System.out.println("✅ 을구 데이터 수집 진행");
+            hasEulguData = true;
         } else {
-            System.out.println("datak 데이터 수집 진행");
-            isParsingE = true;
+            System.out.println("❌ 을구 데이터 없음");
         }
 
         for (String row : tableData) {
-            String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
+            String[] columns = row.split("\\|");
+            if (columns.length < 2) continue;
 
-            if (columns.length < 2) continue; // 최소 2개 필드가 있어야 유효한 데이터
+            System.out.println("현재 행 데이터: " + Arrays.toString(columns));
 
-            // "등기명의인"이 시작되면 A 데이터 저장
+            // **등기명의인 데이터 감지**
             if (columns[0].contains("등기명의인")) {
+                System.out.println("🔍 등기명의인 데이터 감지");
                 isParsingA = true;
                 isParsingK = false;
                 isParsingE = false;
-                continue; // 헤더 스킵
+                continue;
             }
 
-            // 두 번째 "순위번호" 등장하면 K 데이터 저장
-            if (columns[0].equals("순위번호") && !isParsingK && !isParsingE) {
+            // **갑구 데이터 감지 시작**
+            if (columns[0].equals("순위번호") && hasGabguData && !isGabguComplete && !isParsingE) {
+                System.out.println("🔍 갑구 데이터 감지 시작");
                 isParsingA = false;
                 isParsingK = true;
-                continue; // 헤더 스킵
+                isParsingE = false;
+                continue;
             }
 
-            // 세 번째 "순위번호" 등장하면 E 데이터 저장
-            if (columns[0].equals("순위번호") && isParsingK) {
+            // **갑구 데이터 종료 및 을구 데이터 감지 시작**
+            if (columns[0].equals("순위번호") && hasEulguData && isGabguComplete) {
+                System.out.println("🔍 을구 데이터 감지 시작");
+                isParsingA = false;
                 isParsingK = false;
                 isParsingE = true;
-                continue; // 헤더 스킵
+                continue;
             }
 
-            // TB_SummaryDataA (등기명의인 테이블)
-            if (isParsingA) {
-                if (columns.length >= 5) {
-                    Map<String, Object> entry = new HashMap<>();
-                    entry.put("RegisteredHolder", columns[0].trim());
-                    entry.put("RegistrationNumber", columns[1].trim());
-                    entry.put("FinalShare", columns[2].trim());
-                    entry.put("Address", columns[3].trim());
-                    entry.put("RankNo", columns[4].trim());
-                    summaryDataA.add(entry);
-                }
+            // **등기명의인 데이터 저장**
+            if (isParsingA && columns.length >= 5) {
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("RegisteredHolder", columns[0].trim());
+                entry.put("RegistrationNumber", columns[1].trim());
+                entry.put("FinalShare", columns[2].trim());
+                entry.put("Address", columns[3].trim());
+                entry.put("RankNo", columns[4].trim());
+                summaryDataA.add(entry);
             }
 
-            // TB_SUMMARYDATAK (두 번째 순위번호 테이블)
-            if (isParsingK) {
-                if (columns.length >= 5) {
-                    Map<String, Object> entry = new HashMap<>();
-                    entry.put("RankNo", columns[0].trim());
-                    entry.put("Purpose", columns[1].trim());
-                    entry.put("ReceiptInfo", columns[2].trim());
-                    entry.put("Information", columns[3].trim());
-                    entry.put("TargetOwner", columns[4].trim());
-                    summaryDataK.add(entry);
-                }
+            // **갑구 데이터 저장**
+            if (hasGabguData && isParsingK && columns.length >= 5) {
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("RankNo", columns[0].trim());
+                entry.put("Purpose", columns[1].trim());
+                entry.put("ReceiptInfo", columns[2].trim());
+                entry.put("Information", columns[3].trim());
+                entry.put("TargetOwner", columns[4].trim());
+                summaryDataK.add(entry);
             }
 
-            // TB_SUMMARYDATAE (세 번째 순위번호 테이블)
-            if (isParsingE) {
-                if (columns.length >= 5) {
+            // **갑구 구간 종료 플래그 설정**
+            if (isParsingK && !columns[0].equals("순위번호") && columns[0].matches("\\d+-\\d*")) {
+                System.out.println("🚩 갑구 데이터 종료, 을구 데이터 감지 가능");
+                isGabguComplete = true;
+                isParsingK = false;
+                isParsingE = true;
+                continue;
+            }
+
+            // **을구 데이터 저장**
+            if (hasEulguData && isParsingE && columns.length >= 5) {
+                    System.out.println("✅ 을구 데이터 저장 진행: " + Arrays.toString(columns));
                     Map<String, Object> entry = new HashMap<>();
                     entry.put("RankNo", columns[0].trim());
                     entry.put("Purpose", columns[1].trim());
@@ -558,18 +561,22 @@ public class TilkoParsing {
                     entry.put("Information", columns[3].trim());
                     entry.put("TargetOwner", columns[4].trim());
                     summaryDataE.add(entry);
-                }
             }
         }
 
-        // ✅ 결과를 Map으로 반환
+        // **최종 결과 반환**
         Map<String, Object> result = new HashMap<>();
-        result.put("SummaryDataAMap", summaryDataA);
-        result.put("SummaryDataKMap", summaryDataK);
-        result.put("SummaryDataEMap", summaryDataE);
+        result.put("summaryDataA", summaryDataA);
+        result.put("summaryDataK", summaryDataK);
+        result.put("summaryDataE", summaryDataE);
+        System.out.println("result : " + result);
+
 
         return result;
     }
+
+
+
     // 구축물 파싱
     public static Map<String, Object> extractGubun(List<String> tableData) {
         Map<String, Object> buildingData = new HashMap<>();

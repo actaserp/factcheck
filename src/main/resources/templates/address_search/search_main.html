@@ -276,12 +276,18 @@
 
 
     // 고유번호 조회
+    let isRequestInProgress = false;  // 중복 요청 방지 플래그
+
     function searchGoyuList() {
-        let data2 = [];
+        if (isRequestInProgress) return;  // 진행 중이면 무시
+        isRequestInProgress = true;
+
         if (document.getElementById('address1').value === "") {
             Alert.alert('', '주소를 선택해주세요');
+            isRequestInProgress = false;
             return false;
         }
+
         $.ajax({
             url: '/api/tilko/searchGoyuList',
             type: 'GET',
@@ -290,28 +296,23 @@
             },
             async: false,
             success: function (data) {
-                data2 = data.data;
+                let data2 = data.data;
                 console.log("data2", data);
                 console.log("data2", data2);
+
                 const listAddressWrap = document.getElementById('addressWrap');
                 const availableColors = ['card-blue', 'card-green', 'card-black', 'card-red', 'card-yellow', 'card-purple'];
-                listAddressWrap.innerHTML = ''; // 기존 내용을 초기화
-                // 색상을 순환적으로 할당하기 위한 인덱스
+                listAddressWrap.innerHTML = '';  // 기존 내용 초기화
                 let colorIndex = 0;
                 let htmlContent = '';
 
-                // Gubun 데이터에서 '토지' 데이터 제외 화면에 출력
+                // '토지' 제외 로직
                 data2.forEach(data => {
-                    const cardColor = availableColors[colorIndex];
-                    colorIndex = (colorIndex + 1) % availableColors.length;
-                    if(data.Gubun !== '토지') {
-                        // 버튼 처리
-                        let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="등기부">
-                            등기부 조회
-                        </button>`;
-                        // rd_addr_detail에서 태그 제거 후 적용
-                        let cleanAddress = stripHtmlTags(data.rd_addr_detail).replace(/\s+/g, ''); // 공백 제거
+                    if (data.Gubun !== '토지') {
+                        const cardColor = availableColors[colorIndex];
+                        colorIndex = (colorIndex + 1) % availableColors.length;
 
+                        let cleanAddress = preprocessAddress(data.rd_addr_detail);
                         htmlContent += `
                         <div class="card-box ${cardColor}" data-Goyu="${data.pin}">
                             <div class="card-cont">
@@ -332,32 +333,48 @@
                                     <dd>${data.use_cls_cd}</dd>
                                 </dl>
                             </div>
-                                ${buttonsHtml}
-                        </div>
-                        `;
-
-                    }else{
-                        console.log("토지데이터")
+                            <button class="btn btn-popup-open" data-popup="popup-history" title="등기부">
+                                등기부 조회
+                            </button>
+                        </div>`;
+                    } else {
+                        console.log("토지 데이터");
                     }
-                })
+                });
+
                 listAddressWrap.insertAdjacentHTML('beforeend', htmlContent);
 
-                // 이벤트 위임 추가
+                // AJAX 완료 시 플래그 해제
+                isRequestInProgress = false;
+
+                // 이벤트 위임 (중복 방지)
                 listAddressWrap.addEventListener('click', (event) => {
                     const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
-                    if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
+                    if (!button) return;
 
                     const cardBox = button.closest('.card-box');
                     const goyuNum = cardBox.getAttribute('data-Goyu');
 
-                    // 데이터 찾기
                     const item = data2.find(d => d.pin === goyuNum);
                     if (item) {
-                        searchaddress(item);
+                        const cleanAddress = preprocessAddress(item.rd_addr_detail);
+                        searchaddress(item, cleanAddress);
                     }
                 });
+            },
+            error: function () {
+                isRequestInProgress = false;  // 에러 시에도 플래그 해제
             }
         });
+    }
+
+    // 주속 태그 삭제 및 공백 메서드
+    function preprocessAddress(input) {
+        // 1. <span> 시작/종료 시 공백 추가
+        let processed = input.replace(/<\/?span[^>]*>/g, match => ` ${match} `);
+        // 2. 모든 태그 제거 및 공백 축소
+        processed = processed.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+        return processed;
     }
     // HTML 태그 제거 함수
     function stripHtmlTags(html) {
@@ -366,19 +383,36 @@
         return tempDiv.textContent || tempDiv.innerText || "";
     }
     // pdf 데이터 조회 및 파싱 저장 메서드 호출(등기부등본 조회 메서드)
-    function searchaddress(data) {
-        console.log("data : ", data)
+    let isSearchInProgress = false;  // 중복 호출 방지 플래그
+
+    function searchaddress(data, cleanAddress) {
+        if (isSearchInProgress) return;  // 진행 중이면 함수 종료
+        isSearchInProgress = true;  // 플래그 설정
+
+        console.log("data : ", data);
+
         // 로딩 화면 표시
         document.getElementById('loadingSpinner').style.display = 'flex';
+
         $.ajax({
             url: '/api/tilko/downloadPDF',
             type: 'GET',
             data: {
-                "GoyuNUM" : data.pin,
-                "address" : data.rd_addr
+                "GoyuNUM": data.pin,
+                "address": cleanAddress
             },
             async: true,
             success: function (response) {
+                // 응답 값 검증
+                if (!response.success || response.data === null) {
+                    // 로딩 스피너 숨기기
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    isSearchInProgress = false;  // 플래그 해제
+
+                    // 사용자에게 메시지 표시
+                    Alert.alert("","데이터를 불러올 수 없습니다.");
+                    return;  // 함수 종료
+                }
                 let data2 = response.data;
                 console.log("data2", data2);
 
@@ -392,16 +426,19 @@
                 sessionStorage.setItem("resultMap", JSON.stringify(resultMap));
 
                 document.getElementById('loadingSpinner').style.display = 'none';
+                isSearchInProgress = false;  // 플래그 해제
 
                 // search_card 페이지로 이동
-                window.location.href = "search_card";
+                window.location.href = "mobile/search_card";
             },
             error: function (error) {
                 document.getElementById('loadingSpinner').style.display = 'none';
+                isSearchInProgress = false;  // 에러 발생 시 플래그 해제
                 console.error("Error in API call:", error);
             }
         });
     }
+
     function searchdatatest() {
         $.ajax({
             url: '/api/tilko/downloadPDF2',
