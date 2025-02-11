@@ -29,6 +29,7 @@ public class ProductionController {
     public ResponseEntity<?> getList(@RequestParam(value = "search_startDate", required = false) String startDate,
                                                              @RequestParam(value = "search_endDate", required = false) String endDate,
                                                              @RequestParam(value = "search_property", required = false) String property,
+                                     @RequestParam(value = "keyword", required = false) String keyword,
                                      Authentication auth) {
 
         AjaxResult result = new AjaxResult();
@@ -72,7 +73,7 @@ public class ProductionController {
             LOGGER.info("요청 데이터 - StartDate: " + formattedStartDate + ", EndDate: " + formattedEndDate + ", Property: " + property);
 
             // 데이터 조회
-            Map<String, Object> productionData = productionService.getlist(formattedStartDate, formattedEndDate, property,username);
+            Map<String, Object> productionData = productionService.getlist(formattedStartDate, formattedEndDate, property,username,keyword);
 
             if (productionData == null || productionData.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).body("조회된 데이터가 없습니다.");
@@ -87,13 +88,14 @@ public class ProductionController {
     }
 
     @GetMapping("/pie_chart")
-    public AjaxResult getList(Authentication auth){
+    public AjaxResult getList( @RequestParam(value = "keyword", required = false) String keyword,
+            Authentication auth){
         AjaxResult result = new AjaxResult();
 
         User user = (User) auth.getPrincipal();
         String userid = String.valueOf(user.getUsername());
 
-        List<Map<String, Object>> items = productionService.getSeachList(userid);
+        List<Map<String, Object>> items = productionService.getSeachList(userid,keyword);
 
         result.data = items;
 

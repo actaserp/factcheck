@@ -184,8 +184,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FACT CHECK</title>
-    <link rel="icon" type="image/png" href="/images/logo/icon_FACT%20CHECK.png">
+    <title>[KTFOMS] AI 기반 연료전지 인프라 구축 - 모바일</title>
+    <link rel="shortcut icon" href="/img/favicon.ico">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/> <!-- Slide css -->
     <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css">
@@ -237,7 +237,7 @@
             <!-- 검색 영역  -->
             <div class="search-wrap">
                 <div class="srch-tit aco-hd">
-                    <p>기본검색</p>
+                    <p>'회원들이 조회한 등기부 정보를 볼수있습니다.'</p>
                     <a href="#" title="열기/닫기" class="btn-aco">
                         <img src="/assets_mobile/images/icon/ico-down.svg" alt="열기/닫기">
                     </a>
@@ -272,6 +272,13 @@
                                     <option value="popular_property">인기물건</option>
                                 </select>
                             </div>
+                        </dd>
+                    </dl>
+
+                    <dl>
+                        <dt>주소 검색</dt>
+                        <dd>
+                            <input type="text" id="keyword" name="keyword" placeholder="검색할 부동산 주소 입력">
                         </dd>
                     </dl>
 
@@ -418,40 +425,40 @@
                                         </thead>
                                         <tbody>
 
-                                            <tr>
-                                                <th style="font-size: 11px;">
-                                                    등기목적
-                                                </th>
-                                                <td colspan="3">
+                                        <tr>
+                                            <th style="font-size: 11px;">
+                                                등기목적
+                                            </th>
+                                            <td colspan="3">
 
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th style="font-size: 11px;">
-                                                    접수
-                                                </th>
-                                                <td colspan="3">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th style="font-size: 11px;">
+                                                접수
+                                            </th>
+                                            <td colspan="3">
 
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th style="font-size: 11px;">
-                                                    등기원인
-                                                </th>
-                                                <td colspan="3">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th style="font-size: 11px;">
+                                                등기원인
+                                            </th>
+                                            <td colspan="3">
 
-                                                </td>
-                                            </tr>
+                                            </td>
+                                        </tr>
 
-                                            <tr>
-                                                <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
+                                        <tr>
+                                            <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
 
-                                            </tr>
-                                            <tr>
-                                                <td colspan="4">
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4">
 
-                                                </td>
-                                            </tr>
+                                            </td>
+                                        </tr>
                                         </tbody>
                                     </table>
                                 </section>
@@ -537,18 +544,13 @@
 <script type="text/javascript">
 
     document.readyState === 'complete' ? init() : window.onload = init;
-    // 오늘 날짜 설정
-    const date = new Date();
-    date.setHours(date.getHours() + 9); // UTC+9로 한국 시간 설정
-    const today = date.toISOString().split('T')[0];
-    const currentYear = date.getFullYear();
 
-    // 기본값 설정 (올해 1월 1일 ~ 오늘)
-    document.getElementById('startDate').value = `${currentYear}-01-01`;
-    document.getElementById('endDate').value = today;
-
-    // select 요소의 값이 변경될 때 날짜 범위를 업데이트
-    document.getElementById('property').addEventListener('change', updateDateRange);
+    function formatDate(date) {
+        let yyyy = date.getFullYear();
+        let mm = String(date.getMonth() + 1).padStart(2, '0');
+        let dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
 
     function updateDateRange() {
         const selectedValue = document.getElementById('property').value;
@@ -559,33 +561,40 @@
         const today = new Date(); // 현재 날짜
 
         if (selectedValue === "my_property") {
-            // 올해 1월 1일 ~ 오늘
-            newStartDate = new Date(today);
-            newStartDate.setMonth(today.getMonth() - 6);
+            newStartDate = new Date(today.getFullYear(), 0, 1); // 올해 1월 1일
         } else if (selectedValue === "recent_property") {
-            // 한 달 전 ~ 오늘
             newStartDate = new Date(today);
-            newStartDate.setMonth(today.getMonth() - 1);
+            newStartDate.setMonth(today.getMonth() - 1); // 한 달 전
         } else if (selectedValue === "most_viewed_property") {
-            // 일 년 전 ~ 오늘
             newStartDate = new Date(today);
-            newStartDate.setFullYear(today.getFullYear() - 1);
+            newStartDate.setFullYear(today.getFullYear() - 1); // 일 년 전
         } else if (selectedValue === "popular_property") {
-            // 2주일 전 ~ 오늘
             newStartDate = new Date(today);
-            newStartDate.setDate(today.getDate() - 14);
+            newStartDate.setDate(today.getDate() - 14); // 2주 전
         }
 
-        // 날짜 형식 변환 (YYYY-MM-DD)
-        startDateInput.value = newStartDate.toISOString().split('T')[0];
-        endDateInput.value = today.toISOString().split('T')[0];
+        startDateInput.value = formatDate(newStartDate);
+        endDateInput.value = formatDate(today);
     }
 
-    // 페이지 로드 시 날짜 범위 업데이트
-    updateDateRange();
+    // 이벤트 리스너 추가 (select 값이 변경될 때마다 실행)
+    document.getElementById('property').addEventListener('change', updateDateRange);
+
+    // 🔹 **초기 실행 시 select 요소의 현재 값으로 날짜 설정**
+    document.addEventListener("DOMContentLoaded", updateDateRange);
+
+
 
     function init() {
         fetchListData();
+    }
+
+    function maskName(name) {
+        if (/^[가-힣]+$/.test(name)) {  // 한글 이름일 경우
+            return name[0] + '*'.repeat(name.length - 1);
+        } else {  // 영문 이름일 경우
+            return name[0] + '*'.repeat(name.length - 1);
+        }
     }
 
     // 데이터를 받아와 카드 렌더링
@@ -593,6 +602,8 @@
         let startDate = $('#startDate').val();
         let endDate = $('#endDate').val();
         let property = $('#property').val();
+        let keyword = $('#keyword').val();
+
 
         /* console.log("전송할 데이터:", startDate, endDate, property); // 콘솔 확인*/
 
@@ -602,7 +613,8 @@
             data: {
                 'search_startDate': startDate,
                 'search_endDate': endDate,
-                'search_property': property
+                'search_property': property,
+                'keyword': keyword
             },
             success: function (data) {
                 /* console.log(JSON.stringify(data, null, 2));*/
@@ -635,9 +647,6 @@
 
                 const selectedValue = $('#property').val();
 
-                /*console.log("propertyData데이터확인"+propertyData);*/
-                /*console.log(JSON.stringify(propertyData, null, 2));*/
-
 
                 propertyData.forEach(item => {
                     const cardColor = availableColors[colorIndex];
@@ -653,10 +662,9 @@
                         ? item.Sreqdate.substring(0, 10)
                         : '';
 
-                    /*<dl>
-                        <dt>사용자</dt>
-                        <dd>${item.USERNM}</dd>
-                    </dl>*/
+                    // Suserid 값이 'super' 또는 'admin'이면 마스킹하지 않음
+                    const maskedUserName = (item.Suserid === 'super' || item.Suserid === 'admin') ? item.Suserid : maskName(item.USERNM);
+
 
                     htmlContent += `
                         <div class="card-box ${cardColor}" data-realadd="${item.REALADD}" data-resido="${item.RESIDO}" data-realid="${item.REALID}"
@@ -664,25 +672,14 @@
                     data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}">
 
                             <div class="card-cont">
-
-
-                                ${
-                        (selectedValue === "recent_property" || selectedValue === "most_viewed_property" || selectedValue === "popular_property")
-                            ? `<dl>
-                                        <dt>최근사용자</dt>
-                                        <dd>${item.USERNM}</dd>
-                                    </dl>`
-                            : `<dl>
-                                        <dt>사용자</dt>
-                                        <dd>${item.USERNM}</dd>
-                                    </dl>`
-                    }
-
+                                <dl>
+                                    <dt>회원명</dt>
+                                    <dd>${maskedUserName}</dd>
+                                </dl>
                                 <dl>
                                     <dt>주소</dt>
-                                    <dd>${item.REALADD}</dd>
+                                    <dd>${item.REALADD && item.REALADD !== 'null' ? item.REALADD : ''}</dd>
                                 </dl>
-
                                  ${
                         (selectedValue === "recent_property" || selectedValue === "most_viewed_property" || selectedValue === "popular_property")
                             ? `<dl>
@@ -843,8 +840,7 @@
                         etcCell5.colSpan = 4;
                         etcCell5.innerHTML = "&nbsp;"; // 공백 추가
                         etcCell5.style.cssText = cellColSpan4Style;
-                    }
-                    else {
+                    } else {
                         dataArray.forEach(data => {
                             createTableRow(sub1Table, "등기목적", (data.RgsAimCont_a === "null" ? "" : data.RgsAimCont_a), 3);
                             createTableRow(sub1Table, "접수", (data.Receve_a === "null" ? "" : data.Receve_a), 3);
@@ -897,7 +893,7 @@
                         etcCell5.colSpan = 4;
                         etcCell5.innerHTML = "&nbsp;"; // 공백 추가
                         etcCell5.style.cssText = cellColSpan4Style;
-                    }else {
+                    } else {
                         dataBrray.forEach(data => {
                             createTableRow(sub2Table, "등기목적", (data.RgsAimCont_b === "null" ? "" : data.RgsAimCont_b), 3);
                             createTableRow(sub2Table, "접수", (data.Receve_b === "null" ? "" : data.Receve_b), 3);
