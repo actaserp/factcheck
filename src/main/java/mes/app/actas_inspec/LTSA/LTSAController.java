@@ -104,9 +104,9 @@ public class LTSAController {
                 // 표데이터에서 갑구 확인 인덱스
                 int gabguStartIndex = tilkoParsing.findStartIndex(pdfListContent, "갑 구");
                 int eulguStartIndex = tilkoParsing.findStartIndex(pdfListContent, "을 구");
-                int eulguEndIndex = tilkoParsing.findStartIndex(pdfListContent, "등기명의인");
+                int eulguEndIndex = tilkoParsing.findStartIndex(pdfListContent, "등기명의인\\|\\(주민\\)등록번호");
                 // `을구` 인덱스가 없으면 리스트 끝까지
-                int endIdx = (eulguStartIndex != -1) ? eulguStartIndex : eulguEndIndex;
+                int endIdx = (eulguStartIndex != -1) ? eulguStartIndex : pdfListContent.size();
 
 
 
@@ -114,7 +114,12 @@ public class LTSAController {
                     // 갑구 데이터 수집 시작 또는 이어받기
                     if (gabguStartIndex != -1) {
                         int startIdx = gabguStartIndex + 1;
-                        gabguDataSubset.addAll(pdfListContent.subList(startIdx, endIdx));
+                        // 안전한 인덱스 범위 확인
+                        if (startIdx < endIdx) {
+                            gabguDataSubset.addAll(pdfListContent.subList(startIdx, endIdx));
+                        } else {
+                            System.out.println("🚨 비정상적인 인덱스 범위: startIdx=" + startIdx + ", endIdx=" + endIdx);
+                        }
                         isParsingGabgu = true;  // 갑구 데이터 수집 활성화
                     } else if (isParsingGabgu) {
                         // 이전 페이지에서 이어진 갑구 데이터 수집
@@ -142,7 +147,11 @@ public class LTSAController {
                     if (eulguStartIndex != -1) {
                         int startIdx = eulguStartIndex + 1;
                         int endEulguIdx = (eulguEndIndex != -1) ? eulguEndIndex : pdfListContent.size();
-                        eulguDataSubset.addAll(pdfListContent.subList(startIdx, endEulguIdx));
+                        if (startIdx < endEulguIdx) {
+                            eulguDataSubset.addAll(pdfListContent.subList(startIdx, endEulguIdx));
+                        } else {
+                            System.out.println("🚨 비정상적인 을구 인덱스 범위: startIdx=" + startIdx + ", endEulguIdx=" + endEulguIdx);
+                        }
                         isParsingEulgu = true;
                     } else if (isParsingEulgu) {
                         eulguDataSubset.addAll(pdfListContent);

@@ -332,29 +332,29 @@ public class TilkoParsing {
                 currentRow.put("RgsCaus", columns[3].trim());
                 currentRow.put("NomprsAndEtc", columns[4].trim());
 
-                // "매매" 포함 여부 확인 → TradeAmount에 추가
-                if (columns[3].contains("매매")) {
-                    Map<String, Object> tradeEntry = new HashMap<>();
-                    tradeEntry.put("RgsCaus", columns[3].trim());
-
-                    // 거래가액(Amount) 추출
-                    System.out.println("매매 데이터 columns[3](4번째 셀): " + tradeEntry);
-                    String[] details = columns[4].split(" ");
-                    System.out.println("매매 데이터 columns[4](5번째 셀): " + details);
-                    for (String detail : details) {
-                        if (detail.startsWith("금")) {  // 금액 패턴 찾기
-                            try {
-                                String amountStr = detail.replaceAll("[^0-9]", "");  // 숫자만 추출
-                                tradeEntry.put("Amount", Long.parseLong(amountStr));
-                                lastTradeAmount = amountStr;  // 마지막 거래가액 저장
-                                break;
-                            } catch (NumberFormatException e) {
-                                // 숫자 변환 실패시 무시
-                            }
-                        }
-                    }
-                    TradeAmount.add(tradeEntry);
-                }
+//                // "매매" 포함 여부 확인 → TradeAmount에 추가
+//                if (columns[3].contains("매매")) {
+//                    Map<String, Object> tradeEntry = new HashMap<>();
+//                    tradeEntry.put("RgsCaus", columns[3].trim());
+//
+//                    // 거래가액(Amount) 추출
+//                    System.out.println("매매 데이터 columns[3](4번째 셀): " + tradeEntry);
+//                    String[] details = columns[4].split(" ");
+//                    System.out.println("매매 데이터 columns[4](5번째 셀): " + details);
+//                    for (String detail : details) {
+//                        if (detail.startsWith("금")) {  // 금액 패턴 찾기
+//                            try {
+//                                String amountStr = detail.replaceAll("[^0-9]", "");  // 숫자만 추출
+//                                tradeEntry.put("Amount", Long.parseLong(amountStr));
+//                                lastTradeAmount = amountStr;  // 마지막 거래가액 저장
+//                                break;
+//                            } catch (NumberFormatException e) {
+//                                // 숫자 변환 실패시 무시
+//                            }
+//                        }
+//                    }
+//                    TradeAmount.add(tradeEntry);
+//                }
             } else {
                 // 순위번호가 없는 경우 → 이전 데이터와 병합
                 currentRow.put("NomprsAndEtc", currentRow.get("NomprsAndEtc") + " " + columns[4].trim());
