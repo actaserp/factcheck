@@ -1443,7 +1443,6 @@ public class TilkoController {
                     tbRealinfo.setReSeq(null);
                     // REALBOWNDATA의 마지막 요소에서 "RgsCaus" 가져와서 저장
                     // 채권최고액 파싱
-
                     if (REALBOWNDATA != null && !REALBOWNDATA.isEmpty()) {
                         Map<String, Object> lasteulguDATA = REALBOWNDATA.get(REALBOWNDATA.size() - 1);
                         String rgsCausValue = (String) lasteulguDATA.get("NomprsAndEtc");

@@ -59,15 +59,15 @@ public class TilkoParsing {
 
     // 채권최고액 파싱 메서드
     public static String parseAmount(String input) {
-        // Pattern to match monetary amount
-        Pattern amountPattern = Pattern.compile("\\b\\d{1,3}(,\\d{3})*(?=원)\\b");
+        // 금액 추출 (금이 있거나 없거나 상관없이 매칭)
+        Pattern amountPattern = Pattern.compile("(금)?\\d{1,3}(,\\d{3})*(?=원)");
         Matcher matcher = amountPattern.matcher(input);
 
         if (matcher.find()) {
-            return matcher.group().replace(",", ""); // Remove commas for consistent format
+            return matcher.group().replace(",", ""); // 콤마 제거 후 반환
         }
 
-        return null; // Return null if no amount is found
+        return null; // 매칭 실패 시 null 반환
     }
 
     // 건축물 분류 메서드
@@ -304,23 +304,21 @@ public class TilkoParsing {
     }
     // 갑구 소유권에 관한 사항 수집
     public static Map<String, Object> parseGabguTable(List<String> tableData) {
+        System.out.println("넘어온 Resister 갑구 파싱 데이터" + tableData);
         List<Map<String, Object>> parsedData = new ArrayList<>();
         List<Map<String, Object>> TradeAmount = new ArrayList<>(); // 내부에서 생성
         Map<String, Object> currentRow = new HashMap<>();
         String lastTradeAmount = null; // 마지막 매매 거래가액 저장
 
-        boolean isFirstRow = true; // 헤더 검출용 플래그
-
         for (String row : tableData) {
-            String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
+            String[] columns = row.split("\\|");
 
-            // 첫 번째 행이 헤더일 가능성이 높으므로 무시
-            if (isFirstRow) {
-                isFirstRow = false;
-                if (columns[0].contains("순위번호")) continue;
+            // 첫 번째 컬럼이 "순위번호"인 경우 해당 행을 무시
+            if (columns.length > 0 && columns[0].trim().equals("순위번호")) {
+                continue;
             }
 
-            if (columns.length < 5) continue; // 최소 5개 필드가 있어야 유효한 데이터
+            if (columns.length < 5) continue;  // 유효한 데이터인지 체크
 
             if (!columns[0].trim().isEmpty()) {
                 // 이전 데이터 저장 후 초기화
@@ -342,11 +340,11 @@ public class TilkoParsing {
                     // 거래가액(Amount) 추출
                     String[] details = columns[4].split(" ");
                     for (String detail : details) {
-                        if (detail.startsWith("금")) { // "금136,000,000원" 같은 데이터 찾기
+                        if (detail.startsWith("금")) {  // 금액 패턴 찾기
                             try {
-                                String amountStr = detail.replaceAll("[^0-9]", ""); // 숫자만 추출
+                                String amountStr = detail.replaceAll("[^0-9]", "");  // 숫자만 추출
                                 tradeEntry.put("Amount", Long.parseLong(amountStr));
-                                lastTradeAmount = amountStr; // 마지막 거래가액 저장
+                                lastTradeAmount = amountStr;  // 마지막 거래가액 저장
                                 break;
                             } catch (NumberFormatException e) {
                                 // 숫자 변환 실패시 무시
@@ -366,71 +364,70 @@ public class TilkoParsing {
             parsedData.add(currentRow);
         }
 
-        // 마지막 거래가액을 Amount로 설정
+        // 마지막 거래가액 설정
         if (!TradeAmount.isEmpty() && lastTradeAmount != null) {
             Map<String, Object> lastTradeEntry = TradeAmount.get(TradeAmount.size() - 1);
             lastTradeEntry.put("Amount", Long.parseLong(lastTradeAmount));
         }
 
-        // 리턴 타입을 Map으로 변경하여 parsedData와 TradeAmount 모두 반환
+        // 결과 반환
         Map<String, Object> result = new HashMap<>();
         result.put("parsedData", parsedData);
         result.put("TradeAmount", TradeAmount);
+        System.out.println("Resister 갑구 파싱 데이터" + result);
 
         return result;
     }
 
     // 을구 데이터 수집
     public static Map<String, Object> parseeulguTable(List<String> tableData) {
+        System.out.println("넘어온 Resister 을구 파싱 데이터: " + tableData);
         List<Map<String, Object>> parsedData = new ArrayList<>();
-        List<Map<String, Object>> collateralData = new ArrayList<>(); // 🟢 "담보" 데이터 저장
-        List<Map<String, Object>> leaseData = new ArrayList<>(); // 🟢 "전세" 데이터 저장
+        List<Map<String, Object>> collateralData = new ArrayList<>(); // "담보" 데이터 저장
+        List<Map<String, Object>> leaseData = new ArrayList<>(); // "전세" 데이터 저장
         Map<String, Object> currentRow = new HashMap<>();
-        boolean isFirstRow = true; // 헤더 검출용 플래그
 
         for (String row : tableData) {
-            String[] columns = row.split("\\|"); // '|' 기준으로 데이터 분리
+            String[] columns = row.split("\\|");
 
-            // 첫 번째 행이 헤더일 가능성이 높으므로 무시
-            if (isFirstRow) {
-                isFirstRow = false;
-                if (columns[0].contains("순위번호")) continue;
+            // 순위번호가 없는 행 또는 "순위번호" 헤더인 경우 건너뜁니다.
+            if (columns.length < 5 || columns[0].trim().isEmpty() || columns[0].trim().equals("순위번호")) {
+                continue;
             }
 
-            if (columns.length < 5) continue; // 최소 5개 필드가 있어야 유효한 데이터
-
-
+            // 순위번호가 있는 새로운 데이터 시작 시
             if (!columns[0].trim().isEmpty()) {
                 // 이전 데이터 저장 후 초기화
                 if (!currentRow.isEmpty()) {
                     parsedData.add(new HashMap<>(currentRow));
                 }
                 currentRow.clear();
+
                 currentRow.put("RankNo", columns[0].trim());
                 currentRow.put("RgsAimCont", columns[1].trim());
                 currentRow.put("Receve", columns[2].trim());
                 currentRow.put("RgsCaus", columns[3].trim());
                 currentRow.put("NomprsAndEtc", columns[4].trim());
 
-                // "담보"가 포함된 경우 → TB_REGISTERDATAGITEMS에 추가
+                // "담보" 데이터 수집
                 if (columns[3].contains("담보")) {
                     Map<String, Object> collateralEntry = new HashMap<>();
                     collateralEntry.put("RankNo", columns[0].trim());
-                    collateralEntry.put("CrtResn", ""); //
-                    collateralEntry.put("DstInfo", ""); //
-                    collateralEntry.put("SeqNo", "1"); // 일단 기본값 (추후 업데이트 가능)
+                    collateralEntry.put("CrtResn", ""); // 추가 이유는 상위 로직에서 보완
+                    collateralEntry.put("DstInfo", ""); // 목적 정보 필요 시 상위 로직에서 채움
+                    collateralEntry.put("SeqNo", "1");
                     collateralEntry.put("EstateRightDisplay", columns[4].trim());
                     collateralData.add(collateralEntry);
                 }
 
-                // "전세"가 포함된 경우 → TB_REGISTERDATAHITEMS에 추가
+                // "전세" 데이터 수집
                 if (columns[3].contains("전세")) {
                     Map<String, Object> leaseEntry = new HashMap<>();
                     leaseEntry.put("RankNo", columns[0].trim());
-                    leaseEntry.put("CrtResn", columns[3].trim()); // 설정 사유
-                    leaseEntry.put("DstInfo",""); //
-                    leaseEntry.put("SeqNo", "1"); // 일단 기본값 (추후 업데이트 가능)
-                    leaseEntry.put("EstateRightDisplay",  columns[4].trim());
+                    leaseEntry.put("CrtResn", columns[3].trim());
+                    leaseEntry.put("DstInfo", "");
+                    leaseEntry.put("SeqNo", "1");
+                    leaseEntry.put("EstateRightDisplay", columns[4].trim());
                     leaseData.add(leaseEntry);
                 }
             } else {
@@ -444,14 +441,15 @@ public class TilkoParsing {
             parsedData.add(currentRow);
         }
 
-        // 결과를 Map으로 반환
+        // 결과 반환
         Map<String, Object> result = new HashMap<>();
         result.put("parsedData", parsedData);
-        result.put("collateralData", collateralData); // "담보" 데이터
-        result.put("leaseData", leaseData); // "전세" 데이터
-
+        result.put("collateralData", collateralData);
+        result.put("leaseData", leaseData);
+        System.out.println("Resister 을구 파싱 결과: " + result);
         return result;
     }
+
 
     // 파싱데이터에서 특정 키워드 갑구 을구 의 시작 인덱스 찾는 메서드
     public static int findStartIndex(List<String> tableData, String keyword) {
@@ -478,6 +476,7 @@ public class TilkoParsing {
             hasGabguData = true;
         } else {
             System.out.println("❌ 갑구 데이터 없음");
+            isGabguComplete = true;  // **갑구 데이터가 없으면 즉시 종료 플래그 설정**
         }
 
         if (!nomData.replaceAll("[|\\s\\n\\t\\r]+", " ").contains("3. (근)저당권 및 전세권 등 ( 을구 ) - 기록사항 없음")) {

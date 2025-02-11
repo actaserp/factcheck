@@ -69,9 +69,11 @@ public class LTSAController {
             PDFRenderer pdfRenderer  = new PDFRenderer(document);
             int totalPages = document.getNumberOfPages();
             System.out.println("totalpage: " + totalPages);
-            // `갑 구` 데이터 이어받기 위한 플래그
+            // `갑 구`, '을 구'데이터 이어받기 위한 플래그
             boolean isParsingGabgu = false;
-            List<String> gabguDataSubset = new ArrayList<>(); // 현재 `갑 구` 데이터를 저장할 리스트
+            boolean isParsingEulgu = false;
+            List<String> gabguDataSubset = new ArrayList<>();
+            List<String> eulguDataSubset = new ArrayList<>();
 
             for(int pageIndex = 0; pageIndex < totalPages; pageIndex++){
                 // 페이지를 이미지로 변환 (150 DPI 설정) 중요함... DPI는 해상도인데 해상도 달라지면 인식을 다르게 해서 배열이 꼬인다.
@@ -108,16 +110,20 @@ public class LTSAController {
 
 
 
-                if (gabguStartIndex != -1) {
-                    int startIdx = gabguStartIndex + 1; // 인덱스 조정
-                    // 방어 코드 추가: endIdx가 잘못된 경우 조정
-                    if (endIdx == -1 || endIdx <= startIdx || endIdx > pdfListContent.size()) {
-                        endIdx = pdfListContent.size();
+                if (gabguStartIndex != -1 || isParsingGabgu) {
+                    // 갑구 데이터 수집 시작 또는 이어받기
+                    if (gabguStartIndex != -1) {
+                        int startIdx = gabguStartIndex + 1;
+                        gabguDataSubset.addAll(pdfListContent.subList(startIdx, endIdx));
+                        isParsingGabgu = true;  // 갑구 데이터 수집 활성화
+                    } else if (isParsingGabgu) {
+                        // 이전 페이지에서 이어진 갑구 데이터 수집
+                        gabguDataSubset.addAll(pdfListContent.subList(0, endIdx));
                     }
 
-                    // 방어 코드: 잘못된 인덱스 체크
-                    if (startIdx < pdfListContent.size() && startIdx < endIdx) {
-
+                    // 을구 데이터 발견 시 갑구 데이터 파싱
+                    if (eulguStartIndex != -1) {
+                        System.out.println("🚩 을구 데이터 감지: 갑구 데이터 파싱 시작");
                         Map<String, Object> result = tilkoParsing.parseGabguTable(gabguDataSubset);
                         List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData");
                         List<Map<String, Object>> TradeDATA = (List<Map<String, Object>>) result.get("TradeAmount");
@@ -125,49 +131,52 @@ public class LTSAController {
                         if (!TradeDATA.isEmpty()) {
                             System.out.println("마지막 매매 거래가액: " + TradeDATA.get(TradeDATA.size() - 1).get("Amount"));
                             TradeAmount.add(TradeDATA.get(TradeDATA.size() - 1));
-                        } else {
-                            System.out.println("TradeDATA가 비어 있음: 매매 데이터 없음");
                         }
-
                         GabguData.addAll(parsedData);
-                    } else {
-                        System.out.println(" gabguStartIndex가 비정상적이므로 데이터 추출 안 함.");
+                        gabguDataSubset.clear();  // 데이터 초기화
+                        isParsingGabgu = false;  // 갑구 데이터 수집 비활성화
                     }
-                } else {
-                    System.out.println("Register 갑구 데이터 없음.");
                 }
-                if (eulguStartIndex != -1) {
-                    int startIdx = eulguStartIndex + 1;
-                    // 방어 코드 추가: endIdx가 잘못된 경우 조정
-                    if (eulguEndIndex == -1 || eulguEndIndex <= startIdx || eulguEndIndex > pdfListContent.size()) {
-                        eulguEndIndex = pdfListContent.size();
+                // --- 을구 데이터 수집 ---
+                if (eulguStartIndex != -1 || isParsingEulgu) {
+                    if (eulguStartIndex != -1) {
+                        int startIdx = eulguStartIndex + 1;
+                        int endEulguIdx = (eulguEndIndex != -1) ? eulguEndIndex : pdfListContent.size();
+                        eulguDataSubset.addAll(pdfListContent.subList(startIdx, endEulguIdx));
+                        isParsingEulgu = true;
+                    } else if (isParsingEulgu) {
+                        eulguDataSubset.addAll(pdfListContent);
                     }
-                    if (startIdx < pdfListContent.size()  && startIdx < eulguEndIndex) {
-                        List<String> eulguDataSubset = pdfListContent.subList(startIdx, pdfListContent.size());
 
+                    if (eulguEndIndex != -1) {
+                        System.out.println("🚩 을구 데이터 파싱 시작");
                         Map<String, Object> result = tilkoParsing.parseeulguTable(eulguDataSubset);
                         List<Map<String, Object>> parsedData = (List<Map<String, Object>>) result.get("parsedData");
                         List<Map<String, Object>> collateralData = (List<Map<String, Object>>) result.get("collateralData");
                         List<Map<String, Object>> leaseData = (List<Map<String, Object>>) result.get("leaseData");
 
+                        // 을구 데이터 추가
                         eulguData.addAll(parsedData);
 
+                        // 담보 데이터 전체 추가
                         if (!collateralData.isEmpty()) {
-                            RegisterDataGItemsList.add(collateralData.get(collateralData.size() - 1));
+                            RegisterDataGItemsList.addAll(collateralData);
+                            System.out.println("✅ 담보 데이터 저장 완료: " + collateralData.size() + "건");
                         } else {
                             System.out.println("담보 데이터가 없습니다.");
                         }
 
+                        // 전세 데이터 전체 추가
                         if (!leaseData.isEmpty()) {
-                            RegisterDataHItemsList.add(leaseData.get(leaseData.size() - 1));
+                            RegisterDataHItemsList.addAll(leaseData);
+                            System.out.println("✅ 전세 데이터 저장 완료: " + leaseData.size() + "건");
                         } else {
                             System.out.println("전세 데이터가 없습니다.");
                         }
-                    } else {
-                        System.out.println("⚠️ eulguStartIndex가 비정상적이므로 데이터 추출 안 함.");
+
+                        eulguDataSubset.clear();  // 데이터 초기화
+                        isParsingEulgu = false;  // 을구 데이터 수집 비활성화
                     }
-                } else {
-                    System.out.println("Register 을구 데이터 없음.");
                 }
 
                 // 마지막에서 두 번째 페이지에서 관할등기소 정보 추출
