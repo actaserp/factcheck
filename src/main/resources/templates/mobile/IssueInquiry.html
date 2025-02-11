@@ -489,7 +489,7 @@
                           background: #f8f9fa;
                           overflow-y: auto;
                           max-height: 600px;">
-                    <!-- 📌 PDF 페이지가 동적으로 추가됩니다. -->
+                    <!--  PDF 페이지가 동적으로 추가됩니다. -->
                   </div>
                 </section>
               </div>
@@ -557,13 +557,13 @@
           return;
         }
 
-        // 📌 목록 건수 업데이트
+        //  목록 건수 업데이트
         const listNumElement = document.querySelector('.list-num .blue');
         if (listNumElement) {
           listNumElement.textContent = `${data.data.length} 건`;
         }
 
-        // 📌 주소 리스트 업데이트
+        //  주소 리스트 업데이트
         const listAddressWrap = document.getElementById('addressWrap');
         if (!listAddressWrap) {
           console.error("addressWrap 요소를 찾을 수 없습니다.");
@@ -635,7 +635,7 @@
 
         listAddressWrap.innerHTML = htmlContent;
 
-        // 📌 이벤트 위임을 사용하여 버튼 클릭 처리
+        //  이벤트 위임을 사용하여 버튼 클릭 처리
         listAddressWrap.addEventListener('click', (event) => {
           const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
           const pdfButton = event.target.closest('.btn-register-view');
@@ -645,7 +645,7 @@
             const realId = cardBox.getAttribute('data-realid');
             if (!cardBox) return;
 
-            console.log("📌 상세보기 클릭됨! REALID:", realId);
+            console.log(" 상세보기 클릭됨! REALID:", realId);
             //AJAX 요청을 통해 상세 데이터 불러오기
             $.ajax({
               url: `/api/IssueInquiry/DetailsList?realId=${realId}`,
@@ -845,7 +845,6 @@
             if (!realId) return;
 
             console.log("PDF 보기 클릭됨! REALID:", realId);
-           // RegisterUser('popup-pdf-viewer', `/api/IssueInquiry/pdf?realId=${realId}`);
             openModal('popup-pdf-viewer', `/api/IssueInquiry/pdf?realId=${realId}`, realId);
           }
         });
@@ -863,10 +862,10 @@
     let overlay = document.querySelector('.popup-overlay');
     let container = document.getElementById("pdfContainer");
 
-    console.log("📌 openModal 실행됨! popupId:", popupId, "PDF URL:", pdfUrl);
+   // console.log(" openModal 실행됨! popupId:", popupId, "PDF URL:", pdfUrl);
 
     if (!popup) {
-      console.error(`📌 팝업 ID (${popupId})를 찾을 수 없습니다.`);
+    //  console.error(` 팝업 ID (${popupId})를 찾을 수 없습니다.`);
       return;
     }
 
@@ -884,21 +883,21 @@
     }
     if (realId) {
       currentRealId = realId;
-      console.log("📌 전역 변수에 realId 저장 완료:", realId);
+    //  console.log(" 전역 변수에 realId 저장 완료:", realId);
     } else {
-      console.warn("📌 realId 값이 전달되지 않음!");
+     // console.warn(" realId 값이 전달되지 않음!");
     }
 
     // PDF 파일이 존재하는지 확인 후 PDF.js로 렌더링
     if (pdfUrl) {
-      console.log("📌 PDF URL 확인:", pdfUrl);
+     // console.log(" PDF URL 확인:", pdfUrl);
 
       fetch(pdfUrl, { method: 'GET', mode: 'cors' })
         .then(response => {
           if (!response.ok) {
-            throw new Error('📌 PDF 파일을 찾을 수 없습니다.');
+            throw new Error(' PDF 파일을 찾을 수 없습니다.');
           }
-          console.log("📌 PDF 파일 확인 완료:", pdfUrl);
+         // console.log(" PDF 파일 확인 완료:", pdfUrl);
 
           // 기존 내용 초기화 후 PDF 렌더링
           container.innerHTML = "";
@@ -906,7 +905,7 @@
         })
         .catch(error => {
           console.error(error.message);
-          alert("📌 PDF 파일이 존재하지 않습니다.");
+          alert(" PDF 파일이 존재하지 않습니다.");
           container.innerHTML = "<p style='color:red;'>PDF를 불러올 수 없습니다.</p>";
         });
     }
@@ -916,11 +915,9 @@
     let popup = document.getElementById('popup-pdf-viewer');
     let overlay = document.querySelector('.popup-overlay');
     let iframe = document.getElementById("pdfFrame");
-
-    console.log("📌 closeModal 실행됨! popupId:", popupId);
-
+    //console.log(" closeModal 실행됨! popupId:", popupId);
     if (!popup) {
-      console.error(`📌 닫을 팝업 ID (${popupId})를 찾을 수 없습니다.`);
+      console.error(` 닫을 팝업 ID (${popupId})를 찾을 수 없습니다.`);
       return;
     }
 
@@ -942,81 +939,82 @@
     }
   }
 
-  // 📌 PDF 다운로드 함수
+  //  PDF 다운로드 함수
   function downloadPdf() {
     if (!currentRealId) {
-      console.error("📌 다운로드할 PDF 파일을 찾을 수 없습니다. (realId 없음)");
-      alert("📌 다운로드할 PDF 파일을 찾을 수 없습니다.");
+      console.error(" 다운로드할 PDF 파일을 찾을 수 없습니다. (realId 없음)");
+      Alert.alert('', "다운로드할 PDF 파일을 찾을 수 없습니다.");
       return;
     }
 
-    console.log("📌 PDF 다운로드 시작: realId=", currentRealId);
+    console.log(" PDF 다운로드 시작: realId=", currentRealId);
 
-    // ✅ `pdfDownload` API 호출하여 다운로드 실행
+    //`pdfDownload` API 호출하여 다운로드 실행
     let downloadUrl = `/api/IssueInquiry/pdfDownload?realId=${currentRealId}`;
-    console.log("📌 다운로드 URL:", downloadUrl);  // 🔍 디버깅 확인
+   // console.log(" 다운로드 URL:", downloadUrl);  // 🔍 디버깅 확인
 
-    // ✅ 강제 다운로드 실행
+    //강제 다운로드 실행
     let anchor = document.createElement("a");
     anchor.href = downloadUrl;
     anchor.target = "_blank";
-    anchor.download = "등기부등본.pdf"; // ✅ 기본 파일명 설정 (서버에서 덮어씌움)
+    anchor.download = "등기부등본.pdf"; //기본 파일명 설정 (서버에서 덮어씌움)
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
   }
 
   function showPdf(pdfUrl) {
-    console.log("📌 PDF.js를 사용하여 PDF 렌더링:", pdfUrl);
+    console.log(" PDF.js를 사용하여 PDF 렌더링:", pdfUrl);
 
     let container = document.getElementById("pdfContainer");
     container.innerHTML = ""; // 기존 내용 초기화
 
-    // ✅ 스크롤 가능하도록 스타일 적용
-    container.style.overflowY = "auto";
-    container.style.maxHeight = "600px"; // 팝업 내에서 적절한 높이 유지
+    // 🛠 스크롤 단일화 (이중 스크롤 제거)
+    container.style.overflowX = "hidden"; // 가로 스크롤 제거
+    container.style.overflowY = "hidden"; // 이중 스크롤 방지
+    container.style.maxHeight = "100vh";  // 전체 화면 높이 사용
 
-    // ✅ PDF 파일 불러오기
+    // PDF 파일 불러오기
     pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-      console.log("📌 PDF 로드 완료. 총 페이지 수:", pdf.numPages);
+      console.log(" PDF 로드 완료. 총 페이지 수:", pdf.numPages);
 
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         pdf.getPage(pageNum).then(page => {
-          let viewport = page.getViewport({ scale: 2.5 }); // ✅ 해상도 증가 (기존 2.0 → 2.5)
+          let viewport = page.getViewport({ scale: 1.5 }); // 기본 스케일
 
-          // ✅ 팝업 너비에 맞춰 자동 조정
-          let scale = Math.min(container.clientWidth / viewport.width, 2.5);
+          // 🛠 컨테이너 너비에 맞춰 PDF를 자동 확대 (여백 없이 꽉 차게)
+          let scale = container.clientWidth / viewport.width;
           let scaledViewport = page.getViewport({ scale: scale });
 
-          // ✅ 페이지별 <canvas> 생성
+          // 페이지별 <canvas> 생성
           let canvas = document.createElement("canvas");
           canvas.classList.add("pdf-page");
           container.appendChild(canvas);
 
           let context = canvas.getContext("2d");
 
-          // ✅ Canvas 크기 설정 (깨짐 방지)
-          canvas.width = scaledViewport.width * 2;  // 2배 확대
-          canvas.height = scaledViewport.height * 2;
-          canvas.style.width = `${scaledViewport.width}px`;
-          canvas.style.height = `${scaledViewport.height}px`;
+          // 🛠 PDF 크기를 컨테이너에 맞게 설정 (여백 제거)
+          let scaleFactor = 3; // 3배 확대
+          canvas.width = scaledViewport.width * scaleFactor;
+          canvas.height = scaledViewport.height * scaleFactor;
+          canvas.style.width = "100%"; // 컨테이너에 맞게 꽉 채우기
+          canvas.style.height = "auto"; // 세로 비율 유지
 
-          // ✅ 고해상도 렌더링 (1.5배~2배 해상도로 그리기)
+          // 고해상도 렌더링 (텍스트 선명하게)
           let renderContext = {
             canvasContext: context,
             viewport: scaledViewport,
-            transform: [2, 0, 0, 2, 0, 0] // ✅ 2배 해상도 설정 (깨짐 방지)
+            transform: [scaleFactor, 0, 0, scaleFactor, 0, 0]
           };
 
           page.render(renderContext);
         });
       }
     }).catch(error => {
-      console.error("📌 PDF 렌더링 오류:", error);
-      alert("📌 PDF를 불러올 수 없습니다.");
+      console.error(" PDF 렌더링 오류:", error);
+      alert(" PDF를 불러올 수 없습니다.");
     });
   }
-
 
   function handleSearch() {
     fetchListData();

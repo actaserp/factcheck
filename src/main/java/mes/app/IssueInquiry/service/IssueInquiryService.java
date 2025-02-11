@@ -60,54 +60,11 @@ public class IssueInquiryService {
     sql.append(" ORDER BY RELASTDATE DESC ");
 
     // 로그 출력 (디버깅 용도)
-    log.info("등기부 발급 List SQL: {}", sql);
-    log.info("SQL Parameters: {}", params.getValues());
+//    log.info("등기부 발급 List SQL: {}", sql);
+//    log.info("SQL Parameters: {}", params.getValues());
 
     return sqlRunner.getRows(sql.toString(), params);
   }
-
-  /*StringBuilder sql = new StringBuilder("""
-        SELECT
-            ri.REALID,
-            ri.USERID,
-            ri.REQDATE,
-            ri.REALADD,
-            ri.REGDATE,
-            ri.RESIDO,
-            ri.REGUGUN,
-            ri.REMOK,
-            ri.REWON,
-            ri.REWONDATE,
-            ri.REJIMOK,
-            ri.REAREA,
-            ri.REAMOUNT,
-            ri.RESEQ,
-            ri.REMAXAMT,
-            ri.INDATEM,
-            ri.REALSCORE,
-            ri.REALPOINT,
-            ri.RELASTDATE,
-            ri.REALGUBUN,
-            ri.PDFFILENAME,
-            -- TB_REALAOWN 데이터
-            ra.RankNo AS RankNo_A,
-            ra.RgsAimCont AS RgsAimCont_A,
-            ra.Receve AS Receve_A,
-            ra.RgsCaus AS RgsCaus_A,
-            ra.NomprsAndEtc AS NomprsAndEtc_A,
-            -- TB_REALBOWN 데이터
-            rb.RankNo AS RankNo_B,
-            rb.RgsAimCont AS RgsAimCont_B,
-            rb.Receve AS Receve_B,
-            rb.RgsCaus AS RgsCaus_B,
-            rb.NomprsAndEtc AS NomprsAndEtc_B
-        FROM MOB_FACTCHK.dbo.TB_REALINFO ri
-        LEFT JOIN MOB_FACTCHK.dbo.TB_REALAOWN ra ON ri.REALID = ra.REALID
-        LEFT JOIN MOB_FACTCHK.dbo.TB_REALBOWN rb ON ri.REALID = rb.REALID
-        WHERE 1=1
-    """);*/
-
-
 
   public List<Map<String, Object>> getDetails(String REALID) {
     MapSqlParameterSource params = new MapSqlParameterSource();
@@ -207,7 +164,7 @@ public class IssueInquiryService {
 
     sqlRunner.execute(sql, params);  // INSERT 실행 (결과 반환 필요 없음)
 
-    log.info("조회 기록 저장 완료 - realId: {}, user: {}", REALID, user.getUsername());
+  //  log.info("조회 기록 저장 완료 - realId: {}, user: {}", REALID, user.getUsername());
     return null;
   }
 
