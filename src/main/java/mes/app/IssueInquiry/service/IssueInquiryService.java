@@ -57,7 +57,7 @@ public class IssueInquiryService {
     }
 
     // 최신 날짜순으로 정렬
-    sql.append(" ORDER BY RELASTDATE DESC ");
+    sql.append(" ORDER BY RELASTDATE ASC ");
 
     // 로그 출력 (디버깅 용도)
 //    log.info("등기부 발급 List SQL: {}", sql);

@@ -23,16 +23,16 @@ public class MapService {
         params.addValue("gugun", gugun);
 
         return sqlRunner.getRows("""
-      SELECT\s
-             RESIDO,
-             REGUGUN,
-             REALADD as address,
-             COUNT(*) as count,
-             AVG(realscore) AS avg_score
-         FROM TB_REALINFO
-         WHERE RESIDO LIKE CONCAT(:region, '%')
-         AND (:gugun IS NULL OR REGUGUN LIKE CONCAT(:gugun, '%'))
-         GROUP BY RESIDO, REGUGUN, REALADD
+       SELECT
+          RESIDO,
+          REGUGUN,
+          REALADD as address,
+          COUNT(*) as count,
+          AVG(realscore) AS avg_score
+      FROM TB_REALINFO
+      WHERE REPLACE(RESIDO, ' ', '') LIKE CONCAT(REPLACE(:region, ' ', ''), '%')
+      AND (:gugun IS NULL OR REPLACE(REGUGUN, ' ', '') LIKE CONCAT(REPLACE(:gugun, ' ', ''), '%'))
+      GROUP BY RESIDO, REGUGUN, REALADD
     """, params);
     }
 
@@ -127,11 +127,11 @@ public class MapService {
         // MSSQL용 SQL 작성 (문자열 연결은 `+` 사용)
         StringBuilder sql = new StringBuilder("""
           SELECT REALADD, RELASTDATE, REALID
-          FROM TB_REALINFO
-          WHERE RESIDO LIKE :region + '%'
-            AND REGUGUN LIKE :gugun + '%'
-            AND RELASTDATE <= :endDate
-          ORDER BY RELASTDATE DESC;
+             FROM TB_REALINFO
+             WHERE REPLACE(RESIDO, ' ', '') LIKE '%' + REPLACE(:region, ' ', '') + '%'
+               AND REPLACE(REGUGUN, ' ', '') LIKE '%' + REPLACE(:gugun, ' ', '') + '%'
+               AND RELASTDATE <= :endDate
+             ORDER BY RELASTDATE DESC;
       """);
 
         // 파라미터 설정
