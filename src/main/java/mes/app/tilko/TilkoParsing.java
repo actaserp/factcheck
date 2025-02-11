@@ -338,7 +338,9 @@ public class TilkoParsing {
                     tradeEntry.put("RgsCaus", columns[3].trim());
 
                     // 거래가액(Amount) 추출
+                    System.out.println("매매 데이터 columns[3](4번째 셀): " + tradeEntry);
                     String[] details = columns[4].split(" ");
+                    System.out.println("매매 데이터 columns[4](5번째 셀): " + details);
                     for (String detail : details) {
                         if (detail.startsWith("금")) {  // 금액 패턴 찾기
                             try {

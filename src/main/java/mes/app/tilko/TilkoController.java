@@ -1002,6 +1002,8 @@ public class TilkoController {
                     } else {
                         throw new RuntimeException("REALINFO 저장 실패");
                     }
+                    // searchinfo 테이블에 조회기록 저장
+                    tilkoService.saveSearchInfo(user.getUsername(), REALID);
                     // RealSummaryData 저장
                     SummaryData.put("REALID", REALID);
                     SummaryData.put("UniqueNo", GoyuNUM);

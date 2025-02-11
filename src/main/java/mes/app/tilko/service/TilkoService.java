@@ -603,5 +603,22 @@ public class TilkoService {
         // matchCount가 1 이상이면 PinNo가 일치하는 데이터가 존재함
         return result != null && ((Number) result.get("matchCount")).intValue() > 0;
     }
+    // api 사용 로그 쌓기
+    public void saveSearchInfo(String USERID, int REALID) {
+        // SQL 파라미터 설정
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("USERID", USERID);
+        params.addValue("REALID", REALID);
+
+        // INSERT SQL 문 (GETDATE() 사용)
+        String sql = """
+        INSERT INTO TB_SEARCHINFO (USERID, REQDATE, REALID)
+        VALUES (:USERID, GETDATE(), :REALID)
+    """;
+
+        // 쿼리 실행
+        int rowsAffected = this.sqlRunner.execute(sql, params);
+        System.out.println("searchinfo Rows inserted: " + rowsAffected);
+    }
 
 }
