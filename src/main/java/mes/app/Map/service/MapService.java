@@ -108,7 +108,11 @@ public class MapService {
         String sql = """
             SELECT * FROM TB_REALBOWN
             WHERE REALID = :realid
-            ORDER BY RankNo DESC;
+            ORDER BY
+                TRY_CAST(REPLACE(RankNo, '-', '') +
+                                         CASE WHEN RankNo LIKE '%-%' THEN '' ELSE '0' END AS INT) DESC,
+                                CASE WHEN ISNUMERIC(RankNo) = 1 THEN 0 ELSE 1 END,
+                                RankNo DESC;
     """;
 
         return sqlRunner.getRows(sql, params);
