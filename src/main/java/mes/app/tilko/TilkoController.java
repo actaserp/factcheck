@@ -930,7 +930,7 @@ public class TilkoController {
 
                     // 구축물
                     Map<String, Object> gubunDataAMap = (Map<String, Object>) pdfParsingMap.get("gubunData");
-                    String archtec = tilkoParsing.assortArchitec(String.valueOf(gubunDataAMap.get("Archtec")));
+                    String archtec = tilkoParsing.assortArchitec(String.valueOf(gubunDataAMap.get("buildingDetails")));
 
                     // 파싱후 REALINFO 테이블에 우선 저장 후 id 값 가져오기
                     TB_REALINFO tbRealinfo = new TB_REALINFO();

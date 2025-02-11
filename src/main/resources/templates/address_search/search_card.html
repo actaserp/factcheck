@@ -91,9 +91,8 @@
         <!--- (레이아웃) Contents 영역 -->
         <div class="layout-contents">
             <!-- 검색 영역  -->
-            <div class="search-wrap">
-                <a type="text" id="address">주소 : 하이펠리스 오피스텔</a>
-            </div>
+<!--            <div class="search-wrap">-->
+<!--            </div>-->
             <!-- 컨텐츠 영역  -->
             <div class="contents-wrap">
 
@@ -167,9 +166,15 @@
         cardContent2.className = 'card-content';
         cardContent2.textContent = `점수: ${parsedData.REALSCORE}`;
 
+        // COMMENT 값이 없을 경우 '안전합니다.' 표시
         const cardContent3 = document.createElement('div');
         cardContent3.className = 'card-content';
-        cardContent3.textContent = `코멘트: ${commentsText}`;
+
+        if (!commentsText || commentsText.trim() === "") {
+            cardContent3.textContent = `안전합니다.`;
+        } else {
+            cardContent3.textContent = `코멘트: ${commentsText}`;
+        }
 
         // 요소 추가
         card.appendChild(cardTitle);

@@ -72,6 +72,7 @@ public class TilkoParsing {
 
     // 건축물 분류 메서드
     public static String assortArchitec(String input) {
+        System.out.println("건축물 분류 텍스트 : " + input);
         // 1. 주요 카테고리 분류
         if (input.contains("단독주택")) {
             return checkType(input, new String[]{"단독주택", "다중주택", "다가구주택"}, "단독주택");
