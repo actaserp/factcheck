@@ -590,12 +590,14 @@
     }
 
     function maskName(name) {
-        if (/^[가-힣]+$/.test(name)) {  // 한글 이름일 경우
-            return name[0] + '*'.repeat(name.length - 1);
-        } else {  // 영문 이름일 경우
-            return name[0] + '*'.repeat(name.length - 1);
-        }
+        if (!name) return '';  // name이 비어 있으면 빈 문자열을 반환
+
+        const maskedPart = name.slice(1);  // 첫 글자 제외하고 나머지 부분
+        const masked = '*'.repeat(Math.max(0, maskedPart.length));  // 음수 방지, 최소 0 이상으로 설정
+
+        return name[0] + masked;  // 첫 글자는 그대로 두고 나머지는 *로 마스킹
     }
+
 
     // 데이터를 받아와 카드 렌더링
     function fetchListData() {
@@ -657,15 +659,22 @@
                         </button>`;
 
                     // 날짜 포맷 변경
-                    const formattedDate = item.REQDATE.substring(0, 4) + '-' + item.REQDATE.substring(4, 6) + '-' + item.REQDATE.substring(6, 8);
-                    const formattedLastDate = item.Sreqdate
-                        ? item.Sreqdate.substring(0, 10)
-                        : '';
+                    const date = new Date(item.Sreqdate);
+                    date.setHours(date.getHours() + 9); // UTC -> KST 변환
+
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+
+                    const formattedDate = `${year}-${month}-${day}`;
+
+                    /*console.log(formattedDate);*/
 
                     // Suserid 값이 'super' 또는 'admin'이면 마스킹하지 않음
-                    const maskedUserName = (item.Suserid === 'super' || item.Suserid === 'admin')
+                    const maskedUserName = (item.Suserid && (item.Suserid === 'super' || item.Suserid === 'admin'))
                         ? item.Suserid[0] + '****'
-                        : maskName(item.USERNM);
+                        : maskName(item.USERNM || '');
+
 
 
 
@@ -687,7 +696,7 @@
                         (selectedValue === "recent_property" || selectedValue === "most_viewed_property" || selectedValue === "popular_property")
                             ? `<dl>
                                         <dt>최근조회날짜</dt>
-                                        <dd>${formattedLastDate}</dd>
+                                        <dd>${formattedDate}</dd>
                                     </dl>`
                             : `<dl>
                                         <dt>조회날짜</dt>

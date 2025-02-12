@@ -58,14 +58,13 @@ public class ProductionService {
         dicParam.addValue("property", property);
         dicParam.addValue("userid", username);
 
+        System.out.println("쿼리 들어왔을때 "+startDate+endDate);
+
         if (keyword != null && !keyword.trim().isEmpty()) {
             dicParam.addValue("keyword", "%" + keyword + "%");
         } else {
             dicParam.addValue("keyword", null);
         }
-
-        System.out.println(keyword + " 쿼리 진입했을때의 keyword 확인");
-        System.out.println(username + " 쿼리 진입했을때의 username 확인");
 
         // 기본 쿼리 구성
         StringBuilder sql = new StringBuilder("""
@@ -91,7 +90,7 @@ public class ProductionService {
             LEFT JOIN TB_REALBOWN RB ON R.REALID = RB.REALID
             LEFT JOIN auth_user AU ON S.USERID = AU.username
             WHERE S.REALID = R.REALID
-            AND S.REQDATE BETWEEN CAST(:startDate AS DATETIME) AND DATEADD(MILLISECOND, -1, DATEADD(DAY, 1, CAST(:endDate AS DATETIME)))
+            AND S.REQDATE BETWEEN CAST(:startDate AS DATETIME) AND DATEADD(SECOND, 86399, CAST(:endDate AS DATETIME))
             AND (:keyword IS NULL OR R.REALADD LIKE '%' + :keyword + '%')
     """);
 
@@ -395,7 +394,7 @@ public class ProductionService {
                         SELECT DISTINCT REALID, RankNo, RgsAimCont, Receve, RgsCaus, NomprsAndEtc
                         FROM TB_REALBOWN
                     ) RB ON R.REALID = RB.REALID
-                    LEFT JOIN COUNT_CTE C ON R.REALID = C.REALID  -- COUNT_CTE와 조인
+                    LEFT JOIN COUNT_CTE C ON R.REALID = C.REALID
                     WHERE S.REQDATE BETWEEN
                         CAST(:startDate AS DATETIME)
                         AND DATEADD(MILLISECOND, -1, DATEADD(DAY, 1, CAST(:endDate AS DATETIME)))
@@ -541,12 +540,12 @@ public class ProductionService {
                         RB.RgsCaus AS RgsCaus_b,
                         RB.NomprsAndEtc AS NomprsAndEtc_b,
                         ROW_NUMBER() OVER (PARTITION BY R.REALID ORDER BY S.REQDATE DESC) AS rn,
-                        C.record_count  -- 추가: record_count를 CTE에 포함시킴
+                        C.record_count
                     FROM TB_REALINFO R
                     INNER JOIN SEARCH_CTE S
                         ON R.REALID = S.REALID
                         AND S.rn = 1
-                    LEFT JOIN TB_USERINFO U
+                   LEFT JOIN TB_USERINFO U
                         ON S.USERID = U.USERID
                     LEFT JOIN TB_REALSUMMARY RS
                         ON R.REALID = RS.REALID

@@ -43,37 +43,39 @@ public class ProductionController {
 
 
 
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+     /*   DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
         String formattedStartDate = null;
-        String formattedEndDate = null;
+        String formattedEndDate = null;*/
 
         try {
             // 날짜 변환 수행 (null 및 빈 값 체크)
             if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
-                formattedStartDate = LocalDate.parse(startDate, inputFormatter).format(outputFormatter);
-                formattedEndDate = LocalDate.parse(endDate, inputFormatter).format(outputFormatter);
+              /*  formattedStartDate = LocalDate.parse(startDate, inputFormatter).format(outputFormatter);
+                formattedEndDate = LocalDate.parse(endDate, inputFormatter).format(outputFormatter);*/
+                // property 값 검증
+                switch (property) {
+                    case "my_property":
+                    case "recent_property":
+                    case "most_viewed_property":
+                    case "popular_property":
+                        break;
+                    default:
+                        return ResponseEntity.badRequest().body("잘못된 property 값입니다.");
+                }
             } else {
                 return ResponseEntity.badRequest().body("startDate와 endDate는 필수 입력값입니다.");
             }
 
-            // property 값 검증
-            switch (property) {
-                case "my_property":
-                case "recent_property":
-                case "most_viewed_property":
-                case "popular_property":
-                    break;
-                default:
-                    return ResponseEntity.badRequest().body("잘못된 property 값입니다.");
-            }
+
+
 
             // 로그 추가 (입력 데이터 확인)
-            LOGGER.info("요청 데이터 - StartDate: " + formattedStartDate + ", EndDate: " + formattedEndDate + ", Property: " + property);
+            LOGGER.info("요청 데이터 - StartDate: " + startDate + ", EndDate: " + endDate + ", Property: " + property);
 
             // 데이터 조회
-            Map<String, Object> productionData = productionService.getlist(formattedStartDate, formattedEndDate, property,username,keyword);
+            Map<String, Object> productionData = productionService.getlist(startDate, endDate, property,username,keyword);
 
             if (productionData == null || productionData.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).body("조회된 데이터가 없습니다.");
