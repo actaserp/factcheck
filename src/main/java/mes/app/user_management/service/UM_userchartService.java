@@ -115,7 +115,8 @@ public class UM_userchartService {
 
     sql.append(String.join(", ", subQueryColumns));
     sql.append("\n    FROM TB_REALINFO RI\n");
-    sql.append("    JOIN TB_USERINFO TU ON TU.USERID = RI.USERID ");
+    sql.append("    LEFT JOIN TB_USERINFO UI ON RI.userid = UI.userid ");
+    sql.append("    LEFT JOIN auth_user au ON au.username = RI.USERID ");
     sql.append("    WHERE RI.RELASTDATE >= :startDate AND RI.RELASTDATE <= :endDate \n");
 
     if (inDatem != null) {
@@ -141,8 +142,8 @@ public class UM_userchartService {
         .addValue("sexYn", sexYn)
         .addValue("district", district);
 
-    log.info("그리드 리스트 SQL: {}", sql.toString());
-    log.info("SQL 매개변수: {}", params.getValues());
+//    log.info("그리드 리스트 SQL: {}", sql.toString());
+//    log.info("SQL 매개변수: {}", params.getValues());
 
     return jdbcTemplate.queryForList(sql.toString(), params);
   }
@@ -247,7 +248,8 @@ public class UM_userchartService {
 
     sql.append(String.join(", ", subQueryColumns));
     sql.append("\n    FROM TB_REALINFO RI\n");
-    sql.append("    JOIN TB_USERINFO TU ON TU.USERID = RI.USERID ");
+    sql.append("    LEFT JOIN TB_USERINFO TU ON TU.USERID = RI.USERID ");
+    sql.append("    LEFT JOIN auth_user au ON au.username = RI.USERID ");
     sql.append("    WHERE RI.RELASTDATE >= :startDate AND RI.RELASTDATE <= :endDate \n");
 
     MapSqlParameterSource params = new MapSqlParameterSource();
@@ -282,33 +284,34 @@ public class UM_userchartService {
 
     // SQL 기본 구조
     StringBuilder sql = new StringBuilder("""
-        SELECT 
-            RI.userid AS 아이디,
-            UI.usernm AS 이름,
-            UI.USERHP AS 핸드폰_번호,
-            UI.AGENUM AS 나이,
-            CASE
-                WHEN UI.sexyn = 1 THEN '남자'
-                WHEN UI.sexyn = 2 THEN '여자'
-                ELSE '알 수 없음'
-            END AS 성별
-        FROM TB_REALINFO RI
-        JOIN TB_USERINFO UI ON RI.userid = UI.userid
-        WHERE 1=1
+        SELECT
+              RI.userid AS 아이디,
+              UI.usernm AS 이름,
+              UI.USERHP AS 핸드폰_번호,
+              UI.AGENUM AS 나이,
+              CASE
+                  WHEN UI.sexyn = 1 THEN '남자'
+                  WHEN UI.sexyn = 2 THEN '여자'
+                  ELSE '알 수 없음'
+              END AS 성별
+          FROM TB_REALINFO RI
+          LEFT JOIN TB_USERINFO UI ON RI.userid = UI.userid 
+          LEFT JOIN auth_user au ON au.username = RI.USERID 
+          WHERE 1=1
     """);
 
-    // 동적으로 `WHERE` 조건 추가
+    // 지역명 검색 (공백 제거)
     if (region != null && !region.isEmpty()) {
-      sql.append(" AND RI.RESIDO LIKE CONCAT('%', :region, '%')");
+      sql.append(" AND REPLACE(RI.RESIDO, ' ', '') LIKE REPLACE(CONCAT('%', :region, '%'), ' ', '')");
       params.addValue("region", region);
     }
 
     if (district != null && !district.isEmpty()) {
-      sql.append(" AND RI.REGUGUN LIKE CONCAT('%', :district, '%')");
+      sql.append(" AND REPLACE(RI.REGUGUN, ' ', '') LIKE REPLACE(CONCAT('%', :district, '%'), ' ', '')");
       params.addValue("district", district);
     }
 
-    // `selectedColumn`에 따른 분기 처리
+    // `selectedColumn` 처리
     if (selectedColumn != null && !selectedColumn.isEmpty()) {
       if ("기타".equals(selectedColumn)) {
         sql.append(" AND (RI.REALGUBUN NOT IN ('아파트', '다세대주택', '단독주택', '오피스텔') OR RI.REALGUBUN = '기타')");
@@ -318,34 +321,35 @@ public class UM_userchartService {
       }
     }
 
-    // 날짜 검색 방식 수정
+    // 날짜 검색 방식 수정 (REGDATE 사용)
     if (yearMonth != null && !yearMonth.isEmpty()) {
-      if (yearMonth.length() == 4) {  // 연도만 입력된 경우 (예: 2025)
-        sql.append(" AND LEFT(RI.RELASTDATE, 4) = :yearMonth");
-      } else if (yearMonth.length() == 6) {  // 연도-월 입력된 경우 (예: 202501)
-        sql.append(" AND LEFT(RI.RELASTDATE, 6) = :yearMonth");
-      } else if (yearMonth.length() == 8) {  // 연도-월-일 입력된 경우 (예: 20250124)
-        sql.append(" AND RI.RELASTDATE = :yearMonth");
+      if (yearMonth.length() == 4) {  // 연도만 입력된 경우
+        sql.append(" AND LEFT(RI.REGDATE, 4) = :yearMonth");
+      } else if (yearMonth.length() == 6) {  // 연도-월 입력된 경우
+        sql.append(" AND LEFT(RI.REGDATE, 6) = :yearMonth");
+      } else if (yearMonth.length() == 8) {  // 연도-월-일 입력된 경우
+        sql.append(" AND RI.REGDATE = :yearMonth");
       }
       params.addValue("yearMonth", yearMonth);
     }
 
-    // dateType 조건 추가
+    // dateType 조건 추가 (REGDATE 사용)
     if (dateType != null && !dateType.isEmpty()) {
-      sql.append(" AND RI.RELASTDATE = :dateType");
+      sql.append(" AND RI.REGDATE = :dateType");
       params.addValue("dateType", dateType);
     }
 
-    // 성별 필터 추가
+    // 성별 필터 추가 (NULL 방지)
     if (sexYn != null) {
-      sql.append(" AND UI.SEXYN = :sexYn");
+      sql.append(" AND (UI.SEXYN = :sexYn OR UI.SEXYN IS NULL)");
       params.addValue("sexYn", sexYn);
     }
 
     // 디버깅 로그 추가
-    log.info("실행할 SQL: {}", sql.toString());
-    log.info("SQL 매개변수: {}", params.getValues());
+//    log.info("실행할 SQL: {}", sql.toString());
+//    log.info("SQL 매개변수: {}", params.getValues());
 
     return sqlRunner.getRows(sql.toString(), params);
   }
+
 }
