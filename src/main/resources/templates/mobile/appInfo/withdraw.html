@@ -119,7 +119,7 @@
 
             </div> <!--// contents-wrap end-->
         </div> <!--//layout-contents end -->
-        <div class='onesignal-customlink-container'></div>
+       <!-- <div class='onesignal-customlink-container'></div>-->
     </div> <!-- //mobile-layout-contents end-->
 
 
@@ -127,7 +127,7 @@
     <!--거래처 검색 팝업-->
 
 </div> <!-- //page-wrapper end-->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<!--<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script type="text/javascript">
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
@@ -136,6 +136,7 @@
             safari_web_id: "web.onesignal.auto.32866db8-e87d-48d6-8bf4-a7b54cca5ee4",
             notifyButton: {
                 enable: true,
+                showCredit: false,
             },
             // Your other init options here
             promptOptions: {
@@ -164,7 +165,7 @@
         // 사용자의 외부 ID 설정
         await OneSignal.login(userid);*/
     });
-</script>
+</script>-->
 <script type="text/javascript">
 
     document.readyState === 'complete' ? init() : window.onload = init;
