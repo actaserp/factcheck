@@ -75,6 +75,11 @@ public class LTSAController {
             List<String> gabguDataSubset = new ArrayList<>();
             List<String> eulguDataSubset = new ArrayList<>();
 
+            // SummaryData 등기명의인(소유지분현황(갑구)), 소유권에 관한 사항(갑구), 저당권 및 전세권(을구) 데이터 이어받기 위한 플래그
+            boolean isParsingSummary = false;   // Summary데이터 이어받기위한 플래그
+            StringBuilder PageContentList = new StringBuilder();   // Summary데이터 보유 페이지 일반데이터
+            List<String> ListContentList = new ArrayList<>(); // Summary데이터 보유 페이지 표데이터
+
             for(int pageIndex = 0; pageIndex < totalPages; pageIndex++){
                 // 페이지를 이미지로 변환 (150 DPI 설정) 중요함... DPI는 해상도인데 해상도 달라지면 인식을 다르게 해서 배열이 꼬인다.
                 BufferedImage image = pdfRenderer.renderImageWithDPI(pageIndex, 96);
@@ -114,19 +119,26 @@ public class LTSAController {
 
 
                 if (gabguStartIndex != -1 || isParsingGabgu) {
-                    // 갑구 데이터 수집 시작 또는 이어받기
-                    if (gabguStartIndex != -1) {
-                        int startIdx = gabguStartIndex + 1;
-                        // 안전한 인덱스 범위 확인
-                        if (startIdx < endIdx) {
-                            gabguDataSubset.addAll(pdfListContent.subList(startIdx, endIdx));
-                        } else {
-                            System.out.println("🚨 비정상적인 인덱스 범위: startIdx=" + startIdx + ", endIdx=" + endIdx);
+                    // 을구가 문서의 처음에 있는 경우, 갑구 데이터 수집을 즉시 종료
+                    if (eulguStartIndex == 0) {
+                        System.out.println("🚨 을구 데이터가 문서 처음에 존재하므로, 갑구 데이터 수집 종료");
+                        isParsingGabgu = false;
+                    }
+                    else {
+                        // 갑구 데이터 수집 시작 또는 이어받기
+                        if (gabguStartIndex != -1) {
+                            int startIdx = gabguStartIndex + 1;
+                            // 안전한 인덱스 범위 확인
+                            if (startIdx < endIdx) {
+                                gabguDataSubset.addAll(pdfListContent.subList(startIdx, endIdx));
+                            } else {
+                                System.out.println("🚨 비정상적인 인덱스 범위: startIdx=" + startIdx + ", endIdx=" + endIdx);
+                            }
+                            isParsingGabgu = true;  // 갑구 데이터 수집 활성화
+                        } else if (isParsingGabgu) {
+                            // 이전 페이지에서 이어진 갑구 데이터 수집
+                            gabguDataSubset.addAll(pdfListContent.subList(0, endIdx));
                         }
-                        isParsingGabgu = true;  // 갑구 데이터 수집 활성화
-                    } else if (isParsingGabgu) {
-                        // 이전 페이지에서 이어진 갑구 데이터 수집
-                        gabguDataSubset.addAll(pdfListContent.subList(0, endIdx));
                     }
 
                     // 을구 데이터 발견 시 갑구 데이터 파싱
@@ -147,17 +159,24 @@ public class LTSAController {
                 }
                 // --- 을구 데이터 수집 ---
                 if (eulguStartIndex != -1 || isParsingEulgu) {
-                    if (eulguStartIndex != -1) {
-                        int startIdx = eulguStartIndex + 1;
-                        int endEulguIdx = (eulguEndIndex != -1) ? eulguEndIndex : pdfListContent.size();
-                        if (startIdx < endEulguIdx) {
-                            eulguDataSubset.addAll(pdfListContent.subList(startIdx, endEulguIdx));
-                        } else {
-                            System.out.println("🚨 비정상적인 을구 인덱스 범위: startIdx=" + startIdx + ", endEulguIdx=" + endEulguIdx);
+                    // SummaryData가 문서의 처음에 있는 경우, 을구 데이터 수집을 즉시 종료
+                    if (eulguEndIndex == 0) {
+                        System.out.println("🚨 SummaryData가 문서 처음에 존재하므로, 을구 데이터 수집 종료");
+                        isParsingEulgu = false;
+                    }
+                    else {
+                        if (eulguStartIndex != -1) {
+                            int startIdx = eulguStartIndex + 1;
+                            int endEulguIdx = (eulguEndIndex != -1) ? eulguEndIndex : pdfListContent.size();
+                            if (startIdx < endEulguIdx) {
+                                eulguDataSubset.addAll(pdfListContent.subList(startIdx, endEulguIdx));
+                            } else {
+                                System.out.println("🚨 비정상적인 을구 인덱스 범위: startIdx=" + startIdx + ", endEulguIdx=" + endEulguIdx);
+                            }
+                            isParsingEulgu = true;
+                        } else if (isParsingEulgu) {
+                            eulguDataSubset.addAll(pdfListContent);
                         }
-                        isParsingEulgu = true;
-                    } else if (isParsingEulgu) {
-                        eulguDataSubset.addAll(pdfListContent);
                     }
 
                     if (eulguEndIndex != -1) {
@@ -191,14 +210,23 @@ public class LTSAController {
                     }
                 }
 
-                // 마지막에서 두 번째 페이지에서 관할등기소 정보 추출
-                if (pageIndex == totalPages - 2) {
-                    String WksbiJrisdictionOffice = tilkoParsing.extractJurisdictionOffice(pdfPageContent);
-                    RegisterMap.put("WksbiJrisdictionOffice", WksbiJrisdictionOffice);
+                // 페이지별로 관할등기소 등장시 정보 추출
+                String WksbiJrisdictionOffice = tilkoParsing.extractJurisdictionOffice(pdfPageContent);
+                RegisterMap.put("WksbiJrisdictionOffice", WksbiJrisdictionOffice);
+
+                // 등기명의인 표 시작부터 마지막 페이지까지 Summary 데이터 수집(표데이터, 일반데이터 한번에 모아서 파싱메서드 호출)
+                if (eulguEndIndex != -1 || isParsingSummary) {
+                    // 등기명의인표 시작
+                    isParsingSummary = true;
+
+                    // 일반데이터 저장
+                    PageContentList.append(pdfPageContent);
+                    // 표데이터 저장
+                    ListContentList.addAll(pdfListContent);
+
                 }
-                // 마지막 페이지에서 Summary데이터 추출
-                if (pageIndex == totalPages - 1) {
-                    Map<String, Object> summaryResult = tilkoParsing.parseSummaryTable(pdfListContent, pdfPageContent);
+                if(pageIndex == totalPages - 1){ // 저장되어있는 Summary데이터 파싱 및 저장 시작
+                    Map<String, Object> summaryResult = tilkoParsing.parseSummaryTable(ListContentList, String.valueOf(PageContentList));
 
                     List<Map<String, Object>> summaryDataA = (List<Map<String, Object>>) summaryResult.get("summaryDataA");
                     List<Map<String, Object>> summaryDataK = (List<Map<String, Object>>) summaryResult.get("summaryDataK");
@@ -222,6 +250,7 @@ public class LTSAController {
                         System.out.println("SummaryDataEMap이 비어 있습니다.");
                     }
 
+                    isParsingSummary = false;
                 }
 
             }
@@ -271,21 +300,21 @@ public class LTSAController {
 
         //622 저장
 
-        List<String> keywords = List.of("기간");
-        List<String> keywords2 = List.of("누계");
-        List<Integer> index = List.of(5);
-
-        Map<String, List<String>> result2 = getValuesAfterKeywords2(table, keywords, keywords2, index);
+//        List<String> keywords = List.of("기간");
+//        List<String> keywords2 = List.of("누계");
+//        List<Integer> index = List.of(5);
+//
+//        Map<String, List<String>> result2 = getValuesAfterKeywords2(table, keywords, keywords2, index);
 
 
 
         //623 저장
-        List<String> Totalkeywords = List.of("계약자 성능 보증 기준", "계약자 워런티 보증 기준", "연료소모량", "계약자 운전 실적", "워런티 연료소모");
-        List<String> Totalkeywords2 = List.of("이전누계", "이전누계", "이전누계", "이전누계", "이전누계");
-        List<Integer> Totalindex = List.of(5, 5, 5 ,5, 5);
-
-        Map<String, List<String>> Totalresult = getValuesAfterKeywords2(table,
-                Totalkeywords,Totalkeywords2,Totalindex); // 보증조건, 워런티조건, 비고
+//        List<String> Totalkeywords = List.of("계약자 성능 보증 기준", "계약자 워런티 보증 기준", "연료소모량", "계약자 운전 실적", "워런티 연료소모");
+//        List<String> Totalkeywords2 = List.of("이전누계", "이전누계", "이전누계", "이전누계", "이전누계");
+//        List<Integer> Totalindex = List.of(5, 5, 5 ,5, 5);
+//
+//        Map<String, List<String>> Totalresult = getValuesAfterKeywords2(table,
+//                Totalkeywords,Totalkeywords2,Totalindex); // 보증조건, 워런티조건, 비고
 
 
         //List<TB_RP627Dto> RP627DtoList = TB_RP627DtoSet(result, dtoValue);

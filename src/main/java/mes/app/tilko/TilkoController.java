@@ -763,8 +763,8 @@ public class TilkoController {
 
         String irosID = "aarmani";
         String irosPWD = "jky@6400";
-        String irosNUM1 = "O3275071";
-        String irosNUM2 = "3112";
+        String irosNUM1 = "Q9864909";
+        String irosNUM2 = "6966";
         String irosNUM3 = "jky6400";
         // 등기물건 고유번호(GoyuNUM)
         String GoyuAddressNUM = GoyuNUM;

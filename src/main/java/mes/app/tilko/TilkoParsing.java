@@ -60,7 +60,7 @@ public class TilkoParsing {
     // 채권최고액 파싱 메서드
     public static String parseAmount(String input) {
         // 금액 추출 (금이 있거나 없거나 상관없이 매칭)
-        Pattern amountPattern = Pattern.compile("(금)?\\d{1,3}(,\\d{3})*(?=원)");
+        Pattern amountPattern = Pattern.compile("(금)?(\\d{1,3}(,\\d{3})*)(?=원)");
         Matcher matcher = amountPattern.matcher(input);
 
         if (matcher.find()) {
@@ -478,6 +478,7 @@ public class TilkoParsing {
         }
         return -1;  // 찾지 못하면 -1 반환
     }
+    // Summary 데이터 파싱 메서드
     // Summary 데이터 파싱 메서드
     public static Map<String, Object> parseSummaryTable(List<String> tableData, String nomData) {
         List<Map<String, Object>> summaryDataA = new ArrayList<>();
