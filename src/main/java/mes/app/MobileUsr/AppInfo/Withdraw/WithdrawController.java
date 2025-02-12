@@ -3,15 +3,14 @@ package mes.app.MobileUsr.AppInfo.Withdraw;
 
 import mes.app.account.service.TB_USERINFOService;
 import mes.app.system.service.UserService;
+import mes.config.OneSignalService;
 import mes.domain.entity.User;
 import mes.domain.entity.actasEntity.TB_USERINFO;
 import mes.domain.model.AjaxResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 
 @RestController
@@ -20,11 +19,14 @@ public class WithdrawController {
 
     private final UserService userService;
     private final TB_USERINFOService userinfoService;
+    private final OneSignalService oneSignalService;
 
-    public WithdrawController(UserService userService, TB_USERINFOService userinfoService) {
+
+    public WithdrawController(UserService userService, TB_USERINFOService userinfoService, OneSignalService oneSignalService) {
         this.userService = userService;
 
         this.userinfoService = userinfoService;
+        this.oneSignalService = oneSignalService;
     }
 
     @Transactional
@@ -49,5 +51,20 @@ public class WithdrawController {
         }
 
     }
+
+    @PostMapping("/delete/{userId}")
+    public String deleteUser(@PathVariable String userId){
+
+        User user = userService.findByUsername(userId).orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾지 못했습니다."));
+        String pushId = "e6a2ca27-1892-41fd-b4ba-b8c023eb3db2";
+
+        System.out.println("진입");
+
+        oneSignalService.sendPushNotification(pushId, "회원을 찾을수 업슷ㅂ니다.");
+        return "회원정보를 찾지 못했습니다.";
+    }
+
+
+
 
 }

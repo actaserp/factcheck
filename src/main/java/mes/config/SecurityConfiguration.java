@@ -50,6 +50,8 @@ public class SecurityConfiguration {
     http.csrf().ignoringAntMatchers("/api/gene/**");
     http.csrf().ignoringAntMatchers("/api/QnA/downloader");
     http.csrf().ignoringAntMatchers("/api/IssueInquiry/pdf");
+    http.csrf().ignoringAntMatchers("/api/withdraw/delete/**");
+
 
     http.authorizeRequests().mvcMatchers("/login", "/logout", "/useridchk/**", "/Register/save", "/mobile/save", "/authentication", "/UserInfo").permitAll()
         .mvcMatchers("/api/sales/upload/**", "/api/gene/**").permitAll()  // 모든 사용자에게 허용 (임시)
@@ -57,7 +59,7 @@ public class SecurityConfiguration {
 //				.mvcMatchers("/api/sales/upload/**").authenticated()  // 모든 인증된 사용자에게 허용 (임시)
         .mvcMatchers("/setup").hasAuthority("admin")    // hasRole -> hasAuthority로 수정
         .mvcMatchers("/MobileFirstPage").permitAll()  // 모바일 첫 페이지 접근 허용
-        .mvcMatchers("/api/IssueInquiry/checkLogin", "/mobile/mlogin").permitAll()
+        .mvcMatchers("/api/IssueInquiry/checkLogin", "/mobile/mlogin", "/api/withdraw/delete/**").permitAll()
         .anyRequest().authenticated();
 
     http.formLogin()

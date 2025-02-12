@@ -480,9 +480,35 @@
 <script type="text/javascript" src="/js/yumenu.js?v=1071"></script>
 <script type="text/javascript" src="/js/yuscript.js?v=1060"></script>
 <script type="text/javascript" src="/js/ax5commUtil.js?v=1070"></script>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script type="text/javascript">
+
+    var userid = '[[${userid}]]';
+
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+            appId: "683381a8-bf12-4cd7-b27f-cfa00c5bf860",
+            safari_web_id: "web.onesignal.auto.32866db8-e87d-48d6-8bf4-a7b54cca5ee4",
+            notifyButton: {
+                enable: true,
+            },
+            allowLocalhostAsSecureOrigin: true,
+        });
+        //OneSignal.User.addAlias("actas", "ALIAS_ID");
+
+
+        OneSignal.User.setLanguage('ko')
+        // 사용자의 외부 ID 설정
+        await OneSignal.login(userid);
+    });
+</script>
 <script type="text/javascript">
     let nthTabs = null;
     let default_menu = null;
+
+
+
 
     window.onload = function() {
         // 사용자 이름 마스킹 처리
