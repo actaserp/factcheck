@@ -20,6 +20,21 @@
     table th {
       width: 120px !important;
     }
+    .keyword-container {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* 입력 필드와 버튼 간격 */
+    }
+    .keyword-item {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* 간격 조절 */
+        margin-top: 5px;
+    }
+
+    .keyword-field {
+        flex: 1; /* 입력 필드가 자동으로 확장됨 */
+    }
 
   </style>
 </head>
@@ -189,6 +204,15 @@
                         <td colspan="3">
                           <input type="text" id="remark" name="remark" class="wp100" placeholder="비고" />
                           <input type="hidden" id="REGSEQ" name="REGSEQ" />
+                        </td>
+                      </tr>
+                      <tr>
+                        <th><label for="keywordInput">등기 키워드</label></th>
+                        <td colspan="3">
+                          <div class="keyword-container">
+                            <input type="text" id="keywordInput" class="form-control" placeholder="등기 키워드 입력">
+                            <button class="btn btn-outline-secondary" type="button" onclick="addKeywordRow()">추가</button>
+                          </div>
                         </td>
                       </tr>
                       </tbody>
@@ -373,6 +397,7 @@
     }
 
     function modifyData(rowData) {
+      clearForm();
       // 최대위험점수
       const regmaxnumInput = $('#regmaxnum');
       regmaxnumInput.val(rowData.regmaxnum || ''); // 기본 값 설정
@@ -422,6 +447,10 @@
             $('#remark').val(response.data.REMARK || rowData.REMARK || '');
             $('#regyul').val(response.data.REGYUL || rowData.REGYUL ||'');
             addPercentageSign(regyulInput[0]); // 포맷 적용
+
+            if (response.data.keywords && response.data.keywords.length > 0) {
+              response.data.keywords.forEach(keyword => addKeywordRow(keyword)); // 키워드 추가
+            }
           } else {
             console.warn('No data found in response:', response);
           }
@@ -658,9 +687,86 @@
             break;
         }
       });
+
+      // "등기 키워드 입력" 필드 초기화
+      document.getElementById("keywordInput").value = "";
+
+      // 추가된 키워드 리스트 초기화 (td 내부 컨텐츠 삭제)
+      let keywordTd = document.querySelector("#selectedData tbody tr:last-child td");
+      if (keywordTd) {
+        keywordTd.innerHTML = ''; // 기존 키워드와 버튼을 모두 삭제
+      }
+
+      // "등기 키워드 입력 필드"와 "추가 버튼" 다시 생성 (초기 상태 유지)
+      let keywordContainer = document.createElement("div");
+      keywordContainer.classList.add("keyword-container");
+
+      let newInput = document.createElement("input");
+      newInput.setAttribute("type", "text");
+      newInput.setAttribute("id", "keywordInput");
+      newInput.setAttribute("class", "form-control");
+      newInput.setAttribute("placeholder", "등기 키워드 입력");
+
+      let addButton = document.createElement("button");
+      addButton.setAttribute("class", "btn btn-outline-secondary");
+      addButton.setAttribute("type", "button");
+      addButton.setAttribute("onclick", "addKeywordRow()");
+      addButton.textContent = "추가";
+
+      keywordContainer.appendChild(newInput);
+      keywordContainer.appendChild(addButton);
+      keywordTd.appendChild(keywordContainer);
     }
 
 
+    //키워드 추가
+    function addKeywordRow(keywordValue = null) {
+      // 입력 필드 값 가져오기 (수동 입력 시)
+      if (keywordValue === null) {
+        keywordValue = document.getElementById("keywordInput").value.trim();
+        if (keywordValue === "") {
+          Alert.alert('', "키워드를 입력해주세요.");
+          return;
+        }
+      }
+
+      // 기존 "등기 키워드" 열(td) 찾기
+      let keywordTd = document.querySelector("#selectedData tbody tr:last-child td");
+
+      // 새로운 컨테이너(div) 생성
+      let keywordContainer = document.createElement("div");
+      keywordContainer.classList.add("keyword-item");
+
+      // 새로운 입력 필드 추가
+      let newInput = document.createElement("input");
+      newInput.setAttribute("type", "text");
+      newInput.setAttribute("class", "wp100 keyword-field");
+      newInput.setAttribute("name", "Keyword");
+      newInput.setAttribute("placeholder", "등기 키워드");
+      newInput.value = keywordValue;
+      newInput.readOnly = true; // 기존 입력 수정 불가
+
+      // 삭제 버튼 추가
+      let removeBtn = document.createElement("button");
+      removeBtn.innerHTML = "❌";
+      removeBtn.setAttribute("type", "button");
+      removeBtn.classList.add("btn", "btn-sm", "btn-outline-danger", "ms-2");
+      removeBtn.onclick = function () {
+        keywordTd.removeChild(keywordContainer);
+      };
+
+      // 컨테이너에 입력 필드와 버튼 추가
+      keywordContainer.appendChild(newInput);
+      keywordContainer.appendChild(removeBtn);
+
+      // td 안에 새 키워드 추가
+      keywordTd.appendChild(keywordContainer);
+
+      // 입력 필드 초기화 (수동 입력 시)
+      if (keywordValue === document.getElementById("keywordInput").value.trim()) {
+        document.getElementById("keywordInput").value = "";
+      }
+    }
 
   </script>
 </th:block>
