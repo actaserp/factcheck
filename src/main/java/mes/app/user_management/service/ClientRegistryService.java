@@ -35,14 +35,14 @@ public class ClientRegistryService {
            tu.USERADDR AS userAddr,
            tu.USERMAIL AS userEmail,
            tu.INDATEM AS indatem, -- 등록일자
-           COALESCE(COUNT(se.REQDATE), 0) AS InquiryCount -- 조회 카운트
-       FROM
-           TB_USERINFO tu
-       LEFT JOIN TB_SEARCHINFO se
-       ON tu.USERID = se.USERID
-           AND se.REQDATE >= :startDate
-           AND se.REQDATE <= :endDate
-       WHERE 1=1
+           COALESCE(COUNT(ri.USERID), 0) AS InquiryCount
+        FROM
+            TB_USERINFO tu
+        LEFT JOIN TB_REALINFO ri
+        ON tu.USERID = ri.USERID
+            AND ri.RELASTDATE >= :startDate
+            AND ri.RELASTDATE <= :endDate
+        WHERE 1=1
        """);
 
       // WHERE 절 동적 조건 추가
@@ -63,16 +63,16 @@ public class ClientRegistryService {
         // GROUP BY 및 ORDER BY 추가
         sql.append("""
         GROUP BY
-          tu.USERID,
-          tu.USERGU,
-          tu.USERSIDO,
-          tu.USERNM,
-          tu.SEXYN,
-          tu.USERHP,
-          tu.POSTCD,
-          tu.USERADDR,
-          tu.USERMAIL,
-          tu.INDATEM
+         tu.USERID,
+         tu.USERGU,
+         tu.USERSIDO,
+         tu.USERNM,
+         tu.SEXYN,
+         tu.USERHP,
+         tu.POSTCD,
+         tu.USERADDR,
+         tu.USERMAIL,
+         tu.INDATEM
         """);
 
             sql.append("""
@@ -80,8 +80,8 @@ public class ClientRegistryService {
            tu.INDATEM DESC
         """);
 
-      log.info("회원관리List SQL: {}", sql);
-      log.info("SQL Parameters: {}", params.getValues());
+//      log.info("회원관리List SQL: {}", sql);
+//      log.info("SQL Parameters: {}", params.getValues());
 
       return sqlRunner.getRows(sql.toString(), params);
   }
@@ -89,42 +89,41 @@ public class ClientRegistryService {
     public List<Map<String, Object>> getModalReadList(String startDate, String endDate, String searchUserNm) {
         MapSqlParameterSource params = new MapSqlParameterSource();
         StringBuilder sql = new StringBuilder("""
-         SELECT
-         ts.USERID,
-         ts.REQDATE,
-         re.REALADD,
-         tu.USERNM
-        FROM TB_SEARCHINFO ts
-        join TB_USERINFO tu ON tu.USERID = ts.USERID
-        JOIN TB_REALINFO re ON re.USERID = ts.USERID
-        WHERE 1=1
+            SELECT
+                 re.USERID,
+                 re.REQDATE,
+                 re.REALADD,
+                 tu.USERNM
+            FROM TB_REALINFO re
+            JOIN TB_USERINFO tu\s
+                ON tu.USERID = re.USERID
+            WHERE
         """);
 
         // 날짜 조건 처리
         if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
-            sql.append(" AND ts.REQDATE BETWEEN :startDate AND :endDate ");
+            sql.append(" re.REQDATE BETWEEN :startDate AND :endDate  ");
             params.addValue("startDate", startDate);
             params.addValue("endDate", endDate);
         } else {
             if (startDate != null && !startDate.isEmpty()) {
-                sql.append(" AND ts.REQDATE >= :startDate ");
+                sql.append(" AND re.REQDATE >= :startDate ");
                 params.addValue("startDate", startDate);
             }
             if (endDate != null && !endDate.isEmpty()) {
-                sql.append(" AND ts.REQDATE <= :endDate ");
+                sql.append(" AND re.REQDATE <= :endDate ");
                 params.addValue("endDate", endDate);
             }
         }
 
         // USERID 조건 처리
         if (searchUserNm != null && !searchUserNm.isEmpty()) {
-            sql.append(" AND ts.USERID = :searchUserNm ");
+            sql.append(" AND re.USERID = :searchUserNm ");
             params.addValue("searchUserNm", searchUserNm);
         }
 
         sql.append("""
-        GROUP BY ts.USERID, ts.REQDATE, re.REALADD, tu.USERNM
-         ORDER BY REQDATE ASC
+        ORDER BY re.REQDATE ASC, re.REALADD ASC
         """);
 
         // 디버깅용 로그 출력

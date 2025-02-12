@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -100,18 +101,20 @@ public class ClientRegistryController {
             // 데이터 조회
             List<Map<String, Object>> getMUserInfoList = clientRegistryService.getModalReadList(startDate, endDate, searchUserNm);
 
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyyMMdd");  // 원본 형식
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd"); // 변환할 형식
 
             for (Map<String, Object> user : getMUserInfoList) {
-                // 날짜 포맷 처리
                 Object REQDATEValue = user.get("REQDATE");
                 if (REQDATEValue != null) {
                     try {
-                        // 날짜를 포맷하여 다시 user 맵에 저장
-                        String formattedDate = dateFormatter.format(REQDATEValue);
+                        // 문자열을 Date 객체로 변환
+                        Date date = inputFormat.parse(REQDATEValue.toString());
+
+                        // Date 객체를 yyyy-MM-dd 형식의 문자열로 변환
+                        String formattedDate = outputFormat.format(date);
                         user.put("REQDATE", formattedDate);
                     } catch (Exception ex) {
-                        // 포맷 오류 처리
                         log.error("날짜 포맷 중 오류 발생: {}", ex.getMessage());
                         user.put("REQDATE", "잘못된 날짜 형식");
                     }

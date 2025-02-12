@@ -69,20 +69,28 @@ public class UM_userchartService {
     for (String region : regions) {
       for (String construction : constructions) {
         String columnAlias = region.replaceAll("[^가-힣a-zA-Z]", "") + "_" + construction;
+
+        // countQuery 변수를 먼저 선언
         String countQuery = String.format(
-            "COUNT(CASE WHEN sub.region LIKE '%s%%' AND sub.REALGUBUN = '%s' THEN 1 END) AS %s",
+            "COUNT(CASE WHEN REPLACE(sub.region, ' ', '') LIKE REPLACE('%s%%', ' ', '') AND sub.REALGUBUN = '%s' THEN 1 END) AS %s",
             region, construction, columnAlias
         );
-        sql.append(countQuery).append(",\n");
+
+        sql.append(countQuery).append(",\n"); // ✅ 올바른 순서
         countColumns.add(columnAlias);
       }
+
       // "기타" 항목을 한 번만 추가
       String columnAlias = region.replaceAll("[^가-힣a-zA-Z]", "") + "_기타";
       String countQuery = String.format(
-          "COUNT(CASE WHEN sub.region LIKE '%s%%' AND sub.REALGUBUN NOT IN ('아파트', '다세대주택', '단독주택', '오피스텔') THEN 1 END) AS %s",
-          region, columnAlias
+          "COUNT(CASE WHEN REPLACE(sub.region, ' ', '') LIKE '%%%s%%' " +
+              "AND (COALESCE(TRIM(sub.REALGUBUN), '기타') NOT IN ('아파트', '다세대주택', '단독주택', '오피스텔') " +
+              "OR COALESCE(TRIM(sub.REALGUBUN), '기타') = '분류되지 않음') " +
+              "THEN 1 END) AS %s",
+          region.replaceAll("\\s+", ""), columnAlias
       );
-      sql.append(countQuery).append(",\n");
+
+      sql.append(countQuery).append(",\n"); // ✅ 올바른 순서
       countColumns.add(columnAlias);
     }
 
@@ -133,8 +141,8 @@ public class UM_userchartService {
         .addValue("sexYn", sexYn)
         .addValue("district", district);
 
-//    log.info("그리드 리스트 SQL: {}", sql.toString());
-//    log.info("SQL 매개변수: {}", params.getValues());
+    log.info("그리드 리스트 SQL: {}", sql.toString());
+    log.info("SQL 매개변수: {}", params.getValues());
 
     return jdbcTemplate.queryForList(sql.toString(), params);
   }
