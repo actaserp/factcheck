@@ -82,7 +82,7 @@ public class ProductionService {
                 RB.RankNo AS RankNo_b, RB.RgsAimCont AS RgsAimCont_b, RB.Receve AS Receve_b,
                 RB.RgsCaus AS RgsCaus_b, RB.NomprsAndEtc AS NomprsAndEtc_b,
                 U.USERNM,
-                ROW_NUMBER() OVER (PARTITION BY R.REALID ORDER BY S.REQDATE) AS rn
+                ROW_NUMBER() OVER (PARTITION BY R.REALID ORDER BY S.REQDATE DESC) AS rn
             FROM TB_REALINFO R
             INNER JOIN TB_SEARCHINFO S ON R.REALID = S.REALID
             LEFT JOIN TB_USERINFO U ON S.USERID = U.USERID
@@ -90,15 +90,16 @@ public class ProductionService {
             LEFT JOIN TB_REALAOWN RA ON R.REALID = RA.REALID
             LEFT JOIN TB_REALBOWN RB ON R.REALID = RB.REALID
             LEFT JOIN auth_user AU ON S.USERID = AU.username
-            WHERE S.USERID = :userid
-            AND S.REALID = R.REALID
+            WHERE S.REALID = R.REALID
             AND S.REQDATE BETWEEN CAST(:startDate AS DATETIME) AND DATEADD(MILLISECOND, -1, DATEADD(DAY, 1, CAST(:endDate AS DATETIME)))
             AND (:keyword IS NULL OR R.REALADD LIKE '%' + :keyword + '%')
     """);
 
-        // username이 'super' 또는 'admin'이 아니면 조건을 제거
+        // username이 'super' 또는 'admin'이면 S.USERID IN ('super', 'admin') 조건 추가
         if ("super".equals(username) || "admin".equals(username)) {
-            sql.append(" AND AU.username IN ('super', 'admin')");
+            sql.append(" AND S.USERID IN ('super', 'admin')");
+        } else {
+            sql.append(" AND S.USERID = :userid");
         }
 
         // CTE에서 결과 조회
@@ -124,7 +125,8 @@ public class ProductionService {
             ), '[]') ELSE '[]' END AS RankNo_b_data,
             CTE.rn
         FROM CTE
-        WHERE CTE.rn = 1;
+        WHERE CTE.rn = 1
+        ORDER BY CTE.REQDATE DESC;
     """);
 
         List<Map<String, Object>> items = this.sqlRunner.getRows(sql.toString(), dicParam);
@@ -162,6 +164,7 @@ public class ProductionService {
                         S.REQDATE,
                         ROW_NUMBER() OVER (PARTITION BY S.REALID ORDER BY S.REQDATE DESC) AS rn
                     FROM TB_SEARCHINFO S
+                    LEFT JOIN auth_user AU ON S.USERID = AU.username
                 ),
                 COUNT_CTE AS (
                     SELECT
@@ -216,7 +219,7 @@ public class ProductionService {
                     INNER JOIN SEARCH_CTE S
                         ON R.REALID = S.REALID
                         AND S.rn = 1
-                    INNER JOIN TB_USERINFO U
+                    LEFT JOIN TB_USERINFO U
                         ON S.USERID = U.USERID
                     LEFT JOIN TB_REALSUMMARY RS
                         ON R.REALID = RS.REALID
@@ -375,12 +378,12 @@ public class ProductionService {
                         RB.RgsCaus AS RgsCaus_b,
                         RB.NomprsAndEtc AS NomprsAndEtc_b,
                         ROW_NUMBER() OVER (PARTITION BY R.REALID ORDER BY S.REQDATE DESC) AS rn,
-                        C.record_count  -- 추가: record_count를 CTE에 포함시킴
+                        C.record_count
                     FROM TB_REALINFO R
                     INNER JOIN SEARCH_CTE S
                         ON R.REALID = S.REALID
                         AND S.rn = 1
-                    INNER JOIN TB_USERINFO U
+                    LEFT JOIN TB_USERINFO U
                         ON S.USERID = U.USERID
                     LEFT JOIN TB_REALSUMMARY RS
                         ON R.REALID = RS.REALID
@@ -543,7 +546,7 @@ public class ProductionService {
                     INNER JOIN SEARCH_CTE S
                         ON R.REALID = S.REALID
                         AND S.rn = 1
-                    INNER JOIN TB_USERINFO U
+                    LEFT JOIN TB_USERINFO U
                         ON S.USERID = U.USERID
                     LEFT JOIN TB_REALSUMMARY RS
                         ON R.REALID = RS.REALID

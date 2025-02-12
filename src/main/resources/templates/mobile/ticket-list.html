@@ -617,7 +617,7 @@
                 'keyword': keyword
             },
             success: function (data) {
-                /* console.log(JSON.stringify(data, null, 2));*/
+
 
                 const propertyData = data[property];
 
@@ -646,7 +646,7 @@
                 let htmlContent = '';
 
                 const selectedValue = $('#property').val();
-
+                 /*console.log(JSON.stringify(propertyData, null, 2));*/
 
                 propertyData.forEach(item => {
                     const cardColor = availableColors[colorIndex];
@@ -663,7 +663,10 @@
                         : '';
 
                     // Suserid 값이 'super' 또는 'admin'이면 마스킹하지 않음
-                    const maskedUserName = (item.Suserid === 'super' || item.Suserid === 'admin') ? item.Suserid : maskName(item.USERNM);
+                    const maskedUserName = (item.Suserid === 'super' || item.Suserid === 'admin')
+                        ? item.Suserid[0] + '****'
+                        : maskName(item.USERNM);
+
 
 
                     htmlContent += `
