@@ -612,7 +612,7 @@
                 if (response.success) {
                     // 스크롤을 맨 위로 초기화
 
-                    updatePopupContent(response.data, item);
+                    updatePopupContent(response.dataA, response.dataB, item);
                     $('.list-card-wrap').scrollTop(0);
 
                 } else {
@@ -628,11 +628,11 @@
 
     }
 
-    function updatePopupContent(ownData, listData) {
+    function updatePopupContent(dataA, dataB, listData) {
         let popup = document.getElementById('popup-own');
         let overlay = document.querySelector('.popup-overlay');
         let listContainer = document.querySelector('.list-card-wrap');
-        let addressField = document.querySelector('#popup-own .ticket-tit dd'); // 주소 넣을 곳
+        let addressField = document.querySelector('#popup-own .ticket-tit dd');
 
         // 주소 업데이트 (null 또는 undefined일 경우 빈 문자열)
         addressField.textContent = listData?.SHORT_ADDR ?? '주소 정보 없음';
@@ -640,50 +640,70 @@
         // 팝업 초기화
         listContainer.innerHTML = '';
 
-        // 데이터 없을 경우
-        if (!ownData || ownData.length === 0) {
+        let allData = [];
+
+        // A 데이터 추가
+        if (dataA && dataA.length > 0) {
+            dataA.forEach(item => {
+                allData.push({ ...item, type: 'A' });
+            });
+        }
+
+        // B 데이터 추가
+        if (dataB && dataB.length > 0) {
+            dataB.forEach(item => {
+                allData.push({ ...item, type: 'B' });
+            });
+        }
+
+        // 데이터가 없을 경우
+        if (allData.length === 0) {
             listContainer.innerHTML = '<p style="text-align: center; padding: 10px;">해당 물건의 등기부등본 정보가 없습니다.</p>';
         } else {
-            ownData.forEach(item => {
-
+            allData.forEach(item => {
                 let formatValue = (value) => {
                     return value === null || value === undefined || value.toString().trim().toLowerCase() === "null"
                         ? '' // 빈칸 처리
                         : value;
                 };
 
+                // A와 B를 구분하여 카드 색상 및 구분 명칭 적용
+                let cardClass = item.type === 'A' ? 'card-red' : 'card-blue';
+                let statusClass = item.type === 'A' ? 'sta-red' : 'sta-blue';
+                let sectionName = item.type === 'A' ? '갑구' : '을구'; // A는 '갑구', B는 '을구'
+
                 let cardHtml = `
-            <div class="card-box card-blue">
-                <div class="card-cont">
-                    <dl>
-                        <dt>구분</dt>
-                        <dd><span class="sta-blue">을구</span></dd>
-                    </dl>
-                    <dl>
-                        <dt>순위 번호</dt>
-                        <dd>${formatValue(item?.RankNo)}</dd>
-                    </dl>
-                    <dl>
-                        <dt>등기목적</dt>
-                        <dd>${formatValue(item?.RgsAimCont)}</dd>
-                    </dl>
-                    <dl>
-                        <dt>접수</dt>
-                        <dd>${formatValue(item?.Receve)}</dd>
-                    </dl>
-                    <dl>
-                        <dt>등기원인</dt>
-                        <dd>${formatValue(item?.RgsCaus)}</dd>
-                    </dl>
-                    <dl>
-                        <dt colspan="2" style="width: 100%;text-align: left;">권리자 및 기타사항</dt>
-                    </dl>
-                    <dl>
-                        <dd colspan="2" style="width: 100%;text-align: left;">${formatValue(item?.NomprsAndEtc)}</dd>
-                    </dl>
+                <div class="card-box ${cardClass}">
+                    <div class="card-cont">
+                        <dl>
+                            <dt>구분</dt>
+                            <dd><span class="${statusClass}">${sectionName}</span></dd>
+                        </dl>
+                        <dl>
+                            <dt>순위 번호</dt>
+                            <dd>${formatValue(item?.RankNo)}</dd>
+                        </dl>
+                        <dl>
+                            <dt>등기목적</dt>
+                            <dd>${formatValue(item?.RgsAimCont)}</dd>
+                        </dl>
+                        <dl>
+                            <dt>접수</dt>
+                            <dd>${formatValue(item?.Receve)}</dd>
+                        </dl>
+                        <dl>
+                            <dt>등기원인</dt>
+                            <dd>${formatValue(item?.RgsCaus)}</dd>
+                        </dl>
+                        <dl>
+                            <dt colspan="2" style="width: 100%;text-align: left;">권리자 및 기타사항</dt>
+                        </dl>
+                        <dl>
+                            <dd colspan="2" style="width: 100%;text-align: left;">${formatValue(item?.NomprsAndEtc)}</dd>
+                        </dl>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
 
                 // 생성된 카드 추가
                 listContainer.innerHTML += cardHtml;
@@ -701,6 +721,7 @@
         // 스크롤 초기화 (팝업이 길어질 경우)
         popup.scrollTop = 0;
     }
+
 
 
     function toggleView() {

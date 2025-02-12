@@ -184,10 +184,13 @@ public class MapController {
     log.info("realid={}", realid);
     Map<String, Object> response = new HashMap<>();
     try {
-      List<Map<String, Object>> results = mapService.getOwn(realid);
-      if (!results.isEmpty()) {
+      List<Map<String, Object>> resultsA = mapService.getAOwn(realid);
+      List<Map<String, Object>> resultsB = mapService.getBOwn(realid);
+
+      if (!resultsA.isEmpty() || !resultsB.isEmpty()) {
         response.put("success", true);
-        response.put("data", results);
+        response.put("dataA", resultsA);
+        response.put("dataB", resultsB);
       } else {
         response.put("success", false);
         response.put("message", "데이터를 찾을 수 없습니다.");

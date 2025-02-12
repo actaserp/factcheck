@@ -100,8 +100,24 @@ public class MapService {
         return sqlRunner.getRows(sql, params);
     }
 
+    public List<Map<String, Object>> getAOwn(int realid) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("realid", realid);
 
-    public List<Map<String, Object>> getOwn(int realid) {
+        String sql = """
+            SELECT * FROM TB_REALAOWN
+            WHERE REALID = :realid
+            ORDER BY
+                TRY_CAST(REPLACE(RankNo, '-', '') +
+                                         CASE WHEN RankNo LIKE '%-%' THEN '' ELSE '0' END AS INT) DESC,
+                                CASE WHEN ISNUMERIC(RankNo) = 1 THEN 0 ELSE 1 END,
+                                RankNo DESC;
+    """;
+
+        return sqlRunner.getRows(sql, params);
+    }
+
+    public List<Map<String, Object>> getBOwn(int realid) {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("realid", realid);
 
