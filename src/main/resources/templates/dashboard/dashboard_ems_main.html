@@ -658,7 +658,7 @@
                     // 일주일 가입자 현황 데이터
                     let SignupOfWeek = data2.SignupOfWeek;
                     const noDataMessage1 = document.getElementById('noDataMessage1');
-                    const canvasElement1 = document.getElementById('Signout');
+                    const canvasElement1 = document.getElementById('SignupOfWeek');
                     const firstDate = data2.SignupOfWeek[0].DATE;
                     const lastDate = data2.SignupOfWeek[data2.SignupOfWeek.length - 1].DATE;
 
@@ -691,16 +691,15 @@
                         const lastWeek = new Date();
                         lastWeek.setDate(today.getDate() - 7);
 
-                        // 형식 변환
-                        const formattedDateRange2 = `${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)}`;
-
                         // 'yyyy-MM-dd' 포맷으로 변환
                         const todayStr = today.toISOString().slice(0, 10);
                         const lastWeekStr = lastWeek.toISOString().slice(0, 10);
                         // 형식 변환
+                        const formattedDateRange2 = `${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)}`;
+                        // 형식 변환
                         const formattedDateRange = `${formatDate(firstDate)}~${formatDate(lastDate)}`;
                         // id가 'weekPeriod'인 요소를 찾습니다.
-                        const weekPeriodElement = document.getElementById('weekPeriod');weektitle
+                        const weekPeriodElement = document.getElementById('weekPeriod');
                         const weektitleElement = document.getElementById('weektitle');
 
                         // 요소의 텍스트를 수정합니다.
@@ -826,7 +825,7 @@
                     // 등기발급건수 데이터
                     let CntOfRegister = data2.CntOfRegister;
                     const noDataMessage3 = document.getElementById('noDataMessage3');
-                    const canvasElement3 = document.getElementById('Signout');
+                    const canvasElement3 = document.getElementById('CntOfRegister');
                     const lastDate2 = data2.CntOfRegister[data2.CntOfRegister.length - 1].DATE;
                     // Signout 데이터가 빈 배열인지 확인
                     if (CntOfRegister.length === 0) {
@@ -908,7 +907,7 @@
                     // 상위검색지역 데이터
                     let BestSearch = data2.BestSearch;
                     const noDataMessage4 = document.getElementById('noDataMessage4');
-                    const canvasElement4 = document.getElementById('Signout');
+                    const canvasElement4 = document.getElementById('BestSearch');
 
                     // Signout 데이터가 빈 배열인지 확인
                     if (BestSearch.length === 0) {
