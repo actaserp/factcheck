@@ -134,6 +134,9 @@ public class TilkoParsing {
         if (input.contains("복합건축물")) {
             return "복합건축물";
         }
+        if (input.contains("아파트")) {
+            return "아파트";
+        }
 
         return "분류되지 않음"; // 어떤 카테고리에도 해당하지 않는 경우
     }
