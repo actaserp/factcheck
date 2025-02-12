@@ -466,6 +466,18 @@ public class TilkoParsing {
         }
         return -1;
     }
+    // 정규식 패턴 기반 검색 메서드
+    public static int findStartIndexWithRegex(List<String> tableData, String regexPattern) {
+        Pattern pattern = Pattern.compile(regexPattern);
+
+        for (int i = 0; i < tableData.size(); i++) {
+            Matcher matcher = pattern.matcher(tableData.get(i));
+            if (matcher.find()) {
+                return i;  // 첫 번째로 매칭되는 인덱스 반환
+            }
+        }
+        return -1;  // 찾지 못하면 -1 반환
+    }
     // Summary 데이터 파싱 메서드
     public static Map<String, Object> parseSummaryTable(List<String> tableData, String nomData) {
         List<Map<String, Object>> summaryDataA = new ArrayList<>();

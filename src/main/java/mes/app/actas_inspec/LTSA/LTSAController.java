@@ -104,9 +104,9 @@ public class LTSAController {
                 // 표데이터에서 갑구 확인 인덱스
                 int gabguStartIndex = tilkoParsing.findStartIndex(pdfListContent, "갑 구");
                 System.out.println("갑구 인덱스 : " + gabguStartIndex);
-                int eulguStartIndex = tilkoParsing.findStartIndex(pdfListContent, "을\\s구|을\\|구");
+                int eulguStartIndex = tilkoParsing.findStartIndexWithRegex(pdfListContent, "을\\s구|을\\|구");
                 System.out.println("을구 인덱스 : " + eulguStartIndex);
-                int eulguEndIndex = tilkoParsing.findStartIndex(pdfListContent, "등기명의인\\|\\(주민\\)등록번호");
+                int eulguEndIndex = tilkoParsing.findStartIndexWithRegex(pdfListContent, "등기명의인\\|\\(주민\\)등록번호");
                 System.out.println("등기명의인 시작 인덱스 : " + eulguEndIndex);
                 // `을구` 인덱스가 없으면 리스트 끝까지
                 int endIdx = (eulguStartIndex != -1) ? eulguStartIndex : pdfListContent.size();
