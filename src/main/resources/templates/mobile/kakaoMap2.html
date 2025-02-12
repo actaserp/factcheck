@@ -8,6 +8,9 @@
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
+    .table-container {
+        position: relative;
+    }
 
 </style>
 <head>
@@ -72,6 +75,20 @@
         </div>
         <div style=" margin-top: 5%">
           <span id="selected-region" style="font-size: 20px; font-weight: bold; color: #333;"></span>
+        </div>
+        <!-- 로딩바 -->
+        <div id="loading-button" style="display: none;
+        position: absolute;
+        top: 20%; left: 50%; /* 높이 조절*/
+        transform: translate(-50%, -50%);
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 1000;">
+          <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Loading...
+          </button>
         </div>
 
         <div id="map" style="width:100%;height: 65vh ; flex-grow: 1;"></div>
@@ -774,6 +791,10 @@
   var activeOverlay = null; // 현재 활성화된 오버레이 저장
 
   function loadMarkersForRegion(regionName, gugunName) {
+
+    // 로딩 버튼 표시
+    document.getElementById("loading-button").style.display = "block";
+
     $.ajax({
       url: "/api/Map/markersByRegion",
       type: "GET",
@@ -890,7 +911,7 @@
           } else {
             console.error("클러스터러 객체가 초기화되지 않음");
           }
-
+          document.getElementById("loading-button").style.display = "none";
         } else {
           console.error("마커 데이터를 불러오지 못했습니다.");
         }
