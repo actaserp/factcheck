@@ -18,16 +18,16 @@ public class TB_REALINFO {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int realId;
 
-  @Column(name = "USERID", length = 20, nullable = false)
+  @Column(name = "USERID")
   private String userId;
 
-  @Column(name = "REQDATE", length = 8)
+  @Column(name = "REQDATE")
   private String reqDate;
 
-  @Column(name = "REALADD", length = 100)
+  @Column(name = "REALADD")
   private String realAdd;
 
-  @Column(name = "REGDATE", length = 8)
+  @Column(name = "REGDATE")
   private String regDate;
 
   @Column(name = "RESIDO", length = 20)

@@ -620,5 +620,17 @@ public class TilkoService {
         int rowsAffected = this.sqlRunner.execute(sql, params);
         System.out.println("searchinfo Rows inserted: " + rowsAffected);
     }
+    // api 사용 로그 쌓기
+    public List<Map<String, Object>> getGradeData() {
+        // SQL 파라미터 설정
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        String sql = """
+        SELECT * FROM TB_GRADEINFO;
+        """;
+
+        // 쿼리 실행
+        List<Map<String, Object>> rowsAffected = this.sqlRunner.getRows(sql, params);
+        return rowsAffected;
+    }
 
 }

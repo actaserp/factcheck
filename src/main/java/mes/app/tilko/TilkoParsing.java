@@ -64,7 +64,7 @@ public class TilkoParsing {
         Matcher matcher = amountPattern.matcher(input);
 
         if (matcher.find()) {
-            return matcher.group().replace(",", ""); // 콤마 제거 후 반환
+            return matcher.group(2).replace(",", ""); // 콤마 제거 후 반환
         }
 
         return null; // 매칭 실패 시 null 반환
@@ -73,74 +73,73 @@ public class TilkoParsing {
     // 건축물 분류 메서드
     public static String assortArchitec(String input) {
         System.out.println("건축물 분류 텍스트 : " + input);
-        // 1. 주요 카테고리 분류
-        if (input.contains("단독주택")) {
+
+        if (matchesWord(input, "단독주택")) {
             return checkType(input, new String[]{"단독주택", "다중주택", "다가구주택"}, "단독주택");
         }
-        if (input.contains("공동주택")) {
+        if (matchesWord(input, "공동주택")) {
             return checkType(input, new String[]{"아파트", "연립주택", "다세대주택", "기숙사"}, "공동주택");
         }
-        if (input.contains("판매시설")) {
+        if (matchesWord(input, "판매시설")) {
             return "판매시설";
         }
-        if (input.contains("업무시설")) {
+        if (matchesWord(input, "업무시설")) {
             return "업무시설";
         }
-        if (input.contains("숙박시설")) {
+        if (matchesWord(input, "숙박시설")) {
             return "숙박시설";
         }
-        if (input.contains("근린생활시설")) {
+        if (matchesWord(input, "근린생활시설")) {
             return "근린생활시설";
         }
-        if (input.contains("학교")) {
+        if (matchesWord(input, "학교")) {
             return "학교";
         }
-        if (input.contains("학원")) {
+        if (matchesWord(input, "학원")) {
             return "학원";
         }
-        if (input.contains("도서관")) {
+        if (matchesWord(input, "도서관")) {
             return "도서관";
         }
-        if (input.contains("연구소")) {
+        if (matchesWord(input, "연구소")) {
             return "연구소";
         }
-        if (input.contains("문화 및 집회시설")) {
+        if (matchesWord(input, "문화 및 집회시설")) {
             return "문화 및 집회시설";
         }
-        if (input.contains("종교시설")) {
+        if (matchesWord(input, "종교시설")) {
             return "종교시설";
         }
-        if (input.contains("의료시설")) {
+        if (matchesWord(input, "의료시설")) {
             return "의료시설";
         }
-        if (input.contains("노유자시설")) {
+        if (matchesWord(input, "노유자시설")) {
             return "노유자시설";
         }
-        if (input.contains("공장")) {
+        if (matchesWord(input, "공장")) {
             return "공장";
         }
-        if (input.contains("창고시설")) {
+        if (matchesWord(input, "창고시설")) {
             return "창고시설";
         }
-        if (input.contains("운동시설")) {
+        if (matchesWord(input, "운동시설")) {
             return "운동시설";
         }
-        if (input.contains("상가주택")) {
+        if (matchesWord(input, "상가주택")) {
             return "상가주택";
         }
-        if (input.contains("오피스텔")) {
+        if (matchesWord(input, "오피스텔")) {
             return "오피스텔";
         }
-        if (input.contains("복합건축물")) {
+        if (matchesWord(input, "복합건축물")) {
             return "복합건축물";
         }
-        if (input.contains("아파트")) {
+        if (matchesWord(input, "아파트")) {
             return "아파트";
         }
 
-        return "분류되지 않음"; // 어떤 카테고리에도 해당하지 않는 경우
+        return "기타"; // 어떤 카테고리에도 해당하지 않는 경우
     }
-
     private static String checkType(String input, String[] types, String defaultType) {
         for (String type : types) {
             if (input.contains(type)) {
@@ -149,10 +148,19 @@ public class TilkoParsing {
         }
         return defaultType; // 세부 유형이 없으면 기본 카테고리 반환
     }
-    // 카드점수 파싱 메서드 (카드 등급, 점수, 비고 모두 리턴)
+    // 정규식을 사용하여 정확한 단어 탐지
+    private static boolean matchesWord(String input, String word) {
+        Pattern pattern = Pattern.compile("\\b" + word + "\\b");
+        Matcher matcher = pattern.matcher(input);
+        return matcher.find();
+    }
+    // 카드점수 파싱 메서드 (카드 등급, 점수, 추가설명(Comment) 모두 리턴)
     public static Map<String, Object> calScore(List<Map<String, Object>> summaryData,
                                                List<Map<String, Object>> comcode,
-                                               Integer lessScore) {
+                                               Integer lessScore,
+                                               List<Map<String,Object>> gradeInfo) {
+
+        System.out.println("계산에 사용되는 SummaryData : " + summaryData);
         int finalScore = 100; // 기본 점수
         String Grade = "";
         List<String> comment = new ArrayList<>();
@@ -171,11 +179,11 @@ public class TilkoParsing {
             values.put("REGNM", code.get("REGNM").toString());
             regMap.put(regnm, values);
         }
-        System.out.println("regMap : "  + regMap);
 
         // 정규식 패턴 (채권최고액과 근저당권자 추출)
         Pattern amountPattern = Pattern.compile("채권최고액\\s+금([0-9,]+)원");
         Pattern creditorPattern = Pattern.compile("근저당권자\\s+(.+)");
+        Pattern chaePattern = Pattern.compile("채권자\\s+(.+)");
 
         // 근저당권자별 마지막 채권최고액 저장
         Map<String, Long> creditorAmounts = new HashMap<>();
@@ -243,20 +251,21 @@ public class TilkoParsing {
         }
 
         // 등급 설정
-        if (finalScore >= 90) {
-            Grade = "S";
-        } else if (finalScore >= 80) {
-            Grade = "A";
-        } else if (finalScore >= 70) {
-            Grade = "B";
-        } else if (finalScore >= 60) {
-            Grade = "C";
-        } else if (finalScore >= 50) {
-            Grade = "D";
-        } else if (finalScore >= 40) {
-            Grade = "E";
-        } else {
+        for (Map<String, Object> grade : gradeInfo) {
+            int minScore = (Integer) grade.get("GRSCORE01");
+            int maxScore = (Integer) grade.get("GRSCORE02");
+
+            if (minScore <= finalScore && maxScore >= finalScore) {
+                Grade = grade.get("GRID").toString();
+                System.out.println("✅ 등급 매칭: " + Grade + " (점수: " + finalScore + ")");
+                break;
+            }
+        }
+
+        // 등급이 설정되지 않으면 가장 낮은 등급 반환
+        if (Grade.isEmpty()) {
             Grade = "F";
+            System.out.println("⚠️ 등급을 찾지 못함, 가장 낮은 등급 반환: " + Grade);
         }
 
         Map<String, Object> resultMap = new HashMap<>();
@@ -324,12 +333,14 @@ public class TilkoParsing {
 
             if (columns.length < 5) continue;  // 유효한 데이터인지 체크
 
-            if (!columns[0].trim().isEmpty()) {
-                // 이전 데이터 저장 후 초기화
+            // 순위번호가 없거나 "null"로 시작하는경우 이전 데이터와 병합
+            if (!columns[0].trim().isEmpty() && !columns[0].trim().equalsIgnoreCase("null")) {
+
                 if (!currentRow.isEmpty()) {
                     parsedData.add(new HashMap<>(currentRow));
                 }
                 currentRow.clear();
+
                 currentRow.put("RankNo", columns[0].trim());
                 currentRow.put("RgsAimCont", columns[1].trim());
                 currentRow.put("Receve", columns[2].trim());
@@ -360,7 +371,9 @@ public class TilkoParsing {
 //                    TradeAmount.add(tradeEntry);
 //                }
             } else {
-                // 순위번호가 없는 경우 → 이전 데이터와 병합
+                currentRow.put("RgsAimCont", currentRow.get("RgsAimCont") + " " + columns[1].trim());
+                currentRow.put("Receve", currentRow.get("Receve") + " " + columns[2].trim());
+                currentRow.put("RgsCaus", currentRow.get("RgsCaus") + " " + columns[3].trim());
                 currentRow.put("NomprsAndEtc", currentRow.get("NomprsAndEtc") + " " + columns[4].trim());
             }
         }
@@ -404,7 +417,7 @@ public class TilkoParsing {
             // 순위번호가 있는 새로운 데이터 시작 시
             if (!columns[0].trim().isEmpty()) {
                 // 이전 데이터 저장 후 초기화
-                if (!currentRow.isEmpty()) {
+                if (!currentRow.isEmpty() && !columns[0].trim().equalsIgnoreCase("null")) {
                     parsedData.add(new HashMap<>(currentRow));
                 }
                 currentRow.clear();
@@ -479,15 +492,16 @@ public class TilkoParsing {
         return -1;  // 찾지 못하면 -1 반환
     }
     // Summary 데이터 파싱 메서드
-    // Summary 데이터 파싱 메서드
     public static Map<String, Object> parseSummaryTable(List<String> tableData, String nomData) {
         List<Map<String, Object>> summaryDataA = new ArrayList<>();
         List<Map<String, Object>> summaryDataK = new ArrayList<>();
         List<Map<String, Object>> summaryDataE = new ArrayList<>();
+        System.out.println("넘어온 Summary 테이블 데이터 : " + tableData);
+        System.out.println("넘어온 Summary 일반 데이터 : " + nomData);
 
         boolean isParsingA = false, isParsingK = false, isParsingE = false;
         boolean hasGabguData = false, hasEulguData = false;
-        boolean isGabguComplete = false;  // 갑구 데이터 종료 플래그
+        int rankNoCount = 0;  // "순위번호" 등장 횟수 추적
 
         // **갑구와 을구 데이터 존재 여부 판단**
         if (!nomData.replaceAll("[|\\s\\n\\t\\r]+", " ").contains("2. 소유지분을 제외한 소유권에 관한 사항 (갑구) - 기록사항 없음")) {
@@ -495,7 +509,6 @@ public class TilkoParsing {
             hasGabguData = true;
         } else {
             System.out.println("❌ 갑구 데이터 없음");
-            isGabguComplete = true;  // **갑구 데이터가 없으면 즉시 종료 플래그 설정**
         }
 
         if (!nomData.replaceAll("[|\\s\\n\\t\\r]+", " ").contains("3. (근)저당권 및 전세권 등 ( 을구 ) - 기록사항 없음")) {
@@ -520,23 +533,26 @@ public class TilkoParsing {
                 continue;
             }
 
-            // **갑구 데이터 감지 시작**
-            if (columns[0].equals("순위번호") && hasGabguData && !isGabguComplete && !isParsingE) {
-                System.out.println("🔍 갑구 데이터 감지 시작");
-                isParsingA = false;
-                isParsingK = true;
-                isParsingE = false;
+            // **순위번호 컬럼 감지 (첫 번째 & 두 번째)**
+            if (columns[0].equals("순위번호")) {
+                rankNoCount++;
+
+                if (rankNoCount == 1 && hasGabguData) {
+                    // ✅ 첫 번째 "순위번호" 감지 → 갑구 데이터 시작
+                    System.out.println("🔍 첫 번째 순위번호 감지: 갑구 데이터 시작");
+                    isParsingA = false;
+                    isParsingK = true;
+                    isParsingE = false;
+                } else if (rankNoCount == 2 && hasEulguData) {
+                    // ✅ 두 번째 "순위번호" 감지 → 갑구 데이터 종료 + 을구 데이터 시작
+                    System.out.println("🔍 두 번째 순위번호 감지: 갑구 종료, 을구 데이터 시작");
+                    isParsingK = false;
+                    isParsingE = true;
+                }
                 continue;
             }
 
-            // **갑구 데이터 종료 및 을구 데이터 감지 시작**
-            if (columns[0].equals("순위번호") && hasEulguData && isGabguComplete) {
-                System.out.println("🔍 을구 데이터 감지 시작");
-                isParsingA = false;
-                isParsingK = false;
-                isParsingE = true;
-                continue;
-            }
+
 
             // **등기명의인 데이터 저장**
             if (isParsingA && columns.length >= 5) {
@@ -560,26 +576,19 @@ public class TilkoParsing {
                 summaryDataK.add(entry);
             }
 
-            // **갑구 구간 종료 플래그 설정**
-            if (isParsingK && !columns[0].equals("순위번호") && columns[0].matches("\\d+-\\d*")) {
-                System.out.println("🚩 갑구 데이터 종료, 을구 데이터 감지 가능");
-                isGabguComplete = true;
-                isParsingK = false;
-                isParsingE = true;
-                continue;
-            }
-
             // **을구 데이터 저장**
             if (hasEulguData && isParsingE && columns.length >= 5) {
-                    System.out.println("✅ 을구 데이터 저장 진행: " + Arrays.toString(columns));
-                    Map<String, Object> entry = new HashMap<>();
-                    entry.put("RankNo", columns[0].trim());
-                    entry.put("Purpose", columns[1].trim());
-                    entry.put("ReceiptInfo", columns[2].trim());
-                    entry.put("Information", columns[3].trim());
-                    entry.put("TargetOwner", columns[4].trim());
-                    summaryDataE.add(entry);
+                System.out.println("✅ 을구 데이터 저장 진행: " + Arrays.toString(columns));
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("RankNo", columns[0].trim());
+                entry.put("Purpose", columns[1].trim());
+                entry.put("ReceiptInfo", columns[2].trim());
+                entry.put("Information", columns[3].trim());
+                entry.put("TargetOwner", columns[4].trim());
+                summaryDataE.add(entry);
             }
+
+
         }
 
         // **최종 결과 반환**
@@ -597,11 +606,10 @@ public class TilkoParsing {
 
     // 구축물 파싱
     public static Map<String, Object> extractGubun(List<String> tableData) {
+
         Map<String, Object> buildingData = new HashMap<>();
         StringBuilder buildingDetails = new StringBuilder();
         boolean collecting = false;
-
-        System.out.println("extractGubun() 호출됨, tableData 크기: " + tableData.size());
 
         if (tableData.size() > 1) {
             tableData = tableData.subList(1, tableData.size());
@@ -612,18 +620,25 @@ public class TilkoParsing {
         for (String row : tableData) {
             String[] columns = row.split("\\|");
 
+            // "표시번호"로 시작하는 행은 무시
+            if (columns[0].trim().equals("표시번호")) {
+                continue;
+            }
+
             if (columns.length < 4) continue; // 최소 4개 필드 존재해야 유효
+
+            System.out.println("구축물 파싱 진행중 행 : " + Arrays.toString(columns));
 
             // 건물 내역 시작점 확인
             if (!columns[0].trim().isEmpty() && !collecting) {
                 collecting = true;
                 buildingData.put("seq", columns[0].trim());
-                buildingData.put("address", columns[1].trim());
-                buildingDetails.append(columns[3].trim());
+                buildingData.put("address", columns[2].trim());
+                buildingDetails.append(columns[4].trim());
             }
             // 건물 내역이 이어지는 경우 계속 추가
             else if (collecting) {
-                buildingDetails.append(" ").append(columns[3].trim());
+                buildingDetails.append(" ").append(columns[4].trim());
             }
         }
 

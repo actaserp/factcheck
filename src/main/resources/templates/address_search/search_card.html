@@ -150,6 +150,8 @@
             ? parsedData.COMMENT.join("\n")  // 줄바꿈으로 연결
             : parsedData.COMMENT;
 
+        let scoreData = parsedData.GRADE;
+
         // 카드 요소 생성
         const card = document.createElement('div');
         card.className = 'card';
@@ -170,7 +172,7 @@
         const cardContent3 = document.createElement('div');
         cardContent3.className = 'card-content';
 
-        if (!commentsText || commentsText.trim() === "") {
+        if (scoreData === "S") {
             cardContent3.textContent = `안전합니다.`;
         } else {
             cardContent3.textContent = `코멘트: ${commentsText}`;
