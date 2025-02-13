@@ -76,7 +76,7 @@ public class UM_userchartService {
             region, construction, columnAlias
         );
 
-        sql.append(countQuery).append(",\n"); // ✅ 올바른 순서
+        sql.append(countQuery).append(",\n"); // 올바른 순서
         countColumns.add(columnAlias);
       }
 
@@ -84,13 +84,13 @@ public class UM_userchartService {
       String columnAlias = region.replaceAll("[^가-힣a-zA-Z]", "") + "_기타";
       String countQuery = String.format(
           "COUNT(CASE WHEN REPLACE(sub.region, ' ', '') LIKE '%%%s%%' " +
-              "AND (COALESCE(TRIM(sub.REALGUBUN), '기타') NOT IN ('아파트', '다세대주택', '단독주택', '오피스텔') " +
+              "AND (COALESCE(TRIM(sub.REALGUBUN), '기타') NOT IN ('아파트','빌라','다세대주택','단독','단독주택','오피스', '오피스텔') " +
               "OR COALESCE(TRIM(sub.REALGUBUN), '기타') = '분류되지 않음') " +
               "THEN 1 END) AS %s",
           region.replaceAll("\\s+", ""), columnAlias
       );
 
-      sql.append(countQuery).append(",\n"); // ✅ 올바른 순서
+      sql.append(countQuery).append(",\n"); // 올바른 순서
       countColumns.add(columnAlias);
     }
 
@@ -107,7 +107,7 @@ public class UM_userchartService {
       subQueryColumns.add("RI.REGUGUN AS district");
     }
     if (sexYn != null) {
-      subQueryColumns.add("COALESCE(TU.SEXYN, '') AS sexYn");
+      subQueryColumns.add("COALESCE(UI.SEXYN, '') AS sexYn");
     }
     subQueryColumns.add("COALESCE(TRIM(RI.RESIDO), '') AS region");
     // "기타"를 변환하지 않고 원본 값을 유지
@@ -123,7 +123,7 @@ public class UM_userchartService {
       sql.append("       AND RI.RELASTDATE <= :inDatem \n");
     }
     if (sexYn != null) {
-      sql.append("      AND TU.SEXYN LIKE :sexYn \n");
+      sql.append("      AND UI.SEXYN LIKE :sexYn \n");
     }
     if (district != null) {
       sql.append("       AND RI.REGUGUN LIKE :district\n");
@@ -142,8 +142,8 @@ public class UM_userchartService {
         .addValue("sexYn", sexYn)
         .addValue("district", district);
 
-//    log.info("그리드 리스트 SQL: {}", sql.toString());
-//    log.info("SQL 매개변수: {}", params.getValues());
+    log.info("그리드 리스트 SQL: {}", sql.toString());
+    log.info("SQL 매개변수: {}", params.getValues());
 
     return jdbcTemplate.queryForList(sql.toString(), params);
   }
@@ -214,17 +214,17 @@ public class UM_userchartService {
     subQueryColumns.add("CONVERT(DATE, RI.RELASTDATE) AS inDatem");
     subQueryColumns.add("RI.RESIDO AS region");
     subQueryColumns.add("RI.REGUGUN AS district");
-    subQueryColumns.add("TU.SEXYN AS sexYn");
+    subQueryColumns.add("UI.SEXYN AS sexYn");
 
     // REALGUBUN을 "기타"로 변환
     subQueryColumns.add(
         "CASE " +
             "WHEN RI.REALGUBUN IS NULL OR LTRIM(RTRIM(RI.REALGUBUN)) = '' OR RI.REALGUBUN = '분류되지 않음' " +
-            "OR RI.REALGUBUN NOT IN ('아파트', '다세대주택', '단독주택', '오피스텔') THEN '기타' " +
+            "OR RI.REALGUBUN NOT IN ('아파트','빌라','다세대주택','단독','단독주택','오피스', '오피스텔') THEN '기타' " +
             "ELSE RI.REALGUBUN END AS REALGUBUN"
     );
 
-    // ✅ AGENUM 변환 로직 추가
+    // AGENUM 변환 로직 추가
     subQueryColumns.add("""
     CASE 
         WHEN COALESCE(TU.AGENUM, 0) = 0 THEN 1 
@@ -232,7 +232,7 @@ public class UM_userchartService {
     END AS AGENUM
 """);
 
-// ✅ 연령대 변환 로직
+// 연령대 변환 로직
     subQueryColumns.add("""
     CASE
         WHEN COALESCE(TU.AGENUM, 0) = 0 THEN '19'
@@ -314,7 +314,7 @@ public class UM_userchartService {
     // `selectedColumn` 처리
     if (selectedColumn != null && !selectedColumn.isEmpty()) {
       if ("기타".equals(selectedColumn)) {
-        sql.append(" AND (RI.REALGUBUN NOT IN ('아파트', '다세대주택', '단독주택', '오피스텔') OR RI.REALGUBUN = '기타')");
+        sql.append(" AND (RI.REALGUBUN NOT IN ('아파트','빌라','다세대주택','단독','단독주택','오피스', '오피스텔') OR RI.REALGUBUN = '기타') ");
       } else {
         sql.append(" AND RI.REALGUBUN = :selectedColumn");
         params.addValue("selectedColumn", selectedColumn);

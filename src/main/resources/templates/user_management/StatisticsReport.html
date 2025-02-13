@@ -568,34 +568,48 @@
 
     // 클릭한 컬럼의 병합된 상위 헤더 찾기
     function getMergedHeader(colIndex) {
-      const mergedHeaders = {
-        5: '서울특별시',
-        10: '부산광역시',
-        15: '대구광역시',
-        20: '인천광역시',
-        25: '광주광역시',
-        30: '대전광역시',
-        35: '울산광역시',
-        40: '세종특별자치시',
-        45: '경기도',
-        50: '강원도',
-        55: '충청북도',
-        60: '충청남도',
-        65: '전라북도',
-        70: '전라남도',
-        75: '경상북도',
-        80: '경상남도',
-        85: '제주특별자치도'
-      };
+      if (colIndex < 0 || colIndex >= theGrid2.columns.length) {
+        console.warn(`잘못된 colIndex: ${colIndex}`);
+        return "";
+      }
 
-      let nearestHeader = '';
-      Object.keys(mergedHeaders).forEach(index => {
-        if (colIndex >= index) {
-          nearestHeader = mergedHeaders[index];
+      // 현재 컬럼의 헤더를 가져옴
+      let columnHeader = theGrid2.columns[colIndex]?.header?.trim() || "";
+      console.log(`🔍 현재 선택한 컬럼 헤더: "${columnHeader}"`);
+
+      // 찾을 지역 목록 (패턴 기반 검색)
+      const regions = [
+        "서울특별시", "부산광역시", "대구광역시", "인천광역시", "광주광역시",
+        "대전광역시", "울산광역시", "세종특별자치시", "경기도", "강원도",
+        "충청북도", "충청남도", "전라북도", "전라남도", "경상북도", "경상남도", "제주특별자치도"
+      ];
+
+      // 1. 컬럼 헤더에서 직접 지역명 찾기
+      let matchedRegion = regions.find(region => columnHeader.includes(region));
+
+      if (!matchedRegion) {
+        // 2. 병합된 상위 헤더에서 지역 찾기
+        let columnPanel = theGrid2.columnHeaders;
+        let headerRowIndex = 0;
+
+        try {
+          let cellData = columnPanel.getCellData(headerRowIndex, colIndex);
+          console.log(`🔍 병합된 헤더 데이터: "${cellData}"`);
+
+          // cellData가 존재하고 문자열일 경우에만 includes() 호출
+          if (cellData && typeof cellData === "string") {
+            matchedRegion = regions.find(region => cellData.includes(region));
+          } else {
+            console.warn(`병합된 헤더 데이터가 없습니다. colIndex: ${colIndex}`);
+          }
+        } catch (e) {
+          console.error("지역 헤더를 찾을 수 없음:", e);
+          return "";
         }
-      });
+      }
 
-      return nearestHeader;
+      console.log(`최종 병합된 지역 헤더: ${matchedRegion || "없음"}`);
+      return matchedRegion || "";
     }
 
     function applyChanges2() {
@@ -691,7 +705,7 @@
         type: 'GET',
         data: params,
         success: function (response) {
-          console.log("✅ API 응답 데이터:", response);
+          console.log("API 응답 데이터:", response);
 
           if (!response || !Array.isArray(response) || response.length === 0) {
             Alert.alert('',"사용자 정보를 찾을 수 없습니다.");
@@ -977,7 +991,7 @@
     // 선택한 열(colIndex)이 속한 "나이" 헤더 가져오기
     function getMergedHeader2(colIndex) {
       if (colIndex < 0 || colIndex >= theGrid.columns.length) {
-        console.warn(`⚠️ 잘못된 colIndex: ${colIndex}`);
+        console.warn(`잘못된 colIndex: ${colIndex}`);
         return "";
       }
 
@@ -997,7 +1011,7 @@
           console.log(`🔍 병합된 헤더 데이터: "${cellData}"`);
           matchedAgeGroup = cellData ? cellData.trim() : "";
         } catch (e) {
-          console.error("⚠️ 연령대 헤더를 찾을 수 없음:", e);
+          console.error("연령대 헤더를 찾을 수 없음:", e);
           return "";
         }
       }
