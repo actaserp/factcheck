@@ -23,8 +23,9 @@
     .keyword-container {
         display: flex;
         align-items: center;
-        gap: 8px; /* 입력 필드와 버튼 간격 */
+        gap: 8px; /* 간격 조절 */
     }
+
     .keyword-item {
         display: flex;
         align-items: center;
@@ -130,18 +131,19 @@
                         <col class="wauto">
                       </colgroup>
                       <tbody>
-                      <tr>
+                      <!--<tr>
                         <th>
                           <label for="regnm">등기 명칭</label>
                         </th>
                         <td colspan="3">
-                          <input type="text" id="regnm" name="regnm" class="wp100" placeholder="등기명칭" />
+                          <input type="text" id="regnm" name="regnm" class="wp100" placeholder="등기명칭" readonly />
                         </td>
-                      </tr>
+                      </tr>-->
                       <tr>
                         <th><label for="reggroup">상위그룹</label></th>
                         <td colspan="3">
-                          <select id="reggroup" name="reggroup" class="wp100"  style="width: 300px;!important" >
+                          <input type="hidden" id="regnm" name="regnm" class="wp100" placeholder="등기명칭" readonly />
+                          <select  id="reggroup" name="reggroup" class="wp100"  style="width: 300px;!important" >
                             <option></option>
                           </select>
                         </td>
@@ -210,7 +212,7 @@
                         <th><label for="keywordInput">등기 키워드</label></th>
                         <td colspan="3">
                           <div class="keyword-container">
-                            <input type="text" id="keywordInput" class="form-control" placeholder="등기 키워드 입력">
+                            <input type="text" id="keywordInput" placeholder="등기 키워드 입력">
                             <button class="btn btn-outline-secondary" type="button" onclick="addKeywordRow()">추가</button>
                           </div>
                         </td>
@@ -318,8 +320,8 @@
           isReadOnly: true,
           columns: [
             { binding: 'rownum', header: 'NO', align: 'center', width: 70 },
-,           { binding: 'REGSEQ', header: '고유번호', align: 'center', width: '*', visible: false},
-            { binding: 'regnm', header: '등기 명칭', align: 'center', width: 150 },
+            { binding: 'REGSEQ', header: '고유번호', align: 'center', width: '*', visible: false},
+            //{ binding: 'regnm', header: '등기 명칭', align: 'center', width: 150 },
             { binding: 'reggroup_display',header:'상위 그룹', align: 'center', width: 150 },
             { binding: 'reggroup', header: '상위그룹코드', align: 'center', width: 150 ,visible: false },
             { binding: 'regmaxnum', header: '최대위험점수', align: 'center', width: 150 },
@@ -435,9 +437,9 @@
           'X-CSRF-Token': $('[name=_csrf]').val()
         },
         success: function (response) {
-          console.log('Server Response:', response); // 응답 확인
-
+          //console.log("서버에서 받아온 데이터",response);
           if (response && response.data) {
+           //console.log('Server Response:', response.data); // 응답 확인
             // 서버 응답 데이터로 UI 업데이트
             $('#subScore').val(response.data.SUBSCORE || rowData.SUBSCORE || '');
             $('#senScore').val(response.data.SENSCORE || rowData.SENSCORE || '');
@@ -451,8 +453,19 @@
             if (response.data.keywords && response.data.keywords.length > 0) {
               response.data.keywords.forEach(keyword => addKeywordRow(keyword)); // 키워드 추가
             }
+            // 키워드 추가 (중복 방지)
+            $('.keyword-item').remove();
+            if (response.data.keywords && response.data.keywords.length > 0) {
+              response.data.keywords.forEach(keyword => {
+                //console.log('추가할 키워드:', keyword);
+                addKeywordRow(keyword);
+              });
+            } else {
+              console.warn('키워드 없음');
+            }
+
           } else {
-            console.warn('No data found in response:', response);
+            console.warn('응답에서 데이터를 찾을 수 없습니다:', response);
           }
         },
         error: function () {
@@ -548,6 +561,15 @@
 
     // 초기화 실행
     init();
+
+    $(document).ready(function () {
+      // 상위그룹 변경 시 등기 명칭 자동 설정
+      $("#reggroup").change(function () {
+        let selectedText = $("#reggroup option:selected").text();
+        $("#regnm").val(selectedText);
+      });
+    });
+
     //공통 코드
     const selectConfigs = [
       { parentCode: 'AA', elementId: 'regstand' },
@@ -570,15 +592,10 @@
     function SaveForm() {
 
       // 폼 데이터를 수집하기 전에 유효성 검사
-      const regnm = $("#regnm").val();
       const reggroup = $("#reggroup").val();
       const regstand = $("#regstand").val();
 
       // 필수 입력값 유효성 검사
-      if (!regnm) {
-        Alert.alert("", "등기 명칭을 입력하세요.");
-        return;
-      }
       if (!reggroup) {
         Alert.alert("", "등록 그룹을 선택하세요.");
         return;
@@ -587,6 +604,11 @@
         Alert.alert("", "기준 금액을 입력하세요.");
         return;
       }
+      const keywordList = [];
+      $(".keyword-field").each(function () {
+        keywordList.push($(this).val());
+      });
+
 
       // 폼 데이터를 수집
       const formData = {
@@ -604,9 +626,10 @@
         exflag: $("#exflag").is(":checked"),
         regComment: $("#description").val(),
         remark: $("#remark").val(),
+        keywords: keywordList,
         _csrf: $('[name=_csrf]').val()
       };
-
+      console.info("저장 수집 데이터:", formData);
       // AJAX 요청
       $.ajax({
         url: '/api/category/save',
@@ -638,7 +661,7 @@
       const regSeq = $('#REGSEQ').val(); // 폼의 숨겨진 필드에서 REGSEQ 가져오기
 
       if (!regSeq) {
-        alert("삭제할 데이터를 선택해주세요.");
+        Alert.alert('',"삭제할 데이터를 선택해주세요.");
         return;
       }
       Alert.confirm('', '삭제하시겠습니까?', function () {

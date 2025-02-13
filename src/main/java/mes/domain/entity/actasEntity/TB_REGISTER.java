@@ -38,7 +38,7 @@ public class TB_REGISTER {  //등기분류관리
     private Float regStAmt;     //기준금액
 
     @Column(name = "RISKCLASS")
-    private String riskClass;   //위럼분류
+    private String riskClass;   //위험분류
 
     @Column(name = "SUBSCORE")
     private Integer subScore;   //후순위조건점수

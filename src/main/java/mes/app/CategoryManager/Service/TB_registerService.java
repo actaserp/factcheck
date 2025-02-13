@@ -3,18 +3,18 @@ package mes.app.CategoryManager.Service;
 import lombok.extern.slf4j.Slf4j;
 import mes.domain.entity.UserCode;
 import mes.domain.entity.actasEntity.TB_REGISTER;
+import mes.domain.entity.factcheckEntity.TB_REGWORD;
 import mes.domain.repository.UserCodeRepository;
 import mes.domain.repository.actasRepository.TB_registerRepository;
+import mes.domain.repository.factcheckRepository.TB_REGWORDRepository;
 import mes.domain.services.SqlRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -27,71 +27,85 @@ public class TB_registerService {
     TB_registerRepository tbRegisterRepository;
 
     @Autowired
+    TB_REGWORDRepository tbRegwordRepository;
+
+    @Autowired
     SqlRunner sqlRunner;
 
-    public TB_REGISTER saveOrUpdateRegister(Map<String, Object> formData) {
-        //수정인지 새로 저장인지 확인
-        Integer regSeq = formData.get("REGSEQ") != null ? Integer.parseInt(formData.get("REGSEQ").toString()) : null;
+   @Transactional
+   public TB_REGISTER saveOrUpdateRegister(Map<String, Object> formData) {
+       Integer regSeq = formData.get("REGSEQ") != null ? Integer.parseInt(formData.get("REGSEQ").toString()) : null;
 
-        TB_REGISTER tbRegister;
-        if (regSeq != null) {
-            //log.info("수정 로직 실행");
-            tbRegister = tbRegisterRepository.findById(regSeq).orElseThrow(() ->
-                    new IllegalArgumentException("해당 ID의 데이터가 존재하지 않습니다.")
-            );
-        } else {
-            //log.info("신규 등록 로직 실행");
-            tbRegister = new TB_REGISTER();
-        }
+       TB_REGISTER tbRegister;
+       if (regSeq != null) {
+           tbRegister = tbRegisterRepository.findById(regSeq).orElseThrow(() ->
+               new IllegalArgumentException("해당 ID의 데이터가 존재하지 않습니다."));
+       } else {
+           tbRegister = new TB_REGISTER();
+       }
 
-        // 필수 값 확인
-        if (formData.get("regnm") == null || formData.get("regnm").toString().isEmpty()) {
-            throw new IllegalArgumentException("등기명칭은 필수 항목입니다.");
-        }
+       if (formData.get("regnm") == null || formData.get("regnm").toString().isEmpty()) {
+           throw new IllegalArgumentException("등기명칭은 필수 항목입니다.");
+       }
 
-        // 데이터 매핑
-        tbRegister.setRegNm(formData.get("regnm").toString());
-        tbRegister.setRegGroup(formData.get("reggroup") != null ? formData.get("reggroup").toString() : null);
-        tbRegister.setRegStand(formData.get("regstand") != null ? formData.get("regstand").toString() : null);
+       tbRegister.setRegNm(formData.get("regnm").toString());
+       tbRegister.setRegGroup(formData.get("reggroup") != null ? formData.get("reggroup").toString() : null);
+       tbRegister.setRegStand(formData.get("regstand") != null ? formData.get("regstand").toString() : null);
+       tbRegister.setRegMaxNum(formData.get("regmaxnum") != null && !formData.get("regmaxnum").toString().trim().isEmpty()
+           ? Integer.parseInt(formData.get("regmaxnum").toString().replace("점", "").trim())
+           : null);
 
-        // 숫자 및 금액 필드 처리
-        tbRegister.setRegMaxNum(formData.get("regmaxnum") != null && !formData.get("regmaxnum").toString().trim().isEmpty()
-                ? Integer.parseInt(formData.get("regmaxnum").toString().replace("점", "").trim())
-                : null);
+       tbRegister.setRegYul(formData.get("regyul") != null
+           ? parseNumericField(formData.get("regyul").toString(), "%")
+           : null);
 
-        tbRegister.setRegYul(formData.get("regyul") != null
-                ? parseNumericField(formData.get("regyul").toString(), "%")
-                : null);
+       tbRegister.setRegStAmt(formData.get("regstamt") != null
+           ? parseFloatField(formData.get("regstamt").toString(), "만원")
+           : null);
 
-        tbRegister.setRegStAmt(formData.get("regstamt") != null
-                ? parseFloatField(formData.get("regstamt").toString(), "만원")
-                : null);
+       tbRegister.setRiskClass(formData.get("riskclass") != null ? formData.get("riskclass").toString() : null);
+       if (formData.get("subScore") != null && !formData.get("subScore").toString().isEmpty()) {
+           tbRegister.setSubScore(Integer.parseInt(formData.get("subScore").toString()));
+       } else {
+           tbRegister.setSubScore(null);
+       }
 
-        tbRegister.setRiskClass(formData.get("riskclass") != null ? formData.get("riskclass").toString() : null);
+       if (formData.get("senScore") != null && !formData.get("senScore").toString().isEmpty()) {
+           tbRegister.setSenScore(Integer.parseInt(formData.get("senScore").toString()));
+       } else {
+           tbRegister.setSenScore(null);
+       }
+       tbRegister.setRegAsName(formData.get("regAsName") != null ? formData.get("regAsName").toString() : null);
+       tbRegister.setRegAsName(formData.get("regAsName") != null ? formData.get("regAsName").toString() : null);
+       tbRegister.setExFlag(formData.get("exflag") != null && formData.get("exflag").toString().equalsIgnoreCase("true") ? "1" : "0");
+       tbRegister.setRegComment(formData.get("regComment") != null ? formData.get("regComment").toString() : null);
+       tbRegister.setRemark(formData.get("remark") != null ? formData.get("remark").toString() : null);
 
-        if (formData.get("subScore") != null && !formData.get("subScore").toString().isEmpty()) {
-            tbRegister.setSubScore(Integer.parseInt(formData.get("subScore").toString()));
-        } else {
-            tbRegister.setSubScore(null);
-        }
+       // 등록 정보 저장
+       TB_REGISTER savedRegister = tbRegisterRepository.save(tbRegister);
 
-        if (formData.get("senScore") != null && !formData.get("senScore").toString().isEmpty()) {
-            tbRegister.setSenScore(Integer.parseInt(formData.get("senScore").toString()));
-        } else {
-            tbRegister.setSenScore(null);
-        }
-        tbRegister.setRegAsName(formData.get("regAsName") != null ? formData.get("regAsName").toString() : null);
+       // 기존 키워드 삭제 (수정 시)
+       if (regSeq != null) {
+           tbRegwordRepository.deleteByRegSeq(savedRegister.getRegSeq());
+       }
 
-        // boolean 처리
-        tbRegister.setExFlag(formData.get("exflag") != null && formData.get("exflag").toString().equalsIgnoreCase("true") ? "1" : "0");
+       // 키워드 저장 (USEYN = "Y")
+       if (formData.get("keywords") instanceof List) {
+           List<String> keywords = (List<String>) formData.get("keywords");
+           for (String keyword : keywords) {
+               TB_REGWORD regword = TB_REGWORD.builder()
+                   .regSeq(savedRegister.getRegSeq())
+                   .regWord(keyword)
+                   .useYn("Y")
+                   .build();
+               tbRegwordRepository.save(regword);
+           }
+       }
 
-        tbRegister.setRegComment(formData.get("regComment") != null ? formData.get("regComment").toString() : null);
-        tbRegister.setRemark(formData.get("remark") != null ? formData.get("remark").toString() : null);
+       log.info("저장된 데이터: {}", savedRegister);
+       return savedRegister;
+   }
 
-        // 저장
-        log.info("저장된 데이터: {}", tbRegister);
-        return tbRegisterRepository.save(tbRegister);
-    }
 
 
     // 숫자 필드 변환 ("점", "%" 제거)
@@ -146,36 +160,51 @@ public class TB_registerService {
             sql.append(" AND tr.regnm LIKE :searchInput");
             params.addValue("searchInput", "%" + searchInput + "%");
         }
-        //log.info("Generated SQL: {}", sql);
-        //log.info("SQL Parameters: {}", params.getValues());
+        log.info("Generated SQL: {}", sql);
+        log.info("SQL Parameters: {}", params.getValues());
         return sqlRunner.getRows(sql.toString(), params);
     }
-
 
     public List<Map<String, Object>> categorydetailsRead(String REGSEQ) {
         MapSqlParameterSource params = new MapSqlParameterSource();
         StringBuilder sql = new StringBuilder("""
-            SELECT
-                tr.*
-            FROM TB_REGISTER tr
-            WHERE 1=1
-        """);
+        SELECT
+            tr.*,
+            STRING_AGG(trg.REGWORD, ',') AS REGWORDS
+        FROM TB_REGISTER tr
+        LEFT JOIN TB_REGWORD trg ON trg.REGSEQ = tr.REGSEQ
+        WHERE 1=1
+    """);
 
         if (REGSEQ != null && !REGSEQ.isEmpty()) {
             sql.append(" AND tr.REGSEQ = :REGSEQ");
             params.addValue("REGSEQ", REGSEQ);
         }
 
+        sql.append(" GROUP BY tr.REGSEQ, tr.regnm, tr.reggroup, tr.regstand, tr.regmaxnum, " +
+            "tr.regyul, tr.regstamt, tr.riskclass, tr.subScore, tr.senScore, " +
+            "tr.regAsName, tr.exflag, tr.regComment, tr.remark");
+
         // SQL과 파라미터 로그 출력
-       // log.info("Generated SQL: {}", sql);
-       // log.info("SQL Parameters: {}", params.getValues());
+//        log.info("Generated SQL: {}", sql);
+//        log.info("SQL Parameters: {}", params.getValues());
+
         return sqlRunner.getRows(sql.toString(), params);
     }
 
+    //삭제
     public void deleteRegisterById(Integer regSeq) {
         if (!tbRegisterRepository.existsById(regSeq)) {
-            throw new IllegalArgumentException("해당 ID의 데이터가 존재하지 않습니다.");
+            throw new IllegalArgumentException("해당 ID의 TB_REGISTER 데이터가 존재하지 않습니다.");
         }
+
+        // TB_REGWORD 데이터가 존재하는지 확인
+        if (tbRegwordRepository.existsById(regSeq)) {
+            //TB_REGWORD 데이터 먼저 삭제
+            tbRegwordRepository.deleteByRegSeq(regSeq);
+        }
+
+        // TB_REGISTER 데이터 삭제
         tbRegisterRepository.deleteById(regSeq);
     }
 }

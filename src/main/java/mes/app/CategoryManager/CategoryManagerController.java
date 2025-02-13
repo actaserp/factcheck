@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -79,6 +77,7 @@ public class CategoryManagerController {
         return result;
     }
 
+    //더블클릭 이벤트 내용
     @GetMapping("/details")
     public AjaxResult categorydetailsRead(@RequestParam(value = "REGSEQ", required = false) String REGSEQ) {
         AjaxResult result = new AjaxResult();
@@ -87,10 +86,26 @@ public class CategoryManagerController {
             List<Map<String, Object>> categorydetailsRead = tbRegisterService.categorydetailsRead(REGSEQ);
 
             if (categorydetailsRead != null && !categorydetailsRead.isEmpty()) {
-                // 데이터가 있을 경우 첫 번째 데이터를 반환
+                //데이터가 있을 경우 첫 번째 데이터를 가져옴
+                Map<String, Object> data = categorydetailsRead.get(0);
+
+                //키워드 변환 추가
+                if (data != null && data.containsKey("REGWORDS")) {
+                    String keywordsStr = (String) data.get("REGWORDS");
+                    List<String> keywords = keywordsStr != null && !keywordsStr.isEmpty()
+                        ? Arrays.asList(keywordsStr.split(","))
+                        : new ArrayList<>();
+
+                    data.put("keywords", keywords); //변환된 리스트를 다시 매핑
+                    data.remove("REGWORDS");
+                } else {
+                    data.put("keywords", new ArrayList<>()); //키워드가 없으면 빈 배열 반환
+                }
+
+                //가공된 데이터 반환
                 result.success = true;
                 result.message = "데이터 조회 성공";
-                result.data = categorydetailsRead.get(0); // 첫 번째 데이터 반환
+                result.data = data;
             } else {
                 // 데이터가 없을 경우 메시지 설정
                 result.success = false;
@@ -105,11 +120,12 @@ public class CategoryManagerController {
         return result;
     }
 
+    //저장
     @PostMapping("/save")
     public ResponseEntity<Map<String, Object>> saveCategory(@RequestBody Map<String, Object> formData) {
         Map<String, Object> response = new HashMap<>();
         try {
-            //log.info("받은 데이터: {}", formData);
+           // log.info("받은 데이터: {}", formData);
 
             // 서비스 호출
             TB_REGISTER savedRegister = tbRegisterService.saveOrUpdateRegister(formData);
@@ -134,6 +150,7 @@ public class CategoryManagerController {
 
     @PostMapping("/delete")
     public AjaxResult deleteCategory(@RequestBody Map<String, Object> requestData) {
+        //log.info("분류관리 삭제 요청 들어옴");
         AjaxResult result = new AjaxResult();
 
         try {
