@@ -106,8 +106,6 @@ public class TB_registerService {
        return savedRegister;
    }
 
-
-
     // 숫자 필드 변환 ("점", "%" 제거)
     private BigDecimal parseNumericField(String value, String suffixToRemove) {
         log.info("Parsing numeric field: value={}, suffixToRemove={}", value, suffixToRemove);
@@ -160,8 +158,8 @@ public class TB_registerService {
             sql.append(" AND tr.regnm LIKE :searchInput");
             params.addValue("searchInput", "%" + searchInput + "%");
         }
-        log.info("Generated SQL: {}", sql);
-        log.info("SQL Parameters: {}", params.getValues());
+//        log.info("Generated SQL: {}", sql);
+//        log.info("SQL Parameters: {}", params.getValues());
         return sqlRunner.getRows(sql.toString(), params);
     }
 

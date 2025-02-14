@@ -59,6 +59,7 @@
         border-bottom: 3px solid #C6C6C6;
     }
 
+
     .tab-links li:hover a {
         color: #4D4D4D;
         font-weight: 700;
@@ -73,6 +74,7 @@
 
     section .tab-links {
     }
+
 
     section .tab-links li a {
         padding: 8px 10px;
@@ -106,7 +108,6 @@
     .tab-links-sub li {
         position: relative;
     }
-
     .tab-links-sub li a {
         display: inline-flex;
         border: 1px solid #E4E4E4;
@@ -148,6 +149,7 @@
         border-left: 0
     }
 
+
     .tab-links-sub li:last-child:hover a {
         color: #4D4D4D;
         border: 1px solid #b3b3b3;
@@ -156,13 +158,13 @@
         border-radius: 0 3px 3px 0;
         border-left: 0
     }
-
     .tab-links-sub li.active a {
         background-color: #2EC9D6;
         color: #fff;
         font-weight: 700;
         border: 1px solid #2EC9D6;
     }
+
     .tab-contents > section, .tab-item1 > .row > section:first-child {
         border-radius: 0 15px 15px 15px;
     }
@@ -170,22 +172,6 @@
     .tab-contents > .row > section {
         border-radius: 0 15px 15px 15px;
     }
-    table.write-table th, table.write-table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-
-    table.write-table td:first-child {
-        font-weight: bold;
-        background-color: #f8f9fa; /* 연한 회색 배경 */
-    }
-
-    table.write-table td[colspan="3"] {
-        font-weight: normal;
-    }
-
-
 </style>
 <head>
   <meta charset="UTF-8">
@@ -378,8 +364,7 @@
                   </table>
                 </section>
 
-
-               <!-- <section class="tab-item" id="sub1">
+                <section class="tab-item" id="sub1">
                   <table class="write-table"
                          style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                     <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
@@ -387,72 +372,92 @@
                     <tr>
                       <th colspan="4" style="text-align: center;">갑 구 (소유권에 관한 사항)</th>
                     </tr>
-                    <tr>
-                      <th style="font-size: 11px;">
-                        표시번호
-                      </th>
-                      <th style="font-size: 11px;">
-                        등기목적
-                      </th>
-                      <th style="font-size: 11px;">
-                        접수
-                      </th>
-                      <th style="font-size: 11px;">
-                        등기원인
-                      </th>
-                    </tr>
-
                     </thead>
                     <tbody>
 
                     <tr>
-                      <td>
-
-                      </td>
-                      <td>
-
-                      </td>
-                      <td>
-
-                      </td>
-                      <td>
-
-                      </td>
-
-                    </tr>
-                    <tr>
-                      <th style="font-size: 11px;">권리자 및 기타사항</th>
+                      <th style="font-size: 11px;">
+                        등기목적
+                      </th>
                       <td colspan="3">
 
                       </td>
                     </tr>
-                    </tbody>
-                  </table>
-                </section>-->
-
-                <section class="tab-item" id="sub1">
-                  <table class="write-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-                    <caption style="text-align: left; margin-bottom: 8px;">갑구 (소유권에 관한 사항)</caption>
-                    <thead>
                     <tr>
-                      <th colspan="2" style="text-align: center;">갑 구 (소유권에 관한 사항)</th>
+                      <th style="font-size: 11px;">
+                        접수
+                      </th>
+                      <td colspan="3">
+
+                      </td>
                     </tr>
-                    </thead>
-                    <tbody id="sub1TableBody">
-                    <!-- JavaScript로 동적 데이터 삽입 -->
+                    <tr>
+                      <th style="font-size: 11px;">
+                        등기원인
+                      </th>
+                      <td colspan="3">
+
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
+
+                    </tr>
+                    <tr>
+                      <td colspan="4">
+
+                      </td>
+                    </tr>
                     </tbody>
                   </table>
                 </section>
+
                 <section class="tab-item" id="sub2">
-                  <table class="write-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-                    <caption style="text-align: left; margin-bottom: 8px;">을 구 (소유권 이외의 권리에 관한 사항)</caption>
+                  <table class="write-table"
+                         style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                    <caption style="text-align: left; margin-bottom: 8px;">상세테이블</caption>
                     <thead>
                     <tr>
                       <th colspan="4" style="text-align: center;">을 구 (소유권 이외의 권리에 관한 사항)</th>
                     </tr>
                     </thead>
-                    <tbody id="sub2TableBody">
-                    <!-- JavaScript로 데이터 삽입 -->
+                    <tbody>
+
+                    <tr>
+                      <th style="font-size: 11px;">
+                        등기목적
+                      </th>
+                      <td colspan="3">
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="font-size: 11px;">
+                        접수
+                      </th>
+                      <td colspan="3">
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="font-size: 11px;">
+                        등기원인
+                      </th>
+                      <td colspan="3">
+
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
+
+                    </tr>
+                    <tr>
+                      <td colspan="4">
+
+                      </td>
+                    </tr>
                     </tbody>
                   </table>
                 </section>
@@ -713,123 +718,114 @@
                 }
                 // 테이블 요소 가져오기
                 const sub1Table = document.querySelector("#sub1 table tbody");
-                const sub2Table = document.querySelector("#sub2 table tbody");
+                const sub2TableBody = document.querySelector("#sub2 table tbody");
 
-                if (!sub1Table || !sub2Table) {
-                  console.error("오류: sub1Table 또는 sub2Table을 찾을 수 없습니다.");
+                if (!sub1Table || !sub2TableBody) {
+                  console.error("오류: sub1Table 또는 sub2TableBody을 찾을 수 없습니다.");
                   return;
                 }
-
-                // 기존 테이블 데이터 초기화
-                sub1Table.innerHTML = "";
-                sub2Table.innerHTML = "";
 
                 // 데이터를 배열로 받아서 중복 제거 후 사용
                 let details = Array.isArray(data.data) && data.data.length > 0 ? data.data : [];
 
-                const sub1TableBody = document.getElementById("sub1TableBody");
-
                 if (details.length === 0) {
                   console.warn("A등기 데이터 없음");
                 } else {
-                  let uniqueEntriesA = new Set();
+                  let tableBody = document.querySelector("#sub1 table tbody");
+                  tableBody.innerHTML = ""; // 기존 데이터 초기화
 
-                  details.forEach((entry, index) => {
-                    let uniqueKey = `${entry.RankNo_A}-${entry.Receve_A}`;
+                  details.forEach((entry) => {
+                    // null 또는 undefined를 "-"로 대체하는 함수
+                    const safeValue = (value) => value && value !== "null" ? value : "-";
 
-                    if (uniqueEntriesA.has(uniqueKey)) {
-                      return;
-                    }
-                    uniqueEntriesA.add(uniqueKey);
+                    // 등기 목적 행
+                    let row1 = document.createElement("tr");
+                    row1.innerHTML = `
+            <th style="font-size: 11px;">등기목적</th>
+            <td colspan="3">${safeValue(entry.RgsAimCont_A)}</td>
+        `;
+                    tableBody.appendChild(row1);
 
-                    // 1. 등기목적 행 (표시번호 포함)
-                    let row1 = sub1TableBody.insertRow();
-                    let cell1 = row1.insertCell(0);
-                    cell1.textContent = `${index + 1}. 등기목적`;
-                    cell1.style.fontWeight = "bold";
-                    let cell2 = row1.insertCell(1);
-                    cell2.textContent = entry.RgsAimCont_A && entry.RgsAimCont_A !== "null" ? entry.RgsAimCont_A : "-";
+                    // 접수 행
+                    let row2 = document.createElement("tr");
+                    row2.innerHTML = `
+            <th style="font-size: 11px;">접수</th>
+            <td colspan="3">${safeValue(entry.Receve_A)}</td>
+        `;
+                    tableBody.appendChild(row2);
 
-                    // 2. 접수 행
-                    let row2 = sub1TableBody.insertRow();
-                    let cell3 = row2.insertCell(0);
-                    cell3.textContent = "접수";
-                    cell3.style.fontWeight = "bold";
-                    let cell4 = row2.insertCell(1);
-                    cell4.textContent = entry.Receve_A && entry.Receve_A !== "null" ? entry.Receve_A : "-";
+                    // 등기 원인 행
+                    let row3 = document.createElement("tr");
+                    row3.innerHTML = `
+            <th style="font-size: 11px;">등기원인</th>
+            <td colspan="3">${safeValue(entry.RgsCaus_A)}</td>
+        `;
+                    tableBody.appendChild(row3);
 
-                    // 3. 등기원인 행
-                    let row3 = sub1TableBody.insertRow();
-                    let cell5 = row3.insertCell(0);
-                    cell5.textContent = "등기원인";
-                    cell5.style.fontWeight = "bold";
-                    let cell6 = row3.insertCell(1);
-                    cell6.textContent = entry.RgsCaus_A && entry.RgsCaus_A !== "null" ? entry.RgsCaus_A : "-";
+                    // 권리자 및 기타사항 제목
+                    let row4 = document.createElement("tr");
+                    row4.innerHTML = `
+            <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
+        `;
+                    tableBody.appendChild(row4);
 
-                    // 4. 권리자 및 기타사항 행 (별도 추가)
-                    if (entry.NomprsAndEtc_A && entry.NomprsAndEtc_A !== "null") {
-                      let row4 = sub1TableBody.insertRow();
-                      let cell7 = row4.insertCell(0);
-                      cell7.textContent = "권리자 및 기타사항";
-                      cell7.style.fontWeight = "bold";
-                      let cell8 = row4.insertCell(1);
-                      cell8.textContent = entry.NomprsAndEtc_A;
-                    }
+                    // 권리자 및 기타사항 데이터
+                    let row5 = document.createElement("tr");
+                    row5.innerHTML = `
+            <td colspan="4">${safeValue(entry.NomprsAndEtc_A)}</td>
+        `;
+                    tableBody.appendChild(row5);
                   });
                 }
 
-                const sub2TableBody = document.getElementById("sub2TableBody");
-
+                // 을구
                 if (details.length === 0) {
                   console.warn("B등기 데이터 없음");
                 } else {
-                  let uniqueEntriesB = new Set();
+                  let tableBody = document.querySelector("#sub2 table tbody"); // A등기 방식과 동일하게 변경
+                  tableBody.innerHTML = ""; // 기존 데이터 초기화 추가
 
-                  details.forEach((entry, index) => {
-                    let uniqueKey = `${entry.RankNo_B}-${entry.Receve_B}`;
+                  details.forEach((entry) => {
+                    // null 또는 undefined를 "-"로 대체하는 함수
+                    const safeValue = (value) => value && value !== "null" ? value : "-";
 
-                    if (uniqueEntriesB.has(uniqueKey)) {
-                      return;
-                    }
-                    uniqueEntriesB.add(uniqueKey);
+                    // 등기목적 행 추가
+                    let row1 = document.createElement("tr");
+                    row1.innerHTML = `
+            <th style="font-size: 11px;">등기목적</th>
+            <td colspan="3">${safeValue(entry.RgsAimCont_B)}</td>
+        `;
+                    tableBody.appendChild(row1);
 
-                    // 1. 등기목적
-                    let row1 = sub2TableBody.insertRow();
-                    let cell1 = row1.insertCell(0);
-                    cell1.textContent = `${index + 1}. 등기목적`;
-                    cell1.style.fontWeight = "bold";
-                    let cell2 = row1.insertCell(1);
-                    cell2.textContent = entry.RgsAimCont_B && entry.RgsAimCont_B !== "null" ? entry.RgsAimCont_B : "-";
-                    cell2.colSpan = 3;
+                    // 접수 행 추가
+                    let row2 = document.createElement("tr");
+                    row2.innerHTML = `
+            <th style="font-size: 11px;">접수</th>
+            <td colspan="3">${safeValue(entry.Receve_B)}</td>
+        `;
+                    tableBody.appendChild(row2);
 
-                    // 2. 접수 (개별 칸)
-                    let row2 = sub2TableBody.insertRow();
-                    let cell3 = row2.insertCell(0);
-                    cell3.textContent = "접수";
-                    cell3.style.fontWeight = "bold";
-                    let cell4 = row2.insertCell(1);
-                    cell4.textContent = entry.Receve_B && entry.Receve_B !== "null" ? entry.Receve_B : "-";
-                    cell4.colSpan = 3;
+                    // 등기 원인 행 추가
+                    let row3 = document.createElement("tr");
+                    row3.innerHTML = `
+            <th style="font-size: 11px;">등기원인</th>
+            <td colspan="3">${safeValue(entry.RgsCaus_B)}</td>
+        `;
+                    tableBody.appendChild(row3);
 
-                    // 3. 등기원인 (개별 칸)
-                    let row3 = sub2TableBody.insertRow();
-                    let cell5 = row3.insertCell(0);
-                    cell5.textContent = "등기원인";
-                    cell5.style.fontWeight = "bold";
-                    let cell6 = row3.insertCell(1);
-                    cell6.textContent = entry.RgsCaus_B && entry.RgsCaus_B !== "null" ? entry.RgsCaus_B : "-";
-                    cell6.colSpan = 3;
+                    // 권리자 및 기타사항 제목 행 추가
+                    let row4 = document.createElement("tr");
+                    row4.innerHTML = `
+            <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
+        `;
+                    tableBody.appendChild(row4);
 
-                    // 4. 권리자 및 기타사항 (개별 칸)
-                    if (entry.NomprsAndEtc_B && entry.NomprsAndEtc_B !== "null") {
-                      let row4 = sub2TableBody.insertRow();
-                      let cell7 = row4.insertCell(0);
-                      cell7.textContent = "권리자 및 기타사항";
-                      cell7.style.fontWeight = "bold";
-                      let cell8 = row4.insertCell(1);
-                      cell8.textContent = entry.NomprsAndEtc_B;
-                      cell8.colSpan = 3;
-                    }
+                    // 권리자 및 기타사항 데이터 행 추가
+                    let row5 = document.createElement("tr");
+                    row5.innerHTML = `
+            <td colspan="4">${safeValue(entry.NomprsAndEtc_B)}</td>
+        `;
+                    tableBody.appendChild(row5);
                   });
                 }
 
