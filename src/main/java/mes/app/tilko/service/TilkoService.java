@@ -580,7 +580,7 @@ public class TilkoService {
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
     }
 
-    public boolean isGoyuNumMatched(String id, String address, String GoyuNum) {
+    public Map<String, Object> isGoyuNumMatched(String id, String address, String GoyuNum) {
         // SQL 실행을 위한 파라미터 설정
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("USERID", id)
@@ -589,7 +589,7 @@ public class TilkoService {
 
         // JOIN을 사용한 최적화된 SQL
         String sql = """
-            SELECT COUNT(*) AS matchCount
+            SELECT *
             FROM TB_REALINFO A
             JOIN TB_REALINFOXML B ON A.REALID = B.REALID
             WHERE A.USERID = :USERID
@@ -601,7 +601,7 @@ public class TilkoService {
         Map<String, Object> result = this.sqlRunner.getRow(sql, params);
 
         // matchCount가 1 이상이면 PinNo가 일치하는 데이터가 존재함
-        return result != null && ((Number) result.get("matchCount")).intValue() > 0;
+        return result;
     }
     // api 사용 로그 쌓기
     public void saveSearchInfo(String USERID, int REALID) {
@@ -620,7 +620,7 @@ public class TilkoService {
         int rowsAffected = this.sqlRunner.execute(sql, params);
         System.out.println("searchinfo Rows inserted: " + rowsAffected);
     }
-    // api 사용 로그 쌓기
+    // 점수 등급조회
     public List<Map<String, Object>> getGradeData() {
         // SQL 파라미터 설정
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -631,6 +631,23 @@ public class TilkoService {
         // 쿼리 실행
         List<Map<String, Object>> rowsAffected = this.sqlRunner.getRows(sql, params);
         return rowsAffected;
+    }
+    // 조회수 증가 쿼리
+    public void countREALINFO(int realId) {
+        // SQL 파라미터 설정
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("REALID", realId);
+
+        // REALPOINT 조회수 증가 SQL
+        String sql = """
+        UPDATE TB_REALINFO
+        SET REALPOINT = COALESCE(REALPOINT, 0) + 1
+        WHERE REALID = :REALID
+        """;
+
+        // 쿼리 실행
+        int rowsAffected = this.sqlRunner.execute(sql, params);
+        System.out.println("✅ 조회수 증가 완료! 영향 받은 행 수: " + rowsAffected);
     }
 
 }

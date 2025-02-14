@@ -752,12 +752,22 @@ public class TilkoController {
         List<Map<String, Object>> SummaryCalData = new ArrayList<>();
 
         // 기존 유저 조회정보에서 동일한 고유번호가 있는지 확인후 없다면 통신 있다면 자료 가져오기
-        boolean savedGoyu = tilkoService.isGoyuNumMatched(user.getUsername(), address, GoyuNUM);
-        if (savedGoyu) {
+        Map<String, Object> savedGoyu = tilkoService.isGoyuNumMatched(user.getUsername(), address, GoyuNUM);
+        if (savedGoyu != null && !savedGoyu.isEmpty()) {
             // 기존 조회데이터 조회 및 조회수 업데이트
-
+            int realId = ((Number) savedGoyu.get("REALID")).intValue();
+            try {
+                tilkoService.countREALINFO(realId);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
             result.message = "기존 조회데이터가 존재합니다.";
-            resultMap.put("GoyuNum", GoyuNUM);
+            resultMap.put("REALSCORE", savedGoyu.get("REALSCORE"));
+            resultMap.put("GRADE", savedGoyu.get("GRADE"));
+            resultMap.put("COMMENT", savedGoyu.get("COMMENT"));
+            resultMap.put("REGASNAME", savedGoyu.get("REGASNAME"));
+            resultMap.put("ADDRESS", address);
+            resultMap.put("PDFFILENAME", savedGoyu.get("PDFFILENAME"));
             result.data = resultMap;
             return result;
         }else{

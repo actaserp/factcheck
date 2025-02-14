@@ -182,11 +182,12 @@ public class TilkoParsing {
 
         // 정규식 패턴 (채권최고액과 근저당권자 추출)
         Pattern amountPattern = Pattern.compile("채권최고액\\s+금([0-9,]+)원");
+        Pattern chaeAmountPattern = Pattern.compile("청구금액\\s+금([0-9,]+)원");
         Pattern creditorPattern = Pattern.compile("근저당권자\\s+(.+)");
         Pattern chaePattern = Pattern.compile("채권자\\s+(.+)");
 
-        // 근저당권자별 마지막 채권최고액 저장
-        Map<String, Long> creditorAmounts = new HashMap<>();
+        // **각 purpose별로 근저당권자별 마지막 채권최고액 저장**
+        Map<String, Map<String, Long>> creditorAmountsByPurpose = new HashMap<>();
 
         // 등기명칭과 summaryData의 Purpose 비교
         for (Map<String, Object> summary : summaryData) {
@@ -207,6 +208,13 @@ public class TilkoParsing {
                 bondAmount = Long.parseLong(amountMatcher.group(1).replace(",", ""));
             }
 
+            // 청구금액 추출
+            Matcher chaeAmountMatcher = chaeAmountPattern.matcher(information);
+            long chaeAmount = 0;
+            if (chaeAmountMatcher.find()) {
+                chaeAmount = Long.parseLong(chaeAmountMatcher.group(1).replace(",", ""));
+            }
+
             // 근저당권자 추출
             Matcher creditorMatcher = creditorPattern.matcher(information);
             String creditor = "";
@@ -214,35 +222,50 @@ public class TilkoParsing {
                 creditor = creditorMatcher.group(1).trim();
             }
 
-            // 코멘트 추가
-            String regComment = regData.get("REGCOMMENT").toString();
-            comment.add(regComment);
-            // 감점사항 추가
-            String Deduction = regData.get("REGASNAME").toString();
-            Deductions.add(Deduction);
+            // 채권자 추출
+            Matcher chaeMatcher = chaePattern.matcher(information);
+            String chaegwoner = "";
+            if (chaeMatcher.find()) {
+                chaegwoner = chaeMatcher.group(1).trim();
+            }
 
-            if ("A1".equals(regstand) || ("A3".equals(regstand) && bondAmount > 0)) {
-                // A1 또는 A3(채권최고액이 있는 경우) 로직
-                creditorAmounts.put(creditor, bondAmount);
-            } else if ("A2".equals(regstand) || ("A3".equals(regstand) && bondAmount == 0)) {
-                // A2 또는 A3(채권최고액이 없는 경우) 로직
+            // 코멘트 추가
+            comment.add(regData.get("REGCOMMENT").toString());
+            // 감점사항 추가
+            Deductions.add(regData.get("REGASNAME").toString());
+
+            // **Purpose 별로 근저당권자별 마지막 금액 저장**
+            creditorAmountsByPurpose.putIfAbsent(purpose, new HashMap<>());
+            creditorAmountsByPurpose.get(purpose).put(creditor, bondAmount);
+
+            if ("A2".equals(regstand) || ("A3".equals(regstand) && bondAmount == 0)) {
+                // A2 또는 A3(채권최고액이 없는 경우) 즉시 점수 차감
                 finalScore -= regMaxNum;
             }
         }
 
-        // A1, A3(A1 방식) 점수 차감 계산
-        for (Map.Entry<String, Long> entry : creditorAmounts.entrySet()) {
-            long amount = entry.getValue();
+        // **각 purpose의 각 근저당권자별로 차감 계산**
+        for (String purpose : creditorAmountsByPurpose.keySet()) {
+            if (!regMap.containsKey(purpose)) continue;
 
-            // 안전하게 REGSTAMT 값을 가져오기 (null 체크 포함)
-            double regStAmt = regMap.containsKey("근저당권설정") && regMap.get("근저당권설정").get("REGSTAMT") != null
-                    ? (double) regMap.get("근저당권설정").get("REGSTAMT")
-                    : 1.0; // 기본값 1.0 설정 (안전장치)
+            for (Map.Entry<String, Long> entry : creditorAmountsByPurpose.get(purpose).entrySet()) {
+                String creditor = entry.getKey();
+                long amount = entry.getValue();
 
-            // 채권최고금액 / REGSTAMT 계산 (1을 넘지 않도록 제한)
-            double ratio = Math.min(1.0, amount / regStAmt);
-            int deduction = (int) (ratio * (int) regMap.get("근저당권설정").get("REGMAXNUM"));
-            finalScore -= deduction;
+                // REGSTAMT 값 안전하게 가져오기
+                double regStAmt = regMap.get(purpose).get("REGSTAMT") != null
+                        ? (double) regMap.get(purpose).get("REGSTAMT")
+                        : 1.0; // 기본값 1.0 설정 (안전장치)
+
+                // 채권최고금액 / REGSTAMT 계산 (1을 넘지 않도록 제한)
+                double ratio = Math.min(1.0, amount / regStAmt);
+
+                // REGMAXNUM 값 가져와서 점수 차감
+                int deduction = (int) Math.round(ratio * (int) regMap.get(purpose).get("REGMAXNUM"));
+                finalScore -= deduction;
+
+                System.out.println("📉 차감된 점수: " + deduction + " (Purpose: " + purpose + ", Creditor: " + creditor + ", 최종 점수: " + finalScore + ")");
+            }
         }
 
         // 최저 점수 보정
