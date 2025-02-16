@@ -535,8 +535,28 @@ public class TilkoService {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         String sql = """
-        SELECT *
-        FROM TB_REGISTER;
+        SELECT
+                        RW.REGNO,
+                        RW.REGSEQ,
+                        RW.REGWORD,
+                        RW.USEYN,
+                        R.REGSEQ,
+                        R.REGNM,
+                        R.REGGROUP,
+                        R.REGSTAND,
+                        R.REGMAXNUM,
+                        R.REGYUL,
+                        R.REGSTAMT,
+                        R.RISKCLASS,
+                        R.SUBSCORE,
+                        R.SENSCORE,
+                        R.REGASNAME,
+                        R.EXFLAG,
+                        R.REGCOMMENT,
+                        R.REMARK
+                    FROM MOB_FACTCHK.dbo.TB_REGWORD RW
+                    LEFT JOIN MOB_FACTCHK.dbo.TB_REGISTER R ON RW.REGSEQ = R.REGSEQ
+                    WHERE RW.USEYN = 'Y';
     """;
 
         // SQL 실행
@@ -649,5 +669,50 @@ public class TilkoService {
         int rowsAffected = this.sqlRunner.execute(sql, params);
         System.out.println("✅ 조회수 증가 완료! 영향 받은 행 수: " + rowsAffected);
     }
+    // 점수 차감 정보 저장
+    public void saveDeductionDetails(Map<String, Object> DeductionDetails) {
+        // SQL 파라미터 설정
+        MapSqlParameterSource params = new MapSqlParameterSource();
 
+        // REALPOINT 조회수 증가 SQL
+        String sql = """
+                INSERT INTO TB_REALHIS (
+                    REALID,
+                    HISNM,
+                    HISAMT,
+                    HISPOINT,
+                    REGSTAND,
+                    HISFLAG)
+                VALUES (
+                    :REALID,
+                    :HISNM,
+                    :HISAMT,
+                    :HISPOINT,
+                    :REGSTAND,
+                    :HISFLAG)
+        """;
+        // Map 데이터를 SQL 파라미터에 매핑
+        params.addValue("REALID", DeductionDetails.get("REALID"));
+        params.addValue("HISNM", DeductionDetails.get("HISNM"));
+        params.addValue("HISAMT", DeductionDetails.get("HISAMT"));
+        params.addValue("HISPOINT", DeductionDetails.get("HISPOINT"));
+        params.addValue("REGSTAND", DeductionDetails.get("REGSTAND"));
+        params.addValue("HISFLAG", DeductionDetails.get("HISFLAG"));
+        // 쿼리 실행
+        int rowsAffected = this.sqlRunner.execute(sql, params);
+        System.out.println("✅ 조회수 증가 완료! 영향 받은 행 수: " + rowsAffected);
+    }
+    // 분류관리 키워드 조회
+    public List<Map<String, Object>> getregNM() {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+        String sql = """
+        SELECT *
+        FROM TB_REGWORD;
+    """;
+
+        // SQL 실행
+        List<Map<String, Object>> resultRows = this.sqlRunner.getRows(sql, params);
+        return resultRows;
+    }
 }

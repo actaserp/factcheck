@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.management.ObjectName;
 import javax.transaction.Transactional;
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -47,7 +48,7 @@ public class TilkoController {
 
     private static final String apiHost	= "https://api.tilko.net/";
     private static final String apiKey	= "9f32eeb2d5404e69b57d23c137961d64";
-    TilkoParsing tilkoParsing;
+    TilkoParsing tilkoParsing = new TilkoParsing();
 
     @Autowired
     TilkoService tilkoService;
@@ -1027,6 +1028,12 @@ public class TilkoController {
                         REALID = saveinfo.getRealId();
                     } else {
                         throw new RuntimeException("REALINFO 저장 실패");
+                    }
+                    // 차감 데이터 저장
+                    List<Map<String, Object>> DeductionDetails = (List<Map<String, Object>>) resultScore.get("DEDUCTION_DETAILS");
+                    for(Map<String, Object> DeductionDetail : DeductionDetails){
+                        DeductionDetail.put("REALID", REALID);
+                        tilkoService.saveDeductionDetails(DeductionDetail);
                     }
                     // searchinfo 테이블에 조회기록 저장
                     tilkoService.saveSearchInfo(user.getUsername(), REALID);

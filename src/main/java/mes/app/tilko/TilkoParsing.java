@@ -1,6 +1,7 @@
 package mes.app.tilko;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -154,170 +155,215 @@ public class TilkoParsing {
         Matcher matcher = pattern.matcher(input);
         return matcher.find();
     }
-    // 카드점수 파싱 메서드 (카드 등급, 점수, 추가설명(Comment) 모두 리턴)
-    public static Map<String, Object> calScore(List<Map<String, Object>> summaryData,
-                                               List<Map<String, Object>> comcode,
-                                               Integer lessScore,
-                                               List<Map<String,Object>> gradeInfo) {
+    // ✅ 점수계산 메서드
+    public Map<String, Object> calScore(List<Map<String, Object>> summaryData,
+                                        List<Map<String, Object>> comcode,
+                                        Integer lessScore,
+                                        List<Map<String, Object>> gradeInfo) {
 
         System.out.println("계산에 사용되는 SummaryData : " + summaryData);
         int finalScore = 100; // 기본 점수
         String Grade = "";
         List<String> comment = new ArrayList<>();
         List<String> Deductions = new ArrayList<>();
+        List<Map<String, Object>> deductionDetails = new ArrayList<>(); // 차감 정보 저장
+        Map<String, Integer> regSeqMap = new HashMap<>(); // 각 데이터의 REGSEQ 저장
 
-        // REGNM(등기명칭)을 키로 REGSTAND(분류기준), REGSTAMT(기준금액), REGMAXNUM(최대 차감점수) 저장
-        Map<String, Map<String, Object>> regMap = new HashMap<>();
-        for (Map<String, Object> code : comcode) {
-            String regnm = code.get("REGNM").toString();
-            Map<String, Object> values = new HashMap<>();
-            values.put("REGSTAND", code.get("REGSTAND").toString());
-            values.put("REGSTAMT", code.get("REGSTAMT") != null ? Double.parseDouble(code.get("REGSTAMT").toString()) * 10000 : 1.0);
-            values.put("REGMAXNUM", code.get("REGMAXNUM") != null ? Integer.parseInt(code.get("REGMAXNUM").toString()) : 0);
-            values.put("REGCOMMENT", code.get("REGCOMMENT").toString());
-            values.put("REGASNAME", code.get("REGASNAME").toString());
-            values.put("REGNM", code.get("REGNM").toString());
-            regMap.put(regnm, values);
-        }
+        // ✅ 첫 번째 차감 요소 감지 플래그 (전역적으로 유지)
+        AtomicBoolean firstDeductionFound = new AtomicBoolean(false);
 
-        // 정규식 패턴 (채권최고액과 근저당권자 추출)
-        Pattern amountPattern = Pattern.compile("채권최고액\\s+금([0-9,]+)원");
-        Pattern chaeAmountPattern = Pattern.compile("청구금액\\s+금([0-9,]+)원");
-        Pattern creditorPattern = Pattern.compile("근저당권자\\s+(.+)");
-        Pattern chaePattern = Pattern.compile("채권자\\s+(.+)");
+        // ✅ 정규식 패턴 (모든 금액 추출)
+        Pattern amountPattern = Pattern.compile("금([0-9,]+)원");
 
-        // **각 purpose별로 근저당권자별 마지막 채권최고액 저장**
-        Map<String, Map<String, Long>> creditorAmountsByPurpose = new HashMap<>();
-
-        // 등기명칭과 summaryData의 Purpose 비교
+        // ✅ 각 SummaryData에서 REGWORD가 포함된 경우 REGSEQ 저장
         for (Map<String, Object> summary : summaryData) {
             String purpose = summary.get("Purpose").toString();
-            if (!regMap.containsKey(purpose)) continue;
+            Integer matchedRegSeq = null;
 
-            Map<String, Object> regData = regMap.get(purpose);
-            String regstand = regData.get("REGSTAND").toString();
-            double regStAmt = (double) regData.get("REGSTAMT");
-            int regMaxNum = (int) regData.get("REGMAXNUM");
-
-            String information = summary.get("Information").toString();
-
-            // 채권최고액 추출
-            Matcher amountMatcher = amountPattern.matcher(information);
-            long bondAmount = 0;
-            if (amountMatcher.find()) {
-                bondAmount = Long.parseLong(amountMatcher.group(1).replace(",", ""));
+            for (Map<String, Object> code : comcode) {
+                String regWord = code.get("REGNM").toString();
+                if (purpose.contains(regWord)) { // Purpose에 REGWORD 포함 여부 확인
+                    matchedRegSeq = Integer.parseInt(code.get("REGSEQ").toString()); // REGSEQ 매칭
+                    break;
+                }
             }
 
-            // 청구금액 추출
-            Matcher chaeAmountMatcher = chaeAmountPattern.matcher(information);
-            long chaeAmount = 0;
-            if (chaeAmountMatcher.find()) {
-                chaeAmount = Long.parseLong(chaeAmountMatcher.group(1).replace(",", ""));
-            }
-
-            // 근저당권자 추출
-            Matcher creditorMatcher = creditorPattern.matcher(information);
-            String creditor = "";
-            if (creditorMatcher.find()) {
-                creditor = creditorMatcher.group(1).trim();
-            }
-
-            // 채권자 추출
-            Matcher chaeMatcher = chaePattern.matcher(information);
-            String chaegwoner = "";
-            if (chaeMatcher.find()) {
-                chaegwoner = chaeMatcher.group(1).trim();
-            }
-
-            // 코멘트 추가
-            comment.add(regData.get("REGCOMMENT").toString());
-            // 감점사항 추가
-            Deductions.add(regData.get("REGASNAME").toString());
-
-            // **Purpose 별로 근저당권자별 마지막 금액 저장**
-            creditorAmountsByPurpose.putIfAbsent(purpose, new HashMap<>());
-            creditorAmountsByPurpose.get(purpose).put(creditor, bondAmount);
-
-            if ("A2".equals(regstand) || ("A3".equals(regstand) && bondAmount == 0)) {
-                // A2 또는 A3(채권최고액이 없는 경우) 즉시 점수 차감
-                finalScore -= regMaxNum;
+            if (matchedRegSeq != null) {
+                regSeqMap.put(purpose, matchedRegSeq);
             }
         }
 
-        // **각 purpose의 각 근저당권자별로 차감 계산**
-        for (String purpose : creditorAmountsByPurpose.keySet()) {
-            if (!regMap.containsKey(purpose)) continue;
-
-            for (Map.Entry<String, Long> entry : creditorAmountsByPurpose.get(purpose).entrySet()) {
-                String creditor = entry.getKey();
-                long amount = entry.getValue();
-
-                // REGSTAMT 값 안전하게 가져오기
-                double regStAmt = regMap.get(purpose).get("REGSTAMT") != null
-                        ? (double) regMap.get(purpose).get("REGSTAMT")
-                        : 1.0; // 기본값 1.0 설정 (안전장치)
-
-                // 채권최고금액 / REGSTAMT 계산 (1을 넘지 않도록 제한)
-                double ratio = Math.min(1.0, amount / regStAmt);
-
-                // REGMAXNUM 값 가져와서 점수 차감
-                int deduction = (int) Math.round(ratio * (int) regMap.get(purpose).get("REGMAXNUM"));
-                finalScore -= deduction;
-
-                System.out.println("📉 차감된 점수: " + deduction + " (Purpose: " + purpose + ", Creditor: " + creditor + ", 최종 점수: " + finalScore + ")");
-            }
+        // ✅ RankNo 기준으로 같은 그룹인 데이터 찾기
+        Map<String, List<Map<String, Object>>> groupedByRank = new HashMap<>();
+        for (Map<String, Object> summary : summaryData) {
+            String rankNo = summary.get("RankNo").toString();
+            groupedByRank.putIfAbsent(rankNo, new ArrayList<>());
+            groupedByRank.get(rankNo).add(summary);
         }
 
-        // 최저 점수 보정
+        // ✅ 같은 RankNo 그룹 내에서 REGSEQ가 동일하면 마지막 요소만 적용
+        for (String rankNo : groupedByRank.keySet()) {
+            List<Map<String, Object>> dataList = groupedByRank.get(rankNo);
+            dataList.sort(Comparator.comparing(d -> d.get("RankNo").toString())); // RankNo 정렬
+
+            Integer lastRegSeq = null;
+            Map<String, Object> lastEntry = null;
+
+            for (Map<String, Object> entry : dataList) {
+                String purpose = entry.get("Purpose").toString();
+                if (regSeqMap.containsKey(purpose)) {
+                    Integer regSeq = regSeqMap.get(purpose);
+
+                    if (lastRegSeq == null || !lastRegSeq.equals(regSeq)) {
+                        lastRegSeq = regSeq;
+                        lastEntry = entry;
+                    }
+                }
+            }
+
+            if (lastEntry != null) {
+                finalScore = applyDeduction(lastEntry, lastRegSeq, comcode, amountPattern, firstDeductionFound, finalScore, deductionDetails, comment, Deductions);
+            }
+        }
+        // ✅ 모든 차감이 끝난 후 추가 차감
+        int deductionCount = deductionDetails.size();
+        finalScore -= deductionCount;  // ✅ 추가 차감 적용
+        System.out.println("📉 REGNM 개수만큼 추가 1점 차감: " + deductionCount);
+
+        // **최저 점수 보정**
         if (finalScore < lessScore) {
             finalScore = lessScore;
         }
 
-        // 등급 설정
+        // **등급 설정**
         for (Map<String, Object> grade : gradeInfo) {
-            int minScore = (Integer) grade.get("GRSCORE01");
-            int maxScore = (Integer) grade.get("GRSCORE02");
+            int maxScore = (Integer) grade.get("GRSCORE01");
+            int minScore = (Integer) grade.get("GRSCORE02");
 
             if (minScore <= finalScore && maxScore >= finalScore) {
                 Grade = grade.get("GRID").toString();
-                System.out.println("✅ 등급 매칭: " + Grade + " (점수: " + finalScore + ")");
                 break;
             }
         }
 
-        // 등급이 설정되지 않으면 가장 낮은 등급 반환
         if (Grade.isEmpty()) {
             Grade = "F";
-            System.out.println("⚠️ 등급을 찾지 못함, 가장 낮은 등급 반환: " + Grade);
         }
 
+        // **결과 저장**
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put("REALSCORE", finalScore);
         resultMap.put("GRADE", Grade);
         resultMap.put("COMMENT", comment);
-        resultMap.put("REGASNAME",Deductions);
+        resultMap.put("REGASNAME", Deductions);
+        resultMap.put("DEDUCTION_DETAILS", deductionDetails);
+        System.out.println("점수 반환 데이터 : " + resultMap);
+
         return resultMap;
     }
-    // SummaryData 정렬 메서드
-    public static void sortByRankNo(List<Map<String, Object>> dataList) {
+
+    // ✅ 금액별 점수 차감 로직
+    private int applyDeduction(Map<String, Object> summary, Integer regSeq, List<Map<String, Object>> comcode,
+                               Pattern amountPattern, AtomicBoolean firstDeductionFound, int finalScore,
+                               List<Map<String, Object>> deductionDetails, List<String> comment, List<String> Deductions) {
+        for (Map<String, Object> code : comcode) {
+            if (Integer.parseInt(code.get("REGSEQ").toString()) == regSeq) {
+                String regstand = code.get("REGSTAND").toString();
+                String information = summary.get("Information") != null ? summary.get("Information").toString() : "";
+
+                // ✅ 정규식으로 금액 추출
+                Matcher amountMatcher = amountPattern.matcher(information);
+                long bondAmount = amountMatcher.find() ? Long.parseLong(amountMatcher.group(1).replace(",", "")) : 0;
+
+                // ✅ 첫 번째 차감 데이터인지 확인 후 SENSCORE 감점 적용
+                boolean isFirstDeduction = !firstDeductionFound.get() && code.containsKey("SENSCORE");
+
+                if (isFirstDeduction) {
+                    finalScore -= 5;
+                    System.out.println("🔥 첫 번째 차감 데이터 SENSCORE 존재 → 5점 차감!");
+                    firstDeductionFound.set(true);
+                }
+
+                // ✅ SUBSCORE + 금액 차감 적용
+                int subScore = code.get("SUBSCORE") != null ? Integer.parseInt(code.get("SUBSCORE").toString()) : 0;
+                int amountDeduction = calculateDeduction(bondAmount);  // ✅ 금액 차감 적용
+
+                finalScore -= amountDeduction;
+
+                // ✅ A1, A2, A3 점수 차감 로직 추가(금액이 없는 점수기준(복합기준))
+                boolean isComplexDeduction = "A2".equals(regstand) || ("A3".equals(regstand) && bondAmount == 0);
+                if (isComplexDeduction) {
+                    finalScore -= subScore;
+                    System.out.println("🔥 A2 또는 A3 채권최고액 없음 → " + subScore + "점 차감!");
+                }
+                // ✅ HISPOINT에 저장할 값 결정
+                int deductionPoint = isComplexDeduction ? subScore : amountDeduction;
+
+                // ✅ 차감 정보 저장
+                Map<String, Object> deductionEntry = new HashMap<>();
+                deductionEntry.put("HISNM", code.get("REGNM"));
+                deductionEntry.put("HISAMT", bondAmount);
+                deductionEntry.put("HISPOINT", deductionPoint);
+                deductionEntry.put("REGSTAND", regstand);
+                deductionEntry.put("HISFLAG", isFirstDeduction ? "1" : "0"); // ✅ 첫 번째 차감 데이터에만 1 적용
+                deductionDetails.add(deductionEntry);
+
+                // ✅ 코멘트 및 감점사항 추가
+                comment.add(code.get("REGCOMMENT").toString());
+                Deductions.add(code.get("REGASNAME").toString());
+                break;
+            }
+        }
+
+        return finalScore;
+    }
+
+    // ✅ 금액별 점수 차감 로직
+    private static int calculateDeduction(long amount) {
+        if (amount <= 50000000) return 0;
+        else if (amount <= 100000000) return getProportionalScore(amount, 50000001, 100000000, 1, 7);
+        else if (amount <= 150000000) return getProportionalScore(amount, 100000001, 150000000, 8, 14);
+        else if (amount <= 200000000) return getProportionalScore(amount, 150000001, 200000000, 15, 21);
+        else if (amount <= 250000000) return getProportionalScore(amount, 200000001, 250000000, 22, 28);
+        else if (amount <= 300000000) return getProportionalScore(amount, 250000001, 300000000, 29, 35);
+        else if (amount <= 350000000) return getProportionalScore(amount, 300000001, 350000000, 36, 42);
+        else if (amount <= 400000000) return getProportionalScore(amount, 350000001, 400000000, 43, 49);
+        return 49;
+    }
+
+    // ✅ 비율 계산 함수
+    private static int getProportionalScore(long amount, long min, long max, int minScore, int maxScore) {
+        double ratio = (double) (amount - min) / (max - min);
+        return (int) Math.round(minScore + ratio * (maxScore - minScore));
+    }
+
+    // SummaryData 정렬 메서드 (괄호 제외한 숫자만 정렬)
+    public void sortByRankNo(List<Map<String, Object>> dataList) {
         dataList.sort((d1, d2) -> {
             // RankNo 가져오기 (문자열로 변환)
             String rank1 = d1.get("RankNo").toString();
             String rank2 = d2.get("RankNo").toString();
 
-            // RankNo를 숫자와 서브 숫자로 분리
-            String[] split1 = rank1.split("-");
-            String[] split2 = rank2.split("-");
+            // ✅ 괄호와 괄호 안의 내용 제거
+            rank1 = rank1.replaceAll("\\(.*?\\)", "").trim();
+            rank2 = rank2.replaceAll("\\(.*?\\)", "").trim();
 
-            int num1 = Integer.parseInt(split1[0]); // 숫자 부분 추출
+            // ✅ 숫자와 하이픈만 남김
+            String numericRank1 = rank1.replaceAll("[^0-9-]", "");
+            String numericRank2 = rank2.replaceAll("[^0-9-]", "");
+
+            // ✅ RankNo 숫자 비교
+            String[] split1 = numericRank1.split("-");
+            String[] split2 = numericRank2.split("-");
+
+            int num1 = Integer.parseInt(split1[0]);
             int num2 = Integer.parseInt(split2[0]);
 
-            // 숫자 우선 비교
             if (num1 != num2) {
                 return Integer.compare(num1, num2);
             }
 
-            // 하이픈이 없는 경우 우선
+            // ✅ 하이픈이 없는 경우 먼저 정렬
             if (split1.length == 1 && split2.length == 1) {
                 return 0;
             } else if (split1.length == 1) {
@@ -326,12 +372,13 @@ public class TilkoParsing {
                 return 1;
             }
 
-            // 하이픈 뒤의 숫자 비교
             int subNum1 = Integer.parseInt(split1[1]);
             int subNum2 = Integer.parseInt(split2[1]);
+
             return Integer.compare(subNum1, subNum2);
         });
     }
+
 
     // Register 공동담보목록(TB_REGISTERDATAG) 파싱 메서드
     public static Map<String, String> REGDATAGparsing(Map<String, String> RegisterList) {
@@ -675,27 +722,41 @@ public class TilkoParsing {
         }
 
         for (String row : tableData) {
-            String[] columns = row.split("\\|");
+            // 안전한 split 적용 (빈 필드 포함)
+            String[] columns = row.split("\\|", -1);
 
             // "표시번호"로 시작하는 행은 무시
             if (columns[0].trim().equals("표시번호")) {
                 continue;
             }
 
-            if (columns.length < 4) continue; // 최소 4개 필드 존재해야 유효
-
             System.out.println("구축물 파싱 진행중 행 : " + Arrays.toString(columns));
 
-            // 건물 내역 시작점 확인
-            if (!columns[0].trim().isEmpty() && !collecting) {
-                collecting = true;
-                buildingData.put("seq", columns[0].trim());
-                buildingData.put("address", columns[2].trim());
-                buildingDetails.append(columns[4].trim());
+            // columns.length가 5인 경우
+            if (columns.length == 5) {
+
+                // 건물 내역 시작점 확인
+                if (!columns[0].trim().isEmpty() && !collecting) {
+                    collecting = true;
+                    buildingData.put("seq", columns[0].trim());
+                    buildingData.put("address", columns[2].trim());
+                    buildingDetails.append(columns[3].trim());  // 5개일 때 마지막 컬럼은 [3]
+                }
             }
-            // 건물 내역이 이어지는 경우 계속 추가
-            else if (collecting) {
-                buildingDetails.append(" ").append(columns[4].trim());
+            // columns.length가 6인 경우
+            else if (columns.length == 6) {
+
+                // 건물 내역 시작점 확인
+                if (!columns[0].trim().isEmpty() && !collecting) {
+                    collecting = true;
+                    buildingData.put("seq", columns[0].trim());
+                    buildingData.put("address", columns[2].trim());
+                    buildingDetails.append(columns[4].trim()); // 6개일 때 마지막 컬럼은 [4]
+                }
+            }
+            // columns.length가 5보다 작거나 6보다 큰 경우
+            else {
+                System.out.println("경고: 예상치 못한 컬럼 개수(" + columns.length + "), 데이터: " + Arrays.toString(columns));
             }
         }
 
@@ -704,6 +765,7 @@ public class TilkoParsing {
 
         return buildingData;
     }
+
 
 
 
