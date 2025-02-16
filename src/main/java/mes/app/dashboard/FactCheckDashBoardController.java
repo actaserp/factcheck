@@ -54,7 +54,7 @@ public class FactCheckDashBoardController {
             List<Map<String, Object>> AddressList = factService.todayAddress();
             for(Map<String, Object> item : AddressList) {
                 item.put("no", AddressList.indexOf(item) + 1);
-                String indatem = new SimpleDateFormat("yyyy-MM-dd").format(item.get("REQDATE"));
+                String indatem = new SimpleDateFormat("yyyy-MM-dd").format(item.get("INDATEM"));
                 item.remove("REQDATE");
                 item.put("REQDATE", indatem);
             }

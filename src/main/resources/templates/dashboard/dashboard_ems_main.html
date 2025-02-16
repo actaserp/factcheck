@@ -518,7 +518,7 @@
                 theGrid1.itemsSource = viewdata1;
             }
         }
-        // 금일 상위 검색지역 그리드
+        // 상위 검색지역 그리드
         function fetchListData2() {
             let data2 = [{},{},{},{},{}];
 
@@ -707,7 +707,7 @@
                             weekPeriodElement.textContent = `${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)} (주간)`;
                         }
                         if (weektitleElement) {
-                            weektitleElement.textContent = `주간 통계 (${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)})`;
+                            weektitleElement.textContent = `신규 주간 통계 (${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)})`;
 
                         }
                         // 새로운 차트 데이터

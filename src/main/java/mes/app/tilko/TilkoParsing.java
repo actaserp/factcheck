@@ -298,6 +298,40 @@ public class TilkoParsing {
         resultMap.put("REGASNAME",Deductions);
         return resultMap;
     }
+    // SummaryData 정렬 메서드
+    public static void sortByRankNo(List<Map<String, Object>> dataList) {
+        dataList.sort((d1, d2) -> {
+            // RankNo 가져오기 (문자열로 변환)
+            String rank1 = d1.get("RankNo").toString();
+            String rank2 = d2.get("RankNo").toString();
+
+            // RankNo를 숫자와 서브 숫자로 분리
+            String[] split1 = rank1.split("-");
+            String[] split2 = rank2.split("-");
+
+            int num1 = Integer.parseInt(split1[0]); // 숫자 부분 추출
+            int num2 = Integer.parseInt(split2[0]);
+
+            // 숫자 우선 비교
+            if (num1 != num2) {
+                return Integer.compare(num1, num2);
+            }
+
+            // 하이픈이 없는 경우 우선
+            if (split1.length == 1 && split2.length == 1) {
+                return 0;
+            } else if (split1.length == 1) {
+                return -1;
+            } else if (split2.length == 1) {
+                return 1;
+            }
+
+            // 하이픈 뒤의 숫자 비교
+            int subNum1 = Integer.parseInt(split1[1]);
+            int subNum2 = Integer.parseInt(split2[1]);
+            return Integer.compare(subNum1, subNum2);
+        });
+    }
 
     // Register 공동담보목록(TB_REGISTERDATAG) 파싱 메서드
     public static Map<String, String> REGDATAGparsing(Map<String, String> RegisterList) {
