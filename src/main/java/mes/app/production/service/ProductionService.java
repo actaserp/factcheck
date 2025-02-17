@@ -320,52 +320,17 @@ public class ProductionService {
         }
 
         String sql = """
-                WITH SEARCH_CTE AS (
-                    SELECT
-                        S.REALID,
-                        S.USERID,
-                        S.REQDATE,
-                        ROW_NUMBER() OVER (PARTITION BY S.REALID ORDER BY S.REQDATE DESC) AS rn
-                    FROM TB_SEARCHINFO S
-                ),
-                COUNT_CTE AS (
-                    SELECT
-                        REALID,
-                        COUNT(*) AS record_count
-                    FROM TB_SEARCHINFO
-                    GROUP BY REALID
-                ),
+                WITH PinNo_Count_CTE AS (
+                       SELECT
+                           REALID,
+                           PinNo,
+                           COUNT(*) OVER (PARTITION BY PinNo) AS PinNo_Count,
+                           ROW_NUMBER() OVER (PARTITION BY PinNo ORDER BY REALID DESC) AS rn
+                       FROM TB_REALINFOXML
+                   ),
                 CTE AS (
                     SELECT
-                        R.REALID,
-                        R.USERID,
-                        R.REQDATE,
-                        R.REALADD,
-                        R.REGDATE,
-                        R.RESIDO,
-                        R.REGUGUN,
-                        R.REMOK,
-                        R.REWON,
-                        R.REWONDATE,
-                        R.REJIMOK,
-                        R.REAREA,
-                        R.REAMOUNT,
-                        R.RESEQ,
-                        R.REMAXAMT,
-                        R.INDATEM,
-                        R.REALSCORE,
-                        R.REALPOINT,
-                        R.RELASTDATE,
-                        R.REALGUBUN,
-                        R.PDFFILENAME,
-                        S.USERID AS Suserid,
-                        S.REQDATE AS Sreqdate,
-                        S.REALID AS Srealid,
-                        U.USERNM AS USERNM,
-                        RS.UniqueNo,
-                        RS.Gubun,
-                        RS.Address,
-                        RS.PrintDate,
+                        RA.REALID,
                         RA.RankNo AS RankNo_a,
                         RA.RgsAimCont AS RgsAimCont_a,
                         RA.Receve AS Receve_a,
@@ -376,16 +341,64 @@ public class ProductionService {
                         RB.Receve AS Receve_b,
                         RB.RgsCaus AS RgsCaus_b,
                         RB.NomprsAndEtc AS NomprsAndEtc_b,
-                        ROW_NUMBER() OVER (PARTITION BY R.REALID ORDER BY S.REQDATE DESC) AS rn,
-                        C.record_count
-                    FROM TB_REALINFO R
-                    INNER JOIN SEARCH_CTE S
-                        ON R.REALID = S.REALID
-                        AND S.rn = 1
-                    LEFT JOIN TB_USERINFO U
-                        ON S.USERID = U.USERID
-                    LEFT JOIN TB_REALSUMMARY RS
-                        ON R.REALID = RS.REALID
+                        CONCAT(RA.REALID, RB.REALID) AS UniqueNo
+                    FROM (
+                        SELECT DISTINCT REALID, RankNo, RgsAimCont, Receve, RgsCaus, NomprsAndEtc
+                        FROM TB_REALAOWN
+                    ) RA
+                    LEFT JOIN (
+                        SELECT DISTINCT REALID, RankNo, RgsAimCont, Receve, RgsCaus, NomprsAndEtc
+                        FROM TB_REALBOWN
+                    ) RB
+                    ON RA.REALID = RB.REALID
+                ),
+                RankedRecords AS (
+                    SELECT
+                        RX.REALID,
+                        RX.PinNo,
+                        PNC.PinNo_Count,
+                        MAX(R.USERID) AS USERID,
+                        MAX(R.REQDATE) AS REQDATE,
+                        MAX(R.REALADD) AS REALADD,
+                        MAX(R.REGDATE) AS REGDATE,
+                        MAX(R.RESIDO) AS RESIDO,
+                        MAX(R.REGUGUN) AS REGUGUN,
+                        MAX(R.REMOK) AS REMOK,
+                        MAX(R.REWON) AS REWON,
+                        MAX(R.REWONDATE) AS REWONDATE,
+                        MAX(R.REJIMOK) AS REJIMOK,
+                        MAX(R.REAREA) AS REAREA,
+                        MAX(R.REAMOUNT) AS REAMOUNT,
+                        MAX(R.RESEQ) AS RESEQ,
+                        MAX(R.REMAXAMT) AS REMAXAMT,
+                        MAX(R.INDATEM) AS INDATEM,
+                        MAX(R.REALSCORE) AS REALSCORE,
+                        MAX(R.REALPOINT) AS REALPOINT,
+                        MAX(R.RELASTDATE) AS REALASTDATE,
+                        MAX(R.REALGUBUN) AS REALGUBUN,
+                        MAX(RX.REALID) AS RXREALID,
+                        MAX(RX.WksbiBalDate) AS WksbiBalDate,
+                        MAX(RX.WksbiBalNoTime) AS WksbiBalNoTime,
+                        S.Gubun,
+                        S.Address,
+                        S.PrintDate,
+                        (
+                            SELECT
+                                RankNo_a, RgsAimCont_a, Receve_a, RgsCaus_a, NomprsAndEtc_a
+                            FROM CTE
+                            WHERE CTE.REALID = R.REALID
+                            FOR JSON PATH
+                        ) AS RankNo_a_data,
+                        (
+                            SELECT
+                                RankNo_b, RgsAimCont_b, Receve_b, RgsCaus_b, NomprsAndEtc_b
+                            FROM CTE
+                            WHERE CTE.REALID = R.REALID
+                            FOR JSON PATH
+                        ) AS RankNo_b_data,
+                        ROW_NUMBER() OVER (PARTITION BY RX.PinNo, PNC.PinNo_Count ORDER BY RX.WksbiBalDate DESC) AS RowNum
+                    FROM
+                        TB_REALINFO R
                     LEFT JOIN (
                         SELECT DISTINCT REALID, RankNo, RgsAimCont, Receve, RgsCaus, NomprsAndEtc
                         FROM TB_REALAOWN
@@ -394,65 +407,27 @@ public class ProductionService {
                         SELECT DISTINCT REALID, RankNo, RgsAimCont, Receve, RgsCaus, NomprsAndEtc
                         FROM TB_REALBOWN
                     ) RB ON R.REALID = RB.REALID
-                    LEFT JOIN COUNT_CTE C ON R.REALID = C.REALID
-                    WHERE S.REQDATE BETWEEN
-                        CAST(:startDate AS DATETIME)
-                        AND DATEADD(MILLISECOND, -1, DATEADD(DAY, 1, CAST(:endDate AS DATETIME)))
-                          AND (:keyword IS NULL OR R.REALADD LIKE '%' + :keyword + '%')
+                    JOIN
+                        TB_REALINFOXML RX
+                        ON R.REALID = RX.REALID
+                    LEFT JOIN
+                        TB_REALSUMMARY S
+                        ON R.REALID = S.REALID
+                    LEFT JOIN CTE
+                        ON R.REALID = CTE.REALID
+                    LEFT JOIN PinNo_Count_CTE PNC
+                        ON RX.PinNo = PNC.PinNo
+                    WHERE REPLACE(RX.WksbiBalDate, '/', '-') BETWEEN :startDate AND :endDate
+                     AND (:keyword IS NULL OR R.REALADD LIKE '%' + :keyword + '%')
+                    GROUP BY
+                        RX.PinNo, S.REALID, S.Gubun, S.Address, S.PrintDate, PNC.PinNo_Count, RX.WksbiBalDate,R.REALID,RX.REALID
                 )
-                SELECT
-                    CTE.REALID,
-                    CTE.USERID,
-                    CTE.REQDATE,
-                    CTE.REALADD,
-                    CTE.REGDATE,
-                    CTE.RESIDO,
-                    CTE.REGUGUN,
-                    CTE.REMOK,
-                    CTE.REWON,
-                    CTE.REWONDATE,
-                    CTE.REJIMOK,
-                    CTE.REAREA,
-                    CTE.REAMOUNT,
-                    CTE.RESEQ,
-                    CTE.REMAXAMT,
-                    CTE.INDATEM,
-                    CTE.REALSCORE,
-                    CTE.REALPOINT,
-                    CTE.RELASTDATE,
-                    CTE.REALGUBUN,
-                    CTE.PDFFILENAME,
-                    CTE.Suserid,
-                    CTE.Sreqdate,
-                    CTE.Srealid,
-                    CTE.USERNM,
-                    CTE.UniqueNo,
-                    CTE.Gubun,
-                    CTE.Address,
-                    CTE.PrintDate,
-                    CASE
-                        WHEN CTE.UniqueNo IS NOT NULL THEN COALESCE((
-                            SELECT DISTINCT RankNo_a, RgsAimCont_a, Receve_a, RgsCaus_a, NomprsAndEtc_a
-                            FROM CTE
-                            WHERE CTE.RankNo_a IS NOT NULL AND CTE.UniqueNo IS NOT NULL
-                            FOR JSON PATH
-                        ), '[]')
-                        ELSE '[]'
-                    END AS RankNo_a_data,
-                    CASE
-                        WHEN CTE.UniqueNo IS NOT NULL THEN COALESCE((
-                            SELECT DISTINCT RankNo_b, RgsAimCont_b, Receve_b, RgsCaus_b, NomprsAndEtc_b
-                            FROM CTE
-                            WHERE CTE.RankNo_b IS NOT NULL AND CTE.UniqueNo IS NOT NULL
-                            FOR JSON PATH
-                        ), '[]')
-                        ELSE '[]'
-                    END AS RankNo_b_data,
-                    CTE.record_count,
-                    CTE.rn
-                FROM CTE
-                WHERE CTE.rn = 1
-                ORDER BY CTE.record_count DESC;
+                SELECT *
+                FROM RankedRecords
+                WHERE RowNum = 1
+                ORDER BY
+                    PinNo_Count DESC,
+                    PinNo
                 """;
 
         List<Map<String, Object>> items = this.sqlRunner.getRows(sql.toString(), dicParam);
