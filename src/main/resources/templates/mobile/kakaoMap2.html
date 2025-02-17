@@ -984,6 +984,16 @@
               map: null // 기본적으로 닫힌 상태
             });
 
+            // 지도 줌 이벤트 리스너 추가
+            kakao.maps.event.addListener(window.map, 'zoom_changed', function() {
+              var level = window.map.getLevel(); // 현재 지도 줌 레벨 가져오기
+             // console.log("현재 줌 레벨:", level);
+
+              if (level > 4) { // 줌 레벨이 4보다 크면 오버레이 닫기
+                closeOverlay();
+              }
+            });
+
             // 마커 클릭 시 오버레이 표시
             kakao.maps.event.addListener(marker, 'click', function () {
               if (activeOverlay) {
@@ -991,6 +1001,14 @@
               }
               overlay.setMap(window.map); // 새로운 오버레이 열기
               activeOverlay = overlay; // 현재 오버레이 저장
+
+              //클릭한 마커 위치로 지도 이동
+              var moveLatLon = marker.getPosition();
+              window.map.panTo(moveLatLon);
+
+              if (window.map.getLevel() > 3) {
+                window.map.setLevel(4);
+              }
             });
 
             // 마커 데이터에 오버레이 저장 (닫기 버튼에서 찾기 위해)
