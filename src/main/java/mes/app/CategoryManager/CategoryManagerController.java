@@ -86,23 +86,24 @@ public class CategoryManagerController {
             List<Map<String, Object>> categorydetailsRead = tbRegisterService.categorydetailsRead(REGSEQ);
 
             if (categorydetailsRead != null && !categorydetailsRead.isEmpty()) {
-                //데이터가 있을 경우 첫 번째 데이터를 가져옴
-                Map<String, Object> data = categorydetailsRead.get(0);
+                // 첫 번째 데이터 가져오기 (등록 정보)
+                Map<String, Object> data = new HashMap<>(categorydetailsRead.get(0));
 
-                //키워드 변환 추가
-                if (data != null && data.containsKey("REGWORDS")) {
-                    String keywordsStr = (String) data.get("REGWORDS");
-                    List<String> keywords = keywordsStr != null && !keywordsStr.isEmpty()
-                        ? Arrays.asList(keywordsStr.split(","))
-                        : new ArrayList<>();
+                // 키워드 및 설명 배열 생성
+                List<Map<String, String>> keywords = new ArrayList<>();
+                for (Map<String, Object> row : categorydetailsRead) {
+                    if (row.get("REGWORD") != null) {
+                        Map<String, String> keywordEntry = new HashMap<>();
+                        keywordEntry.put("REGWORD", row.get("REGWORD").toString());
+                        keywordEntry.put("REGREMARK", row.get("REGREMARK") != null ? row.get("REGREMARK").toString() : "");
 
-                    data.put("keywords", keywords); //변환된 리스트를 다시 매핑
-                    data.remove("REGWORDS");
-                } else {
-                    data.put("keywords", new ArrayList<>()); //키워드가 없으면 빈 배열 반환
+                        keywords.add(keywordEntry);
+                    }
                 }
 
-                //가공된 데이터 반환
+                // 키워드 리스트를 매핑
+                data.put("keywords", keywords);
+
                 result.success = true;
                 result.message = "데이터 조회 성공";
                 result.data = data;
@@ -125,7 +126,7 @@ public class CategoryManagerController {
     public ResponseEntity<Map<String, Object>> saveCategory(@RequestBody Map<String, Object> formData) {
         Map<String, Object> response = new HashMap<>();
         try {
-           // log.info("받은 데이터: {}", formData);
+            log.info("받은 데이터: {}", formData);
 
             // 서비스 호출
             TB_REGISTER savedRegister = tbRegisterService.saveOrUpdateRegister(formData);

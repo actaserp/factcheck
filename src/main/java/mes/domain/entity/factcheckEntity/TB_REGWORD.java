@@ -26,4 +26,8 @@ public class TB_REGWORD {
 
   @Column(name = "USEYN", length = 1)
   private String useYn; // 사용 여부 (Y/N)
+
+  @Column(name="REGREMARK")
+  private String regRemark; //키워드 설명
+
 }

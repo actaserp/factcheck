@@ -15,7 +15,7 @@
     }
     .wp100 {
       width: 100% !important;
-      box-sizing: border-box; /* padding 포함 */
+      box-sizing: border-box;
     }
     table th {
       width: 120px !important;
@@ -36,7 +36,6 @@
     .keyword-field {
         flex: 1; /* 입력 필드가 자동으로 확장됨 */
     }
-
   </style>
 </head>
 
@@ -210,9 +209,10 @@
                       </tr>
                       <tr>
                         <th><label for="keywordInput">등기 키워드</label></th>
-                        <td colspan="3">
+                        <td colspan="4">
                           <div class="keyword-container">
                             <input type="text" id="keywordInput" placeholder="등기 키워드 입력">
+                            <input type="text" id="REGREMARK" placeholder="등기 키워드 설명 입력">
                             <button class="btn btn-outline-secondary" type="button" onclick="addKeywordRow()">추가</button>
                           </div>
                         </td>
@@ -278,7 +278,7 @@
               senScore: item.senScore || '',
               regAsName: item.regAsName || '',
               regComment: item.regComment || '',
-              remark: item.remark || ''
+              remark: item.remark || '',
             }));
           }
         },
@@ -305,7 +305,7 @@
           regAsName: '',
           regComment: '',
           regYul:'',
-          remark: ''
+          remark: '',
         });
 
       }
@@ -437,9 +437,9 @@
           'X-CSRF-Token': $('[name=_csrf]').val()
         },
         success: function (response) {
-          //console.log("서버에서 받아온 데이터",response);
+          console.log("서버에서 받아온 데이터",response);
           if (response && response.data) {
-           //console.log('Server Response:', response.data); // 응답 확인
+           console.log('Server Response:', response.data); // 응답 확인
             // 서버 응답 데이터로 UI 업데이트
             $('#subScore').val(response.data.SUBSCORE || rowData.SUBSCORE || '');
             $('#senScore').val(response.data.SENSCORE || rowData.SENSCORE || '');
@@ -451,14 +451,11 @@
             addPercentageSign(regyulInput[0]); // 포맷 적용
 
             if (response.data.keywords && response.data.keywords.length > 0) {
-              response.data.keywords.forEach(keyword => addKeywordRow(keyword)); // 키워드 추가
-            }
-            // 키워드 추가 (중복 방지)
-            $('.keyword-item').remove();
-            if (response.data.keywords && response.data.keywords.length > 0) {
-              response.data.keywords.forEach(keyword => {
-                //console.log('추가할 키워드:', keyword);
-                addKeywordRow(keyword);
+              response.data.keywords.forEach(keywordObj => {
+                addKeywordRow({
+                  REGWORD: keywordObj.REGWORD,  // 키워드 값
+                  REGREMARK: keywordObj.REGREMARK // 키워드 설명 값
+                });
               });
             } else {
               console.warn('키워드 없음');
@@ -604,11 +601,14 @@
         Alert.alert("", "기준 금액을 입력하세요.");
         return;
       }
-      const keywordList = [];
-      $(".keyword-field").each(function () {
-        keywordList.push($(this).val());
-      });
 
+      const keywordList = [];
+      $(".keyword-item").each(function () {
+        let keywordValue = $(this).find(".keyword-field").val();
+        let descriptionValue = $(this).find(".keyword-description").val();
+
+        keywordList.push({ REGWORD: keywordValue, REGREMARK: descriptionValue });
+      });
 
       // 폼 데이터를 수집
       const formData = {
@@ -713,6 +713,7 @@
 
       // "등기 키워드 입력" 필드 초기화
       document.getElementById("keywordInput").value = "";
+      document.getElementById("REGREMARK").value = "";
 
       // 추가된 키워드 리스트 초기화 (td 내부 컨텐츠 삭제)
       let keywordTd = document.querySelector("#selectedData tbody tr:last-child td");
@@ -730,6 +731,12 @@
       newInput.setAttribute("class", "form-control");
       newInput.setAttribute("placeholder", "등기 키워드 입력");
 
+      let newRemark = document.createElement("input");
+      newRemark.setAttribute("type", "text");
+      newRemark.setAttribute("id", "REGREMARK");
+      newRemark.setAttribute("class", "form-control");
+      newRemark.setAttribute("placeholder", "등기 키워드 설명 입력");
+
       let addButton = document.createElement("button");
       addButton.setAttribute("class", "btn btn-outline-secondary");
       addButton.setAttribute("type", "button");
@@ -737,37 +744,72 @@
       addButton.textContent = "추가";
 
       keywordContainer.appendChild(newInput);
+      keywordContainer.appendChild(newRemark);
       keywordContainer.appendChild(addButton);
       keywordTd.appendChild(keywordContainer);
     }
 
 
     //키워드 추가
-    function addKeywordRow(keywordValue = null) {
-      // 입력 필드 값 가져오기 (수동 입력 시)
-      if (keywordValue === null) {
-        keywordValue = document.getElementById("keywordInput").value.trim();
-        if (keywordValue === "") {
-          Alert.alert('', "키워드를 입력해주세요.");
-          return;
-        }
+    function addKeywordRow(keywordObj = null) {
+      // 입력한 값 가져오기 (초기값이 null이면 새 값 추가)
+      let keywordValue = keywordObj ? keywordObj.REGWORD : document.getElementById("keywordInput").value.trim();
+      let keywordDescription = keywordObj ? keywordObj.REGREMARK : document.getElementById("REGREMARK").value.trim();
+
+      if (keywordValue === "") {
+        Alert.alert('', "키워드를 입력해주세요.");
+        return;
       }
 
-      // 기존 "등기 키워드" 열(td) 찾기
-      let keywordTd = document.querySelector("#selectedData tbody tr:last-child td");
+      if (keywordDescription === "") {
+        Alert.alert('', "키워드 설명을 입력해주세요.");
+        return;
+      }
+
+      // ✅ 키워드 리스트 컨테이너 찾기
+      let keywordListContainer = document.getElementById("keywordListContainer");
+
+      // 🔥 컨테이너가 없으면 생성 (최대 높이 유지)
+      if (!keywordListContainer) {
+        let parentTd = document.querySelector("#selectedData tbody tr:last-child td");
+        keywordListContainer = document.createElement("div");
+        keywordListContainer.id = "keywordListContainer";
+        keywordListContainer.style.maxHeight = "150px"; //최대 높이 유지
+        keywordListContainer.style.overflowY = "auto"; //스크롤 활성화
+        parentTd.appendChild(keywordListContainer);
+      }
 
       // 새로운 컨테이너(div) 생성
       let keywordContainer = document.createElement("div");
       keywordContainer.classList.add("keyword-item");
 
-      // 새로운 입력 필드 추가
-      let newInput = document.createElement("input");
-      newInput.setAttribute("type", "text");
-      newInput.setAttribute("class", "wp100 keyword-field");
-      newInput.setAttribute("name", "Keyword");
-      newInput.setAttribute("placeholder", "등기 키워드");
-      newInput.value = keywordValue;
-      newInput.readOnly = true; // 기존 입력 수정 불가
+      // 키워드 입력 필드 (읽기 전용, 여러 줄 가능)
+      let newKeywordInput = document.createElement("textarea");
+      newKeywordInput.setAttribute("class", "wp30 keyword-field");
+      newKeywordInput.setAttribute("name", "Keyword");
+      newKeywordInput.setAttribute("placeholder", "등기 키워드");
+      newKeywordInput.value = keywordValue;
+      newKeywordInput.readOnly = true;
+      newKeywordInput.style.resize = "none"; // 🔥 크기 조절 비활성화
+      newKeywordInput.style.height = "60px"; // 🔥 기본 높이 설정
+      newKeywordInput.style.overflow = "hidden"; // ✅ 스크롤 제거
+      newKeywordInput.style.whiteSpace = "normal"; // ✅ 줄 바꿈 허용
+      newKeywordInput.style.wordBreak = "break-word"; // ✅ 긴 단어도 자동 줄바꿈
+
+// 키워드 설명 입력 필드 (읽기 전용, 여러 줄 가능)
+      let newDescriptionInput = document.createElement("textarea");
+      newDescriptionInput.setAttribute("class", "wp70 keyword-description");
+      newDescriptionInput.setAttribute("name", "KeywordDescription");
+      newDescriptionInput.setAttribute("placeholder", "키워드 설명");
+      newDescriptionInput.value = keywordDescription;
+      newDescriptionInput.readOnly = true;
+      newDescriptionInput.style.resize = "none"; // 🔥 크기 조절 비활성화
+      newDescriptionInput.style.height = "60px"; // 🔥 기본 높이 설정
+      newDescriptionInput.style.overflow = "hidden"; // ✅ 스크롤 제거
+      newDescriptionInput.style.whiteSpace = "normal"; // ✅ 줄 바꿈 허용
+      newDescriptionInput.style.wordBreak = "break-word"; // ✅ 긴 단어도 자동 줄바꿈
+
+
 
       // 삭제 버튼 추가
       let removeBtn = document.createElement("button");
@@ -778,19 +820,20 @@
         keywordTd.removeChild(keywordContainer);
       };
 
-      // 컨테이너에 입력 필드와 버튼 추가
-      keywordContainer.appendChild(newInput);
+      // 컨테이너에 키워드 & 설명 & 버튼 추가
+      keywordContainer.appendChild(newKeywordInput);
+      keywordContainer.appendChild(newDescriptionInput);
       keywordContainer.appendChild(removeBtn);
 
-      // td 안에 새 키워드 추가
-      keywordTd.appendChild(keywordContainer);
+      // ✅ 키워드 리스트 컨테이너에 추가 (키워드 개수 제한)
+      keywordListContainer.appendChild(keywordContainer);
 
-      // 입력 필드 초기화 (수동 입력 시)
-      if (keywordValue === document.getElementById("keywordInput").value.trim()) {
+      // 입력 필드 초기화
+      if (!keywordObj) {
         document.getElementById("keywordInput").value = "";
+        document.getElementById("REGREMARK").value = "";
       }
     }
-
   </script>
 </th:block>
 </html>

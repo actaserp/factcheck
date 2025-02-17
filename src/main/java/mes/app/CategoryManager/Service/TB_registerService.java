@@ -91,14 +91,22 @@ public class TB_registerService {
 
        // 키워드 저장 (USEYN = "Y")
        if (formData.get("keywords") instanceof List) {
-           List<String> keywords = (List<String>) formData.get("keywords");
-           for (String keyword : keywords) {
-               TB_REGWORD regword = TB_REGWORD.builder()
-                   .regSeq(savedRegister.getRegSeq())
-                   .regWord(keyword)
-                   .useYn("Y")
-                   .build();
-               tbRegwordRepository.save(regword);
+           List<Map<String, String>> keywords = (List<Map<String, String>>) formData.get("keywords");
+
+           for (Map<String, String> keywordMap : keywords) {
+               String keyword = keywordMap.get("REGWORD");
+               String keywordRemark = keywordMap.get("REGREMARK");
+
+               if (keyword != null && !keyword.trim().isEmpty()) {
+                   TB_REGWORD regword = TB_REGWORD.builder()
+                       .regSeq(savedRegister.getRegSeq())  // 연결된 REGSEQ
+                       .regWord(keyword)                  // 키워드
+                       .regRemark(keywordRemark)          // 키워드 설명 추가
+                       .useYn("Y")                        // 사용 여부
+                       .build();
+
+                   tbRegwordRepository.save(regword);
+               }
            }
        }
 
@@ -158,8 +166,8 @@ public class TB_registerService {
             sql.append(" AND tr.regnm LIKE :searchInput");
             params.addValue("searchInput", "%" + searchInput + "%");
         }
-//        log.info("Generated SQL: {}", sql);
-//        log.info("SQL Parameters: {}", params.getValues());
+        log.info("Generated SQL: {}", sql);
+        log.info("SQL Parameters: {}", params.getValues());
         return sqlRunner.getRows(sql.toString(), params);
     }
 
@@ -168,7 +176,8 @@ public class TB_registerService {
         StringBuilder sql = new StringBuilder("""
         SELECT
             tr.*,
-            STRING_AGG(trg.REGWORD, ',') AS REGWORDS
+            trg.REGREMARK,
+            trg.REGWORD
         FROM TB_REGISTER tr
         LEFT JOIN TB_REGWORD trg ON trg.REGSEQ = tr.REGSEQ
         WHERE 1=1
@@ -179,13 +188,15 @@ public class TB_registerService {
             params.addValue("REGSEQ", REGSEQ);
         }
 
-        sql.append(" GROUP BY tr.REGSEQ, tr.regnm, tr.reggroup, tr.regstand, tr.regmaxnum, " +
+        sql.append(" ORDER BY trg.REGNO");
+        /*sql.append(" GROUP BY tr.REGSEQ, tr.regnm, tr.reggroup, tr.regstand, tr.regmaxnum, " +
             "tr.regyul, tr.regstamt, tr.riskclass, tr.subScore, tr.senScore, " +
-            "tr.regAsName, tr.exflag, tr.regComment, tr.remark");
+            "tr.regAsName, tr.exflag, tr.regComment, tr.remark ," +
+            "trg.REGREMARK,trg.REGWORD ");*/
 
         // SQL과 파라미터 로그 출력
-//        log.info("Generated SQL: {}", sql);
-//        log.info("SQL Parameters: {}", params.getValues());
+        log.info("Generated SQL: {}", sql);
+        log.info("SQL Parameters: {}", params.getValues());
 
         return sqlRunner.getRows(sql.toString(), params);
     }
