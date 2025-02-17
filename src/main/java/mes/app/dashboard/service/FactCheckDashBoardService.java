@@ -36,10 +36,24 @@ public class FactCheckDashBoardService {
     public List<Map<String, Object>> todayAddress() {
 
         String sql = """
+                WITH FirstRealInfo AS (
+                    SELECT
+                        x.PinNo,
+                        MIN(r.REALID) AS REALID
+                    FROM
+                        TB_REALINFOXML x
+                    LEFT JOIN
+                        TB_REALINFO r ON x.REALID = r.REALID
+                    WHERE
+                        r.INDATEM >= CAST(GETDATE() AS DATE)
+                        AND r.INDATEM < DATEADD(DAY, 1, CAST(GETDATE() AS DATE)) 
+                    GROUP BY
+                        x.PinNo
+                )
                 SELECT
+                    f.PinNo,
                     r.REALID,
                     r.USERID,
-                    s.REQDATE,
                     r.REALADD,
                     r.REGDATE,
                     r.RESIDO,
@@ -56,15 +70,15 @@ public class FactCheckDashBoardService {
                     r.REALSCORE,
                     r.REALPOINT,
                     r.RELASTDATE,
-                    COUNT(s.REALID) AS VIEW_COUNT
+                    COUNT(x.PinNo) AS VIEW_COUNT
                 FROM
-                    TB_REALINFO r
+                    FirstRealInfo f
                 LEFT JOIN
-                    TB_SEARCHINFO s ON r.REALID = s.REALID
-                WHERE
-                    CAST(s.REQDATE AS DATE) = CAST(GETDATE() AS DATE)
+                    TB_REALINFO r ON f.REALID = r.REALID  -- 가장 먼저 조회된 REALID에 해당하는 데이터만 가져옴
+                LEFT JOIN
+                    TB_REALINFOXML x ON f.PinNo = x.PinNo  -- VIEW_COUNT 계산을 위해 조인
                 GROUP BY
-                    r.REALID, r.USERID, s.REQDATE, r.REALADD, r.REGDATE,
+                    f.PinNo, r.REALID, r.USERID, r.REALADD, r.REGDATE,
                     r.RESIDO, r.REGUGUN, r.REMOK, r.REWON, r.REWONDATE,
                     r.REJIMOK, r.REAREA, r.REAMOUNT, r.RESEQ, r.REMAXAMT,
                     r.INDATEM, r.REALSCORE, r.REALPOINT, r.RELASTDATE

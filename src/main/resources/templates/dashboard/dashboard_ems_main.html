@@ -555,7 +555,7 @@
                         {binding: 'RESIDO', header: '시/도', width: 120, minWidth: 80, align: 'center'},
                         {binding: 'REGUGUN', header: '구/군', width: 120, minWidth: 80, align: 'center'},
                         {binding: 'REALSCORE', header: '점수', width: 80, align: 'center'},
-                        {binding: 'REALPOINT', header: '조회건수', width: 90, minWidth: 80, align: 'center'}
+                        {binding: 'VIEW_COUNT', header: '조회건수', width: 90, minWidth: 80, align: 'center'}
                     ],
                     itemsSource: viewdata2,
                 });
@@ -829,7 +829,7 @@
                     const noDataMessage3 = document.getElementById('noDataMessage3');
                     const canvasElement3 = document.getElementById('CntOfRegister');
                     const lastDate2 = data2.CntOfRegister[data2.CntOfRegister.length - 1].DATE;
-                    // Signout 데이터가 빈 배열인지 확인
+                    // CntOfRegister 데이터가 빈 배열인지 확인
                     if (CntOfRegister.length === 0) {
                         // 빈 데이터일 경우 처리
                         canvasElement3.style.display = 'none';  // 차트 숨기기
@@ -911,7 +911,7 @@
                     const noDataMessage4 = document.getElementById('noDataMessage4');
                     const canvasElement4 = document.getElementById('BestSearch');
 
-                    // Signout 데이터가 빈 배열인지 확인
+                    // BestSearch 데이터가 빈 배열인지 확인
                     if (BestSearch.length === 0) {
                         // 빈 데이터일 경우 처리
                         canvasElement4.style.display = 'none';  // 차트 숨기기

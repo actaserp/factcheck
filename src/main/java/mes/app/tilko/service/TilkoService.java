@@ -682,14 +682,18 @@ public class TilkoService {
                     HISAMT,
                     HISPOINT,
                     REGSTAND,
-                    HISFLAG)
+                    HISFLAG,
+                    REMARK
+                    )
                 VALUES (
                     :REALID,
                     :HISNM,
                     :HISAMT,
                     :HISPOINT,
                     :REGSTAND,
-                    :HISFLAG)
+                    :HISFLAG,
+                    :REMARK
+                    )
         """;
         // Map 데이터를 SQL 파라미터에 매핑
         params.addValue("REALID", DeductionDetails.get("REALID"));
@@ -698,6 +702,7 @@ public class TilkoService {
         params.addValue("HISPOINT", DeductionDetails.get("HISPOINT"));
         params.addValue("REGSTAND", DeductionDetails.get("REGSTAND"));
         params.addValue("HISFLAG", DeductionDetails.get("HISFLAG"));
+        params.addValue("REMARK", DeductionDetails.get("REMARK"));
         // 쿼리 실행
         int rowsAffected = this.sqlRunner.execute(sql, params);
         System.out.println("✅ 조회수 증가 완료! 영향 받은 행 수: " + rowsAffected);
@@ -714,5 +719,17 @@ public class TilkoService {
         // SQL 실행
         List<Map<String, Object>> resultRows = this.sqlRunner.getRows(sql, params);
         return resultRows;
+    }
+    // 점수이력
+    public List<Map<String, Object>> getDeduction(int REALID) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+        String sql = """
+                SELECT * FROM TB_REALHIS WHERE REALID = :REALID
+                """;
+
+        params.addValue("REALID", REALID);
+        List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
+        return items;
     }
 }

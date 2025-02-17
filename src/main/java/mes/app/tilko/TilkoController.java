@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
 public class TilkoController {
 
     private static final String apiHost	= "https://api.tilko.net/";
-    private static final String apiKey	= "9f32eeb2d5404e69b57d23c137961d64";
+    private static final String apiKey	= "10e79763f9764b2785e9100537e9fa26";
     TilkoParsing tilkoParsing = new TilkoParsing();
 
     @Autowired
@@ -762,10 +762,39 @@ public class TilkoController {
             }catch (Exception e){
                 e.printStackTrace();
             }
+            int realScore = (int) savedGoyu.get("REALSCORE");
+            String Grade = "";
+            // 등급 관련 데이터(S등급 등) 데이터 불러오기
+            List<Map<String, Object>> gradeData = tilkoService.getGradeData();
+            // 저장되어있는 REALID 기반 COMMENT및 차감요소 불러오기
+            List<Map<String, Object>> savedDeduction = tilkoService.getDeduction(realId);
+            List<String> comments = new ArrayList<>();
+            if (savedDeduction != null && !savedDeduction.isEmpty()) {  // ✅ null 체크 및 빈 리스트 방지
+                for (Map<String, Object> item : savedDeduction) {
+                    if (item.get("REMARK") != null) {
+                        comments.add(item.get("REMARK").toString());
+                    }
+                }
+            }
+            // **등급 설정**
+            for (Map<String, Object> grade : gradeData) {
+                int maxScore = (Integer) grade.get("GRSCORE01");
+                int minScore = (Integer) grade.get("GRSCORE02");
+
+                if (minScore <= realScore && maxScore >= realScore) {
+                    Grade = grade.get("GRID").toString();
+                    break;
+                }
+            }
+
+            if (Grade.isEmpty()) {
+                Grade = "F";
+            }
             result.message = "기존 조회데이터가 존재합니다.";
+            resultMap.put("REALID", savedGoyu.get("REALID"));
             resultMap.put("REALSCORE", savedGoyu.get("REALSCORE"));
-            resultMap.put("GRADE", savedGoyu.get("GRADE"));
-            resultMap.put("COMMENT", savedGoyu.get("COMMENT"));
+            resultMap.put("GRADE", Grade);
+            resultMap.put("COMMENT", comments);
             resultMap.put("REGASNAME", savedGoyu.get("REGASNAME"));
             resultMap.put("ADDRESS", address);
             resultMap.put("PDFFILENAME", savedGoyu.get("PDFFILENAME"));
@@ -1083,7 +1112,7 @@ public class TilkoController {
                         tilkoService.saveSummaryDataA(item);
                     }
                     // 카드 출력시 필요 데이터
-
+                    resultMap.put("REALID", REALID);
                     resultMap.put("REALSCORE", resultScore.get("REALSCORE"));
                     resultMap.put("GRADE", resultScore.get("GRADE"));
                     resultMap.put("COMMENT", resultScore.get("COMMENT"));

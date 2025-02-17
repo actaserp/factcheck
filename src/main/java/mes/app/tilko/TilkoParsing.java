@@ -306,6 +306,7 @@ public class TilkoParsing {
                 deductionEntry.put("HISPOINT", deductionPoint);
                 deductionEntry.put("REGSTAND", regstand);
                 deductionEntry.put("HISFLAG", isFirstDeduction ? "1" : "0"); // ✅ 첫 번째 차감 데이터에만 1 적용
+                deductionEntry.put("REMARK", code.get("REGCOMMENT").toString());
                 deductionDetails.add(deductionEntry);
 
                 // ✅ 코멘트 및 감점사항 추가
@@ -407,10 +408,9 @@ public class TilkoParsing {
         }
         return null;
     }
-    // 관할등기소 추출
     public static String extractJurisdictionOffice(String text) {
-        // 개행을 포함한 모든 문자를 매칭하도록 (?s) 추가
-        Pattern pattern = Pattern.compile("(?s)\\|\\s*관할등기소\\s*\\|\\s*([\\s\\S]+?)\\s*\\|\\s*([\\s\\S]+?)\\s*\\|");
+        // 정규식 수정: | 관할등기소 | 다음 두 개의 | 로 구분된 값을 추출
+        Pattern pattern = Pattern.compile("\\|\\s*관할등기소\\s*\\|\\s*([^|]+)\\s*\\|\\s*([^|]+)\\s*\\|");
         Matcher matcher = pattern.matcher(text);
 
         if (matcher.find()) {
@@ -419,6 +419,7 @@ public class TilkoParsing {
             return "정보 없음";
         }
     }
+
     // 갑구 소유권에 관한 사항 수집
     public static Map<String, Object> parseGabguTable(List<String> tableData) {
         System.out.println("넘어온 Resister 갑구 파싱 데이터" + tableData);
@@ -740,7 +741,7 @@ public class TilkoParsing {
                     collecting = true;
                     buildingData.put("seq", columns[0].trim());
                     buildingData.put("address", columns[2].trim());
-                    buildingDetails.append(columns[3].trim());  // 5개일 때 마지막 컬럼은 [3]
+                    buildingDetails.append(columns[4].trim());  // 5개일 때 마지막 컬럼은 [3]
                 }
             }
             // columns.length가 6인 경우
@@ -754,6 +755,18 @@ public class TilkoParsing {
                     buildingDetails.append(columns[4].trim()); // 6개일 때 마지막 컬럼은 [4]
                 }
             }
+            // columns.length가 7인 경우
+            else if (columns.length == 7) {
+
+                // 건물 내역 시작점 확인
+                if (!columns[0].trim().isEmpty() && !collecting) {
+                    collecting = true;
+                    buildingData.put("seq", columns[0].trim());
+                    buildingData.put("address", columns[2].trim());
+                    buildingDetails.append(columns[4].trim()); // 6개일 때 마지막 컬럼은 [4]
+                }
+            }
+
             // columns.length가 5보다 작거나 6보다 큰 경우
             else {
                 System.out.println("경고: 예상치 못한 컬럼 개수(" + columns.length + "), 데이터: " + Arrays.toString(columns));
