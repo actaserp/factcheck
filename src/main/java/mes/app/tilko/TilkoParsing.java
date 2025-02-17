@@ -157,6 +157,50 @@ public class TilkoParsing {
         Matcher matcher = pattern.matcher(input);
         return matcher.find();
     }
+    public static List<Map<String, Object>> collectSummaryData(
+            List<Map<String, Object>> summaryData,
+            List<Map<String, Object>> comcode) {
+
+        // 결과 리스트 (수집된 데이터 저장)
+        List<Map<String, Object>> collectedData = new ArrayList<>();
+
+        // ✅ REGWORD 포함된 데이터 매칭
+        for (Map<String, Object> summary : summaryData) {
+            String purpose = summary.get("Purpose").toString();
+            String rankNo = summary.get("RankNo").toString();
+            String amount = summary.getOrDefault("Amount", "").toString(); // 금액 (없을 수도 있음)
+            boolean isAmountEmpty = amount.isEmpty();
+
+            // REGWORD 포함 여부 확인 및 REQSEQ 가져오기
+            for (Map<String, Object> code : comcode) {
+                String regWord = code.get("REGWORD").toString();
+                if (purpose.contains(regWord)) {
+                    String regSeq = code.get("REGSEQ").toString(); // REQSEQ 가져오기
+
+                    // 기존에 같은 RankNo와 REQSEQ가 있는지 확인
+                    Optional<Map<String, Object>> existingData = collectedData.stream()
+                            .filter(d -> d.get("RankNo").equals(rankNo) && d.get("REGSEQ").equals(regSeq))
+                            .findFirst();
+
+                    if (existingData.isPresent()) {
+                        // 기존 데이터 존재 → 금액 덮어씌우기
+                        if (!isAmountEmpty) {
+                            existingData.get().put("Amount", amount); // 금액 갱신
+                        }
+                    } else {
+                        // 기존 데이터 없음 → 새로운 데이터 추가
+                        Map<String, Object> newData = new HashMap<>(summary);
+                        newData.put("REGSEQ", regSeq); // REQSEQ 추가
+                        collectedData.add(newData);
+                    }
+                    break; // 첫 번째 매칭만 사용
+                }
+            }
+        }
+        return collectedData;
+    }
+
+
     // ✅ 점수계산 메서드
     public Map<String, Object> calScore(List<Map<String, Object>> summaryData,
                                         List<Map<String, Object>> comcode,

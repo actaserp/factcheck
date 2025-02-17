@@ -253,7 +253,6 @@
     }
     // 세션값 가져와 카드 출력
     function searchGoyuList() {
-        // 세션에서 저장된 데이터를 가져오기
         let storedData = sessionStorage.getItem("resultMap");
 
         if (!storedData) {
@@ -262,32 +261,23 @@
         }
 
         let parsedData = JSON.parse(storedData);
-
         console.log("세션에서 불러온 데이터:", parsedData);
 
-        // `.contents-wrap` 요소 가져오기
         const contentsWrap = document.querySelector('.contents-wrap');
-        contentsWrap.innerHTML = ""; // 기존 카드 초기화
-
-        // COMMENT가 배열이면 모든 코멘트를 한 문자열로 합치기
-        let commentsText = Array.isArray(parsedData.COMMENT)
-            ? parsedData.COMMENT.join("\n")  // 줄바꿈으로 연결
-            : parsedData.COMMENT;
+        contentsWrap.innerHTML = "";
 
         let scoreData = parsedData.GRADE;
-        // 상세보기 및 점수이력 위한 REALID값 hidden 설정
         const idDocument = document.getElementById('REALID');
         if (idDocument) {
-            idDocument.value = parsedData.REALID;  // ✅ 올바른 방식
+            idDocument.value = parsedData.REALID;
         }
 
-        // 카드 요소 생성
         const card = document.createElement('div');
         card.className = 'card';
 
         const cardTitle = document.createElement('div');
         cardTitle.className = 'card-title';
-        cardTitle.textContent = `주소: ${parsedData.ADDRESS}`; // 예제 주소
+        cardTitle.textContent = `주소: ${parsedData.ADDRESS}`;
 
         const cardContent = document.createElement('div');
         cardContent.className = 'card-content';
@@ -297,17 +287,29 @@
         cardContent2.className = 'card-content';
         cardContent2.textContent = `점수: ${parsedData.REALSCORE}`;
 
-        // COMMENT 값이 없을 경우 '안전합니다.' 표시
         const cardContent3 = document.createElement('div');
         cardContent3.className = 'card-content';
 
         if (scoreData === "S") {
             cardContent3.textContent = `안전합니다.`;
         } else {
-            cardContent3.textContent = `코멘트: ${commentsText}`;
+            let uniqueComments = new Set();
+            let filteredComments = [];
+
+            if (Array.isArray(parsedData.COMMENT)) {
+                for (let comment of parsedData.COMMENT) {
+                    if (!uniqueComments.has(comment)) {
+                        uniqueComments.add(comment);
+                        filteredComments.push(comment);
+                    }
+                }
+            } else {
+                filteredComments.push(parsedData.COMMENT);
+            }
+
+            cardContent3.textContent = `코멘트: ${filteredComments.join("\n")}`; // 줄바꿈으로 표시
         }
 
-        // 요소 추가
         card.appendChild(cardTitle);
         card.appendChild(cardContent);
         card.appendChild(cardContent2);
@@ -380,29 +382,43 @@
 
                 let htmlContent = '';
                 data2.forEach(data => {
+                    // REGSTAND 값 변환
+                    let regStandText = "";
+                    switch (data.REGSTAND) {
+                        case "A1": regStandText = "금액"; break;
+                        case "A2": regStandText = "점수"; break;
+                        case "A3": regStandText = "복합"; break;
+                        default: regStandText = data.REGSTAND; // 변환되지 않은 값 그대로 사용
+                    }
+
+                    // HISAMT 값 숫자 포맷팅 (천 단위 콤마 추가)
+                    let formattedAmt = data.HISAMT ? Number(data.HISAMT).toLocaleString() : data.HISAMT;
+
+                    // HISFLAG 값 변환
+                    let flagText = data.HISFLAG === 1 ? "O" : "";
+
                     htmlContent += `
-                    <tr>
-                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
-                            ${data.HISNM}
-                        </td>
-                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
-                            ${data.HISAMT}
-                        </td>
-                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
-                            ${data.HISPOINT}
-                        </td>
-                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
-                            ${data.REGSTAND}
-                        </td>
-                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
-                            ${data.HISFLAG}
-                        </td>
-                    </tr>`;
+                <tr>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${data.HISNM}
+                    </td>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${formattedAmt}
+                    </td>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${data.HISPOINT}
+                    </td>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${regStandText}
+                    </td>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${flagText}
+                    </td>
+                </tr>`;
                 });
 
                 // 기존 내용을 초기화 후 새로운 데이터 추가
                 scoreWrap.innerHTML = htmlContent;
-
 
             },
             error: function (error) {
@@ -410,6 +426,7 @@
             }
         });
     }
+
     // ✅ 팝업 열기 (popup-history 요소에 'open' 클래스 추가)
     document.addEventListener("DOMContentLoaded", function () {
         const popup = document.getElementById("deductionWrap");
