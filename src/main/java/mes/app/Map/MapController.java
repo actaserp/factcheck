@@ -326,7 +326,7 @@ public class MapController {
   @GetMapping("/RegionList")
   public ResponseEntity<Map<String, Object>> getRegionList(@RequestParam(value = "region", required = false) String region,
                                   @RequestParam(value = "gugun", required = false)String gugun) {
-    log.info("지역 검색들어온 데이터 region={}, gugun={}", region, gugun);
+    //log.info("지역 검색들어온 데이터 region={}, gugun={}", region, gugun);
 
     if (region != null) {
       gugun = extractGugun(region);
