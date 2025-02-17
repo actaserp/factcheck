@@ -1035,7 +1035,7 @@ public class TilkoController {
                         SummaryCalData.addAll(SummaryDataEMap);
                     }
                     // 정렬 메서드 호출
-                    tilkoParsing.sortByRankNo(SummaryCalData);
+                    tilkoParsing.sortByReceiptDate(SummaryCalData);
                     // 점수계산
                     Map<String, Object> resultScore = tilkoParsing.calScore(SummaryCalData,
                             comcode,

@@ -1,5 +1,7 @@
 package mes.app.tilko;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -193,36 +195,39 @@ public class TilkoParsing {
             }
         }
 
-        // ✅ RankNo 기준으로 같은 그룹인 데이터 찾기
+        // ✅ RankNo 기준으로 같은 그룹인 데이터 찾기 (접두사로 그룹화)
         Map<String, List<Map<String, Object>>> groupedByRank = new HashMap<>();
+
         for (Map<String, Object> summary : summaryData) {
             String rankNo = summary.get("RankNo").toString();
-            groupedByRank.putIfAbsent(rankNo, new ArrayList<>());
-            groupedByRank.get(rankNo).add(summary);
+
+            String mainRankNo = rankNo.split("-")[0]; // "-" 이전 숫자만 추출하여 그룹화
+
+            groupedByRank.putIfAbsent(mainRankNo, new ArrayList<>());
+            groupedByRank.get(mainRankNo).add(summary);
         }
 
-        // ✅ 같은 RankNo 그룹 내에서 REGSEQ가 동일하면 마지막 요소만 적용
+        // ✅ 같은 RankNo 그룹 내에서 REGSEQ가 동일하면 각각 차감 적용
         for (String rankNo : groupedByRank.keySet()) {
             List<Map<String, Object>> dataList = groupedByRank.get(rankNo);
             dataList.sort(Comparator.comparing(d -> d.get("RankNo").toString())); // RankNo 정렬
 
-            Integer lastRegSeq = null;
-            Map<String, Object> lastEntry = null;
+            Map<Integer, Map<String, Object>> regSeqLastEntries = new HashMap<>(); // ✅ REGSEQ별 마지막 데이터 저장
 
             for (Map<String, Object> entry : dataList) {
                 String purpose = entry.get("Purpose").toString();
                 if (regSeqMap.containsKey(purpose)) {
                     Integer regSeq = regSeqMap.get(purpose);
 
-                    if (lastRegSeq == null || !lastRegSeq.equals(regSeq)) {
-                        lastRegSeq = regSeq;
-                        lastEntry = entry;
-                    }
+                    // ✅ 같은 REGSEQ가 여러 개 있어도 가장 마지막 데이터를 저장
+                    regSeqLastEntries.put(regSeq, entry);
                 }
             }
 
-            if (lastEntry != null) {
-                finalScore = applyDeduction(lastEntry, lastRegSeq, comcode, amountPattern, firstDeductionFound, finalScore, deductionDetails, comment, Deductions);
+            // ✅ 각 REGSEQ별로 차감 로직 적용
+            for (Integer regSeq : regSeqLastEntries.keySet()) {
+                Map<String, Object> lastEntry = regSeqLastEntries.get(regSeq);
+                finalScore = applyDeduction(lastEntry, regSeq, comcode, amountPattern, firstDeductionFound, finalScore, deductionDetails, comment, Deductions);
             }
         }
         // ✅ 모든 차감이 끝난 후 추가 차감
@@ -299,9 +304,11 @@ public class TilkoParsing {
                 // ✅ HISPOINT에 저장할 값 결정
                 int deductionPoint = isComplexDeduction ? subScore : amountDeduction;
 
+                // SummaryData 날자 스플릿
+                String RecDate = Arrays.toString(summary.get("ReceiptInfo").toString().split("일"));
                 // ✅ 차감 정보 저장
                 Map<String, Object> deductionEntry = new HashMap<>();
-                deductionEntry.put("HISNM", code.get("REGNM"));
+                deductionEntry.put("HISNM", summary.get("Purpose"));
                 deductionEntry.put("HISAMT", bondAmount);
                 deductionEntry.put("HISPOINT", deductionPoint);
                 deductionEntry.put("REGSTAND", regstand);
@@ -338,45 +345,25 @@ public class TilkoParsing {
         return (int) Math.round(minScore + ratio * (maxScore - minScore));
     }
 
-    // SummaryData 정렬 메서드 (괄호 제외한 숫자만 정렬)
-    public void sortByRankNo(List<Map<String, Object>> dataList) {
+    // ✅ ReceiptInfo 날짜 기준으로 정렬하는 메서드
+    public void sortByReceiptDate(List<Map<String, Object>> dataList) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년M월d일");
+
         dataList.sort((d1, d2) -> {
-            // RankNo 가져오기 (문자열로 변환)
-            String rank1 = d1.get("RankNo").toString();
-            String rank2 = d2.get("RankNo").toString();
+            // ReceiptInfo 가져오기
+            String receipt1 = d1.get("ReceiptInfo").toString();
+            String receipt2 = d2.get("ReceiptInfo").toString();
 
-            // ✅ 괄호와 괄호 안의 내용 제거
-            rank1 = rank1.replaceAll("\\(.*?\\)", "").trim();
-            rank2 = rank2.replaceAll("\\(.*?\\)", "").trim();
+            // ✅ 날짜 추출 (제74988호 같은 뒷부분 제거)
+            receipt1 = receipt1.split("제")[0].trim(); // "2024년5월13일"
+            receipt2 = receipt2.split("제")[0].trim(); // "2013년9월23일"
 
-            // ✅ 숫자와 하이픈만 남김
-            String numericRank1 = rank1.replaceAll("[^0-9-]", "");
-            String numericRank2 = rank2.replaceAll("[^0-9-]", "");
+            // ✅ 문자열을 LocalDate로 변환
+            LocalDate date1 = LocalDate.parse(receipt1, formatter);
+            LocalDate date2 = LocalDate.parse(receipt2, formatter);
 
-            // ✅ RankNo 숫자 비교
-            String[] split1 = numericRank1.split("-");
-            String[] split2 = numericRank2.split("-");
-
-            int num1 = Integer.parseInt(split1[0]);
-            int num2 = Integer.parseInt(split2[0]);
-
-            if (num1 != num2) {
-                return Integer.compare(num1, num2);
-            }
-
-            // ✅ 하이픈이 없는 경우 먼저 정렬
-            if (split1.length == 1 && split2.length == 1) {
-                return 0;
-            } else if (split1.length == 1) {
-                return -1;
-            } else if (split2.length == 1) {
-                return 1;
-            }
-
-            int subNum1 = Integer.parseInt(split1[1]);
-            int subNum2 = Integer.parseInt(split2[1]);
-
-            return Integer.compare(subNum1, subNum2);
+            // ✅ 날짜 비교 (오름차순 정렬)
+            return date1.compareTo(date2);
         });
     }
 
