@@ -18,8 +18,8 @@
     }
     /* 스피너를 지도 위 중앙에 배치 */
     #loading-spinner {
-        position: absolute;
-        top: 15%;
+        position: fixed;
+        top: 40%;
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 1000; /* 지도보다 위에 배치 */
@@ -987,7 +987,7 @@
             // 지도 줌 이벤트 리스너 추가
             kakao.maps.event.addListener(window.map, 'zoom_changed', function() {
               var level = window.map.getLevel(); // 현재 지도 줌 레벨 가져오기
-             // console.log("현재 줌 레벨:", level);
+             //console.log("현재 줌 레벨:", level);
 
               if (level > 4) { // 줌 레벨이 4보다 크면 오버레이 닫기
                 closeOverlay();
@@ -1002,13 +1002,19 @@
               overlay.setMap(window.map); // 새로운 오버레이 열기
               activeOverlay = overlay; // 현재 오버레이 저장
 
-              //클릭한 마커 위치로 지도 이동
               var moveLatLon = marker.getPosition();
-              window.map.panTo(moveLatLon);
+              var currentLevel = window.map.getLevel(); // 현재 지도 줌 레벨 가져오기
 
-              if (window.map.getLevel() > 3) {
-                window.map.setLevel(4);
+              if (currentLevel > 5) {
+                window.map.setLevel(2);
+              } else if (currentLevel > 2 && currentLevel <= 5) {
+                window.map.setLevel(3);
               }
+
+              //비동기 함수 안에서 `setTimeout`을 `Promise`로 감싸기 (명확한 비동기 제어 가능)
+              new Promise(resolve => setTimeout(resolve, 300));
+
+              window.map.panTo(moveLatLon);
             });
 
             // 마커 데이터에 오버레이 저장 (닫기 버튼에서 찾기 위해)
