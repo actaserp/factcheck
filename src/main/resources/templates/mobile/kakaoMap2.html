@@ -16,6 +16,21 @@
         white-space: normal;  /* 기본적인 줄바꿈 허용 */
         max-width: 200px; /* 원하는 최대 너비 지정 */
     }
+    /* 스피너를 지도 위 중앙에 배치 */
+    #loading-spinner {
+        position: absolute;
+        top: 15%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000; /* 지도보다 위에 배치 */
+        display: none; /* 기본적으로 숨김 */
+    }
+
+    /* 지도 컨테이너를 상대 위치로 설정해야 `absolute`가 적용됨 */
+    #map {
+        position: relative;
+    }
+
 
 
 </style>
@@ -30,6 +45,7 @@
   <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css">
   <link rel="stylesheet" type="text/css" href="/assets_mobile/css/import.css">
   <link rel="stylesheet" type="text/css" href="/css/MapStyle.css">
+  <link rel="stylesheet" type="text/css" href="/css/loading.css">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
@@ -78,6 +94,13 @@
         </div>
         <div style=" margin-top: 5%">
           <span id="selected-region" style="font-size: 20px; font-weight: bold; color: #333;"></span>
+        </div>
+        <!-- 로딩 스피너 추가 -->
+        <div id="loading-spinner" class="loadingio-spinner-spinner-nq4q5u6dq7r">
+            <div class="ldio-x2uulkbinbj">
+              <div></div><div></div><div></div><div></div><div></div><div></div>
+              <div></div><div></div><div></div><div></div><div></div><div></div>
+            </div>
         </div>
 
         <div id="map" style="width:100%;height: 65vh ; flex-grow: 1;"></div>
@@ -432,6 +455,8 @@
       Alert.alert('', "지역을 선택해주세요!");
       return;
     }
+    // 스피너 보이기
+    $("#loading-spinner").show();
 
     $.ajax({
       url: "/api/Map/coordinates",
@@ -467,6 +492,8 @@
                   loadMarkersForRegion(regionName, gugunName).then(() => {
                     loadedRegions.add(regionKey);
                     localStorage.setItem('loadedRegions', JSON.stringify(Array.from(loadedRegions)));
+                    //스피너 숨기기
+                    $("#loading-spinner").hide(); resolve();
                   }).catch(err => {
                     console.error(` 마커 로딩 실패: ${err}`);
                   });
@@ -495,7 +522,7 @@
               },
               error: function (xhr, status, error) {
                 console.error("추가 데이터 API 요청 중 오류 발생:", error);
-              }
+              },
             });
           } else {
             console.warn("지도 객체가 아직 초기화되지 않았습니다.");
@@ -831,6 +858,10 @@
 
   // 마커 ================================
   var activeOverlay = null; // 현재 활성화된 오버레이 저장
+  function extractFloorFromAddress(address) {
+    var floorMatch = address.match(/제(\d+)층/);
+    return floorMatch ? parseInt(floorMatch[1], 10) : null;
+  }
 
   function loadMarkersForRegion(regionName, gugunName) {
     $.ajax({
@@ -854,8 +885,13 @@
             "E": "/img/Map/E등급_marker.png",
             "F": "/img/Map/F등급_marker.png"
           };
+          response.markers.forEach(markerData => {
+            markerData.floor = extractFloorFromAddress(markerData.address) || 1; // 기본값 1층
+          });
 
           var newMarkers = response.markers.map(markerData => {
+            //console.log("markerData.lat:", markerData.lat, "markerData.lng:", markerData.lng);
+
             if (!markerData) {
               console.warn("markerData가 존재하지 않음:", markerData);
               return null; // 오류 방지
@@ -869,9 +905,30 @@
               {offset: new kakao.maps.Point(20, 40)}
             );
 
+            var floorOffset = 0.00002; // 층별 미세한 위치 조정 (이 값을 조정하면서 테스트)
+            var angleOffset = 0.000003; // 층별로 회전하면서 퍼지는 효과
+
+            var floor = markerData.floor || 0; // 기본값 0층
+            var angle = (floor * 45) * (Math.PI / 180); // 층별로 회전하도록 설정
+
+            // X, Y 축으로 마커 분산
+            var newLat = parseFloat(markerData.lat) + (floorOffset * floor);
+            var newLng = parseFloat(markerData.lng) + (angleOffset * floor * Math.sin(angle));
+
+
+            // NaN 체크 추가
+            if (isNaN(newLat) || isNaN(newLng)) {
+              //console.warn("⚠ newLat 또는 newLng 값이 NaN입니다. 기본 좌표를 사용합니다.");
+              newLat = parseFloat(markerData.lat);
+              newLng = parseFloat(markerData.lng);
+            }
+           /* console.log("Original lat:", markerData.lat, "Original lng:", markerData.lng);
+            console.log("Adjusted lat:", newLat, "Adjusted lng:", newLng);*/
+
             var marker = new kakao.maps.Marker({
-              position: new kakao.maps.LatLng(markerData.lat, markerData.lng),
-              title: markerData.title || "No Title",
+              // position: new kakao.maps.LatLng(markerData.lat, markerData.lng ),
+              position: new kakao.maps.LatLng(newLat, newLng),
+              title: markerData.title || "",
               image: markerImage,
               map: window.map
             });
@@ -903,7 +960,7 @@
                     <div class="wrap">
                         <div class="info">
                             <div class="title">
-                                ${markerData.REGUGUN} _ ${markerData.grade || 'Unknown'} 등급
+                                ${markerData.REGUGUN} _ ${markerData.grade || ''} 등급
                                 <div class="close" onclick="closeOverlay(${markerData.lat}, ${markerData.lng})" title="닫기"></div>
                             </div>
                             <div class="body ${gradeClass}">
@@ -940,7 +997,7 @@
             markerData.overlay = overlay;
 
             return marker;
-          });
+          }).filter(marker => marker !== null);
 
           // 클러스터러에 마커 추가
           if (window.clusterer) {
@@ -950,12 +1007,15 @@
           } else {
             console.error("클러스터러 객체가 초기화되지 않음");
           }
+          $("#loading-spinner").hide();
         } else {
           console.error("마커 데이터를 불러오지 못했습니다.");
+          $("#loading-spinner").hide();
         }
       },
       error: function (xhr, status, error) {
         console.error("마커 불러오기 오류:", error);
+        $("#loading-spinner").hide();
       }
     });
   }

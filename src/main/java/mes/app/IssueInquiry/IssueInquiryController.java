@@ -119,7 +119,7 @@ public class IssueInquiryController {
 
       // 파일명 그대로 사용
       String pdfFileName = optionalPdfFileName.get();
-      log.info("사용 파일명: {}", pdfFileName);
+     // log.info("사용 파일명: {}", pdfFileName);
 
       //운영체제별 저장 경로 설정
       String osName = System.getProperty("os.name").toLowerCase();
@@ -128,7 +128,7 @@ public class IssueInquiryController {
 
       // PDF 파일 경로 설정 및 존재 여부 확인
       Path pdfPath = Paths.get(uploadDir, pdfFileName);
-      log.info("PDF 파일 경로: {}", pdfPath.toString());
+      //log.info("PDF 파일 경로: {}", pdfPath.toString());
 
       if (!Files.exists(pdfPath)) {
         log.warn("파일이 존재하지 않음: {}", pdfPath.toString());
