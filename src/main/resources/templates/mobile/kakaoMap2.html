@@ -1015,6 +1015,12 @@
               new Promise(resolve => setTimeout(resolve, 300));
 
               window.map.panTo(moveLatLon);
+
+              //검색 결과 테이블 업데이트
+              updateSearchResultsFromMarker(marker.markerData);
+
+              //선택된 지역 경로 업데이트
+              updateSelectedPathFromMarker(marker.markerData);
             });
 
             // 마커 데이터에 오버레이 저장 (닫기 버튼에서 찾기 위해)
@@ -1043,6 +1049,44 @@
       }
     });
   }
+  function updateSearchResultsFromMarker(markerData) {
+    const searchResults = $("#search-results");
+    searchResults.empty();
+
+    if (!markerData) {
+      searchResults.append(`
+            <tr>
+                <td colspan="2" style="text-align: center;">검색 결과가 없습니다.</td>
+            </tr>
+        `);
+      return;
+    }
+
+    // ✅ 마커 정보를 테이블에 추가
+    const row = `
+        <tr data-realid="${markerData.REALID || ''}" data-realadd="${markerData.address || '정보 없음'}">
+            <td>1</td>
+            <td class="clickable-td">${markerData.address || "정보 없음"}</td>
+        </tr>
+    `;
+    searchResults.append(row);
+  }
+
+  function updateSelectedPathFromMarker(markerData) {
+    if (!markerData || !markerData.address) {
+      console.warn("마커 데이터가 부족하여 선택된 지역을 업데이트할 수 없습니다.");
+      return;
+    }
+
+    // ✅ 주소에서 필요한 부분 추출
+    const addressParts = markerData.address.split(" ");
+    selectedPath.city = addressParts[0] || '';  // 시/도
+    selectedPath.district = addressParts[1] || ''; // 구
+    selectedPath.neighborhood = addressParts[2] || ''; // 동
+
+    updateSelectedPath(); // UI 갱신
+  }
+
 
 
   // 오버레이 닫기 함수 (특정 마커의 오버레이 닫기)
