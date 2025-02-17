@@ -52,8 +52,6 @@ public class TilkoController {
 
     @Autowired
     TilkoService tilkoService;
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     PDFSEQRepository pdfseqRepository;

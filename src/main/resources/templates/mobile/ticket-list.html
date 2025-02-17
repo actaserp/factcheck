@@ -268,7 +268,7 @@
                                 <select id="property" name="property" style="width: 100%; text-align: center;">
                                     <option value="my_property" selected>내가 조회한 물건</option>
                                     <option value="recent_property">최근 조회한 물건</option>
-                                    <option value="most_viewed_property">가장 많이 조회한 물건</option>
+                                    <option value="most_viewed_property">가장 많이 발급받은 물건</option>
                                     <option value="popular_property">인기물건</option>
                                 </select>
                             </div>
@@ -584,7 +584,6 @@
     document.addEventListener("DOMContentLoaded", updateDateRange);
 
 
-
     function init() {
         fetchListData();
     }
@@ -648,7 +647,7 @@
                 let htmlContent = '';
 
                 const selectedValue = $('#property').val();
-                 /*console.log(JSON.stringify(propertyData, null, 2));*/
+                console.log(JSON.stringify(propertyData, null, 2));
 
                 propertyData.forEach(item => {
                     const cardColor = availableColors[colorIndex];
@@ -676,45 +675,56 @@
                         : maskName(item.USERNM || '');
 
 
-
-
                     htmlContent += `
                         <div class="card-box ${cardColor}" data-realadd="${item.REALADD}" data-resido="${item.RESIDO}" data-realid="${item.REALID}"
                     data-regdate="${item.REGDATE}" data-regugun="${item.REGUGUN}" data-rejimok="${item.REJIMOK}" data-rearea="${item.REAREA}"
                     data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}">
 
                             <div class="card-cont">
-                                <dl>
-                                    <dt>회원명</dt>
-                                    <dd>${maskedUserName}</dd>
-                                </dl>
+                                 ${selectedValue !== "most_viewed_property" ? `
+                                    <dl>
+                                        <dt>회원명</dt>
+                                        <dd>${maskedUserName}</dd>
+                                    </dl>` : ''}
                                 <dl>
                                     <dt>주소</dt>
                                     <dd>${item.REALADD && item.REALADD !== 'null' ? item.REALADD : ''}</dd>
                                 </dl>
                                  ${
-                        (selectedValue === "recent_property" || selectedValue === "most_viewed_property" || selectedValue === "popular_property")
-                            ? `<dl>
-                                        <dt>최근조회날짜</dt>
-                                        <dd>${formattedDate}</dd>
-                                    </dl>`
-                            : `<dl>
-                                        <dt>조회날짜</dt>
-                                        <dd>${formattedDate}</dd>
-                                    </dl>`
-                    }
+                                        (selectedValue === "recent_property" || selectedValue === "popular_property")
+                                            ? `<dl>
+                                <dt>최근조회날짜</dt>
+                                <dd>${formattedDate}</dd>
+                            </dl>`
+                                            : selectedValue === "most_viewed_property"
+                                                ? `<dl>
+                                <dt>최근발급날짜</dt>
+                                <dd>${item.WksbiBalDate}</dd>
+                            </dl>`
+                                                : selectedValue === "my_property"
+                                                    ? `<dl>
+                                <dt>조회날짜</dt>
+                                <dd>${formattedDate}</dd>
+                            </dl>`
+                                                    : ''
+                                    }
+
                                  <dl>
                                     <dt>판정점수</dt>
                                     <dd>${item.REALSCORE}</dd>
                                 </dl>
 
-                              ${(selectedValue === "recent_property" || selectedValue === "most_viewed_property" || selectedValue === "popular_property") ? `
+                              ${(selectedValue === "recent_property" || selectedValue === "popular_property") ? `
                                 <dl>
                                     <dt>조회수</dt>
                                     <dd>${item.record_count}</dd>
                                 </dl>
+                                ` : selectedValue === "most_viewed_property" ? `
+                                <dl>
+                                    <dt>발급횟수</dt>
+                                    <dd>${item.PinNo_Count}</dd>
+                                </dl>
                                 ` : ''}
-
                             </div>
                                 ${buttonsHtml}
                         </div>
@@ -803,12 +813,14 @@
                         }
                     }
 
+
                     // 갑구
                     const rankNoAData = cardBox.getAttribute('data-ranknoA');
                     let parsedRankNoAData = JSON.parse(rankNoAData);
                     if (typeof parsedRankNoAData === "string") {
                         parsedRankNoAData = JSON.parse(parsedRankNoAData);
                     }
+
                     const dataArray = Array.isArray(parsedRankNoAData) ? parsedRankNoAData : [parsedRankNoAData];
 
                     const sub1Table = document.querySelector("#sub1 table tbody");
@@ -854,9 +866,9 @@
                         etcCell5.style.cssText = cellColSpan4Style;
                     } else {
                         dataArray.forEach(data => {
-                            createTableRow(sub1Table, "등기목적", (data.RgsAimCont_a === "null" ? "" : data.RgsAimCont_a), 3);
-                            createTableRow(sub1Table, "접수", (data.Receve_a === "null" ? "" : data.Receve_a), 3);
-                            createTableRow(sub1Table, "등기원인", (data.RgsCaus_a === "null" ? "" : data.RgsCaus_a), 3);
+                            createTableRow(sub1Table, "등기목적", (data.RgsAimCont_a === "null" || data.RgsAimCont_a === null ? "" : data.RgsAimCont_a), 3);
+                            createTableRow(sub1Table, "접수", (data.Receve_a === "null" || data.Receve_a === null ? "" : data.Receve_a), 3);
+                            createTableRow(sub1Table, "등기원인", (data.RgsCaus_a === "null" || data.RgsCaus_a === null ? "" : data.RgsCaus_a), 3);
 
                             // 권리자 및 기타사항
                             const row4 = sub1Table.insertRow();
@@ -875,7 +887,7 @@
                     }
 
 
-//을구
+                    //을구
                     const rankNoBData = cardBox.getAttribute('data-ranknoB');
                     let parsedRankNoBData = JSON.parse(rankNoBData);
                     if (typeof parsedRankNoBData === "string") {
@@ -907,9 +919,9 @@
                         etcCell5.style.cssText = cellColSpan4Style;
                     } else {
                         dataBrray.forEach(data => {
-                            createTableRow(sub2Table, "등기목적", (data.RgsAimCont_b === "null" ? "" : data.RgsAimCont_b), 3);
-                            createTableRow(sub2Table, "접수", (data.Receve_b === "null" ? "" : data.Receve_b), 3);
-                            createTableRow(sub2Table, "등기원인", (data.RgsCaus_b === "null" ? "" : data.RgsCaus_b), 3);
+                            createTableRow(sub2Table, "등기목적", (data.RgsAimCont_b === "null" || data.RgsAimCont_b === null ? "" : data.RgsAimCont_b), 3);
+                            createTableRow(sub2Table, "접수", (data.Receve_b === "null" || data.Receve_b === null ? "" : data.Receve_b), 3);
+                            createTableRow(sub2Table, "등기원인", (data.RgsCaus_b === "null" || data.RgsCaus_b === null ? "" : data.RgsCaus_b), 3);
 
                             // 권리자 및 기타사항
                             const row4 = sub2Table.insertRow();
