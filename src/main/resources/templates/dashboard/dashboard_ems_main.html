@@ -659,14 +659,13 @@
                     let SignupOfWeek = data2.SignupOfWeek;
                     const noDataMessage1 = document.getElementById('noDataMessage1');
                     const canvasElement1 = document.getElementById('SignupOfWeek');
-                    const firstDate = data2.SignupOfWeek[0].DATE;
-                    const lastDate = data2.SignupOfWeek[data2.SignupOfWeek.length - 1].DATE;
 
                     // Signout 데이터가 빈 배열인지 확인
                     if (SignupOfWeek.length === 0) {
                         // 빈 데이터일 경우 처리
                         canvasElement1.style.display = 'none';  // 차트 숨기기
                         noDataMessage1.style.display = 'flex';
+
                         // id가 'weekPeriod'인 요소를 찾습니다.
                         const weekPeriodElement = document.getElementById('weekPeriod');
 
@@ -675,6 +674,9 @@
                             weekPeriodElement.textContent = `가입자현황(주간)`;
                         }
                     } else {
+                        const firstDate = data2.SignupOfWeek[0].DATE;
+                        const lastDate = data2.SignupOfWeek[data2.SignupOfWeek.length - 1].DATE;
+
                         noDataMessage1.style.display = 'none';
                         // X축 레이블과 Y축 데이터 생성
                         const DAY = SignupOfWeek.map(item => item.DAY);
@@ -707,7 +709,7 @@
                             weekPeriodElement.textContent = `${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)} (주간)`;
                         }
                         if (weektitleElement) {
-                            weektitleElement.textContent = `신규 주간 통계 (${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)})`;
+                            weektitleElement.textContent = `주간 통계 (${formatDate(lastWeekStr)} ~ ${formatDate(todayStr)})`;
 
                         }
                         // 새로운 차트 데이터
