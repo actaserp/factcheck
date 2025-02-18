@@ -684,7 +684,8 @@ public class TilkoService {
                     HISPOINT,
                     REGSTAND,
                     HISFLAG,
-                    REMARK
+                    REMARK,
+                    HISDATE
                     )
                 VALUES (
                     :REALID,
@@ -693,7 +694,8 @@ public class TilkoService {
                     :HISPOINT,
                     :REGSTAND,
                     :HISFLAG,
-                    :REMARK
+                    :REMARK,
+                    :HISDATE
                     )
         """;
         // Map 데이터를 SQL 파라미터에 매핑
@@ -704,6 +706,7 @@ public class TilkoService {
         params.addValue("REGSTAND", DeductionDetails.get("REGSTAND"));
         params.addValue("HISFLAG", DeductionDetails.get("HISFLAG"));
         params.addValue("REMARK", DeductionDetails.get("REMARK"));
+        params.addValue("HISDATE", DeductionDetails.get("HISDATE"));
         // 쿼리 실행
         int rowsAffected = this.sqlRunner.execute(sql, params);
         System.out.println("✅ 조회수 증가 완료! 영향 받은 행 수: " + rowsAffected);

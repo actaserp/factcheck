@@ -766,11 +766,14 @@ public class TilkoController {
             List<Map<String, Object>> gradeData = tilkoService.getGradeData();
             // 저장되어있는 REALID 기반 COMMENT및 차감요소 불러오기
             List<Map<String, Object>> savedDeduction = tilkoService.getDeduction(realId);
-            List<String> comments = new ArrayList<>();
+            List<Map<String, Object>> comments = new ArrayList<>();
             if (savedDeduction != null && !savedDeduction.isEmpty()) {  // ✅ null 체크 및 빈 리스트 방지
                 for (Map<String, Object> item : savedDeduction) {
                     if (item.get("REMARK") != null) {
-                        comments.add(item.get("REMARK").toString());
+                        Map<String, Object> cardData = new HashMap<>();
+                        cardData.put("DATE", item.get("HISDATE"));
+                        cardData.put("REGREMARK", item.get("REMARK"));
+                        comments.add(cardData);
                     }
                 }
             }

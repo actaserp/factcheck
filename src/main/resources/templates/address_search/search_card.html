@@ -144,9 +144,9 @@
                 <h3>점수이력</h3>
             </div>
             <div class="popup-contents">
-                <div class="table-wrap">
+                <div class="table-wrap" style="width: 600px">
                     <div class="write-wrap">
-                        <section>
+                        <section>a
                             <div class="tab-wrap" style="width: 100%;">
                                 <ul class="tab-links" style="margin-bottom: 10px;">
                                 </ul>
@@ -169,6 +169,9 @@
                                                 </th>
                                                 <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
                                                     <label>선순위</label>
+                                                </th>
+                                                <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                                                    <label>날짜</label>
                                                 </th>
                                             </tr>
                                         </thead>
@@ -195,7 +198,7 @@
                 <h3>상세보기</h3>
             </div>
             <div class="popup-contents">
-                <div class="table-wrap">
+                <div class="table-wrap" style="width: 600px">
                     <div class="write-wrap">
                         <section class="tab-item">
                             <div class="tab-wrap" style="width: 100%;">
@@ -206,11 +209,14 @@
                                     <table>
                                         <thead>
                                         <tr>
-                                            <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                                            <th style="text-align: center; width: 20%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
                                                 <label>등기목적</label>
                                             </th>
                                             <th style="text-align: center; width: 37%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
                                                 <label>COMMENT</label>
+                                            </th>
+                                            <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                                                <label>날짜</label>
                                             </th>
                                         </tr>
                                         </thead>
@@ -293,23 +299,75 @@
         if (scoreData === "S") {
             cardContent3.textContent = `안전합니다.`;
         } else {
-            let uniqueComments = new Set();
-            let filteredComments = [];
+            // 테이블 생성
+            const table = document.createElement('table');
+            table.className = 'comment-table';
+            table.style.marginTop = "10px"; // margin-top 10px 추가
+
+            // 테이블 헤더 추가
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+
+            const thDate = document.createElement('th');
+            thDate.textContent = '날짜';
+            const thComment = document.createElement('th');
+            thComment.textContent = '코멘트';
+
+            headerRow.appendChild(thDate);
+            headerRow.appendChild(thComment);
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // 테이블 바디 생성
+            const tbody = document.createElement('tbody');
+
+            let uniqueComments = new Set(); // 중복 체크용 Set
 
             if (Array.isArray(parsedData.COMMENT)) {
                 for (let comment of parsedData.COMMENT) {
-                    if (!uniqueComments.has(comment)) {
-                        uniqueComments.add(comment);
-                        filteredComments.push(comment);
+                    const commentText = comment.REGREMARK || '코멘트 없음';
+
+                    // 중복되지 않은 경우에만 추가
+                    if (!uniqueComments.has(commentText)) {
+                        uniqueComments.add(commentText);
+
+                        const row = document.createElement('tr');
+
+                        const tdDate = document.createElement('td');
+                        tdDate.textContent = comment.DATE || '';
+
+                        const tdComment = document.createElement('td');
+                        tdComment.textContent = commentText;
+
+                        row.appendChild(tdDate);
+                        row.appendChild(tdComment);
+                        tbody.appendChild(row);
                     }
                 }
-            } else {
-                filteredComments.push(parsedData.COMMENT);
+            } else if (parsedData.COMMENT) {
+                // 단일 객체인 경우
+                const commentText = parsedData.COMMENT.REGREMARK || '코멘트 없음';
+
+                if (!uniqueComments.has(commentText)) {
+                    uniqueComments.add(commentText);
+
+                    const row = document.createElement('tr');
+
+                    const tdDate = document.createElement('td');
+                    tdDate.textContent = parsedData.COMMENT.DATE || '날짜 없음';
+
+                    const tdComment = document.createElement('td');
+                    tdComment.textContent = commentText;
+
+                    row.appendChild(tdDate);
+                    row.appendChild(tdComment);
+                    tbody.appendChild(row);
+                }
             }
 
-            cardContent3.textContent = `코멘트: ${filteredComments.join("\n")}`; // 줄바꿈으로 표시
+            table.appendChild(tbody);
+            cardContent3.appendChild(table);
         }
-
         card.appendChild(cardTitle);
         card.appendChild(cardContent);
         card.appendChild(cardContent2);
@@ -323,7 +381,8 @@
             url: '/api/register/deductionDetail',
             type: 'GET',
             data: {
-                "REALID": document.getElementById('REALID').value
+                // "REALID": document.getElementById('REALID').value
+                "REALID": 437
             },
             async: false,
             success: function (response) {
@@ -336,15 +395,27 @@
                     return;
                 }
 
+                // "항목차감"이 아닌 데이터만 필터링
+                let filteredData = data2.filter(data => data.HISNM !== "항목차감");
+
                 let htmlContent = '';
-                data2.forEach(data => {
+                filteredData.forEach(data => {
+
+                    // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
+                    let formattedDate = data.HISDATE
+                        ? `${data.HISDATE.slice(0, 4)}.${data.HISDATE.slice(4, 6)}.${data.HISDATE.slice(6, 8)}`
+                        : '';
+
                     htmlContent += `
                     <tr>
                         <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
                             ${data.HISNM}
                         </td>
-                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd; text-align: left;">
                             ${data.REMARK}
+                        </td>
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                            ${formattedDate}
                         </td>
                     </tr>`;
                 });
@@ -367,7 +438,8 @@
             url: '/api/register/deductionDetail',
             type: 'GET',
             data: {
-                "REALID": document.getElementById('REALID').value
+                // "REALID": document.getElementById('REALID').value
+                "REALID": 437
             },
             async: false,
             success: function (response) {
@@ -388,14 +460,19 @@
                         case "A1": regStandText = "금액"; break;
                         case "A2": regStandText = "점수"; break;
                         case "A3": regStandText = "복합"; break;
-                        default: regStandText = data.REGSTAND; // 변환되지 않은 값 그대로 사용
+                        default: regStandText = ""; // 변환되지 않은 값 그대로 사용
                     }
 
-                    // HISAMT 값 숫자 포맷팅 (천 단위 콤마 추가)
-                    let formattedAmt = data.HISAMT ? Number(data.HISAMT).toLocaleString() : data.HISAMT;
+                    // HISAMT 값 숫자 포맷팅 (천 단위 콤마 추가, null 값 공백 처리)
+                    let formattedAmt = data.HISAMT ? Number(data.HISAMT).toLocaleString() : "";
 
                     // HISFLAG 값 변환
                     let flagText = data.HISFLAG === "1" ? "O" : "";
+
+                    // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
+                    let formattedDate = data.HISDATE
+                        ? `${data.HISDATE.slice(0, 4)}.${data.HISDATE.slice(4, 6)}.${data.HISDATE.slice(6, 8)}`
+                        : '';
 
                     htmlContent += `
                 <tr>
@@ -413,6 +490,9 @@
                     </td>
                     <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
                         ${flagText}
+                    </td>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${formattedDate}
                     </td>
                 </tr>`;
                 });

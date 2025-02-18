@@ -183,6 +183,23 @@ public class TilkoParsing {
 
         return baseExistingRank.equals(baseNewRank) || existingRank.startsWith(baseNewRank);
     }
+    // ReceiptDate에서 날자 전처리 메서드
+    public static String convertReceiptDate(String receiptInfo) {
+        if (receiptInfo == null || receiptInfo.isEmpty()) return null;
+
+        // "YYYY년M월D일" 형식의 날짜 추출
+        Pattern pattern = Pattern.compile("(\\d{4})년(\\d{1,2})월(\\d{1,2})일");
+        Matcher matcher = pattern.matcher(receiptInfo);
+
+        if (matcher.find()) {
+            String year = matcher.group(1);
+            String month = String.format("%02d", Integer.parseInt(matcher.group(2))); // 1자리 월을 2자리로 변환
+            String day = String.format("%02d", Integer.parseInt(matcher.group(3)));   // 1자리 일을 2자리로 변환
+            return year + month + day; // YYYYMMDD 형식 반환
+        }
+
+        return null; // 날짜가 없으면 null 반환
+    }
     // 점수계산위한 summarydata 수집 메서드
     public List<Map<String, Object>> collectSummaryData(
             List<Map<String, Object>> summaryData,
@@ -197,6 +214,10 @@ public class TilkoParsing {
             if (rankNo.isEmpty()) continue; // ✅ RankNo가 없으면 건너뜀
             boolean hasAmountInInfo = containsAmount(summary.getOrDefault("Information", "").toString());
             String extractedAmount = extractAmount(summary.getOrDefault("Information", "").toString());
+
+            // ✅ ReceiptInfo 변환 (YYYYMMDD 형식으로)
+            String receiptInfo = summary.getOrDefault("ReceiptInfo", "").toString();
+            String receiptDate = convertReceiptDate(receiptInfo); // YYYYMMDD 변환 적용
 
             // REGWORD 포함 여부 확인 및 REGSEQ, REGREMARK 가져오기
             for (Map<String, Object> code : comcode) {
@@ -219,6 +240,11 @@ public class TilkoParsing {
                             existingData.get().put("Information", summary.get("Information")); // Information 최신화
                         } else {
                             existingData.get().putAll(summary); // 기존 금액 없는 데이터 최신화
+                            existingData.get().put("REGREMARK", regRemark);
+                            existingData.get().put("REGWORD", regWord);
+                            existingData.get().put("REGNM", code.getOrDefault("REGNM", ""));
+                            existingData.get().put("REGASNAME", code.getOrDefault("REGASNAME", ""));
+                            existingData.get().put("ReceiptDate", receiptDate);
                         }
                     } else {
                         // ✅ 새로운 데이터 추가 (containsAmount 포함, REGSEQ 포함, REGREMARK 포함)
@@ -236,6 +262,7 @@ public class TilkoParsing {
 
                         newData.put("containsAmount", hasAmountInInfo ? 1 : 0); // 금액 여부 플래그 추가
                         newData.put("Amount", hasAmountInInfo ? extractedAmount : null); // 초기 Amount 설정
+                        newData.put("ReceiptDate", receiptDate); // ✅ YYYYMMDD 변환값 저장
                         collectedData.add(newData);
                     }
                     break;
@@ -257,7 +284,7 @@ public class TilkoParsing {
         System.out.println("점수차감 main메서드 진입 : " + collectedData);
         int finalScore = 100; // 기본 점수
         String Grade = "";
-        List<String> comment = new ArrayList<>();
+        List<Map<String, Object>> comment = new ArrayList<>();
         List<String> Deductions = new ArrayList<>();
         List<Map<String, Object>> deductionDetails = new ArrayList<>();
         AtomicBoolean firstDeductionFound = new AtomicBoolean(false);
@@ -318,8 +345,8 @@ public class TilkoParsing {
                     && !summary.get("SENSCORE").toString().isEmpty();
             if (isFirstDeduction) {
                 actualDeduction += 5; // ✅ 첫 번째 감점이면 추가로 5점 차감
-                firstDeductionFound.set(true);
             }
+            firstDeductionFound.set(true);
 
             // ✅ 점수 차감 적용
             finalScore -= actualDeduction;
@@ -333,8 +360,12 @@ public class TilkoParsing {
             deductionEntry.put("REGSTAND", regStand);
             deductionEntry.put("HISFLAG", isFirstDeduction ? "1" : "0"); // ✅ 첫 번째 차감 데이터에만 1 적용
             deductionEntry.put("REMARK", summary.get("REGREMARK"));
+            deductionEntry.put("HISDATE", summary.get("ReceiptDate"));
 
-            comment.add((String) summary.get("REGREMARK"));
+            Map<String, Object> cardData = new HashMap<>();
+            cardData.put("DATE", summary.get("ReceiptDate"));
+            cardData.put("REGREMARK", summary.get("REGREMARK"));
+            comment.add(cardData);
             Deductions.add((String) summary.get("REGASNAME"));
             deductionDetails.add(deductionEntry);
 
