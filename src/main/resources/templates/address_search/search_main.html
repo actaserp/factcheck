@@ -225,12 +225,6 @@
     $(document).ready(function () {
         // 1.저장된 주소 불러오기 (페이지 로드 시 실행)
         loadAddressFromLocalStorage();
-
-        // 2.검색 버튼 클릭 시 이벤트 처리
-        $(document).on('click', 'button[onclick="searchGoyuList()"]', function (e) {
-            e.preventDefault(); // 기본 동작 방지
-            handleSearchButtonClick(); // 검색 버튼 처리 함수 실행
-        });
     });
 
     // 페이지 로드 시 로컬스토리지에서 주소 불러오기
@@ -258,13 +252,6 @@
         localStorage.setItem('savedAddress2', address2);
 
         console.log('주소 저장 완료:', address1, address2);
-    }
-
-    // 검색 버튼 클릭 시 실행될 함수
-    function handleSearchButtonClick() {
-        saveAddressToLocalStorage(); // 새 주소 저장
-        clearPreviousSearchResults(); // 기존 검색 결과 삭제
-        searchGoyuList(); // 새로운 검색 실행
     }
 
     // 기존 검색 결과 삭제 (올바른 삭제 방식)
@@ -303,7 +290,6 @@
                     isRequestInProgress = false;
                     return;
                 }
-                console.log("data2", data);
                 console.log("data2", data2);
 
                 const listAddressWrap = document.getElementById('addressWrap');
