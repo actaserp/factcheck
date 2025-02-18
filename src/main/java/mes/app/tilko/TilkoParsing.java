@@ -164,7 +164,7 @@ public class TilkoParsing {
     // Information에서 금액이 포함되어 있는지 확인하는 메서드
     public static boolean containsAmount(String information) {
         if (information == null) return false;
-        Pattern pattern = Pattern.compile("금[0-9,.]+원"); // "금000,000원" 형태 검사
+        Pattern pattern = Pattern.compile("금\\s*[0-9,.]+\\s*원"); // "금000,000원" 형태 검사
         Matcher matcher = pattern.matcher(information);
         return matcher.find();
     }
@@ -172,7 +172,7 @@ public class TilkoParsing {
     // Information에서 금액 추출하는 메서드
     public static String extractAmount(String information) {
         if (information == null) return null;
-        Pattern pattern = Pattern.compile("금([0-9,.]+)원"); // "금000,000원" 형태
+        Pattern pattern = Pattern.compile("금\\s*([0-9,.]+)\\s*원"); // "금000,000원" 형태
         Matcher matcher = pattern.matcher(information);
         return matcher.find() ? matcher.group(1) : null;
     }
