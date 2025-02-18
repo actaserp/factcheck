@@ -372,6 +372,8 @@ public class TilkoParsing {
             totalDeductionsCount++;
         }
 
+
+
         // ✅ 추가 감점 (항목 개수당 1점)
         finalScore -= totalDeductionsCount;
         Map<String, Object> CountEntry = new HashMap<>();
@@ -690,6 +692,7 @@ public class TilkoParsing {
             hasGabguData = true;
         } else {
             System.out.println("❌ 갑구 데이터 없음");
+            rankNoCount = 1;
         }
 
         if (!nomData.replaceAll("[|\\s\\n\\t\\r]+", " ").contains("3. (근)저당권 및 전세권 등 ( 을구 ) - 기록사항 없음")) {

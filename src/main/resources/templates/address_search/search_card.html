@@ -323,6 +323,11 @@
 
             let uniqueComments = new Set(); // 중복 체크용 Set
 
+            // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
+            let formattedDate = comment.DATE
+                ? `${comment.DATE.slice(0, 4)}.${comment.DATE.slice(4, 6)}.${comment.DATE.slice(6, 8)}`
+                : '';
+
             if (Array.isArray(parsedData.COMMENT)) {
                 for (let comment of parsedData.COMMENT) {
                     const commentText = comment.REGREMARK || '코멘트 없음';
@@ -334,7 +339,7 @@
                         const row = document.createElement('tr');
 
                         const tdDate = document.createElement('td');
-                        tdDate.textContent = comment.DATE || '';
+                        tdDate.textContent = formattedDate;
 
                         const tdComment = document.createElement('td');
                         tdComment.textContent = commentText;
