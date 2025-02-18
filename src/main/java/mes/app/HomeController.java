@@ -49,10 +49,7 @@ public class HomeController {
 
     // User-Agent 확인
     String userAgent = request.getHeader("User-Agent").toLowerCase();
-    boolean isMobile = userAgent.contains("mobile") || userAgent.contains("android") ||
-				userAgent.contains("iphone") || userAgent.contains("ipad") ||
-				userAgent.contains("ipod") || userAgent.contains("blackberry") ||
-				userAgent.contains("windows phone");
+    boolean isMobile = userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone");
 
 		SecurityContext sc = SecurityContextHolder.getContext();
     Authentication auth = sc.getAuthentication();
