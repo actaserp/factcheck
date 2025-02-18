@@ -19,16 +19,36 @@
 
 
     .tab-item {
-        display: none;  /* 기본적으로 모든 탭 내용을 숨깁니다 */
+        display: none; /* 기본적으로 모든 탭 내용을 숨깁니다 */
     }
 
     .tab-item.active {
-        display: block;  /* 'active' 클래스가 있을 때만 해당 탭 내용을 표시 */
+        display: block; /* 'active' 클래스가 있을 때만 해당 탭 내용을 표시 */
     }
-    .tab-links {display: flex; margin-left: 1px; margin-bottom: -1px; overflow: hidden;  width: 100%; flex-wrap: wrap;}
-    .tab-links li {position: relative; flex-grow: 1;flex-shrink: 0;  }
-    .tab-links li:first-child a {border-radius: 6px 0 0 0;}
-    .tab-links li:last-child a {border-radius: 0 6px 0 0;}
+
+    .tab-links {
+        display: flex;
+        margin-left: 1px;
+        margin-bottom: -1px;
+        overflow: hidden;
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .tab-links li {
+        position: relative;
+        flex-grow: 1;
+        flex-shrink: 0;
+    }
+
+    .tab-links li:first-child a {
+        border-radius: 6px 0 0 0;
+    }
+
+    .tab-links li:last-child a {
+        border-radius: 0 6px 0 0;
+    }
+
     .tab-links li a {
         display: inline-flex;
         justify-content: center;
@@ -43,21 +63,103 @@
         overflow: hidden;
         border-bottom: 3px solid #C6C6C6;
     }
-    .tab-links li:hover a {color: #4D4D4D; font-weight: 700; border-bottom: 3px solid #4D4D4D;}
-    .tab-links li.active a {color: #03428E; font-weight: 700; border-bottom: 3px solid #03428E;}
-    section .tab-links {}
-    section .tab-links li a {padding: 8px 10px; margin-right: -1px; border: 1px solid #E4E4E4; background-color: #fff; color: #808080;}
-    section .tab-links li:first-child a {border-radius: 12px 0 0 12px;}
-    section .tab-links li:last-child a {border-radius: 0 12px 12px 0; margin-right: 0;}
-    section .tab-links li.active a {background-color: #3069B3; color: #fff;}
-    .tab-links-sub li {position: relative;}
-    .tab-links-sub li a {display: inline-flex; border: 1px solid #E4E4E4; justify-content: center; min-width: 90px; padding: 8px 32px 8px 32px; background-color: #fff; color: #333333; font-size: 17px; font-weight: 700; text-align: center; transition: all .3s;}
-    .tab-links-sub li:hover a {border-radius: 3px 0 0 3px; color: #4D4D4D; border: 1px solid #E4E4E4; border-right:1px solid #E4E4E4; border-left:1px solid #E4E4E4; background-color: #f5f6fa;}
-    .tab-links-sub li:first-child a {border-radius: 3px 0 0 3px; border-right:0}
-    .tab-links-sub li:first-child:hover a {border-radius: 3px 0 0 3px; color: #4D4D4D; border: 1px solid #b3b3b3; border-right:0; background-color: #f5f6fa;}
-    .tab-links-sub li:last-child a {border-radius: 0 3px 3px 0; border-left:0}
-    .tab-links-sub li:last-child:hover a {color: #4D4D4D; border: 1px solid #b3b3b3; border-left:0; background-color: #f5f6fa; border-radius: 0 3px 3px 0; border-left:0}
-    .tab-links-sub li.active a {background-color: #2EC9D6; color: #fff; font-weight: 70}
+
+    .tab-links li:hover a {
+        color: #4D4D4D;
+        font-weight: 700;
+        border-bottom: 3px solid #4D4D4D;
+    }
+
+    .tab-links li.active a {
+        color: #03428E;
+        font-weight: 700;
+        border-bottom: 3px solid #03428E;
+    }
+
+    section .tab-links {
+    }
+
+    section .tab-links li a {
+        padding: 8px 10px;
+        margin-right: -1px;
+        border: 1px solid #E4E4E4;
+        background-color: #fff;
+        color: #808080;
+    }
+
+    section .tab-links li:first-child a {
+        border-radius: 12px 0 0 12px;
+    }
+
+    section .tab-links li:last-child a {
+        border-radius: 0 12px 12px 0;
+        margin-right: 0;
+    }
+
+    section .tab-links li.active a {
+        background-color: #3069B3;
+        color: #fff;
+    }
+
+    .tab-links-sub li {
+        position: relative;
+    }
+
+    .tab-links-sub li a {
+        display: inline-flex;
+        border: 1px solid #E4E4E4;
+        justify-content: center;
+        min-width: 90px;
+        padding: 8px 32px 8px 32px;
+        background-color: #fff;
+        color: #333333;
+        font-size: 17px;
+        font-weight: 700;
+        text-align: center;
+        transition: all .3s;
+    }
+
+    .tab-links-sub li:hover a {
+        border-radius: 3px 0 0 3px;
+        color: #4D4D4D;
+        border: 1px solid #E4E4E4;
+        border-right: 1px solid #E4E4E4;
+        border-left: 1px solid #E4E4E4;
+        background-color: #f5f6fa;
+    }
+
+    .tab-links-sub li:first-child a {
+        border-radius: 3px 0 0 3px;
+        border-right: 0
+    }
+
+    .tab-links-sub li:first-child:hover a {
+        border-radius: 3px 0 0 3px;
+        color: #4D4D4D;
+        border: 1px solid #b3b3b3;
+        border-right: 0;
+        background-color: #f5f6fa;
+    }
+
+    .tab-links-sub li:last-child a {
+        border-radius: 0 3px 3px 0;
+        border-left: 0
+    }
+
+    .tab-links-sub li:last-child:hover a {
+        color: #4D4D4D;
+        border: 1px solid #b3b3b3;
+        border-left: 0;
+        background-color: #f5f6fa;
+        border-radius: 0 3px 3px 0;
+        border-left: 0
+    }
+
+    .tab-links-sub li.active a {
+        background-color: #2EC9D6;
+        color: #fff;
+        font-weight: 70
+    }
 </style>
 <head>
   <meta charset="UTF-8">
@@ -145,7 +247,8 @@
               <div style="display: flex; gap: 10px">
                 <div style="width: 100%">
                   <input type="text" id="SearchKeywords" placeholder="조회할 주소를 입력해주세요">
-                </div></div>
+                </div>
+              </div>
             </dd>
           </dl>
           <div class="srch-btn">
@@ -167,9 +270,9 @@
     </div> <!--//layout-contents end -->
 
   </div> <!-- //mobile-layout-contents end-->
-  <div class="mobile-layout-popup" id="popup-history" >
+  <div class="mobile-layout-popup" id="popup-history">
     <div class="popup-overlay"></div>
-    <div class="popup-wrapper" >
+    <div class="popup-wrapper">
       <div class="popup-title">
         <h3>상세내용</h3>
         <!--                <a href="#a" title="팝업닫기" class="btn-popup-close">-->
@@ -265,6 +368,15 @@
 
                       <tr>
                         <th style="font-size: 11px;">
+                          순위 번호
+                        </th>
+                        <td colspan="3">
+
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <th style="font-size: 11px;">
                           등기목적
                         </th>
                         <td colspan="3">
@@ -311,6 +423,15 @@
                       </tr>
                       </thead>
                       <tbody>
+
+                      <tr>
+                        <th style="font-size: 11px;">
+                          순위 번호
+                        </th>
+                        <td colspan="3">
+
+                        </td>
+                      </tr>
 
                       <tr>
                         <th style="font-size: 11px;">
@@ -363,7 +484,6 @@
   </div>
 
 
-
 </div> <!-- //page-wrapper end-->
 
 <script th:inline="javascript">
@@ -395,7 +515,7 @@
   document.getElementById('endDate').value = today;
 
   function init() {
-    
+
   }
 
   // 데이터를 받아와 카드 렌더링
@@ -434,6 +554,16 @@
         let htmlContent = '';
 
         const selectedValue = $('#property').val();
+        // ✅ 중복된 REALID 제거
+        let seen = new Set();
+        let uniqueData = data.data.filter(item => {
+          if (seen.has(item.REALID)) {
+            return false;
+          } else {
+            seen.add(item.REALID);
+            return true;
+          }
+        });
 
         data.data.forEach(item => {
           const cardColor = availableColors[colorIndex];
@@ -507,7 +637,7 @@
             $.ajax({
               type: "POST",
               url: "/api/IssueInquiry/SaveViewHistory",
-              data: { realId: realId },
+              data: {realId: realId},
               headers: {
                 'X-CSRF-Token': $('[name=_csrf]').val()
               },
@@ -596,110 +726,144 @@
                   console.error("오류: sub1Table 또는 sub2TableBody을 찾을 수 없습니다.");
                   return;
                 }
-
                 // 데이터를 배열로 받아서 중복 제거 후 사용
                 let details = Array.isArray(data.data) && data.data.length > 0 ? data.data : [];
 
                 if (details.length === 0) {
-                  console.warn("A등기 데이터 없음");
+                  console.warn("⚠️ A등기 데이터 없음");
                 } else {
                   let tableBody = document.querySelector("#sub1 table tbody");
                   tableBody.innerHTML = ""; // 기존 데이터 초기화
 
-                  details.forEach((entry) => {
-                    // null 또는 undefined를 "-"로 대체하는 함수
+                  // 중복된 A등기 데이터 제거 (RgsAimCont_A 기준)
+                  let seenA = new Set();
+                  let uniqueDataA = details.filter(entry => {
+                    if (seenA.has(entry.RgsAimCont_A)) {
+                      return false; // 중복된 경우 제거
+                    } else {
+                      seenA.add(entry.RgsAimCont_A);
+                      return true;
+                    }
+                  });
+
+                  // 최소 개수 보장 (1개 이상 출력)
+                  if (uniqueDataA.length === 0) {
+                    console.warn("⚠️ A등기 데이터가 너무 적습니다. 기본값을 표시합니다.");
+                    uniqueDataA.push({
+                      RankNo_A: "-",
+                      RgsAimCont_A: "-",
+                      Receve_A: "-",
+                      RgsCaus_A: "-",
+                      NomprsAndEtc_A: "-"
+                    });
+                  }
+
+                  // 중복 제거된 데이터 테이블에 추가
+                  uniqueDataA.forEach(entry => {
                     const safeValue = (value) => value && value !== "null" ? value : "-";
 
-                    // 등기 목적 행
+                    let rowRank = document.createElement("tr"); // ✅ 순위 번호 행 추가
+                    rowRank.innerHTML = `
+    <th style="font-size: 11px;">순위 번호</th>
+    <td colspan="3">${safeValue(entry.RankNo_A)}</td>
+  `;
+                    tableBody.appendChild(rowRank);
+
                     let row1 = document.createElement("tr");
                     row1.innerHTML = `
-            <th style="font-size: 11px;">등기목적</th>
-            <td colspan="3">${safeValue(entry.RgsAimCont_A)}</td>
-        `;
+    <th style="font-size: 11px;">등기목적</th>
+    <td colspan="3">${safeValue(entry.RgsAimCont_A)}</td>
+  `;
                     tableBody.appendChild(row1);
 
-                    // 접수 행
                     let row2 = document.createElement("tr");
                     row2.innerHTML = `
-            <th style="font-size: 11px;">접수</th>
-            <td colspan="3">${safeValue(entry.Receve_A)}</td>
-        `;
+    <th style="font-size: 11px;">접수</th>
+    <td colspan="3">${safeValue(entry.Receve_A)}</td>
+  `;
                     tableBody.appendChild(row2);
 
-                    // 등기 원인 행
                     let row3 = document.createElement("tr");
                     row3.innerHTML = `
-            <th style="font-size: 11px;">등기원인</th>
-            <td colspan="3">${safeValue(entry.RgsCaus_A)}</td>
-        `;
+    <th style="font-size: 11px;">등기원인</th>
+    <td colspan="3">${safeValue(entry.RgsCaus_A)}</td>
+  `;
                     tableBody.appendChild(row3);
 
-                    // 권리자 및 기타사항 제목
                     let row4 = document.createElement("tr");
                     row4.innerHTML = `
-            <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
-        `;
+    <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
+  `;
                     tableBody.appendChild(row4);
 
-                    // 권리자 및 기타사항 데이터
                     let row5 = document.createElement("tr");
                     row5.innerHTML = `
-            <td colspan="4">${safeValue(entry.NomprsAndEtc_A)}</td>
-        `;
+    <td colspan="4">${safeValue(entry.NomprsAndEtc_A)}</td>
+  `;
                     tableBody.appendChild(row5);
                   });
                 }
 
-                // 을구
-                if (details.length === 0) {
-                  console.warn("B등기 데이터 없음");
-                } else {
-                  let tableBody = document.querySelector("#sub2 table tbody"); // A등기 방식과 동일하게 변경
-                  tableBody.innerHTML = ""; // 기존 데이터 초기화 추가
 
-                  details.forEach((entry) => {
-                    // null 또는 undefined를 "-"로 대체하는 함수
-                    const safeValue = (value) => value && value !== "null" ? value : "-";
+                // ✅ 데이터를 중복 없이 저장
+                let seenB = new Set();
+                let uniqueDataB = details.filter(entry => {
+                  if (seenB.has(entry.RgsAimCont_B)) {
+                    return false; // 중복된 경우 건너뜀
+                  } else {
+                    seenB.add(entry.RgsAimCont_B);
+                    return true;
+                  }
+                });
 
-                    // 등기목적 행 추가
-                    let row1 = document.createElement("tr");
-                    row1.innerHTML = `
-            <th style="font-size: 11px;">등기목적</th>
-            <td colspan="3">${safeValue(entry.RgsAimCont_B)}</td>
-        `;
-                    tableBody.appendChild(row1);
+// ✅ 을구(B등기) 테이블 초기화
+                let tableBodyB = document.querySelector("#sub2 table tbody");
+                tableBodyB.innerHTML = "";
 
-                    // 접수 행 추가
-                    let row2 = document.createElement("tr");
-                    row2.innerHTML = `
-            <th style="font-size: 11px;">접수</th>
-            <td colspan="3">${safeValue(entry.Receve_B)}</td>
-        `;
-                    tableBody.appendChild(row2);
+// ✅ 중복 제거된 데이터만 테이블에 추가
+                uniqueDataB.forEach(entry => {
+                  const safeValue = (value) => value && value !== "null" ? value : "-";
 
-                    // 등기 원인 행 추가
-                    let row3 = document.createElement("tr");
-                    row3.innerHTML = `
-            <th style="font-size: 11px;">등기원인</th>
-            <td colspan="3">${safeValue(entry.RgsCaus_B)}</td>
-        `;
-                    tableBody.appendChild(row3);
+                  let rowRank = document.createElement("tr"); // ✅ 순위 번호 행 추가
+                  rowRank.innerHTML = `
+    <th style="font-size: 11px;">순위 번호</th>
+    <td colspan="3">${safeValue(entry.RankNo_B)}</td>
+  `;
+                  tableBodyB.appendChild(rowRank);
 
-                    // 권리자 및 기타사항 제목 행 추가
-                    let row4 = document.createElement("tr");
-                    row4.innerHTML = `
-            <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
-        `;
-                    tableBody.appendChild(row4);
+                  let row1 = document.createElement("tr");
+                  row1.innerHTML = `
+    <th style="font-size: 11px;">등기목적</th>
+    <td colspan="3">${safeValue(entry.RgsAimCont_B)}</td>
+  `;
+                  tableBodyB.appendChild(row1);
 
-                    // 권리자 및 기타사항 데이터 행 추가
-                    let row5 = document.createElement("tr");
-                    row5.innerHTML = `
-            <td colspan="4">${safeValue(entry.NomprsAndEtc_B)}</td>
-        `;
-                    tableBody.appendChild(row5);
-                  });
-                }
+                  let row2 = document.createElement("tr");
+                  row2.innerHTML = `
+    <th style="font-size: 11px;">접수</th>
+    <td colspan="3">${safeValue(entry.Receve_B)}</td>
+  `;
+                  tableBodyB.appendChild(row2);
+
+                  let row3 = document.createElement("tr");
+                  row3.innerHTML = `
+    <th style="font-size: 11px;">등기원인</th>
+    <td colspan="3">${safeValue(entry.RgsCaus_B)}</td>
+  `;
+                  tableBodyB.appendChild(row3);
+
+                  let row4 = document.createElement("tr");
+                  row4.innerHTML = `
+    <th style="font-size: 11px; text-align: center;" colspan="4">권리자 및 기타사항</th>
+  `;
+                  tableBodyB.appendChild(row4);
+
+                  let row5 = document.createElement("tr");
+                  row5.innerHTML = `
+    <td colspan="4">${safeValue(entry.NomprsAndEtc_B)}</td>
+  `;
+                  tableBodyB.appendChild(row5);
+                });
 
                 // 팝업 열기
                 document.getElementById("popup-history").classList.add("open");
@@ -726,11 +890,6 @@
     });
   }
 
-  /*  // 데이터 찾기
-                 const item = data2.find(d => d.pin === goyuNum);
-                 if (item) {
-                     searchaddress(item);
-                 }*/
   function openModal(popupId) {
     let popup = document.getElementById(popupId);
     let overlay = document.querySelector('.popup-overlay');

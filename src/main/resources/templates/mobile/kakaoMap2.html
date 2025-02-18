@@ -29,9 +29,8 @@
     /* 지도 컨테이너를 상대 위치로 설정해야 `absolute`가 적용됨 */
     #map {
         position: relative;
+        pointer-events: auto !important;
     }
-
-
 
 </style>
 <head>
@@ -323,11 +322,13 @@
 
       const options = {
         center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울특별시 중심 좌표
-        level: 3 // 확대 레벨
+        level: 3, // 확대 레벨
+        draggable: true
       };
 
       window.map = new kakao.maps.Map(container, options);
-      console.log("Kakao 지도 초기화 완료");
+      //console.log("Kakao 지도 초기화 완료");
+      //console.log("🧐 지도 드래그 가능 여부:", window.map.getDraggable());
 
       // 클러스터러 생성
       if (!window.clusterer) {
@@ -336,7 +337,7 @@
           averageCenter: true,
           minLevel: 3
         });
-        console.log("클러스터러 생성 완료");
+       // console.log("클러스터러 생성 완료");
 
         // 클러스터 색상 변경 이벤트 리스너 추가
         kakao.maps.event.addListener(window.clusterer, 'clustered', function (clusters) {
@@ -349,7 +350,7 @@
             var gradeCount = {};
 
             markers.forEach(marker => {
-              var markerGrade = marker.markerData?.grade || "S"; // 기본값 "S"
+              var markerGrade = marker.markerData?.grade || "A"; // 기본값
               gradeCount[markerGrade] = (gradeCount[markerGrade] || 0) + 1;
             });
 
@@ -741,8 +742,8 @@
     const regionList = $('#region-list');
     regionList.empty(); // 기존 목록 초기화
 
-    // 이미 JSON 객체라면 JSON.parse를 호출하지 않음
     const results = data.data.result; // JSON 데이터 접근
+
     results.forEach(region => {
       const button = $('<button></button>')
         .text(region.addr_name) // 시/도 이름 설정
@@ -915,7 +916,6 @@
             var newLat = parseFloat(markerData.lat) + (floorOffset * floor);
             var newLng = parseFloat(markerData.lng) + (angleOffset * floor * Math.sin(angle));
 
-
             // NaN 체크 추가
             if (isNaN(newLat) || isNaN(newLng)) {
               //console.warn("⚠ newLat 또는 newLng 값이 NaN입니다. 기본 좌표를 사용합니다.");
@@ -1033,7 +1033,7 @@
           if (window.clusterer) {
             console.log(`${regionName} ${gugunName} 지역의 마커 ${newMarkers.length}개 추가`);
             window.clusterer.addMarkers(newMarkers);
-
+            $("#loading-spinner").hide(); resolve();
           } else {
             console.error("클러스터러 객체가 초기화되지 않음");
           }
@@ -1049,6 +1049,8 @@
       }
     });
   }
+
+  //검색 결과 테이블 업데이트
   function updateSearchResultsFromMarker(markerData) {
     const searchResults = $("#search-results");
     searchResults.empty();
@@ -1072,13 +1074,14 @@
     searchResults.append(row);
   }
 
+  //선택된 지역 경로 업데이트
   function updateSelectedPathFromMarker(markerData) {
     if (!markerData || !markerData.address) {
       console.warn("마커 데이터가 부족하여 선택된 지역을 업데이트할 수 없습니다.");
       return;
     }
 
-    // ✅ 주소에서 필요한 부분 추출
+    //주소에서 필요한 부분 추출
     const addressParts = markerData.address.split(" ");
     selectedPath.city = addressParts[0] || '';  // 시/도
     selectedPath.district = addressParts[1] || ''; // 구
@@ -1086,8 +1089,6 @@
 
     updateSelectedPath(); // UI 갱신
   }
-
-
 
   // 오버레이 닫기 함수 (특정 마커의 오버레이 닫기)
   function closeOverlay(lat, lng) {

@@ -109,9 +109,9 @@ public class MapService {
             WHERE REALID = :realid
             ORDER BY
                 TRY_CAST(REPLACE(RankNo, '-', '') +
-                                         CASE WHEN RankNo LIKE '%-%' THEN '' ELSE '0' END AS INT) DESC,
+                                         CASE WHEN RankNo LIKE '%-%' THEN '' ELSE '0' END AS INT) ASC,
                                 CASE WHEN ISNUMERIC(RankNo) = 1 THEN 0 ELSE 1 END,
-                                RankNo DESC;
+                                RankNo ASC;
     """;
 
         return sqlRunner.getRows(sql, params);
@@ -126,9 +126,9 @@ public class MapService {
             WHERE REALID = :realid
             ORDER BY
                 TRY_CAST(REPLACE(RankNo, '-', '') +
-                                         CASE WHEN RankNo LIKE '%-%' THEN '' ELSE '0' END AS INT) DESC,
+                                         CASE WHEN RankNo LIKE '%-%' THEN '' ELSE '0' END AS INT) ASC,
                                 CASE WHEN ISNUMERIC(RankNo) = 1 THEN 0 ELSE 1 END,
-                                RankNo DESC;
+                                RankNo ASC;
     """;
 
         return sqlRunner.getRows(sql, params);
