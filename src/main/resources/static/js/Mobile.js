@@ -658,6 +658,8 @@ document.addEventListener("DOMContentLoaded", function () {
     $('#logout').on('click', function (e) {
         e.preventDefault();
         Alert.confirm('', '로그아웃하시겠습니까?', function () {
+            localStorage.removeItem('isLoggedIn');
+
             i18n.resetData();
             location.href = '/logout';
         });

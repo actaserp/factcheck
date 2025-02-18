@@ -53,6 +53,7 @@
         cursor: pointer;
         padding-left: 45px;
     }
+
 </style>
 <head>
   <meta charset="UTF-8">
@@ -78,6 +79,7 @@
 
   <script src="/js/common.js?v=1060"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+  <script src="/js/Mobile.js"></script>
 </head>
 
 <body>
@@ -86,7 +88,16 @@
   <div class="mobile-layout-header">
     <header>
       <div class="left">
+        <a href="#" title="전체메뉴" class="logo">
+        </a>
+      </div>
+      <div class="left" style="margin-left:35px;">
         <h2>FACT CHECK</h2>
+      </div>
+      <div class="right">
+        <a href="#" title="전체메뉴" class="btn-menu">
+          <img src="/assets_mobile/images/icon/btn-menu.svg" alt="전체메뉴 아이콘">
+        </a>
       </div>
     </header>
   </div> <!-- //mobile-layout-header end-->
@@ -135,8 +146,19 @@
 
 
           <button onclick="searchGoyuList()" style="margin-top: 10px">물건 선택</button>
+          <button type="button" class="btn-login" id="login" style="margin-top: 10px">로그인 하러 가기</button>
         </dl>
       </div> <!--// contents-wrap end-->
+      <div id="addressWrap" class="contents-wrap">
+
+      </div>
+      <!-- 로딩 화면 -->
+      <div id="loadingSpinner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 9999;">
+        <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">
+          <span>🔄 등기부등본 발급중입니다...</span>
+        </div>
+      </div>
+      <!--            <button onclick="searchdatatest()" style="margin-top: 10px">test</button>-->
     </div> <!--//layout-contents end -->
 
   </div> <!-- //mobile-layout-contents end-->
@@ -200,151 +222,254 @@
   }
 </script>
 <script type="text/javascript">
+  document.readyState === 'complete' ? init() : window.onload = init;
 
-  // 상세주소 조회
+  function init() {
+    // ✅ 로그인 여부 확인
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const loginButton = document.getElementById('login'); // 로그인 버튼 선택
+
+    if (isLoggedIn === 'true') {
+      console.log("✅ 로그인 유지됨: 현재 페이지 유지");
+
+      // 로그인 상태이면 버튼 숨기기
+      if (loginButton) {
+        loginButton.style.display = "none";
+      }
+    } else {
+      console.log("🔒 로그인 정보 없음: 로그인 하러 가기 버튼 보이기");
+
+      // 로그아웃 상태이면 버튼 보이기
+      if (loginButton) {
+        loginButton.style.display = "block";
+      }
+    }
+  }
+
+  document.getElementById('login').addEventListener('click', function() {
+    window.location.href = '/mobile/mlogin';
+  });
+
+  $(document).ready(function () {
+    // 1.저장된 주소 불러오기 (페이지 로드 시 실행)
+    loadAddressFromLocalStorage();
+
+    // 2.검색 버튼 클릭 시 이벤트 처리
+    $(document).on('click', 'button[onclick="searchGoyuList()"]', function (e) {
+      e.preventDefault(); // 기본 동작 방지
+      handleSearchButtonClick(); // 검색 버튼 처리 함수 실행
+    });
+  });
+
+
+  // 주소를 로컬스토리지에 저장
   function saveAddressToLocalStorage() {
-    const address1 = $('#address1').val().trim(); // 도로명 주소
-    const address2 = $('#address2').val().trim(); // 상세 주소
+    const address1 = $('#address1').val().trim();
+    const address2 = $('#address2').val().trim();
 
     if (!address1) {
-      alert('주소를 입력해주세요.');
+      alert('도로명 주소를 입력해주세요.');
       return;
     }
 
-    // 개별적으로 저장
     localStorage.setItem('savedAddress1', address1);
     localStorage.setItem('savedAddress2', address2);
 
     console.log('주소 저장 완료:', address1, address2);
   }
 
-  // 이벤트 등록 (버튼 클릭 시 실행)
-  $(document).ready(function () {
-    $(document).on('click', 'button[onclick="searchGoyuList()"]', function () {
-      saveAddressToLocalStorage(); // 주소 저장
-      searchGoyuList(); // 원래 실행할 함수 호출
-    });
-  });
+  // 검색 버튼 클릭 시 실행될 함수
+  function handleSearchButtonClick() {
+    saveAddressToLocalStorage(); // 새 주소 저장
+    clearPreviousSearchResults(); // 기존 검색 결과 삭제
+    searchGoyuList(); // 새로운 검색 실행
+  }
 
+  // 기존 검색 결과 삭제 (올바른 삭제 방식)
+  function clearPreviousSearchResults() {
+    $('#addressWrap').empty(); // 기존 검색 결과 삭제
+    localStorage.removeItem('savedAddress1'); // 도로명 주소 삭제
+    localStorage.removeItem('savedAddress2'); // 상세 주소 삭제
+  }
+
+  // 고유번호 조회
+  let isRequestInProgress = false;  // 중복 요청 방지 플래그
 
   function searchGoyuList() {
+    if (isRequestInProgress) return;  // 진행 중이면 무시
+    isRequestInProgress = true;
 
-    let data2 = [];
     if (document.getElementById('address1').value === "") {
       Alert.alert('', '주소를 선택해주세요');
+      isRequestInProgress = false;
       return false;
     }
+
     $.ajax({
-      url: '/api/IssueInquiry/checkLogin',
+      url: '/api/tilko/searchGoyuList',
       type: 'GET',
-      async: true, //비동기 방식으로 변경
-      success: function(response) {
-        console.log("로그인 체크 결과:", response);
-
-        if (!response.isLoggedIn) {
-          // 비회원이면 로그인 페이지로 이동
-          console.log("비회원이므로 /mobile/mlogin으로 이동");
-          window.location.href = '/mobile/mlogin';
-        } else {
-          console.log("회원이므로 조회 요청 실행");
+      data: {
+        'address1': $('#address1').val() + " " + $('#address2').val()
+      },
+      async: false,
+      success: function (data) {
+        let data2 = data.data;
+        // **비어 있는 데이터 체크 및 경고 메시지 표시**
+        if (!data2 || data2.length === 0) {
+          Alert.alert('', '검색된 데이터가 없습니다.');
+          isRequestInProgress = false;
+          return;
         }
+        console.log("data2", data);
+        console.log("data2", data2);
 
-        $.ajax({
-          url: '/api/tilko/searchGoyuList',
-          type: 'GET',
-          data: {
-            'address1': $('#address1').val() + " " + $('#address2').val()
-          },
-          headers: {
-            'X-CSRF-Token': $('[name=_csrf]').val()
-          },
-          async: false,
-          success: function (data) {
-            data2 = data.data;
-            console.log("data2", data);
+        const listAddressWrap = document.getElementById('addressWrap');
+        const availableColors = ['card-blue', 'card-green', 'card-black', 'card-red', 'card-yellow', 'card-purple'];
+        listAddressWrap.innerHTML = '';  // 기존 내용 초기화
+        let colorIndex = 0;
+        let htmlContent = '';
 
-            const listAddressWrap = document.getElementById('addressWrap');
-            const availableColors = [
-              'card-blue', 'card-green', 'card-black',
-              'card-red', 'card-yellow', 'card-purple'
-            ];
-            listAddressWrap.innerHTML = ''; // 기존 내용을 초기화
+        // '토지' 제외 로직
+        data2.forEach(data => {
+          if (data.Gubun !== '토지') {
+            const cardColor = availableColors[colorIndex];
+            colorIndex = (colorIndex + 1) % availableColors.length;
 
-            // 색상을 순환적으로 할당하기 위한 인덱스
-            let colorIndex = 0;
-            let htmlContent = '';
-
-            // Gubun 데이터에서 '토지' 데이터 제외 후 화면에 출력
-            data2.forEach(data => {
-              const cardColor = availableColors[colorIndex];
-              colorIndex = (colorIndex + 1) % availableColors.length;
-
-              if (data.Gubun !== '토지') {
-                // 버튼 처리
-                let buttonsHtml = `<button class="btn btn-popup-open"
-                                                    data-popup="popup-history" title="등기부">
-                                                등기부 조회
-                                            </button>`;
-
-                // rd_addr_detail에서 태그 제거 후 적용
-                let cleanAddress = stripHtmlTags(data.rd_addr_detail).replace(/\s+/g, '');
-
-                htmlContent += `
-                            <div class="card-box ${cardColor}" data-Goyu="${data.pin}">
-                                <div class="card-cont">
-                                    <dl><dt>고유번호</dt><dd>${data.pin}</dd></dl>
-                                    <dl><dt>주소</dt><dd>${cleanAddress}</dd></dl>
-                                    <dl><dt>구분</dt><dd>${data.real_cls_cd}</dd></dl>
-                                    <dl><dt>상태</dt><dd>${data.use_cls_cd}</dd></dl>
-                                </div>
-                                ${buttonsHtml}
+            let cleanAddress = preprocessAddress(data.rd_addr_detail);
+            htmlContent += `
+                        <div class="card-box ${cardColor}" data-Goyu="${data.pin}">
+                            <div class="card-cont">
+                                <dl>
+                                    <dt>고유번호</dt>
+                                    <dd>${data.pin}</dd>
+                                </dl>
+                                <dl>
+                                    <dt>주소</dt>
+                                    <dd>${cleanAddress}</dd>
+                                </dl>
+                                <dl>
+                                    <dt>구분</dt>
+                                    <dd>${data.real_cls_cd}</dd>
+                                </dl>
+                                <dl>
+                                    <dt>상태</dt>
+                                    <dd>${data.use_cls_cd}</dd>
+                                </dl>
                             </div>
-                        `;
-              } else {
-                console.log("토지데이터 제외됨");
-              }
-            });
+                            <button class="btn btn-popup-open" data-popup="popup-history" title="등기부">
+                                등기부 조회
+                            </button>
+                        </div>`;
+          } else {
+            console.log("토지 데이터");
+          }
+        });
 
-            listAddressWrap.insertAdjacentHTML('beforeend', htmlContent);
+        listAddressWrap.insertAdjacentHTML('beforeend', htmlContent);
 
-            // 이벤트 위임 추가
-            listAddressWrap.addEventListener('click', (event) => {
-              const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
-              if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
+        // AJAX 완료 시 플래그 해제
+        isRequestInProgress = false;
 
-              const cardBox = button.closest('.card-box');
-              const goyuNum = cardBox.getAttribute('data-Goyu');
+        // 이벤트 위임 (중복 방지)
+        listAddressWrap.addEventListener('click', (event) => {
+          const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+          if (!button) return;
 
-              // 데이터 찾기
-              const item = data2.find(d => d.pin === goyuNum);
-              if (item) {
-                searchaddress(item);
-              }
-            });
+          const cardBox = button.closest('.card-box');
+          const goyuNum = cardBox.getAttribute('data-Goyu');
+
+          const item = data2.find(d => d.pin === goyuNum);
+          if (item) {
+            const cleanAddress = preprocessAddress(item.rd_addr_detail);
+            searchaddress(item, cleanAddress);
           }
         });
       },
-      error: function() {
-        window.location.href = '/mobile/mlogin';  // 로그인 확인 API 오류 시 로그인 페이지로 이동
+      error: function () {
+        isRequestInProgress = false;  // 에러 시에도 플래그 해제
       }
     });
   }
 
+  // 주속 태그 삭제 및 공백 메서드
+  function preprocessAddress(input) {
+    // 1. <span> 시작/종료 시 공백 추가
+    let processed = input.replace(/<\/?span[^>]*>/g, match => ` ${match} `);
+    // 2. 모든 태그 제거 및 공백 축소
+    processed = processed.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    return processed;
+  }
   // HTML 태그 제거 함수
   function stripHtmlTags(html) {
     let tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
     return tempDiv.textContent || tempDiv.innerText || "";
   }
+  // pdf 데이터 조회 및 파싱 저장 메서드 호출(등기부등본 조회 메서드)
+  let isSearchInProgress = false;  // 중복 호출 방지 플래그
 
-  function searchaddress(data) {
-    console.log("data : ", data)
+  function searchaddress(data, cleanAddress) {
+    if (isSearchInProgress) return;  // 진행 중이면 함수 종료
+    isSearchInProgress = true;  // 플래그 설정
+
+    console.log("data : ", data);
+
+    // 로딩 화면 표시
+    document.getElementById('loadingSpinner').style.display = 'flex';
+
     $.ajax({
-      url: '/api/tilko/searchaddress',
+      url: '/api/tilko/downloadPDF',
       type: 'GET',
       data: {
         "GoyuNUM": data.pin,
-        "address": data.rd_addr
+        "address": cleanAddress
+      },
+      async: true,
+      success: function (response) {
+        // 응답 값 검증
+        if (!response.success || response.data === null) {
+          // 로딩 스피너 숨기기
+          document.getElementById('loadingSpinner').style.display = 'none';
+          isSearchInProgress = false;  // 플래그 해제
+
+          // 사용자에게 메시지 표시
+          Alert.alert("","데이터를 불러올 수 없습니다.");
+          return;  // 함수 종료
+        }
+        let data2 = response.data;
+        console.log("data2", data2);
+
+        // API 응답에서 필요한 값 추출 후 sessionStorage에 저장
+        let resultMap = {
+          "REALID" : data2.REALID,
+          "REALSCORE": data2.REALSCORE,
+          "GRADE": data2.GRADE,
+          "COMMENT": data2.COMMENT,
+          "ADDRESS": data2.ADDRESS
+        };
+        sessionStorage.setItem("resultMap", JSON.stringify(resultMap));
+
+        document.getElementById('loadingSpinner').style.display = 'none';
+        isSearchInProgress = false;  // 플래그 해제
+
+        // search_card 페이지로 이동
+        window.location.href = "mobile/search_card";
+      },
+      error: function (error) {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        isSearchInProgress = false;  // 에러 발생 시 플래그 해제
+        console.error("Error in API call:", error);
+      }
+    });
+  }
+
+  function searchdatatest() {
+    $.ajax({
+      url: '/api/tilko/downloadPDF2',
+      type: 'GET',
+      data: {
+        "GoyuNUM" : '123123123',
+        "address" : '서울특별시 금천구'
       },
       async: false,
       success: function (response) {
@@ -368,7 +493,6 @@
       }
     });
   }
-
 
 </script>
 </body>

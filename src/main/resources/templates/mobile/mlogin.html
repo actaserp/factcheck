@@ -95,13 +95,8 @@
           <dl>
             <dt><label for="loginId">이메일</label></dt>
             <dd>
-              <input type="text" id="loginId" name="username" placeholder="아이디를 입력해주세요">
+              <input type="text" id="loginId" name="username" placeholder="이메일을 입력해주세요">
             </dd>
-            <!-- 에러메시지 출력 -->
-            <!--<dd class="hint-red">
-                <img src="/assets_mobile/images/icon/ico-info-red.svg" alt=" 에러메세지 출력">
-                에러메세지 출력
-            </dd>-->
           </dl>
           <dl>
             <dt><label for="loginPwd">비밀번호</label></dt>
@@ -147,7 +142,6 @@
         </div>
       </form>
     </div>
-    <!-- <p class="copyright">ⓒ Kt Corp. All rights reserved.</p> -->
   </div>
   <!-- [사용자등록] 팝업  -->
   <div class="mobile-layout-popup">
@@ -1149,81 +1143,7 @@
 
   let AuthCode = false; // 전역 변수로 선언
 
-
-  /* //사용자등록 버튼 클릭
-   let btnRegistersend = $('#btnSaveAuth');
-
-   btnRegistersend.click(function (e) {
-       e.preventDefault(); // 기본 버튼 클릭 동작 방지
-
-       const authCode = $('#AuthenticationCodeRegister').val().trim();
-       if (!authCode) {
-           Alert.alert('', '인증코드를 입력해주세요.');
-           $('#AuthenticationCodeRegister').focus();
-           return;
-       }
-
-       if (!validateFields()) {
-           return false;
-       }
-       // 중복 확인 여부 체크
-       if (!AuthCode) {
-           Alert.alert('', '아이디 중복 확인을 하지 않으셨습니다.');
-           return;
-       }
-
-       //비밀번호 검사
-       let password = document.getElementById('password').value;
-       let password2 = document.getElementById('password2').value;
-
-       if (password !== password2) {
-           Alert.alert('', '비밀번호가 맞지 않습니다.');
-           return;
-       }
-
-       const emailInput = document.getElementById('email');
-       const emailValue = emailInput.value.trim();
-
-       // 이메일 유효성 검사
-       if (!emailValidate(emailValue)) {
-           Alert.alert('', '유효한 이메일 형식을 입력하세요.');
-           return false;
-       }
-       let isSocialUser = $('#isSocialUser').val() === 'true';
-
-       let data = {
-           id: $('#id').val().trim(),
-           password: $('#password').val().trim(),
-           name: $('#name').val().trim(),
-           birthYear: $('#birthYear').val(),
-           userHP: $('#Phone').val().trim(),
-           sexYn: $('#sexYn').val(),
-           email: $('#email').val().trim(),
-           postno:$('#postno').val().trim(),
-           address1:$('#address1').val().trim(),
-           AuthenticationCode: $('#AuthenticationCodeRegister').val().trim(),
-           _csrf: $('input[name="_csrf"]').val() // CSRF 토큰
-       };
-       console.log("직접 수집한 데이터: ", data);
-
-       let fnSuccess = function (res) {
-           if (res.success) {
-               Alert.alert('', res.message);
-               RegisterUserClose();
-           } else {
-               Alert.alert('', res.message);
-           }
-       };
-
-       // AJAX 요청
-      AjaxUtil.postAsyncData("/mobile/save", data, fnSuccess);
-
-       // 폼 필드 초기화
-       AuthCode = false;
-       RegisterUserClose();
-       //clearFieldList.forEach(field => clearForm(field));
-   });//사용자등록*/
-
+  //사용자 저장
   function UserInfoSave() {
     // 기본 버튼 클릭 동작 방지
     event.preventDefault(); // 전역 `event` 객체로 기본 동작 방지
@@ -1406,6 +1326,9 @@
         Alert.alert('', '사용 불가능한 사용자입니다.', clearFields);
       } else {
         if (code == 'OK') {
+          // 로그인 성공 시 로컬스토리지에 저장
+          localStorage.setItem('isLoggedIn', 'true');
+
           let lang_cd = sessionStorage.getItem('lang_code');
           let url = '/api/common/labels';
           let pData = {lang_code: lang_cd};
@@ -1514,7 +1437,6 @@
     // 카카오 로그인 요청
     window.location.href = kakaoAuthUrl;
   });
-
 
   document.getElementById('naver-login-btn').addEventListener('click', function () {
     console.log('NAVER 로그인 버튼 클릭됨');
