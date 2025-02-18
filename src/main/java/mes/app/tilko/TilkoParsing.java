@@ -164,7 +164,7 @@ public class TilkoParsing {
     // Information에서 금액이 포함되어 있는지 확인하는 메서드
     public static boolean containsAmount(String information) {
         if (information == null) return false;
-        Pattern pattern = Pattern.compile("금[0-9,.]+원"); // "금000,000원" 형태 검사
+        Pattern pattern = Pattern.compile("금\\s*[0-9,.]+\\s*원"); // "금000,000원" 형태 검사
         Matcher matcher = pattern.matcher(information);
         return matcher.find();
     }
@@ -172,7 +172,7 @@ public class TilkoParsing {
     // Information에서 금액 추출하는 메서드
     public static String extractAmount(String information) {
         if (information == null) return null;
-        Pattern pattern = Pattern.compile("금([0-9,.]+)원"); // "금000,000원" 형태
+        Pattern pattern = Pattern.compile("금\\s*([0-9,.]+)\\s*원"); // "금000,000원" 형태
         Matcher matcher = pattern.matcher(information);
         return matcher.find() ? matcher.group(1) : null;
     }
@@ -592,15 +592,17 @@ public class TilkoParsing {
         for (String row : tableData) {
             String[] columns = row.split("\\|");
 
-            // 순위번호가 없는 행 또는 "순위번호" 헤더인 경우 건너뜁니다.
-            if (columns.length < 5 || columns[0].trim().isEmpty() || columns[0].trim().equals("순위번호")) {
+            // 첫 번째 컬럼이 "순위번호"인 경우 해당 행을 무시
+            if (columns.length > 0 && columns[0].trim().equals("순위번호")) {
                 continue;
             }
 
+            if (columns.length < 5) continue;  // 유효한 데이터인지 체크
+
             // 순위번호가 있는 새로운 데이터 시작 시
-            if (!columns[0].trim().isEmpty()) {
+            if (!columns[0].trim().isEmpty() && !columns[0].trim().equalsIgnoreCase("null")) {
                 // 이전 데이터 저장 후 초기화
-                if (!currentRow.isEmpty() && !columns[0].trim().equalsIgnoreCase("null")) {
+                if (!currentRow.isEmpty()) {
                     parsedData.add(new HashMap<>(currentRow));
                 }
                 currentRow.clear();
@@ -633,7 +635,9 @@ public class TilkoParsing {
                     leaseData.add(leaseEntry);
                 }
             } else {
-                // 순위번호가 없는 경우 → 이전 데이터와 병합
+                currentRow.put("RgsAimCont", currentRow.get("RgsAimCont") + " " + columns[1].trim());
+                currentRow.put("Receve", currentRow.get("Receve") + " " + columns[2].trim());
+                currentRow.put("RgsCaus", currentRow.get("RgsCaus") + " " + columns[3].trim());
                 currentRow.put("NomprsAndEtc", currentRow.get("NomprsAndEtc") + " " + columns[4].trim());
             }
         }

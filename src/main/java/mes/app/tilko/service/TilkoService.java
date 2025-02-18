@@ -709,7 +709,7 @@ public class TilkoService {
         params.addValue("HISDATE", DeductionDetails.get("HISDATE"));
         // 쿼리 실행
         int rowsAffected = this.sqlRunner.execute(sql, params);
-        System.out.println("✅ 조회수 증가 완료! 영향 받은 행 수: " + rowsAffected);
+        System.out.println("✅ 점수차감내역 저장 영향 받은 행 수: " + rowsAffected);
     }
     // 분류관리 키워드 조회
     public List<Map<String, Object>> getregNM() {
