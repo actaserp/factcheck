@@ -79,7 +79,6 @@
 
   <script src="/js/common.js?v=1060"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
-  <script src="/js/Mobile.js"></script>
 </head>
 
 <body>
@@ -87,17 +86,8 @@
   <!-- [모바일] 헤더  -->
   <div class="mobile-layout-header">
     <header>
-      <div class="left">
-        <a href="#" title="전체메뉴" class="logo">
-        </a>
-      </div>
       <div class="left" style="margin-left:35px;">
         <h2>FACT CHECK</h2>
-      </div>
-      <div class="right">
-        <a href="#" title="전체메뉴" class="btn-menu">
-          <img src="/assets_mobile/images/icon/btn-menu.svg" alt="전체메뉴 아이콘">
-        </a>
       </div>
     </header>
   </div> <!-- //mobile-layout-header end-->
@@ -301,8 +291,8 @@
 
     if (isLoggedIn !== 'true') {
       console.log("로그인 필요: 로그인 페이지로 이동");
-
-      // 🔹 Alert 확인 후 로그인 페이지로 이동하도록 수정
+      saveAddressToLocalStorage();
+      // Alert 확인 후 로그인 페이지로 이동하도록 수정
       Alert.alert("로그인이 필요합니다.", "로그인 페이지로 이동합니다.", function () {
         window.location.href = '/mobile/mlogin';
       });
