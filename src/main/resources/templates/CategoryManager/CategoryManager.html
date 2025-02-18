@@ -766,10 +766,10 @@
         return;
       }
 
-      // ✅ 키워드 리스트 컨테이너 찾기
+      //키워드 리스트 컨테이너 찾기
       let keywordListContainer = document.getElementById("keywordListContainer");
 
-      // 🔥 컨테이너가 없으면 생성 (최대 높이 유지)
+      //컨테이너가 없으면 생성 (최대 높이 유지)
       if (!keywordListContainer) {
         let parentTd = document.querySelector("#selectedData tbody tr:last-child td");
         keywordListContainer = document.createElement("div");
@@ -785,29 +785,29 @@
 
       // 키워드 입력 필드 (읽기 전용, 여러 줄 가능)
       let newKeywordInput = document.createElement("textarea");
-      newKeywordInput.setAttribute("class", "wp30 keyword-field");
+      newKeywordInput.setAttribute("class", "wp40 keyword-field");
       newKeywordInput.setAttribute("name", "Keyword");
       newKeywordInput.setAttribute("placeholder", "등기 키워드");
       newKeywordInput.value = keywordValue;
       newKeywordInput.readOnly = true;
-      newKeywordInput.style.resize = "none"; // 🔥 크기 조절 비활성화
-      newKeywordInput.style.height = "60px"; // 🔥 기본 높이 설정
-      newKeywordInput.style.overflow = "hidden"; // ✅ 스크롤 제거
-      newKeywordInput.style.whiteSpace = "normal"; // ✅ 줄 바꿈 허용
-      newKeywordInput.style.wordBreak = "break-word"; // ✅ 긴 단어도 자동 줄바꿈
+      newKeywordInput.style.resize = "none"; //크기 조절 비활성화
+      newKeywordInput.style.height = "60px"; //기본 높이 설정
+      newKeywordInput.style.overflow = "hidden"; //스크롤 제거
+      newKeywordInput.style.whiteSpace = "normal"; //줄 바꿈 허용
+      newKeywordInput.style.wordBreak = "break-word"; //긴 단어도 자동 줄바꿈
 
 // 키워드 설명 입력 필드 (읽기 전용, 여러 줄 가능)
       let newDescriptionInput = document.createElement("textarea");
-      newDescriptionInput.setAttribute("class", "wp70 keyword-description");
+      newDescriptionInput.setAttribute("class", "wp60 keyword-description");
       newDescriptionInput.setAttribute("name", "KeywordDescription");
       newDescriptionInput.setAttribute("placeholder", "키워드 설명");
       newDescriptionInput.value = keywordDescription;
       newDescriptionInput.readOnly = true;
-      newDescriptionInput.style.resize = "none"; // 🔥 크기 조절 비활성화
-      newDescriptionInput.style.height = "60px"; // 🔥 기본 높이 설정
-      newDescriptionInput.style.overflow = "hidden"; // ✅ 스크롤 제거
-      newDescriptionInput.style.whiteSpace = "normal"; // ✅ 줄 바꿈 허용
-      newDescriptionInput.style.wordBreak = "break-word"; // ✅ 긴 단어도 자동 줄바꿈
+      newDescriptionInput.style.resize = "none"; //크기 조절 비활성화
+      newDescriptionInput.style.height = "60px"; //기본 높이 설정
+      newDescriptionInput.style.overflow = "hidden"; //스크롤 제거
+      newDescriptionInput.style.whiteSpace = "normal"; //줄 바꿈 허용
+      newDescriptionInput.style.wordBreak = "break-word"; //긴 단어도 자동 줄바꿈
 
 
 
@@ -825,7 +825,7 @@
       keywordContainer.appendChild(newDescriptionInput);
       keywordContainer.appendChild(removeBtn);
 
-      // ✅ 키워드 리스트 컨테이너에 추가 (키워드 개수 제한)
+      //키워드 리스트 컨테이너에 추가 (키워드 개수 제한)
       keywordListContainer.appendChild(keywordContainer);
 
       // 입력 필드 초기화

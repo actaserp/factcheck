@@ -101,7 +101,7 @@ public class TB_registerService {
                    TB_REGWORD regword = TB_REGWORD.builder()
                        .regSeq(savedRegister.getRegSeq())  // 연결된 REGSEQ
                        .regWord(keyword)                  // 키워드
-                       .regRemark(keywordRemark)          // 키워드 설명 추가
+                       .regRemark(keywordRemark)          // 키워드 설명
                        .useYn("Y")                        // 사용 여부
                        .build();
 
