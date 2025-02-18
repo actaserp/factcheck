@@ -296,6 +296,20 @@
   let isRequestInProgress = false;  // 중복 요청 방지 플래그
 
   function searchGoyuList() {
+
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+
+    if (isLoggedIn !== 'true') {
+      console.log("로그인 필요: 로그인 페이지로 이동");
+
+      // 🔹 Alert 확인 후 로그인 페이지로 이동하도록 수정
+      Alert.alert("로그인이 필요합니다.", "로그인 페이지로 이동합니다.", function () {
+        window.location.href = '/mobile/mlogin';
+      });
+
+      return;
+    }
+
     if (isRequestInProgress) return;  // 진행 중이면 무시
     isRequestInProgress = true;
 
@@ -304,6 +318,7 @@
       isRequestInProgress = false;
       return false;
     }
+
 
     $.ajax({
       url: '/api/tilko/searchGoyuList',
