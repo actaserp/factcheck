@@ -812,14 +812,17 @@
 
 
       // 삭제 버튼 추가
+
       let removeBtn = document.createElement("button");
       removeBtn.innerHTML = "❌";
       removeBtn.setAttribute("type", "button");
       removeBtn.classList.add("btn", "btn-sm", "btn-outline-danger", "ms-2");
-      removeBtn.onclick = function () {
-        keywordTd.removeChild(keywordContainer);
-      };
 
+      removeBtn.onclick = function () {
+        if (keywordContainer.parentNode) {
+          keywordContainer.parentNode.removeChild(keywordContainer);
+        }
+      };
       // 컨테이너에 키워드 & 설명 & 버튼 추가
       keywordContainer.appendChild(newKeywordInput);
       keywordContainer.appendChild(newDescriptionInput);
