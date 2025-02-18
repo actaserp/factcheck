@@ -157,127 +157,197 @@ public class TilkoParsing {
         Matcher matcher = pattern.matcher(input);
         return matcher.find();
     }
-    public static List<Map<String, Object>> collectSummaryData(
+    // RankNo에서 숫자 부분만 추출하는 메서드 (예: "1-1" → "1")
+    public static String extractRankNumber(String rankNo) {
+        return rankNo.split("-")[0]; // "-" 기준으로 앞부분만 추출
+    }
+    // Information에서 금액이 포함되어 있는지 확인하는 메서드
+    public static boolean containsAmount(String information) {
+        if (information == null) return false;
+        Pattern pattern = Pattern.compile("금[0-9,.]+원"); // "금000,000원" 형태 검사
+        Matcher matcher = pattern.matcher(information);
+        return matcher.find();
+    }
+
+    // Information에서 금액 추출하는 메서드
+    public static String extractAmount(String information) {
+        if (information == null) return null;
+        Pattern pattern = Pattern.compile("금([0-9,.]+)원"); // "금000,000원" 형태
+        Matcher matcher = pattern.matcher(information);
+        return matcher.find() ? matcher.group(1) : null;
+    }
+    // ✅ RankNo가 같은 그룹인지 확인하는 메서드
+    public static boolean isSameRankGroup(String existingRank, String newRank) {
+        String baseExistingRank = extractRankNumber(existingRank); // 기존 데이터에서 숫자 부분 추출
+        String baseNewRank = extractRankNumber(newRank); // 새로운 데이터에서 숫자 부분 추출
+
+        return baseExistingRank.equals(baseNewRank) || existingRank.startsWith(baseNewRank);
+    }
+    // 점수계산위한 summarydata 수집 메서드
+    public List<Map<String, Object>> collectSummaryData(
             List<Map<String, Object>> summaryData,
             List<Map<String, Object>> comcode) {
+        System.out.println("점수계산 데이터 수집 메서드 진입 : " + summaryData);
 
-        // 결과 리스트 (수집된 데이터 저장)
         List<Map<String, Object>> collectedData = new ArrayList<>();
 
-        // ✅ REGWORD 포함된 데이터 매칭
         for (Map<String, Object> summary : summaryData) {
-            String purpose = summary.get("Purpose").toString();
-            String rankNo = summary.get("RankNo").toString();
-            String amount = summary.getOrDefault("Amount", "").toString(); // 금액 (없을 수도 있음)
-            boolean isAmountEmpty = amount.isEmpty();
+            String purpose = summary.getOrDefault("Purpose", "").toString();
+            String rankNo = summary.getOrDefault("RankNo", "").toString();  // 원본 RankNo 유지
+            if (rankNo.isEmpty()) continue; // ✅ RankNo가 없으면 건너뜀
+            boolean hasAmountInInfo = containsAmount(summary.getOrDefault("Information", "").toString());
+            String extractedAmount = extractAmount(summary.getOrDefault("Information", "").toString());
 
-            // REGWORD 포함 여부 확인 및 REQSEQ 가져오기
+            // REGWORD 포함 여부 확인 및 REGSEQ, REGREMARK 가져오기
             for (Map<String, Object> code : comcode) {
                 String regWord = code.get("REGWORD").toString();
                 if (purpose.contains(regWord)) {
-                    String regSeq = code.get("REGSEQ").toString(); // REQSEQ 가져오기
+                    String regSeq = code.get("REGSEQ").toString(); // REGSEQ 가져오기
+                    String regRemark = code.getOrDefault("REGREMARK", "").toString(); // REGREMARK 가져오기
 
-                    // 기존에 같은 RankNo와 REQSEQ가 있는지 확인
+                    // ✅ 같은 Rank 그룹 내에서 같은 REGSEQ 데이터 찾기 (금액 포함 여부별로 구분)
                     Optional<Map<String, Object>> existingData = collectedData.stream()
-                            .filter(d -> d.get("RankNo").equals(rankNo) && d.get("REGSEQ").equals(regSeq))
+                            .filter(d -> isSameRankGroup(d.get("RankNo").toString(), rankNo) &&  // 같은 Rank 그룹 판별
+                                    d.get("REGSEQ").equals(regSeq) &&
+                                    d.get("containsAmount").equals(hasAmountInInfo ? 1 : 0)) // 같은 금액 상태(1: 있음, 0: 없음)만 비교
                             .findFirst();
 
                     if (existingData.isPresent()) {
-                        // 기존 데이터 존재 → 금액 덮어씌우기
-                        if (!isAmountEmpty) {
-                            existingData.get().put("Amount", amount); // 금액 갱신
+                        if (hasAmountInInfo) {
+                            // ✅ 같은 RankNo + REGSEQ + 금액 여부가 같은 데이터 존재 → 최신화
+                            existingData.get().put("Amount", extractedAmount); // 금액 덮어쓰기
+                            existingData.get().put("Information", summary.get("Information")); // Information 최신화
+                        } else {
+                            existingData.get().putAll(summary); // 기존 금액 없는 데이터 최신화
                         }
                     } else {
-                        // 기존 데이터 없음 → 새로운 데이터 추가
+                        // ✅ 새로운 데이터 추가 (containsAmount 포함, REGSEQ 포함, REGREMARK 포함)
                         Map<String, Object> newData = new HashMap<>(summary);
-                        newData.put("REGSEQ", regSeq); // REQSEQ 추가
+                        newData.put("REGSEQ", regSeq);
+                        newData.put("REGREMARK", regRemark);
+                        newData.put("REGWORD", regWord);
+                        newData.put("REGNM", code.getOrDefault("REGNM", ""));
+                        newData.put("REGSTAND", code.getOrDefault("REGSTAND", ""));
+                        newData.put("REGMAXNUM", code.getOrDefault("REGMAXNUM", ""));
+                        newData.put("REGSTAMT", code.getOrDefault("REGSTAMT", ""));
+                        newData.put("SUBSCORE", code.getOrDefault("SUBSCORE", ""));
+                        newData.put("SENSCORE", code.getOrDefault("SENSCORE", ""));
+                        newData.put("REGASNAME", code.getOrDefault("REGASNAME", ""));
+
+                        newData.put("containsAmount", hasAmountInInfo ? 1 : 0); // 금액 여부 플래그 추가
+                        newData.put("Amount", hasAmountInInfo ? extractedAmount : null); // 초기 Amount 설정
                         collectedData.add(newData);
                     }
-                    break; // 첫 번째 매칭만 사용
+                    break;
                 }
             }
         }
+        // ✅ 안전한 정렬 적용 (혹시 정렬이 깨졌다면 다시 정렬)
+        sortByReceiptDate(collectedData);
+        System.out.println("점수계산 데이터 수집 메서드 out : " + collectedData);
         return collectedData;
     }
 
 
-    // ✅ 점수계산 메서드
-    public Map<String, Object> calScore(List<Map<String, Object>> summaryData,
-                                        List<Map<String, Object>> comcode,
-                                        Integer lessScore,
-                                        List<Map<String, Object>> gradeInfo) {
 
-        System.out.println("계산에 사용되는 SummaryData : " + summaryData);
+
+    public Map<String, Object> calculateFinalScore(List<Map<String, Object>> collectedData,
+                                                   Integer lessScore,
+                                                   List<Map<String, Object>> gradeInfo) {
+        System.out.println("점수차감 main메서드 진입 : " + collectedData);
         int finalScore = 100; // 기본 점수
         String Grade = "";
         List<String> comment = new ArrayList<>();
         List<String> Deductions = new ArrayList<>();
-        List<Map<String, Object>> deductionDetails = new ArrayList<>(); // 차감 정보 저장
-        Map<String, Integer> regSeqMap = new HashMap<>(); // 각 데이터의 REGSEQ 저장
-
-        // ✅ 첫 번째 차감 요소 감지 플래그 (전역적으로 유지)
+        List<Map<String, Object>> deductionDetails = new ArrayList<>();
         AtomicBoolean firstDeductionFound = new AtomicBoolean(false);
 
-        // ✅ 정규식 패턴 (모든 금액 추출)
-        Pattern amountPattern = Pattern.compile("금([0-9,]+)원");
+        // ✅ REGSEQ별 최대 차감 한도 저장
+        Map<String, Integer> maxDeductionLimits = new HashMap<>();
 
-        // ✅ 각 SummaryData에서 REGWORD가 포함된 경우 REGSEQ 저장
-        for (Map<String, Object> summary : summaryData) {
-            String purpose = summary.get("Purpose").toString();
-            Integer matchedRegSeq = null;
+        for (Map<String, Object> data : collectedData) {
+            String regSeq = data.get("REGSEQ").toString();
+            String regStand = data.get("REGSTAND").toString();
 
-            for (Map<String, Object> code : comcode) {
-                String regWord = code.get("REGNM").toString();
-                if (purpose.contains(regWord)) { // Purpose에 REGWORD 포함 여부 확인
-                    matchedRegSeq = Integer.parseInt(code.get("REGSEQ").toString()); // REGSEQ 매칭
-                    break;
-                }
+            int maxDeduction = 0;
+
+            if ("A1".equals(regStand)) {
+                Object regMaxNum = data.get("REGMAXNUM");
+                maxDeduction = (regMaxNum != null) ? Integer.parseInt(regMaxNum.toString()) : 0;
+            } else if ("A2".equals(regStand)) {
+                Object subScore = data.get("SUBSCORE");
+                maxDeduction = (subScore != null) ? Integer.parseInt(subScore.toString()) : 0;
+            } else if ("A3".equals(regStand)) {
+                Object regMaxNum = data.get("REGMAXNUM");
+                maxDeduction = (regMaxNum != null) ? Integer.parseInt(regMaxNum.toString()) : 0;
             }
 
-            if (matchedRegSeq != null) {
-                regSeqMap.put(purpose, matchedRegSeq);
-            }
+            maxDeductionLimits.put(regSeq, maxDeduction);
         }
 
-        // ✅ RankNo 기준으로 같은 그룹인 데이터 찾기 (접두사로 그룹화)
-        Map<String, List<Map<String, Object>>> groupedByRank = new HashMap<>();
+        // ✅ 차감 개수 카운트
+        int totalDeductionsCount = 0;
 
-        for (Map<String, Object> summary : summaryData) {
-            String rankNo = summary.get("RankNo").toString();
+        // ✅ 점수 차감 로직 실행
+        for (Map<String, Object> summary : collectedData) {
+            String regSeq = summary.get("REGSEQ").toString();
+            String regStand = summary.get("REGSTAND").toString();
+            boolean hasAmount = summary.get("containsAmount").equals(1);
+            int bondAmount = summary.get("Amount") != null ? Integer.parseInt(summary.get("Amount").toString().replace(",", "")) : 0;
 
-            String mainRankNo = rankNo.split("-")[0]; // "-" 이전 숫자만 추출하여 그룹화
+            int deduction = 0;
 
-            groupedByRank.putIfAbsent(mainRankNo, new ArrayList<>());
-            groupedByRank.get(mainRankNo).add(summary);
-        }
-
-        // ✅ 같은 RankNo 그룹 내에서 REGSEQ가 동일하면 각각 차감 적용
-        for (String rankNo : groupedByRank.keySet()) {
-            List<Map<String, Object>> dataList = groupedByRank.get(rankNo);
-            dataList.sort(Comparator.comparing(d -> d.get("RankNo").toString())); // RankNo 정렬
-
-            Map<Integer, Map<String, Object>> regSeqLastEntries = new HashMap<>(); // ✅ REGSEQ별 마지막 데이터 저장
-
-            for (Map<String, Object> entry : dataList) {
-                String purpose = entry.get("Purpose").toString();
-                if (regSeqMap.containsKey(purpose)) {
-                    Integer regSeq = regSeqMap.get(purpose);
-
-                    // ✅ 같은 REGSEQ가 여러 개 있어도 가장 마지막 데이터를 저장
-                    regSeqLastEntries.put(regSeq, entry);
-                }
+            if ("A1".equals(regStand) && hasAmount) {
+                deduction = calculateDeduction(bondAmount);
+            } else if ("A2".equals(regStand) || ("A3".equals(regStand) && !hasAmount)) {
+                Object subScore = summary.get("SUBSCORE");
+                deduction = (subScore != null) ? Integer.parseInt(subScore.toString()) : 0;
+            } else if ("A3".equals(regStand)) {
+                deduction = calculateDeduction(bondAmount);
             }
 
-            // ✅ 각 REGSEQ별로 차감 로직 적용
-            for (Integer regSeq : regSeqLastEntries.keySet()) {
-                Map<String, Object> lastEntry = regSeqLastEntries.get(regSeq);
-                finalScore = applyDeduction(lastEntry, regSeq, comcode, amountPattern, firstDeductionFound, finalScore, deductionDetails, comment, Deductions);
+            // ✅ REGSEQ별 최대 차감 한도에서 차감 적용
+            int maxDeduction = maxDeductionLimits.getOrDefault(regSeq, 0);
+            int actualDeduction = Math.min(deduction, maxDeduction);
+            maxDeductionLimits.put(regSeq, maxDeduction - actualDeduction);
+
+            // ✅ 첫 번째 데이터 감점 (SENSCORE 존재 시, 추가 차감 적용)
+            boolean isFirstDeduction = !firstDeductionFound.get()
+                    && summary.containsKey("SENSCORE")
+                    && summary.get("SENSCORE") != null
+                    && !summary.get("SENSCORE").toString().isEmpty();
+            if (isFirstDeduction) {
+                actualDeduction += 5; // ✅ 첫 번째 감점이면 추가로 5점 차감
+                firstDeductionFound.set(true);
             }
+
+            // ✅ 점수 차감 적용
+            finalScore -= actualDeduction;
+
+            // ✅ 차감 내역 저장
+            Map<String, Object> deductionEntry = new HashMap<>();
+
+            deductionEntry.put("HISNM", summary.get("REGWORD"));
+            deductionEntry.put("HISAMT", bondAmount);
+            deductionEntry.put("HISPOINT", actualDeduction);
+            deductionEntry.put("REGSTAND", regStand);
+            deductionEntry.put("HISFLAG", isFirstDeduction ? "1" : "0"); // ✅ 첫 번째 차감 데이터에만 1 적용
+            deductionEntry.put("REMARK", summary.get("REGREMARK"));
+
+            comment.add((String) summary.get("REGREMARK"));
+            Deductions.add((String) summary.get("REGASNAME"));
+            deductionDetails.add(deductionEntry);
+
+            totalDeductionsCount++;
         }
-        // ✅ 모든 차감이 끝난 후 추가 차감
-        int deductionCount = deductionDetails.size();
-        finalScore -= deductionCount;  // ✅ 추가 차감 적용
-        System.out.println("📉 REGNM 개수만큼 추가 1점 차감: " + deductionCount);
+
+        // ✅ 추가 감점 (항목 개수당 1점)
+        finalScore -= totalDeductionsCount;
+        Map<String, Object> CountEntry = new HashMap<>();
+        CountEntry.put("HISNM", "항목차감");
+        CountEntry.put("HISPOINT", totalDeductionsCount);
+        CountEntry.put("REMARK", "마지막 항목별 추가 차감점수입니다.");
+        deductionDetails.add(CountEntry);
 
         // **최저 점수 보정**
         if (finalScore < lessScore) {
@@ -299,75 +369,19 @@ public class TilkoParsing {
             Grade = "F";
         }
 
-        // **결과 저장**
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put("REALSCORE", finalScore);
-        resultMap.put("GRADE", Grade);
-        resultMap.put("COMMENT", comment);
-        resultMap.put("REGASNAME", Deductions);
-        resultMap.put("DEDUCTION_DETAILS", deductionDetails);
-        System.out.println("점수 반환 데이터 : " + resultMap);
 
-        return resultMap;
-    }
+        // ✅ 최종 점수 출력
+        System.out.println("🔥 최종 점수: " + finalScore);
+        System.out.println("📌 감점 내역: " + deductionDetails);
 
-    // ✅ 금액별 점수 차감 로직
-    private int applyDeduction(Map<String, Object> summary, Integer regSeq, List<Map<String, Object>> comcode,
-                               Pattern amountPattern, AtomicBoolean firstDeductionFound, int finalScore,
-                               List<Map<String, Object>> deductionDetails, List<String> comment, List<String> Deductions) {
-        for (Map<String, Object> code : comcode) {
-            if (Integer.parseInt(code.get("REGSEQ").toString()) == regSeq) {
-                String regstand = code.get("REGSTAND").toString();
-                String information = summary.get("Information") != null ? summary.get("Information").toString() : "";
+        Map<String, Object> result = new HashMap<>();
+        result.put("COMMENT", comment);
+        result.put("REGASNAME", Deductions);
+        result.put("GRADE", Grade);
+        result.put("REALSCORE", finalScore);
+        result.put("DEDUCTION_DETAILS", deductionDetails);
 
-                // ✅ 정규식으로 금액 추출
-                Matcher amountMatcher = amountPattern.matcher(information);
-                long bondAmount = amountMatcher.find() ? Long.parseLong(amountMatcher.group(1).replace(",", "")) : 0;
-
-                // ✅ 첫 번째 차감 데이터인지 확인 후 SENSCORE 감점 적용
-                boolean isFirstDeduction = !firstDeductionFound.get() && code.containsKey("SENSCORE");
-
-                if (isFirstDeduction) {
-                    finalScore -= 5;
-                    System.out.println("🔥 첫 번째 차감 데이터 SENSCORE 존재 → 5점 차감!");
-                    firstDeductionFound.set(true);
-                }
-
-                // ✅ SUBSCORE + 금액 차감 적용
-                int subScore = code.get("SUBSCORE") != null ? Integer.parseInt(code.get("SUBSCORE").toString()) : 0;
-                int amountDeduction = calculateDeduction(bondAmount);  // ✅ 금액 차감 적용
-
-                finalScore -= amountDeduction;
-
-                // ✅ A1, A2, A3 점수 차감 로직 추가(금액이 없는 점수기준(복합기준))
-                boolean isComplexDeduction = "A2".equals(regstand) || ("A3".equals(regstand) && bondAmount == 0);
-                if (isComplexDeduction) {
-                    finalScore -= subScore;
-                    System.out.println("🔥 A2 또는 A3 채권최고액 없음 → " + subScore + "점 차감!");
-                }
-                // ✅ HISPOINT에 저장할 값 결정
-                int deductionPoint = isComplexDeduction ? subScore : amountDeduction;
-
-                // SummaryData 날자 스플릿
-                String RecDate = Arrays.toString(summary.get("ReceiptInfo").toString().split("일"));
-                // ✅ 차감 정보 저장
-                Map<String, Object> deductionEntry = new HashMap<>();
-                deductionEntry.put("HISNM", summary.get("Purpose"));
-                deductionEntry.put("HISAMT", bondAmount);
-                deductionEntry.put("HISPOINT", deductionPoint);
-                deductionEntry.put("REGSTAND", regstand);
-                deductionEntry.put("HISFLAG", isFirstDeduction ? "1" : "0"); // ✅ 첫 번째 차감 데이터에만 1 적용
-                deductionEntry.put("REMARK", code.get("REGCOMMENT").toString());
-                deductionDetails.add(deductionEntry);
-
-                // ✅ 코멘트 및 감점사항 추가
-                comment.add(code.get("REGCOMMENT").toString());
-                Deductions.add(code.get("REGASNAME").toString());
-                break;
-            }
-        }
-
-        return finalScore;
+        return result;
     }
 
     // ✅ 금액별 점수 차감 로직

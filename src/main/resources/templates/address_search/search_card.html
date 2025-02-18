@@ -395,7 +395,7 @@
                     let formattedAmt = data.HISAMT ? Number(data.HISAMT).toLocaleString() : data.HISAMT;
 
                     // HISFLAG 값 변환
-                    let flagText = data.HISFLAG === 1 ? "O" : "";
+                    let flagText = data.HISFLAG === "1" ? "O" : "";
 
                     htmlContent += `
                 <tr>

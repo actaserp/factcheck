@@ -1036,13 +1036,18 @@ public class TilkoController {
                     }
                     // 정렬 메서드 호출
                     tilkoParsing.sortByReceiptDate(SummaryCalData);
+                    // 계산사항인 데이터 수집 메서드
+                    List<Map<String, Object>> collectCalData = tilkoParsing.collectSummaryData(SummaryCalData, comcode);
                     // 점수계산
-                    Map<String, Object> resultScore = tilkoParsing.calScore(SummaryCalData,
-                            comcode,
+                    Map<String, Object> finalScoreData = tilkoParsing.calculateFinalScore(collectCalData,
                             Integer.parseInt(lessScore.get("Value").toString()),
-                            gradeData// 안전한 변환 적용
+                            gradeData
                     );
-                    tbRealinfo.setRealScore((Integer) resultScore.get("REALSCORE"));
+                    // 점수, 점수내역
+                    int finalScore = (int) finalScoreData.get("REALSCORE");
+                    List<Map<String, Object>> deductionDetails = (List<Map<String, Object>>) finalScoreData.get("DEDUCTION_DETAILS");
+
+                    tbRealinfo.setRealScore(finalScore);
                     tbRealinfo.setRealPoint(1);
                     tbRealinfo.setRealLastDate(formattedDate);
                     tbRealinfo.setRealGubun(archtec);
@@ -1057,10 +1062,9 @@ public class TilkoController {
                         throw new RuntimeException("REALINFO 저장 실패");
                     }
                     // 차감 데이터 저장
-                    List<Map<String, Object>> DeductionDetails = (List<Map<String, Object>>) resultScore.get("DEDUCTION_DETAILS");
-                    for(Map<String, Object> DeductionDetail : DeductionDetails){
-                        DeductionDetail.put("REALID", REALID);
-                        tilkoService.saveDeductionDetails(DeductionDetail);
+                    for(Map<String, Object> deductionDetail : deductionDetails){
+                        deductionDetail.put("REALID", REALID);
+                        tilkoService.saveDeductionDetails(deductionDetail);
                     }
                     // searchinfo 테이블에 조회기록 저장
                     tilkoService.saveSearchInfo(user.getUsername(), REALID);
@@ -1111,10 +1115,10 @@ public class TilkoController {
                     }
                     // 카드 출력시 필요 데이터
                     resultMap.put("REALID", REALID);
-                    resultMap.put("REALSCORE", resultScore.get("REALSCORE"));
-                    resultMap.put("GRADE", resultScore.get("GRADE"));
-                    resultMap.put("COMMENT", resultScore.get("COMMENT"));
-                    resultMap.put("REGASNAME", resultScore.get("REGASNAME"));
+                    resultMap.put("REALSCORE", finalScoreData.get("REALSCORE"));
+                    resultMap.put("GRADE", finalScoreData.get("GRADE"));
+                    resultMap.put("COMMENT", finalScoreData.get("COMMENT"));
+                    resultMap.put("REGASNAME", finalScoreData.get("REGASNAME"));
                     resultMap.put("ADDRESS", address);
                     resultMap.put("PDFFILENAME", saveFileNM);
                     result.data = resultMap;

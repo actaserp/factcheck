@@ -540,6 +540,7 @@ public class TilkoService {
                         RW.REGSEQ,
                         RW.REGWORD,
                         RW.USEYN,
+                        RW.REGREMARK,
                         R.REGSEQ,
                         R.REGNM,
                         R.REGGROUP,
