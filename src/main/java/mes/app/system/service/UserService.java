@@ -122,7 +122,6 @@ public class UserService {
          up.lang_code,
          au.is_active,
          au.Phone,
-         tx.pernm,
          FORMAT(au.date_joined, 'yyyy-MM-dd') AS date_joined
      FROM
          auth_user au
@@ -130,8 +129,8 @@ public class UserService {
          user_profile up ON up.User_id = au.id
      LEFT JOIN
          user_group ug ON ug.id = up.UserGroup_id
-     LEFT JOIN
-         TB_XUSERS tx ON tx.pernm = au.first_name
+      LEFT JOIN
+         TB_USERINFO tu ON au.username = tu.USERID
      WHERE
          1 = 1
     """);
@@ -158,8 +157,8 @@ public class UserService {
 
         sql.append(" ORDER BY au.date_joined DESC");
 
-//        log.info("Generated SQL: {}", sql.toString());
-//        log.info("SQL Parameters: {}", params.getValues());
+        log.info("Generated SQL: {}", sql.toString());
+        log.info("SQL Parameters: {}", params.getValues());
 
         return sqlRunner.getRows(sql.toString(), params);
     }
