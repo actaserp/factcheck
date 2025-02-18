@@ -146,7 +146,7 @@
             <div class="popup-contents">
                 <div class="table-wrap" style="width: 600px">
                     <div class="write-wrap">
-                        <section>a
+                        <section>
                             <div class="tab-wrap" style="width: 100%;">
                                 <ul class="tab-links" style="margin-bottom: 10px;">
                                 </ul>
@@ -323,14 +323,16 @@
 
             let uniqueComments = new Set(); // 중복 체크용 Set
 
-            // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
-            let formattedDate = comment.DATE
-                ? `${comment.DATE.slice(0, 4)}.${comment.DATE.slice(4, 6)}.${comment.DATE.slice(6, 8)}`
-                : '';
+
 
             if (Array.isArray(parsedData.COMMENT)) {
                 for (let comment of parsedData.COMMENT) {
                     const commentText = comment.REGREMARK || '코멘트 없음';
+
+                    // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
+                    let formattedDate = comment.DATE
+                        ? `${comment.DATE.slice(0, 4)}.${comment.DATE.slice(4, 6)}.${comment.DATE.slice(6, 8)}`
+                        : '날짜 없음';
 
                     // 중복되지 않은 경우에만 추가
                     if (!uniqueComments.has(commentText)) {
