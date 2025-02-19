@@ -432,36 +432,6 @@
         });
     }
 
-    function searchdatatest() {
-        $.ajax({
-            url: '/api/tilko/downloadPDF2',
-            type: 'GET',
-            data: {
-                "GoyuNUM" : '123123123',
-                "address" : '서울특별시 금천구'
-            },
-            async: false,
-            success: function (response) {
-                let data2 = response.data;
-                console.log("data2", data2);
-
-                // API 응답에서 필요한 값 추출 후 sessionStorage에 저장
-                let resultMap = {
-                    "REALSCORE": data2.REALSCORE,
-                    "GRADE": data2.GRADE,
-                    "COMMENT": data2.COMMENT,
-                    "ADDRESS": data2.ADDRESS
-                };
-                sessionStorage.setItem("resultMap", JSON.stringify(resultMap));
-
-                // search_card 페이지로 이동
-                window.location.href = "search_card";
-            },
-            error: function (error) {
-                console.error("Error in API call:", error);
-            }
-        });
-    }
 
 </script>
 </body>

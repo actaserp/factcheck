@@ -191,17 +191,17 @@ public class FactCheckDashBoardService {
 
         String sql = """
                 SELECT
-                    CAST(REQDATE AS DATE) AS DATE,
-                    DATENAME(WEEKDAY, REQDATE) AS DAY,
+                    CAST(INDATEM AS DATE) AS DATE,
+                    DATENAME(WEEKDAY, INDATEM) AS DAY,
                     COUNT(*) AS CNT
                 FROM
-                    TB_SEARCHINFO
+                    TB_REALINFO
                 WHERE
-                    REQDATE >= CAST(GETDATE() - 6 AS DATE)
-                    AND REQDATE < CAST(GETDATE() + 1 AS DATE)
+                    INDATEM >= CAST(GETDATE() - 6 AS DATE)
+                    AND INDATEM < CAST(GETDATE() + 1 AS DATE)
                 GROUP BY
-                    CAST(REQDATE AS DATE),
-                    DATENAME(WEEKDAY, REQDATE)
+                    CAST(INDATEM AS DATE),
+                    DATENAME(WEEKDAY, INDATEM)
                 ORDER BY
                     DATE;
             """;
