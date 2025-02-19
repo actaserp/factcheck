@@ -816,11 +816,11 @@
                   }
                 });
 
-// ✅ 을구(B등기) 테이블 초기화
+                // ✅ 을구(B등기) 테이블 초기화
                 let tableBodyB = document.querySelector("#sub2 table tbody");
                 tableBodyB.innerHTML = "";
 
-// ✅ 중복 제거된 데이터만 테이블에 추가
+                //중복 제거된 데이터만 테이블에 추가
                 uniqueDataB.forEach(entry => {
                   const safeValue = (value) => value && value !== "null" ? value : "-";
 

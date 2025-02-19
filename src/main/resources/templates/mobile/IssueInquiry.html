@@ -734,8 +734,18 @@
                   let tableBody = document.querySelector("#sub1 table tbody");
                   tableBody.innerHTML = ""; // 기존 데이터 초기화
 
-                  details.forEach((entry) => {
-                    // null 또는 undefined를 "-"로 대체하는 함수
+                  // 중복된 A등기 데이터 제거 (RgsAimCont_A 기준)
+                  let seenA = new Set();
+                  let uniqueDataA = details.filter(entry => {
+                    if (seenA.has(entry.RgsAimCont_A)) {
+                      return false; // 중복된 경우 제거
+                    } else {
+                      seenA.add(entry.RgsAimCont_A);
+                      return true;
+                    }
+                  });
+
+                  uniqueDataA.forEach(entry => {
                     const safeValue = (value) => value && value !== "null" ? value : "-";
 
                     // 등기 목적 행
@@ -778,15 +788,22 @@
                   });
                 }
 
-                // 을구
-                if (details.length === 0) {
-                  console.warn("B등기 데이터 없음");
-                } else {
-                  let tableBody = document.querySelector("#sub2 table tbody"); // A등기 방식과 동일하게 변경
-                  tableBody.innerHTML = ""; // 기존 데이터 초기화 추가
+                // ✅ 데이터를 중복 없이 저장
+                let seenB = new Set();
+                let uniqueDataB = details.filter(entry => {
+                  if (seenB.has(entry.RgsAimCont_B)) {
+                    return false; // 중복된 경우 건너뜀
+                  } else {
+                    seenB.add(entry.RgsAimCont_B);
+                    return true;
+                  }
+                });
 
-                  details.forEach((entry) => {
-                    // null 또는 undefined를 "-"로 대체하는 함수
+                // ✅ 을구(B등기) 테이블 초기화
+                let tableBodyB = document.querySelector("#sub2 table tbody");
+                tableBodyB.innerHTML = "";
+
+                  uniqueDataB.forEach(entry => {
                     const safeValue = (value) => value && value !== "null" ? value : "-";
 
                     // 등기목적 행 추가

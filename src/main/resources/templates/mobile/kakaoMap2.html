@@ -497,9 +497,11 @@
                     $("#loading-spinner").hide(); resolve();
                   }).catch(err => {
                     console.error(` 마커 로딩 실패: ${err}`);
+                    $("#loading-spinner").hide(); resolve();
                   });
 
                 } else {
+                  $("#loading-spinner").hide(); resolve();
                   //console.log(`이미 로드된 지역(${regionKey}), API 요청 생략`);
                 }
               }
@@ -1033,7 +1035,6 @@
           if (window.clusterer) {
             console.log(`${regionName} ${gugunName} 지역의 마커 ${newMarkers.length}개 추가`);
             window.clusterer.addMarkers(newMarkers);
-            $("#loading-spinner").hide(); resolve();
           } else {
             console.error("클러스터러 객체가 초기화되지 않음");
           }

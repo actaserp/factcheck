@@ -26,7 +26,7 @@ public class IssueInquiryAPIController {
 
     AjaxResult result = new AjaxResult();
 
-    log.info("등기부 api 조회 들어옴 startDate={}, endDate={}, SearchKeywords={} ", startDate, endDate, SearchKeywords);
+    //log.info("등기부 api 조회 들어옴 startDate={}, endDate={}, SearchKeywords={} ", startDate, endDate, SearchKeywords);
     try {
       List<Map<String, Object>> getList = issueInquiryService.getAPIList(startDate, endDate, SearchKeywords);
 
