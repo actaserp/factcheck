@@ -794,13 +794,12 @@ public class TilkoParsing {
 
     // 구축물 파싱
     public static Map<String, Object> extractGubun(List<String> tableData) {
-
         Map<String, Object> buildingData = new HashMap<>();
         StringBuilder buildingDetails = new StringBuilder();
         boolean collecting = false;
 
         if (tableData.size() > 1) {
-            tableData = tableData.subList(1, tableData.size());
+            tableData = tableData.subList(1, tableData.size()); // 첫 번째 행 제거
         } else {
             return new HashMap<>();
         }
@@ -816,43 +815,36 @@ public class TilkoParsing {
 
             System.out.println("구축물 파싱 진행중 행 : " + Arrays.toString(columns));
 
-            // columns.length가 5인 경우
-            if (columns.length == 5) {
-
-                // 건물 내역 시작점 확인
-                if (!columns[0].trim().isEmpty() && !collecting) {
+            // 컬럼 개수 확인 (5개 이상이어야 유효한 데이터)
+            if (columns.length >= 4) {
+                // 건물 내역 시작점 확인 (순위번호 존재, collecting 시작)
+                if (!columns[0].trim().equalsIgnoreCase("null") && !collecting) {
                     collecting = true;
                     buildingData.put("seq", columns[0].trim());
-                    buildingData.put("address", columns[2].trim());
-                    buildingDetails.append(columns[4].trim());  // 5개일 때 마지막 컬럼은 [3]
-                }
-            }
-            // columns.length가 6인 경우
-            else if (columns.length == 6) {
 
-                // 건물 내역 시작점 확인
-                if (!columns[0].trim().isEmpty() && !collecting) {
-                    collecting = true;
-                    buildingData.put("seq", columns[0].trim());
-                    buildingData.put("address", columns[2].trim());
-                    buildingDetails.append(columns[4].trim()); // 6개일 때 마지막 컬럼은 [4]
-                }
-            }
-            // columns.length가 7인 경우
-            else if (columns.length == 7) {
+                    // 주소 정보 저장 (주소 데이터가 의미 있는 경우만)
+                    if (!columns[2].trim().equalsIgnoreCase("null") && !columns[2].trim().isEmpty()) {
+                        buildingData.put("address", columns[2].trim());
+                    }
 
-                // 건물 내역 시작점 확인
-                if (!columns[0].trim().isEmpty() && !collecting) {
-                    collecting = true;
-                    buildingData.put("seq", columns[0].trim());
-                    buildingData.put("address", columns[2].trim());
-                    buildingDetails.append(columns[4].trim()); // 6개일 때 마지막 컬럼은 [4]
+                    // 건물 내역 동적 추출 (columns[3] 또는 columns[4])
+                    if (!columns[3].trim().equalsIgnoreCase("null") && !columns[3].trim().isEmpty()) {
+                        buildingDetails.append(columns[3].trim());
+                    } else if (!columns[4].trim().equalsIgnoreCase("null") && !columns[4].trim().isEmpty()) {
+                        buildingDetails.append(columns[4].trim());
+                    }
                 }
-            }
-
-            // columns.length가 5보다 작거나 6보다 큰 경우
-            else {
-                System.out.println("경고: 예상치 못한 컬럼 개수(" + columns.length + "), 데이터: " + Arrays.toString(columns));
+                // 첫 번째 컬럼이 null이면서 기존 데이터를 이어받아야 하는 경우
+                else if (columns[0].trim().equalsIgnoreCase("null") && collecting) {
+                    if (!columns[3].trim().equalsIgnoreCase("null") && !columns[3].trim().isEmpty()) {
+                        buildingDetails.append(" ").append(columns[3].trim());
+                    }
+                    if (!columns[4].trim().equalsIgnoreCase("null") && !columns[4].trim().isEmpty()) {
+                        buildingDetails.append(" ").append(columns[4].trim());
+                    }
+                }
+            } else {
+                System.out.println("⚠ 경고: 예상치 못한 컬럼 개수(" + columns.length + "), 데이터: " + Arrays.toString(columns));
             }
         }
 
@@ -861,6 +853,7 @@ public class TilkoParsing {
 
         return buildingData;
     }
+
 
 
 
