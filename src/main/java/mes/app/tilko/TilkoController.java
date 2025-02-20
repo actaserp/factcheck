@@ -496,7 +496,7 @@ public class TilkoController {
             // API 요청 파라미터 설정
             JSONObject json			= new JSONObject();
             json.put("Address"				, address);
-            json.put("Sangtae"				, "2");
+            json.put("Sangtae"				, "0");
             json.put("KindClsFlag"			, "0");
             json.put("Region"				, "0");
             json.put("Page"					, "1");

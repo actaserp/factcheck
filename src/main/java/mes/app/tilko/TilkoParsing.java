@@ -153,10 +153,11 @@ public class TilkoParsing {
     }
     // 정규식을 사용하여 정확한 단어 탐지
     private static boolean matchesWord(String input, String word) {
-        Pattern pattern = Pattern.compile("\\b" + word + "\\b");
+        Pattern pattern = Pattern.compile(Pattern.quote(word)); // 입력된 단어 그대로 찾기
         Matcher matcher = pattern.matcher(input);
         return matcher.find();
     }
+
     // RankNo에서 숫자 부분만 추출하는 메서드 (예: "1-1" → "1")
     public static String extractRankNumber(String rankNo) {
         return rankNo.split("-")[0]; // "-" 기준으로 앞부분만 추출
