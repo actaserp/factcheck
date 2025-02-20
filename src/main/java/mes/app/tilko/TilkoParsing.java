@@ -816,7 +816,7 @@ public class TilkoParsing {
             System.out.println("구축물 파싱 진행중 행 : " + Arrays.toString(columns));
 
             // 컬럼 개수 확인 (5개 이상이어야 유효한 데이터)
-            if (columns.length >= 4) {
+            if (columns.length >= 5) {
                 // 건물 내역 시작점 확인 (순위번호 존재, collecting 시작)
                 if (!columns[0].trim().equalsIgnoreCase("null") && !collecting) {
                     collecting = true;
