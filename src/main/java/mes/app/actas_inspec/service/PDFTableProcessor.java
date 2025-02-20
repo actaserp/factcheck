@@ -17,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class PDFTableProcessor {
@@ -26,43 +27,7 @@ public class PDFTableProcessor {
     private List<String> pageTexts;
     private List<List<Table>> allTables;
 
-//    // PDF 파일을 로드하고 텍스트 및 테이블을 추출하는 메서드
-//    public void loadPDF(File pdfFile) throws IOException {
-//        pdDocument = PDDocument.load(pdfFile);
-//        extractor = new ObjectExtractor(pdDocument);
-//
-//        int numberOfPages = pdDocument.getNumberOfPages();
-//        PDFTextStripper pdfStripper = new PDFTextStripper();
-//
-//        pageTexts = new ArrayList<>();
-//        allTables = new ArrayList<>();
-//
-//        CustomTextStripper customStripper  = new CustomTextStripper("7-1) 계약 보증 조건 및");
-//
-//        for (int page = 1; page <= numberOfPages; page++) {
-//            pdfStripper.setStartPage(page);
-//            pdfStripper.setEndPage(page);
-//
-//            // 페이지의 텍스트와 테이블을 추출하여 저장
-//            String pageText = pdfStripper.getText(pdDocument);
-//            pageTexts.add(pageText);
-//
-//            // 해당 페이지에서 "성능보증 결과" 텍스트의 Y 좌표를 찾음
-//            customStripper.setStartPage(page);
-//            customStripper.setEndPage(page);
-//            customStripper.getText(pdDocument);
-//
-//            float yPosition = customStripper.getYPosition();
-//            if (yPosition != -1) {
-//                System.out.println("Page: " + page + ", Y Position: " + yPosition); // Y 좌표 출력
-//            }
-//
-//            Page pdfPage = extractor.extract(page);
-//            SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-//            List<Table> tables = sea.extract(pdfPage);
-//            allTables.add(tables);
-//        }
-//    }
+
 
     // 이미지 파싱
     public StringBuffer NaverClovaORCAPI(File file){
@@ -82,6 +47,7 @@ public class PDFTableProcessor {
             String boundary = "----" + UUID.randomUUID().toString().replaceAll("-","");
             con.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
             con.setRequestProperty("X-OCR-SECRET", secretKey);
+            con.setRequestProperty("Accept-Charset", "UTF-8");
 
             JSONObject json = new JSONObject();
             json.put("version", "V2");
@@ -107,9 +73,9 @@ public class PDFTableProcessor {
             int responseCode = con.getResponseCode();
             BufferedReader br;
             if(responseCode == 200){
-                br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                br = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
             }else{
-                br = new BufferedReader(new InputStreamReader(con.getErrorStream()));
+                br = new BufferedReader(new InputStreamReader(con.getErrorStream(), StandardCharsets.UTF_8));
             }
             String inputLine;
             StringBuffer response = new StringBuffer();
