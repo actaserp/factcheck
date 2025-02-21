@@ -24,7 +24,7 @@ public class TB_FILEINFO {
     @Column
     String filedate;    // 작성일자
     @Column
-    String CHECKSEQ;   // 테이블 인식자 ( 01 : 공지사항 / 02 : 1:1문의)
+    String CHECKSEQ;   // 테이블 인식자 ( 01 : 공지사항 / 02 : 1:1문의  /  03 : 마케팅과리)
     @Column
     int bbsseq;
     @Column

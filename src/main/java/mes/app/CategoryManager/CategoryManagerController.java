@@ -6,12 +6,14 @@ import mes.domain.entity.UserCode;
 import mes.domain.entity.actasEntity.TB_REGISTER;
 import mes.domain.model.AjaxResult;
 import mes.domain.repository.UserCodeRepository;
-import mes.domain.repository.actasRepository.TB_registerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController

@@ -3,9 +3,11 @@ package mes.domain.repository.factcheckRepository;
 import mes.domain.entity.factcheckEntity.TB_BBSINFO;
 import mes.domain.entity.factcheckEntity.TB_FILEINFO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,4 +22,10 @@ public interface FILEINFORepository extends JpaRepository<TB_FILEINFO, Integer> 
     TB_FILEINFO findBySvnmAndSeq(@Param("fileornm") String fileornm, @Param("bbsseq") int bbsseq);
 
     List<TB_FILEINFO> findByBbsseq(Integer id);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM TB_FILEINFO f WHERE f.bbsseq = :bbsseq AND f.CHECKSEQ = :checkseq")
+    void deleteByBbsseqAndCheckseq(@Param("bbsseq") Integer bbsseq, @Param("checkseq") String checkseq);
+
 }
