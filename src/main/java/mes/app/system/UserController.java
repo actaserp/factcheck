@@ -52,8 +52,6 @@ public class UserController {
 	SqlRunner sqlRunner;
 	@Autowired
 	private TB_RP940Repository tB_RP940Repository;
-	@Autowired
-	private TB_RP945Repository tB_RP945Repository;
 
 	@Autowired
 	TB_xuserService XusersService;
@@ -324,28 +322,6 @@ public class UserController {
 		result.message = "사용자 삭제가 완료되었습니다.";
 		return result;
 	}
-
-	@PostMapping("/modfind")
-	public AjaxResult getBtId(@RequestBody String userid){
-
-		///userid = new UtilClass().removeBrackers(userid);
-		AjaxResult result = new AjaxResult();
-
-		List<TB_RP945> tbRp945 =  tB_RP945Repository.findByUserid(userid);
-
-		if(!tbRp945.isEmpty()){
-			result.success = true;
-			result.data = tbRp945;
-		}else{
-			result.success = false;
-			result.message = "해당 유저에 대한 권한상세정보가 없습니다.";
-		}
-
-
-
-		return result;
-	}
-
 
 	// user 패스워드 셋팅
 	@PostMapping("/passSetting")
