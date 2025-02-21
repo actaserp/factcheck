@@ -254,11 +254,6 @@
     const address1 = $('#address1').val().trim();
     const address2 = $('#address2').val().trim();
 
-    if (!address1) {
-      alert('도로명 주소를 입력해주세요.');
-      return;
-    }
-
     localStorage.setItem('savedAddress1', address1);
     localStorage.setItem('savedAddress2', address2);
 
