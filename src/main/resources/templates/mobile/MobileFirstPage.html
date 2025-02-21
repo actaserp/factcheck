@@ -249,7 +249,6 @@
     });
   });
 
-
   // 주소를 로컬스토리지에 저장
   function saveAddressToLocalStorage() {
     const address1 = $('#address1').val().trim();
@@ -270,7 +269,6 @@
   function handleSearchButtonClick() {
     saveAddressToLocalStorage(); // 새 주소 저장
     clearPreviousSearchResults(); // 기존 검색 결과 삭제
-    searchGoyuList(); // 새로운 검색 실행
   }
 
   // 기존 검색 결과 삭제 (올바른 삭제 방식)

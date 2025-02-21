@@ -99,34 +99,6 @@ public class AccountController {
   @Autowired
   private TB_XuserRepository tB_XuserRepository;
 
-
- /* @GetMapping("/login")
-  public ModelAndView loginPage(
-      HttpServletRequest request,
-      HttpServletResponse response,
-      HttpSession session, Authentication auth) {
-
-
-    // User-Agent를 기반으로 모바일 여부 감지
-    String userAgent = request.getHeader("User-Agent").toLowerCase();
-    boolean isMobile = userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone");
-
-    // 모바일이면 "mlogin" 뷰로, 아니면 "login" 뷰로 설정
-    ModelAndView mv = new ModelAndView(isMobile ? "mlogin" : "login");
-
-    Map<String, Object> userInfo = new HashMap<String, Object>();
-    Map<String, Object> gui = new HashMap<String, Object>();
-
-    mv.addObject("userinfo", userInfo);
-
-    mv.addObject("gui", gui);
-    if (auth != null) {
-      SecurityContextLogoutHandler handler = new SecurityContextLogoutHandler();
-      handler.logout(request, response, auth);
-    }
-
-    return mv;
-  }*/
  @GetMapping("/login")
  public ModelAndView loginPage(
      HttpServletRequest request,

@@ -659,6 +659,7 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         Alert.confirm('', '로그아웃하시겠습니까?', function () {
             localStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('isLoggedIn');
 
             i18n.resetData();
             location.href = '/logout';
