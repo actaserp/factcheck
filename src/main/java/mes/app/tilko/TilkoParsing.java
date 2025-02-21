@@ -526,10 +526,10 @@ public class TilkoParsing {
                 currentRow.clear();
 
                 currentRow.put("RankNo", columns[0].trim());
-                currentRow.put("RgsAimCont", columns[1].trim());
-                currentRow.put("Receve", columns[2].trim());
-                currentRow.put("RgsCaus", columns[3].trim());
-                currentRow.put("NomprsAndEtc", columns[4].trim());
+                currentRow.put("RgsAimCont", sanitizeValue(columns[1]));
+                currentRow.put("Receve", sanitizeValue(columns[2]));
+                currentRow.put("RgsCaus", sanitizeValue(columns[3]));
+                currentRow.put("NomprsAndEtc", sanitizeValue(columns[4]));
 
 //                // "매매" 포함 여부 확인 → TradeAmount에 추가
 //                if (columns[3].contains("매매")) {
@@ -555,10 +555,19 @@ public class TilkoParsing {
 //                    TradeAmount.add(tradeEntry);
 //                }
             } else {
-                currentRow.put("RgsAimCont", currentRow.get("RgsAimCont") + " " + columns[1].trim());
-                currentRow.put("Receve", currentRow.get("Receve") + " " + columns[2].trim());
-                currentRow.put("RgsCaus", currentRow.get("RgsCaus") + " " + columns[3].trim());
-                currentRow.put("NomprsAndEtc", currentRow.get("NomprsAndEtc") + " " + columns[4].trim());
+                // 기존 데이터에 병합하되 null 또는 "null"인 경우 병합하지 않음
+                if (Objects.nonNull(columns[1]) && !"null".equalsIgnoreCase(columns[1].trim()) && !columns[1].trim().isEmpty()) {
+                    currentRow.put("RgsAimCont", currentRow.get("RgsAimCont") + " " + columns[1].trim());
+                }
+                if (Objects.nonNull(columns[2]) && !"null".equalsIgnoreCase(columns[2].trim()) && !columns[2].trim().isEmpty()) {
+                    currentRow.put("Receve", currentRow.get("Receve") + " " + columns[2].trim());
+                }
+                if (Objects.nonNull(columns[3]) && !"null".equalsIgnoreCase(columns[3].trim()) && !columns[3].trim().isEmpty()) {
+                    currentRow.put("RgsCaus", currentRow.get("RgsCaus") + " " + columns[3].trim());
+                }
+                if (Objects.nonNull(columns[4]) && !"null".equalsIgnoreCase(columns[4].trim()) && !columns[4].trim().isEmpty()) {
+                    currentRow.put("NomprsAndEtc", currentRow.get("NomprsAndEtc") + " " + columns[4].trim());
+                }
             }
         }
 
@@ -581,6 +590,11 @@ public class TilkoParsing {
 
         return result;
     }
+    // "null" 또는 null 값으로 값이 넘어올 경우 빈값처리
+    private static String sanitizeValue(String value) {
+        return (value == null || value.trim().equalsIgnoreCase("null")) ? "" : value.trim();
+    }
+
 
     // 을구 데이터 수집
     public static Map<String, Object> parseeulguTable(List<String> tableData) {
@@ -609,10 +623,10 @@ public class TilkoParsing {
                 currentRow.clear();
 
                 currentRow.put("RankNo", columns[0].trim());
-                currentRow.put("RgsAimCont", columns[1].trim());
-                currentRow.put("Receve", columns[2].trim());
-                currentRow.put("RgsCaus", columns[3].trim());
-                currentRow.put("NomprsAndEtc", columns[4].trim());
+                currentRow.put("RgsAimCont", sanitizeValue(columns[1]));
+                currentRow.put("Receve", sanitizeValue(columns[2]));
+                currentRow.put("RgsCaus", sanitizeValue(columns[3]));
+                currentRow.put("NomprsAndEtc", sanitizeValue(columns[4]));
 
                 // "담보" 데이터 수집
                 if (columns[3].contains("담보")) {
@@ -636,10 +650,19 @@ public class TilkoParsing {
                     leaseData.add(leaseEntry);
                 }
             } else {
-                currentRow.put("RgsAimCont", currentRow.get("RgsAimCont") + " " + columns[1].trim());
-                currentRow.put("Receve", currentRow.get("Receve") + " " + columns[2].trim());
-                currentRow.put("RgsCaus", currentRow.get("RgsCaus") + " " + columns[3].trim());
-                currentRow.put("NomprsAndEtc", currentRow.get("NomprsAndEtc") + " " + columns[4].trim());
+                // 기존 데이터에 병합하되 null 또는 "null"인 경우 병합하지 않음
+                if (Objects.nonNull(columns[1]) && !"null".equalsIgnoreCase(columns[1].trim()) && !columns[1].trim().isEmpty()) {
+                    currentRow.put("RgsAimCont", currentRow.get("RgsAimCont") + " " + columns[1].trim());
+                }
+                if (Objects.nonNull(columns[2]) && !"null".equalsIgnoreCase(columns[2].trim()) && !columns[2].trim().isEmpty()) {
+                    currentRow.put("Receve", currentRow.get("Receve") + " " + columns[2].trim());
+                }
+                if (Objects.nonNull(columns[3]) && !"null".equalsIgnoreCase(columns[3].trim()) && !columns[3].trim().isEmpty()) {
+                    currentRow.put("RgsCaus", currentRow.get("RgsCaus") + " " + columns[3].trim());
+                }
+                if (Objects.nonNull(columns[4]) && !"null".equalsIgnoreCase(columns[4].trim()) && !columns[4].trim().isEmpty()) {
+                    currentRow.put("NomprsAndEtc", currentRow.get("NomprsAndEtc") + " " + columns[4].trim());
+                }
             }
         }
 
