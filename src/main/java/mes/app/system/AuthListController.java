@@ -8,7 +8,6 @@ import mes.domain.entity.TB_RP940;
 import mes.domain.entity.User;
 import mes.domain.model.AjaxResult;
 import mes.domain.repository.TB_RP940Repository;
-import mes.domain.repository.TB_RP945Repository;
 import mes.domain.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -32,9 +31,6 @@ public class AuthListController {
 
     @Autowired
     TB_RP940Repository tb_rp940Repository;
-
-    @Autowired
-    TB_RP945Repository tb_rp945Repository;
 
     @Autowired
     private UserService userService;
@@ -191,7 +187,7 @@ public class AuthListController {
     }
 
 
-    @PostMapping("/delete")
+   /* @PostMapping("/delete")
     @Transactional
     public AjaxResult delete(@RequestParam(value = "userid") String userid){
         AjaxResult result = new AjaxResult();
@@ -215,7 +211,7 @@ public class AuthListController {
         result.success = true;
         result.message = "성공";
         return result;
-    }
+    }*/
 
     @PostMapping("/approve")
     @Transactional

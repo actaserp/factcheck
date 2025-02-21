@@ -1,16 +1,12 @@
 package mes.app.system.service;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mes.domain.entity.UserCode;
-import mes.domain.repository.TB_RP980Repository;
 import mes.domain.repository.UserCodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -32,9 +28,6 @@ public class UserCodeService {
 
 	@Autowired
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-	@Autowired
-	private TB_RP980Repository tbRp980Repository;
 
 	public List<Map<String, Object>> getCodeList(String txtCode) {
 
