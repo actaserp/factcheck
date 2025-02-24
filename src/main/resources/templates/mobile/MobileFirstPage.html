@@ -216,8 +216,13 @@
 
   function init() {
     // ✅ 로그인 여부 확인
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const loginButton = document.getElementById('login'); // 로그인 버튼 선택
+    const localLogged = localStorage.getItem('isLoggedIn');
+
+    if(localLogged === 'true'){
+      localStorage.removeItem('isLoggedIn');
+    }
 
     if (isLoggedIn === 'true') {
       console.log("✅ 로그인 유지됨: 현재 페이지 유지");
@@ -225,6 +230,7 @@
       // 로그인 상태이면 버튼 숨기기
       if (loginButton) {
         loginButton.style.display = "none";
+        //sessionStorage.removeItem('isLoggedIn');
       }
     } else {
       console.log("🔒 로그인 정보 없음: 로그인 하러 가기 버튼 보이기");
@@ -269,8 +275,8 @@
   // 기존 검색 결과 삭제 (올바른 삭제 방식)
   function clearPreviousSearchResults() {
     $('#addressWrap').empty(); // 기존 검색 결과 삭제
-    localStorage.removeItem('savedAddress1'); // 도로명 주소 삭제
-    localStorage.removeItem('savedAddress2'); // 상세 주소 삭제
+    localStorage.removeItem('address1'); // 도로명 주소 삭제
+    localStorage.removeItem('address2'); // 상세 주소 삭제
   }
 
   // 고유번호 조회
@@ -278,13 +284,14 @@
 
   function searchGoyuList() {
 
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
 
     if (isLoggedIn !== 'true') {
       console.log("로그인 필요: 로그인 페이지로 이동");
       saveAddressToLocalStorage();
       // Alert 확인 후 로그인 페이지로 이동하도록 수정
       Alert.alert("로그인이 필요합니다.", "로그인 페이지로 이동합니다.", function () {
+
         window.location.href = '/mobile/mlogin';
       });
 
