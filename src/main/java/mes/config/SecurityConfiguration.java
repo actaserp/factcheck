@@ -56,7 +56,6 @@ public class SecurityConfiguration {
     http.authorizeRequests().mvcMatchers("/login", "/logout", "/useridchk/**", "/Register/save", "/mobile/save", "/authentication", "/UserInfo").permitAll()
         .mvcMatchers("/api/sales/upload/**", "/api/gene/**").permitAll()  // 모든 사용자에게 허용 (임시)
         .mvcMatchers("/user-codes/**", "/user-auth/**", "/api/QnA/**").permitAll()
-//				.mvcMatchers("/api/sales/upload/**").authenticated()  // 모든 인증된 사용자에게 허용 (임시)
         .mvcMatchers("/setup").hasAuthority("admin")    // hasRole -> hasAuthority로 수정
         .mvcMatchers("/MobileFirstPage").permitAll()  // 모바일 첫 페이지 접근 허용
         .mvcMatchers("/api/IssueInquiry/checkLogin", "/mobile/mlogin", "/api/withdraw/delete/**").permitAll()
