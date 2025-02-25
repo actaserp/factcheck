@@ -30,6 +30,7 @@ import javax.management.ObjectName;
 import javax.transaction.Transactional;
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -39,6 +40,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -862,7 +864,11 @@ public class TilkoController {
             System.out.println("Request Payload: " + json.toJSONString());
 
             // API 호출
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(60, TimeUnit.SECONDS) // 서버 연결 타임아웃 (기본값: 10초)
+                    .readTimeout(60, TimeUnit.SECONDS)    // 응답 읽기 타임아웃 (기본값: 10초)
+                    .writeTimeout(60, TimeUnit.SECONDS)   // 요청 쓰기 타임아웃 (기본값: 10초)
+                    .build();
 
             Request request = new Request.Builder()
                     .url(url)
@@ -870,7 +876,14 @@ public class TilkoController {
                     .addHeader("ENC-KEY", aesCipherKey)
                     .post(RequestBody.create(MediaType.get("application/json; charset=utf-8"), json.toJSONString())).build();
 
-            Response response = client.newCall(request).execute();
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+            } catch (SocketTimeoutException e) {
+                System.err.println("❌ 요청이 타임아웃되었습니다: " + e.getMessage());
+            } catch (IOException e) {
+                System.err.println("❌ 네트워크 오류 발생: " + e.getMessage());
+            }
             String responseStr = response.body().string();
 //            System.out.println("responseStr: " + responseStr);
             // JSON 파싱
@@ -937,7 +950,7 @@ public class TilkoController {
                     TB_PDFSEQ pdfRecord = new TB_PDFSEQ();
                     pdfRecord.setPdfFilename(pdfMidNM);
                     TB_PDFSEQ savedRecord = pdfseqRepository.save(pdfRecord);
-                    saveFileNM = savedRecord.getSeq() + "." + user.getUsername()+ "_" + pdfMidNM;
+                    saveFileNM = savedRecord.getSeq() + "." + user.getUsername() + "_" + pdfMidNM;
                     outputFilePath = uploadDir + saveFileNM;
 
                     try (OutputStream os = new FileOutputStream(outputFilePath)) {
@@ -1065,7 +1078,7 @@ public class TilkoController {
                         throw new RuntimeException("REALINFO 저장 실패");
                     }
                     // 차감 데이터 저장
-                    for(Map<String, Object> deductionDetail : deductionDetails){
+                    for (Map<String, Object> deductionDetail : deductionDetails) {
                         deductionDetail.put("REALID", REALID);
                         tilkoService.saveDeductionDetails(deductionDetail);
                     }
@@ -1084,35 +1097,35 @@ public class TilkoController {
                     RegisterMap.put("WksbiAddress", address);
                     RegisterMap.put("Address", address);
                     tilkoService.saveTilkoXML(RegisterMap);
-                    for (Map<String, Object> item : REALAOWNDATA){
+                    for (Map<String, Object> item : REALAOWNDATA) {
                         item.put("REALID", REALID);
                         tilkoService.saveRegisterDataK(item);
                     }
-                    for (Map<String, Object> item : REALBOWNDATA){
+                    for (Map<String, Object> item : REALBOWNDATA) {
                         item.put("REALID", REALID);
                         tilkoService.savedataE(item);
                     }
-                    for (Map<String, Object> item : TradeAmount){
+                    for (Map<String, Object> item : TradeAmount) {
                         item.put("REALID", REALID);
                         tilkoService.saveTradeAmount(item);
                     }
-                    for (Map<String, Object> item : RegisterDataGItemsList){
+                    for (Map<String, Object> item : RegisterDataGItemsList) {
                         item.put("REALID", REALID);
                         tilkoService.saveRegisterDataG(item);
                     }
-                    for (Map<String, Object> item : RegisterDataHItemsList){
+                    for (Map<String, Object> item : RegisterDataHItemsList) {
                         item.put("REALID", REALID);
                         tilkoService.savedataH(item);
                     }
-                    for (Map<String, Object> item : SummaryDataEMap){
+                    for (Map<String, Object> item : SummaryDataEMap) {
                         item.put("REALID", REALID);
                         tilkoService.saveSummaryDataE(item);
                     }
-                    for (Map<String, Object> item : SummaryDataKMap){
+                    for (Map<String, Object> item : SummaryDataKMap) {
                         item.put("REALID", REALID);
                         tilkoService.saveSummaryDataK(item);
                     }
-                    for (Map<String, Object> item : SummaryDataAMap){
+                    for (Map<String, Object> item : SummaryDataAMap) {
                         item.put("REALID", REALID);
                         tilkoService.saveSummaryDataA(item);
                     }

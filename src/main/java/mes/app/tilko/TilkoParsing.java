@@ -320,9 +320,16 @@ public class TilkoParsing {
         for (Map<String, Object> summary : collectedData) {
             String regSeq = summary.get("REGSEQ").toString();
             String regStand = summary.get("REGSTAND").toString();
-            boolean hasAmount = summary.get("containsAmount").equals(1);
-            int bondAmount = summary.get("Amount") != null ? Integer.parseInt(summary.get("Amount").toString().replace(",", "")) : 0;
+            Object containsAmountObj = summary.get("containsAmount");
+            boolean hasAmount = (containsAmountObj != null && containsAmountObj.toString().equals("1"));
 
+            long bondAmount = 0;
+            if (summary.get("Amount") instanceof Number) {
+                bondAmount = ((Number) summary.get("Amount")).longValue();
+            } else if (summary.get("Amount") != null) {
+                String amountStr = summary.get("Amount").toString().replace(",", "").trim();
+                bondAmount = amountStr.matches("\\d+") ? Long.parseLong(amountStr) : 0;
+            }
             int deduction = 0;
 
             if ("A1".equals(regStand) && hasAmount) {
