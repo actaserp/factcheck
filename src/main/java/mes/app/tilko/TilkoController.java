@@ -752,62 +752,6 @@ public class TilkoController {
         // 점수계산시 SummaryData
         List<Map<String, Object>> SummaryCalData = new ArrayList<>();
 
-        // 기존 유저 조회정보에서 동일한 고유번호가 있는지 확인후 없다면 통신 있다면 자료 가져오기
-        Map<String, Object> savedGoyu = tilkoService.isGoyuNumMatched(user.getUsername(), address, GoyuNUM);
-        if (savedGoyu != null && !savedGoyu.isEmpty()) {
-            // 기존 조회데이터 조회 및 조회수 업데이트
-            int realId = ((Number) savedGoyu.get("REALID")).intValue();
-            try {
-                tilkoService.countREALINFO(realId);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-            int realScore = (int) savedGoyu.get("REALSCORE");
-            String Grade = "";
-            // 등급 관련 데이터(S등급 등) 데이터 불러오기
-            List<Map<String, Object>> gradeData = tilkoService.getGradeData();
-            // 저장되어있는 REALID 기반 COMMENT및 차감요소 불러오기
-            List<Map<String, Object>> savedDeduction = tilkoService.getDeduction(realId);
-            List<Map<String, Object>> comments = new ArrayList<>();
-            if (savedDeduction != null && !savedDeduction.isEmpty()) {  // ✅ null 체크 및 빈 리스트 방지
-                for (Map<String, Object> item : savedDeduction) {
-                    if (item.get("REMARK") != null) {
-                        Map<String, Object> cardData = new HashMap<>();
-                        cardData.put("DATE", item.get("HISDATE"));
-                        cardData.put("REGREMARK", item.get("REMARK"));
-                        comments.add(cardData);
-                    }
-                }
-            }
-            // **등급 설정**
-            for (Map<String, Object> grade : gradeData) {
-                int maxScore = (Integer) grade.get("GRSCORE01");
-                int minScore = (Integer) grade.get("GRSCORE02");
-
-                if (minScore <= realScore && maxScore >= realScore) {
-                    Grade = grade.get("GRID").toString();
-                    break;
-                }
-            }
-
-            if (Grade.isEmpty()) {
-                Grade = "F";
-            }
-            result.message = "기존 조회데이터가 존재합니다.";
-            resultMap.put("REALID", savedGoyu.get("REALID"));
-            resultMap.put("REALSCORE", savedGoyu.get("REALSCORE"));
-            resultMap.put("GRADE", Grade);
-            resultMap.put("COMMENT", comments);
-            resultMap.put("REGASNAME", savedGoyu.get("REGASNAME"));
-            resultMap.put("ADDRESS", address);
-            resultMap.put("PDFFILENAME", savedGoyu.get("PDFFILENAME"));
-            result.data = resultMap;
-            return result;
-        }else{
-            System.out.println("새로 데이터를 조회합니다.");
-        }
-
-
         String irosID = "aarmani";
         String irosPWD = "jky@6400";
         String irosNUM1 = "Q9864909";

@@ -69,32 +69,54 @@ public class MapService {
         System.out.println("regugun: " + regugun);
 
         String sql = """
-    SELECT
-        RESIDO, REGUGUN, REALSCORE, REALADD, REALID,
-        COUNT(*) OVER() AS total_count,
-        AVG(REALSCORE) OVER() AS avg_score,
-
-        CASE
-            WHEN CHARINDEX(' ', REALADD) > 0
-            THEN STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')
-            ELSE REALADD
-        END AS SHORT_ADDR_1,
-
-        CASE
-            WHEN :regugun IS NOT NULL
-                AND CHARINDEX(' ',
-                    STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')) > 0
-            THEN STUFF(
-                STUFF(REALADD, 1, CHARINDEX(' ', REALADD), ''),
-                1, CHARINDEX(' ', STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')), ''
-            )
-            ELSE STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')
-        END AS SHORT_ADDR
-
-    FROM TB_REALINFO
-    WHERE RESIDO LIKE :resido
-    AND (COALESCE(:regugun, '') = '' OR REGUGUN = :regugun)
-    ORDER BY REALSCORE DESC;
+                WITH FilteredRealInfo AS (
+                    SELECT
+                        RI.REALID, RI.RESIDO, RI.REGUGUN, RI.REALADD, RI.REALSCORE, RI.REQDATE
+                    FROM TB_REALINFO RI
+                    WHERE RI.RESIDO LIKE :resido
+                    AND (COALESCE(:regugun, '') = '' OR RI.REGUGUN = :regugun)
+                ),
+                RankedRealInfo AS (
+                    SELECT
+                        RIX.REALID,
+                        RIX.PinNo,
+                        RIX.WksbiAddress,
+                        RIX.Address,
+                        MAX(RIX.REALID) OVER (PARTITION BY RIX.PinNo) AS MaxRealID
+                    FROM TB_REALINFOXML RIX
+                    JOIN FilteredRealInfo RI ON RI.REALID = RIX.REALID
+                )
+                SELECT
+                	RI.REALID,
+                    RI.RESIDO,
+                    RI.REGUGUN,
+                    RI.REALADD,
+                    RI.REALSCORE,
+                    RI.REQDATE,
+                    RIX.PinNo,
+                    RIX.WksbiAddress,
+                    RIX.Address,
+                    COUNT(*) OVER() AS total_count,
+                    AVG(REALSCORE) OVER() AS avg_score,
+                    CASE
+                        WHEN CHARINDEX(' ', REALADD) > 0
+                        THEN STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')
+                        ELSE REALADD
+                    END AS SHORT_ADDR_1,
+                    CASE
+                        WHEN :regugun IS NOT NULL
+                            AND CHARINDEX(' ',
+                                STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')) > 0
+                        THEN STUFF(
+                            STUFF(REALADD, 1, CHARINDEX(' ', REALADD), ''),
+                            1, CHARINDEX(' ', STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')), ''
+                        )
+                        ELSE STUFF(REALADD, 1, CHARINDEX(' ', REALADD), '')
+                    END AS SHORT_ADDR
+                FROM RankedRealInfo RIX
+                JOIN TB_REALINFO RI ON RI.REALID = RIX.MaxRealID
+                WHERE RIX.REALID = RIX.MaxRealID
+                ORDER BY RI.REALSCORE DESC;
     """;
 
         return sqlRunner.getRows(sql, params);
