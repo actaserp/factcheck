@@ -194,7 +194,7 @@ public class IssueInquiryService {
     MapSqlParameterSource params = new MapSqlParameterSource();
     params.addValue("realid", realid);
     String sql = """
-     SELECT tr.REALID, tr.REALADD, tr.REGDATE, tr.INDATEM, tr.REALSCORE, tr2.PinNo\s
+     SELECT tr.REALID, tr.REALADD, tr.REGDATE, tr.INDATEM, tr.REALSCORE, tr2.PinNo
            FROM TB_REALINFO tr
            LEFT JOIN TB_REALINFOXML tr2 ON tr2.REALID = tr.REALID
            WHERE tr2.PinNo = (

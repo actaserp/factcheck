@@ -1153,7 +1153,7 @@
       let realId = item.REALID;
       let realScore = item.REALSCORE || '미확인';
 
-      let groupKey = `${indateTime}_${realId}`; //REALSCORE 제거하여 같은 REALID는 한 그룹으로 묶기
+      let groupKey = `${indateTime}_${realId}`;
 
       if (!groupedData[groupKey]) {
         groupedData[groupKey] = {
@@ -1166,7 +1166,15 @@
     });
 
     Object.keys(groupedData)
-      .sort((a, b) => b.localeCompare(a)) // 최신 발급일자가 먼저 오도록 정렬
+      .sort((a, b) => {
+        let [indateTimeA] = a.split("_");
+        let [indateTimeB] = b.split("_");
+
+        let dateA = new Date(indateTimeA);
+        let dateB = new Date(indateTimeB);
+        return dateB - dateA;
+      })
+
       .forEach(groupKey => {
         let { items, realScores } = groupedData[groupKey];
         let [indateTime, realId] = groupKey.split("_"); // 그룹 키에서 날짜와 REALID 분리
