@@ -275,7 +275,7 @@ public class MapController {
     String gugun = parts.length > 1 ? parts[1] : ""; // 구/군
 
     List<Map<String, Object>> getMarker = mapService.getMarkersForRegion(sido, gugun);
-//    log.info("마커 데이터(받아온거) ={} ", getMarker);
+    //log.info("마커 데이터(받아온거) ={} ", getMarker);
 
     // 각 마커 데이터에 좌표 추가
     for (Map<String, Object> marker : getMarker) {
@@ -291,7 +291,7 @@ public class MapController {
       if (coordinates.get("success").equals(true)) {
         marker.put("lat", coordinates.get("lat"));
         marker.put("lng", coordinates.get("lng"));
-//        log.info("좌표 변환 성공: {} -> lat: {}, lng: {}", address, coordinates.get("lat"), coordinates.get("lng"));
+        //log.info("좌표 변환 성공: {} -> lat: {}, lng: {}", address, coordinates.get("lat"), coordinates.get("lng"));
 
         // avg_score를 기반으로 등급 매기기
         if (marker.get("avg_score") != null) {

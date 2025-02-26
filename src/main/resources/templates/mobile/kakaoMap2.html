@@ -160,10 +160,9 @@
   </div> <!-- //mobile-layout-popup end -->
 
   <div class="mobile-layout-popup" >
-
-    <div class="popup-wrapper" id="popup-own">
+    <div class="popup-wrapper" id="popup-details">
       <div class="popup-title">
-        <h3>상세 내역</h3>
+        <h3>이력 내역</h3>
         <a title="팝업닫기" class="btn-popup-close">
           <img src="/assets_mobile/images/icon/btn-popup-close.svg" alt="닫기">
         </a>
@@ -303,13 +302,13 @@
 
   //   등급별 클러스터 색상 매핑
   var gradeColors = {
-    "S": "#B0E57C",   // 연두색 (매우 안전)
-    "A": "#00A36C",   // 초록색 (안전)
-    "B": "#3399FF",   // 파란색 (보통)
-    "C": "#FFCC00",   // 노란색 (주의)
-    "D": "#FF9900",   // 진한 주황색 (경고)
-    "E": "#FF3333",   // 빨간색 (위험)
-    "F": "#000000"    // 검은색 (매우 위험)
+    "S": "#FFFFFF",  // S 등급(안심) → 흰색
+    "A": "#119891",  // A 등급(관심) → 초록색
+    "B": "#3069B3",  // B 등급(주의) → 파란색
+    "C": "#FFC107",  // C 등급(경계) → 노랑색
+    "D": "#FF8C00",  // D 등급(불안) → 주황색
+    "E": "#EC193A",  // E 등급(심각) → 빨간색
+    "F": "#1D1D1D"   // F 등급(위험) → 검정색
   };
 
   // 지도 초기화 함수
@@ -517,7 +516,7 @@
               success: function (response) {
                 if (response.success) {
                   // 추가 데이터를 동적으로 리스트에 반영
-                  //console.log("추가 데이터 로드 성공:", response.markers);
+                  console.log("추가 데이터 로드 성공:", response.markers);
                   updateSearchResults(response.markers);
                 } else {
                   console.warn("추가 데이터 로드 실패");
@@ -584,136 +583,206 @@
 
   // 클릭 이벤트 핸들러 함수 (REALID와 주소 전달)
   function handleClick(realid, address) {
+    console.log("주소 상세이력 클릭 : ", realid, address);
     $.ajax({
-      url: "/api/Map/getOwn",
+      url: "/api/IssueInquiry/popupDetails",
       type: "GET",
       data: { realid: realid },
       headers: {
         'X-CSRF-Token': $('[name=_csrf]').val()
       },
       success: function (response) {
+        console.log("서버에서 받은 데이터(이력 보기):", response);
+
         if (response.success) {
+          let regDateMap = {};
+          let regScoreMap = {};
+
+          if (response.findPinNO && response.findPinNO.length > 0) {
+            response.findPinNO.forEach(item => {
+              if (item.REALID) {
+                regDateMap[item.REALID] = item.INDATEM || '';
+                regScoreMap[item.REALID] = item.REALSCORE || '';
+              }
+            });
+          }
+
           let listData = {
             REALID: realid,
             SHORT_ADDR: address // 받아온 주소값 사용
           };
 
-          // 데이터 가공 후 updatePopupContent 호출
-          let transformedDataA = response.dataA ? response.dataA.map(item => ({
+          let transformedDataA = response.findnK ? response.findnK.map(item => ({
             ...item,
+            INDATEM: regDateMap[item.REALID] || '미확인',
+            REALSCORE: regScoreMap[item.REALID] || '미확인',
             displayText: `[갑구] ${item.RgsAimCont}`
           })) : [];
 
-          let transformedDataB = response.dataB ? response.dataB.map(item => ({
+          let transformedDataB = response.findnE ? response.findnE.map(item => ({
             ...item,
+            INDATEM: regDateMap[item.REALID] || '미확인',
+            REALSCORE: regScoreMap[item.REALID] || '미확인',
             displayText: `[을구] ${item.RgsAimCont}`
           })) : [];
 
           updatePopupContent(transformedDataA, transformedDataB, listData);
           $('.list-card-wrap').scrollTop(0);
         } else {
-          Alert.alert('',"해당 물건에 대한 정보를 찾을 수 없습니다.");
+          console.warn("데이터 없음:", response.message);
+          Alert.alert('', "해당 물건에 대한 정보를 찾을 수 없습니다.\n 관자자에게 문의해 주세요");
         }
       },
       error: function (xhr, status, error) {
-        // 에러 처리
+        console.error("AJAX 요청 실패:", status, error);
         Alert.alert("서버와의 통신 중 오류가 발생했습니다.");
       }
     });
   }
 
-  function updatePopupContent(dataA, dataB, listData) {
-    let popup = document.getElementById('popup-own');
+  function formatDateTo12Hour(indatem) {
+    if (!indatem) return "미확인";
+
+    let dateObj = new Date(indatem);
+    let year = dateObj.getFullYear();
+    let month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    let day = String(dateObj.getDate()).padStart(2, '0');
+    let hours = dateObj.getHours();
+    let minutes = String(dateObj.getMinutes()).padStart(2, '0');
+    let period = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12 || 12; // 12시간제 변환
+
+    return `${year}-${month}-${day} ${hours}:${minutes} ${period}`;
+  }
+
+  function updatePopupContent(findnK, findnE, listData) {
+    let popup = document.getElementById('popup-details');
     let overlay = document.querySelector('.popup-overlay');
     let listContainer = document.querySelector('.list-card-wrap');
-    let addressField = document.querySelector('#popup-own .ticket-tit dd');
+    let addressField = document.querySelector('#popup-details .ticket-tit dd');
 
-    // 주소 업데이트 (null 또는 undefined일 경우 빈 문자열)
     addressField.textContent = listData?.SHORT_ADDR ?? '주소 정보 없음';
 
-    // 팝업 초기화
     listContainer.innerHTML = '';
 
-    let allData = [];
+    let allData = [...findnK.map(item => ({ ...item, type: 'K' })),
+      ...findnE.map(item => ({ ...item, type: 'E' }))];
 
-    // A 데이터 추가
-    if (dataA && dataA.length > 0) {
-      dataA.forEach(item => {
-        allData.push({ ...item, type: 'A' });
-      });
-    }
-
-    // B 데이터 추가
-    if (dataB && dataB.length > 0) {
-      dataB.forEach(item => {
-        allData.push({ ...item, type: 'B' });
-      });
-    }
-
-    // 데이터가 없을 경우
     if (allData.length === 0) {
+      console.warn("등기부등본 데이터 없음");
+      Alert.alert("", "해당 물건의 등기부등본 정보가 없습니다.");
       listContainer.innerHTML = '<p style="text-align: center; padding: 10px;">해당 물건의 등기부등본 정보가 없습니다.</p>';
-    } else {
-      allData.forEach(item => {
-        let formatValue = (value) => {
-          return value === null || value === undefined || value.toString().trim().toLowerCase() === "null"
-            ? '' // 빈칸 처리
-            : value;
+      return;
+    }
+
+    //`groupKey`에서 `realScore`를 제외 (같은 날짜 + REALID는 하나의 그룹)
+    let groupedData = {};
+    allData.forEach(item => {
+      let indateTime = formatDateTo12Hour(item.INDATEM);  //여기에서 12시간제로 변환
+      let realId = item.REALID;
+      let realScore = item.REALSCORE || '미확인';
+
+      let groupKey = `${indateTime}_${realId}`;
+
+      if (!groupedData[groupKey]) {
+        groupedData[groupKey] = {
+          items: [],
+          realScores: new Set() // 점수 여러 개가 있을 경우 저장
         };
+      }
+      groupedData[groupKey].items.push(item);
+      groupedData[groupKey].realScores.add(realScore); // 점수 저장 (중복 제거)
+    });
 
-        // A와 B를 구분하여 카드 색상 및 구분 명칭 적용
-        let cardClass = item.type === 'A' ? 'card-red' : 'card-blue';
-        let statusClass = item.type === 'A' ? 'sta-red' : 'sta-blue';
-        let sectionName = item.type === 'A' ? '갑구' : '을구'; // A는 '갑구', B는 '을구'
+    Object.keys(groupedData)
+      .sort((a, b) => {
+        let [indateTimeA] = a.split("_");
+        let [indateTimeB] = b.split("_");
 
-        let cardHtml = `
-                <div class="card-box ${cardClass}">
-                    <div class="card-cont">
-                        <dl>
-                            <dt>구분</dt>
-                            <dd><span class="${statusClass}">${sectionName}</span></dd>
-                        </dl>
-                        <dl>
-                            <dt>순위 번호</dt>
-                            <dd>${formatValue(item?.RankNo)}</dd>
-                        </dl>
-                        <dl>
-                            <dt>등기목적</dt>
-                            <dd>${formatValue(item?.RgsAimCont)}</dd>
-                        </dl>
-                        <dl>
-                            <dt>접수</dt>
-                            <dd>${formatValue(item?.Receve)}</dd>
-                        </dl>
-                        <dl>
-                            <dt>등기원인</dt>
-                            <dd>${formatValue(item?.RgsCaus)}</dd>
-                        </dl>
-                        <dl>
-                            <dt colspan="2" style="width: 100%;text-align: left;">권리자 및 기타사항</dt>
-                        </dl>
-                        <dl>
-                            <dd colspan="2" style="width: 100%;text-align: left;">${formatValue(item?.NomprsAndEtc)}</dd>
-                        </dl>
+        let dateA = new Date(indateTimeA);
+        let dateB = new Date(indateTimeB);
+        return dateB - dateA;
+      })
+
+      .forEach(groupKey => {
+        let { items, realScores } = groupedData[groupKey];
+        let [indateTime, realId] = groupKey.split("_"); // 그룹 키에서 날짜와 REALID 분리
+
+        //여러 개의 점수가 있을 경우, `,`로 구분하여 표시
+        let realScoreText = Array.from(realScores).join(", ");
+        let cardClass = getCardClassByScore(realScoreText);
+
+        let regHtml = `
+                <div class="card-box ${cardClass}" style="padding: 10px; margin-bottom: 10px;">
+                    <div class="card-title" style="margin-bottom: 8px">
+                        <h3> 발급일자: ${indateTime} / 점수: ${realScoreText}</h3>
                     </div>
-                </div>
             `;
 
-        // 생성된 카드 추가
-        listContainer.innerHTML += cardHtml;
+        //해당 그룹에 속하는 "갑구" 및 "을구" 카드 추가
+        items.forEach(item => {
+          let cardClass = item.type === 'K' ? 'card-red' : 'card-blue';
+          let statusClass = item.type === 'K' ? 'sta-red' : 'sta-blue';
+          let sectionName = item.type === 'K' ? '갑구' : '을구';
+
+          regHtml += `
+                    <div class="card-box ${cardClass}" style="margin-bottom: 10px">
+                        <div class="card-cont">
+                            <dl>
+                                <dt>구분</dt>
+                                <dd><span class="${statusClass}">${sectionName}</span></dd>
+                            </dl>
+                            <dl>
+                                <dt>순위 번호</dt>
+                                <dd>${item?.RankNo || ''}</dd>
+                            </dl>
+                            <dl>
+                                <dt>등기목적</dt>
+                                <dd>${item?.Purpose || ''}</dd>
+                            </dl>
+                            <dl>
+                                <dt>접수정보</dt>
+                                <dd>${item?.ReceiptInfo || ''}</dd>
+                            </dl>
+                            <dl>
+                                <dt>대상소유자</dt>
+                                <dd>${item?.TargetOwner || ''}</dd>
+                            </dl>
+                            <dl>
+                                <dt colspan="2" style="width: 100%; text-align: left;">주요등기사항</dt>
+                            </dl>
+                            <dl>
+                                <dd colspan="2" style="width: 100%; text-align: left;">${item?.Information || ''}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                `;
+        });
+
+        regHtml += `</div>`; // 블록 닫기
+
+        //생성된 HTML 추가
+        listContainer.innerHTML += regHtml;
       });
-    }
 
-    // 팝업 활성화
-    if (popup && overlay) {
-      popup.classList.add('active');
-      overlay.style.display = 'block';
-    } else {
-      console.error('popup-own 또는 popup-overlay 요소를 찾을 수 없습니다.');
-    }
-
-    // 스크롤 초기화 (팝업이 길어질 경우)
+    popup.classList.add('active');
+    overlay.style.display = 'block';
     popup.scrollTop = 0;
+  }
+
+  //점수별 카드 색
+  function getCardClassByScore(score) {
+    if (score === "미확인") return "card-white"; // 점수 없음 (S 등급: 안심)
+    let numericScore = parseFloat(score); // 점수를 숫자로 변환
+
+    if (numericScore >= 90) return "card-white"; // S 등급 (안심)
+    if (numericScore >= 80) return "card-green"; // A 등급 (관심)
+    if (numericScore >= 70) return "card-blue";  // B 등급 (주의)
+    if (numericScore >= 60) return "card-yellow"; // C 등급 (경계)
+    if (numericScore >= 50) return "card-orange"; // D 등급 (불안)
+    if (numericScore >= 40) return "card-red";   // E 등급 (심각)
+    return "card-black"; // F 등급 (위험)
   }
 
   //지역 불러오기 ###########
@@ -1064,7 +1133,7 @@
       // 클러스터 삭제 후 다시 `clusterclick` 이벤트 리스너 등록 가능하도록 설정
       window.clusterClickListenerAdded = false;
     } else {
-      console.warn("⚠ 클러스터러가 아직 초기화되지 않음.");
+      console.warn("클러스터러가 아직 초기화되지 않음.");
     }
   }
 

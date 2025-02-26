@@ -23,16 +23,34 @@ public class MapService {
         params.addValue("gugun", gugun);
 
         return sqlRunner.getRows("""
-       SELECT
-          RESIDO,
-          REGUGUN,
-          REALADD as address,
-          COUNT(*) as count,
-          AVG(realscore) AS avg_score
-      FROM TB_REALINFO
-      WHERE REPLACE(RESIDO, ' ', '') LIKE CONCAT(REPLACE(:region, ' ', ''), '%')
-      AND (:gugun IS NULL OR REPLACE(REGUGUN, ' ', '') LIKE CONCAT(REPLACE(:gugun, ' ', ''), '%'))
-      GROUP BY RESIDO, REGUGUN, REALADD
+       WITH RankedData AS (
+                   SELECT\s
+                       tr.RESIDO,
+                       tr.REGUGUN,
+                       tr.REALADD AS address,
+                       tr2.PinNo,
+                       tr.REALID,
+                       tr.realscore,
+                       COUNT(*) OVER (PARTITION BY tr2.PinNo) AS pinno_count,  -- PinNo별 개수 계산
+                       ROW_NUMBER() OVER (PARTITION BY tr2.PinNo ORDER BY tr.REALID DESC) AS rn
+                   FROM TB_REALINFO tr
+                   LEFT JOIN TB_REALINFOXML tr2\s
+                       ON tr2.REALID = tr.REALID
+                   WHERE REPLACE(RESIDO, ' ', '') LIKE CONCAT(REPLACE(:region, ' ', ''), '%')
+                     AND (:gugun IS NULL OR REPLACE(REGUGUN, ' ', '') LIKE CONCAT(REPLACE(:gugun, ' ', ''), '%'))
+               )
+               SELECT\s
+               	REALID,
+                   RESIDO,
+                   REGUGUN,
+                   address,
+                   PinNo,
+                   pinno_count AS count,  -- PinNo 기준으로 개수 계산된 값 사용
+                   AVG(realscore) AS avg_score
+               FROM RankedData
+               WHERE rn = 1
+                 AND PinNo IS NOT NULL  -- NULL 값 제거
+               GROUP BY REALID,RESIDO, REGUGUN, address, PinNo, pinno_count;
     """, params);
     }
 
@@ -162,26 +180,40 @@ public class MapService {
         // 현재 날짜 가져오기
         LocalDate today = LocalDate.now();
 
-        // MSSQL용 SQL 작성 (문자열 연결은 `+` 사용)
-        StringBuilder sql = new StringBuilder("""
-          SELECT REALADD, RELASTDATE, REALID
-             FROM TB_REALINFO
+        // SQL 쿼리 빌드
+        String sql = """
+         WITH RankedData AS (
+             SELECT
+                 tr.REALADD,
+                 tr.INDATEM,
+                 tr.REALID,
+                 tr2.PinNo,
+                 ROW_NUMBER() OVER (PARTITION BY tr2.PinNo ORDER BY tr.REALID DESC) AS rn
+             FROM TB_REALINFO tr
+             LEFT JOIN TB_REALINFOXML tr2
+                 ON tr2.REALID = tr.REALID
              WHERE REPLACE(RESIDO, ' ', '') LIKE '%' + REPLACE(:region, ' ', '') + '%'
                AND REPLACE(REGUGUN, ' ', '') LIKE '%' + REPLACE(:gugun, ' ', '') + '%'
-               AND RELASTDATE <= :endDate
-             ORDER BY RELASTDATE DESC;
-      """);
+               AND INDATEM <= :endDate
+         )
+         SELECT REALADD, INDATEM, REALID, PinNo
+         FROM RankedData
+         WHERE rn = 1
+           AND PinNo IS NOT NULL 
+         ORDER BY INDATEM DESC;
+    """;
 
         // 파라미터 설정
         params.addValue("region", region);
-        params.addValue("gugun", gugun);
+        params.addValue("gugun", gugun);  // 구군 필터 추가
         params.addValue("endDate", today);  // 현재 날짜 설정
 
-        //log.info("검색지역 리스트 SQL: {}", sql);
-        //log.info("SQL Parameters: {}", params.getValues());
+        // 로그 출력
+//        log.info("검색지역 리스트 SQL: {}", sql);
+//        log.info("SQL Parameters: {}", params.getValues());
 
         // 결과 반환
-        return sqlRunner.getRows(sql.toString(), params);
+        return sqlRunner.getRows(sql, params);
     }
 
 }
