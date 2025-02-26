@@ -2,7 +2,6 @@ package mes.app.CategoryManager.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import mes.config.Settings;
-import mes.domain.entity.actasEntity.TB_REGISTER;
 import mes.domain.entity.factcheckEntity.TB_FILEINFO;
 import mes.domain.entity.factcheckEntity.TB_MARKETING;
 import mes.domain.repository.factcheckRepository.FILEINFORepository;

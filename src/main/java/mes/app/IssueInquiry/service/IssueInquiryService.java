@@ -189,5 +189,65 @@ public class IssueInquiryService {
     return Optional.empty(); // 결과가 없으면 빈 Optional 반환
   }
 
+  //고유번호 찾기
+  public List<Map<String, Object>> getFindPinNo(int realid) {
+    MapSqlParameterSource params = new MapSqlParameterSource();
+    params.addValue("realid", realid);
+    String sql = """
+     SELECT tr.REALID, tr.REALADD, tr.REGDATE, tr.INDATEM, tr.REALSCORE, tr2.PinNo\s
+           FROM TB_REALINFO tr
+           LEFT JOIN TB_REALINFOXML tr2 ON tr2.REALID = tr.REALID
+           WHERE tr2.PinNo = (
+               SELECT tr2_sub.PinNo
+               FROM TB_REALINFOXML tr2_sub
+               WHERE tr2_sub.REALID = :realid
+           )
+           ORDER BY tr.INDATEM DESC;
+    """;
+//    log.info("고유번호SQL: {}", sql);
+//    log.info("SQL Parameters, 고유번호 : {}", params.getValues());
+    return sqlRunner.getRows(sql, params);
+  }
 
+  //갑구
+  public List<Map<String, Object>> getFindnK(int realid) {
+    MapSqlParameterSource params = new MapSqlParameterSource();
+    params.addValue("realid", realid);
+
+    String sql = """
+          SELECT k.*,tr.INDATEM, tr.REALSCORE FROM TB_SUMMARYDATAK k 
+              LEFT JOIN TB_REALINFO tr ON k.REALID = tr.REALID
+              WHERE k.REALID = :realid
+               ORDER BY
+                   TRY_CAST(REPLACE(RankNo, '-', '') +
+                                            CASE WHEN RankNo LIKE '%-%' THEN '' ELSE '0' END AS INT) ASC,
+                                   CASE WHEN ISNUMERIC(RankNo) = 1 THEN 0 ELSE 1 END,
+                                   RankNo ASC;
+    """;
+//    log.info("이력 갑구 SQL: {}", sql);
+//    log.info("SQL Parameters, 이력 갑구 : {}", params.getValues());
+    return sqlRunner.getRows(sql, params);
+
+  }
+
+  //을구
+  public List<Map<String, Object>> getFindE(int realid) {
+    MapSqlParameterSource params = new MapSqlParameterSource();
+    params.addValue("realid", realid);
+
+    String sql = """
+      SELECT e.*, tr.INDATEM, tr.REALSCORE FROM TB_SUMMARYDATAE e
+        LEFT JOIN TB_REALINFO tr ON e.REALID = tr.REALID
+        WHERE e.REALID = :realid
+          ORDER BY
+             TRY_CAST(REPLACE(RankNo, '-', '') +
+                                      CASE WHEN RankNo LIKE '%-%' THEN '' ELSE '0' END AS INT) ASC,
+                             CASE WHEN ISNUMERIC(RankNo) = 1 THEN 0 ELSE 1 END,
+                             RankNo ASC;
+    """;
+//    log.info("이력 을구 SQL: {}", sql);
+//    log.info("SQL Parameters, 이력 을구 : {}", params.getValues());
+    return sqlRunner.getRows(sql, params);
+
+  }
 }

@@ -110,6 +110,10 @@ header .right a {display: block;}
 .card-box.card-blue {background-color: #F7FBFF; border: 1px solid #3069B3; border-left: 10px solid #3069B3;}
 .card-box.card-black {background-color: #F8F8F8; border: 1px solid #1D1D1D; border-left: 10px solid #1D1D1D;}
 .card-box.card-red {background-color: #fffafb; border: 1px solid #EC193A; border-left: 10px solid #EC193A;}
+.card-box.card-white { background-color: #FFFFFF; border: 1px solid #DADADA; border-left: 10px solid #DADADA; }
+.card-box.card-yellow { background-color: #FFF9DB; border: 1px solid #FFC107; border-left: 10px solid #FFC107; }
+.card-box.card-orange { background-color: #FFE8D5; border: 1px solid #FF8C00; border-left: 10px solid #FF8C00; }
+
 .card-box .card-tit {display: flex; flex-flow: row wrap; align-items: center; justify-content: space-between; padding: 16px 0 12px 0; border-bottom: 1px solid #000; gap: 8px;}
 .card-box .card-cont {padding: 2px 0 0 0;}
 .card-box .card-cont dl {display: flex; align-items: center; justify-content: space-between;  padding: 8px 0; border-bottom: 1px solid #f4f4f4;}
