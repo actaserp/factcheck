@@ -237,30 +237,12 @@
 
         console.log('주소 불러오기 완료:', savedAddress1, savedAddress2);
     }
-
-    // 주소를 로컬스토리지에 저장
-    function saveAddressToLocalStorage() {
-        const address1 = $('#address1').val().trim();
-        const address2 = $('#address2').val().trim();
-
-        if (!address1) {
-            alert('도로명 주소를 입력해주세요.');
-            return;
-        }
-
-        localStorage.setItem('savedAddress1', address1);
-        localStorage.setItem('savedAddress2', address2);
-
-        console.log('주소 저장 완료:', address1, address2);
-    }
-
     // 기존 검색 결과 삭제 (올바른 삭제 방식)
     function clearPreviousSearchResults() {
         $('#addressWrap').empty(); // 기존 검색 결과 삭제
         localStorage.removeItem('savedAddress1'); // 도로명 주소 삭제
         localStorage.removeItem('savedAddress2'); // 상세 주소 삭제
     }
-
 
     // 고유번호 조회
     let isRequestInProgress = false;  // 중복 요청 방지 플래그
@@ -283,6 +265,7 @@
             },
             async: false,
             success: function (data) {
+                clearPreviousSearchResults();
                 let data2 = data.data;
                 // **비어 있는 데이터 체크 및 경고 메시지 표시**
                 if (!data2 || data2.length === 0) {
