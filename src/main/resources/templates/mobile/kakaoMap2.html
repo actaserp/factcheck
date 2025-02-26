@@ -365,6 +365,8 @@
             }, "S");
 
             var backgroundColor = gradeColors[highestGrade] || "#3399FF";
+            var textColor = highestGrade === "S" ? "#000000" : "#FFFFFF"; // S 등급이면 검정 글씨
+
 
             // 클러스터 마커 스타일 변경
             var clusterMarker = cluster.getClusterMarker();
@@ -373,7 +375,7 @@
                             min-width: 50px;
                             height: 50px;
                             padding: 10px;
-                            color: white;
+                            color: ${textColor};
                             font-size: 14px;
                             font-weight: bold;
                             line-height: 30px;
@@ -385,7 +387,7 @@
                             white-space: nowrap;
                             position: relative;
                             z-index: 2;">
-                           ${markers.length} 개
+                            ${markers.length} 개
                         </div>
                     `);
           });
