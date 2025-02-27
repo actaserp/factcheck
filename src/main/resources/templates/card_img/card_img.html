@@ -1,0 +1,614 @@
+<html layout:decorate="~{layout_page}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<style>
+    #theGrid {
+        width: 100%;
+        height: 400px;
+        overflow: auto; /* 스크롤 활성화 */
+    }
+
+    .wj-flexgrid .wj-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        overflow: auto;
+    }
+
+</style>
+<th:block layout:fragment="content">
+    <div class="layout-contents">
+        <!-- Page Title -->
+        <div class="page-title-wrap">
+            <div class="left">
+                <h2>이미지관리</h2>
+                <!--<a title="북마크" class="bookmark toggle">
+                    내메뉴
+                </a>-->
+            </div>
+            <ul class="page-navi">
+                <li><img src="/images/icon/ico-nav-home.svg" alt="홈아이콘"></li>
+                <li>분류 관리</li>
+                <li>이미지관리</li>
+            </ul>
+        </div>
+        <!-- Select -->
+        <div class="tab-contents">
+            <section class="tab-item" id="tab2" style="height: 750px; overflow: hidden;">
+                <div class="section-top">
+                    <div class="search-wrap">
+                        <dl>
+                            <dt>
+                                <label for="startDate">
+                                    날짜<span class="eq">*</span>
+                                </label>
+                            </dt>
+                            <dd>
+                                <ul class="date-box">
+                                    <li>
+                                        <input type="date" id="startDate" name="startDate">
+                                        <label for="startDate" class="hide">시작일</label>
+                                    </li>
+                                    <li>
+                                        <input type="date" id="endDate" name="endDate">
+                                        <label for="endDate" class="hide">종료일</label>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                <label for="searchUserNm">
+                                    입력자<span class="eq">*</span>
+                                </label>
+                            </dt>
+                            <dd>
+                                <div class="srch-box">
+                                    <input type="text" id="searchUserNm" name="searchUserNm" class="input-srch"
+                                           placeholder="입력자" style="border-radius: 5px;">
+                                </div>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>&nbsp;</dt>
+                            <dd>
+                                <li>
+                                    <a class="btn btn-delete" title="검색" id="searchButton1" onclick="fetchListData()">
+                                        <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                                        검색
+                                    </a>
+                                </li>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="button-wrap" style="border-top:none;">
+                        <ul>
+                            <li>
+                                <a class="btn btn-excell" title="신규등록" id="Newbtn" onclick="NewSave()">
+                                    <img src="/images/icon/ico-plus.svg" alt="등록 아이콘">
+                                    신규등록
+                                </a>
+                            </li>
+                            <li>
+                                <a class="btn btn-delete" title="삭제" id="btnDelete" onclick="deleteData()">
+                                    <img src="/images/icon/ico-delete.svg" alt="엑셀 아이콘">
+                                    삭제
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="container-fluid">
+                    <p id="selectedItem"></p>
+                    <div id="theGrid" style="max-height: 650px"></div>
+                </div>
+            </section>
+        </div> <!--//tab-wrap end-->
+    </div> <!--//layout-contents end -->
+    <footer>
+        <p>ⓒ factCheck corp.All rights reserved.</p>
+    </footer>
+
+    <div class="dashboard-layout-popup">
+        <div class="popup-overlay" id="popup1"></div>
+        <div class="popup-wrapper" id="wrapper1">
+            <div class="popup-title">
+                <h3>이미지 관리</h3>
+                <a onclick="NewClose()" title="팝업닫기" class="btn-popup-close">
+                    <img src="/images/icon/btn-popup-close.svg" alt="닫기">
+                </a>
+            </div>
+            <div class="popup-contents">
+                <form id="MarketingForm" autocomplete="off">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="table-wrap">
+                        <table class="view-table" id="selectedData" style="max-height: 740px;">
+                            <caption>이미지관리 신규 등록 테이블</caption>
+                            <colgroup>
+                                <col class="wp20">
+                                <col class="wauto">
+                            </colgroup>
+                            <tbody>
+                            <tr>
+                                <th><label for="imgflag"> 구분</label></th>
+                                <td colspan="3">
+                                    <select id="imgflag">
+                                        <option value="00">카드 이미지</option>
+                                        <option value="01">기타 이미지</option>
+                                    </select>
+                                    <input id="imgseq" type="hidden">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="indatem">입력일시</label></th>
+                                <td colspan="3">
+                                    <input id="indatem" name="indatem" class="wp100" placeholder="" readonly/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="inuserid">입력자</label>
+                                </th>
+                                <td colspan="3">
+                                    <input type="text" id="inuserid" name="inuserid" class="wp100" placeholder="" readonly/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="fileInput2">첨부파일</label></th>
+                                <td colspan="3">
+                                    <div id="uploadComponent2" class="upload-component2">
+                                        <div class="upload-filebox2">
+                                            <img src="/images/icon/ico-fileupload.svg" alt="업로드아이콘">
+                                            <a class="btn" title="파일업로드">파일 업로드</a>
+                                            <input type="file" id="fileInput2" class="fileInput2" multiple>
+                                            <p>png 파일형식만 등록 가능합니다.</p>
+                                            <p>Maximun upload file size <span>1GiB</span></p>
+                                        </div>
+
+                                        <div class="upload-filelist2">
+                                            <div class="title">
+                                                <h5>Files (0)</h5>
+                                                <a title="Delete all" class="btn-file-deleteall2">Delete all</a>
+                                            </div>
+                                            <ul class="filelist2" id="filelist2">
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="popup-button">
+                <button class="btn-popup-close" onclick="NewClose()">취소</button>
+                <button class="btn-navy" id="btnSaveAuth" onclick="SaveForm()"> 저장</button>
+            </div>
+        </div>
+    </div>
+
+</th:block>
+<th:block layout:fragment="scripts">
+    <th:block th:replace="/common/columns_setting :: columns_setting"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript">
+        let theGrid;
+
+        $(document).ready(function () {
+            // 현재 날짜 설정
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+
+            // 시작일
+            const startOfYear = new Date(year, 0, 1);
+            const startYearFormatted = `${startOfYear.getFullYear()}-${String(startOfYear.getMonth() + 1).padStart(2, '0')}-${String(startOfYear.getDate()).padStart(2, '0')}`;
+            $('#startDate').val(startYearFormatted);
+
+            // 종료일
+            const endOfMonth = new Date(year, month + 1, 0);
+            const endMonthFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
+            $('#endDate').val(endMonthFormatted);
+            init();
+        });
+
+        document.getElementById('searchUserNm').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                fetchListData(); // 엔터 키를 눌렀을 때 실행할 함수
+            }
+        })
+
+        function init() {
+            fetchListData();
+        }
+
+        function fetchListData() {
+            let data = [];
+
+            const params = {
+                startDate: $('#startDate').val(),
+                endDate: $('#endDate').val(),
+                searchUserNm: $('#searchUserNm').val()
+            };
+
+            // 서버에서 데이터 가져오기
+            $.ajax({
+                url: '/api/CardImg/read',
+                type: 'GET',
+                data: params,
+                async: false,
+                success: function (response) {
+                    console.log("서버에서 받은 데이터 :", response);
+                    // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
+                    response.data.forEach(item => {
+                        switch (item.imgflag){
+                            case '00' :
+                                item.imgflag = '카드';
+                                break;
+                            case '01' :
+                                item.imgflag = '기타이미지';
+                                break;
+                        }
+                    });
+                },
+                error: function () {
+                    console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+                }
+            });
+
+            while (data.length < 15) {
+                data.push({
+                    rownum: data.length + 1,
+                    imgflag: '',
+                    fileList: '',
+                    indatem: '',
+                    inuserid: '',
+                    isdownload: '',
+                });
+            }
+
+            const viewdata = new wijmo.collections.CollectionView(data);
+
+            if (!theGrid) {
+                theGrid = new wijmo.grid.FlexGrid('#theGrid', {
+                    autoGenerateColumns: false,
+                    showMarquee: true,
+                    isReadOnly: true,
+                    columns: [
+                        {binding: 'rownum', header: '순번', width: 70, align: 'center'},
+                        {binding: 'imgseq', header: '일련번호', visible: false},
+                        {binding: 'imgflag', header: '구분', width: 100, align: 'center'},
+                        {binding: 'fileList', header: '첨부파일', width: 170, align: 'left'},
+                        {binding: 'indatem', header: '입력일시', width: '*', minWidth: 150, align: 'center'},
+                        {binding: 'inuserid', header: '입력자', width: '*', minWidth: 150, align: 'center'},
+                        {binding: 'isdownload', visible: false},
+                    ],
+                    itemsSource: viewdata,
+                    itemFormatter: function (panel, r, c, cell) {
+                        if (panel.cellType === wijmo.grid.CellType.Cell) {
+                            let item = panel.rows[r].dataItem;
+
+                            if (panel.columns[c].binding === 'fileList') {
+                                cell.innerHTML = ''; // 기존 내용 삭제
+
+                                if (item.isdownload && item.fileList.length > 0) {
+                                    let downloadBtn = document.createElement("a");
+                                    downloadBtn.href = "#";
+                                    downloadBtn.classList.add("btn-filedown");
+                                    downloadBtn.title = "다운로드";
+                                    downloadBtn.textContent = "다운로드";
+
+                                    // 클릭 시, 해당 행의 `fileList` 전달
+                                    downloadBtn.onclick = function (event) {
+                                        event.preventDefault();
+                                        downloadFile_order(item.fileList);
+                                    };
+
+                                    cell.appendChild(downloadBtn);
+                                }
+                            }
+                        }
+                    }
+                });
+                // 헤더를 중앙 정렬하는 이벤트 핸들러
+                theGrid.formatItem.addHandler(function (s, e) {
+                    if (e.panel === s.columnHeaders) {
+                        e.cell.style.textAlign = 'center';
+                    }
+                });
+                theGrid.rowHeaders.columns.splice(0, 1);
+                attachDoubleClickEvent(theGrid); //더블 클릭 이벤트
+                new FlexGridContextMenu(theGrid);
+                window.downloadFileName = '이미지관리';
+            } else {
+                theGrid.itemsSource = viewdata;
+            }
+        }
+
+        // 더블 클릭 이벤트: 클릭한 데이터로 팝업 열기
+        function attachDoubleClickEvent(grid) {
+            let lastClickTime = 0;
+            grid.hostElement.addEventListener('click', function (e) {
+                const now = new Date().getTime();
+
+                if (now - lastClickTime < 300) { // 300ms 이내 클릭 -> 더블클릭 처리
+                    const ht = grid.hitTest(e);
+
+                    if (ht.cellType === wijmo.grid.CellType.Cell) {
+                        const rowData = grid.rows[ht.row].dataItem; // 더블 클릭한 행의 데이터
+                        console.log('Row Data:', rowData); // 디버깅
+
+                        if (rowData) {
+                            modifyData(rowData); // 데이터 입력 필드 채우기
+                            NewSave(); // 팝업 열기
+                        }
+                    }
+                }
+                lastClickTime = now;
+            });
+        }
+
+        // 선택한 행의 데이터를 팝업 입력 필드에 채우고, 첨부 파일을 UI에 표시
+        function modifyData(rowData) {
+            console.log("✔️ 더블클릭한 행의 데이터:", rowData);
+            console.log("✔️ 파일 목록 데이터:", rowData.fileList || "🚨 fileList가 없습니다!");
+
+            document.getElementById('imgseq').value = rowData.imgseq || "";
+            document.getElementById('makcltnm').value = rowData.makcltnm || "";
+            document.getElementById('title').value = rowData.maksubject || "";
+            document.getElementById('makcondyul').value = rowData.makcondyul || "";
+            document.getElementById('makuseyul').value = rowData.makuseyul || "";
+
+            let fileList = document.getElementById('filelist2');
+            fileList.innerHTML = "";
+            uploadedFiles2 = [];
+
+            if (rowData.fileList && Array.isArray(rowData.fileList)) {
+                rowData.fileList.forEach(file => {
+                    let listItem = document.createElement("li");
+
+                    let fileInfo = document.createElement("p");
+                    fileInfo.textContent = file.fileornm + " ";
+
+                    // 파일 사이즈 표시 (서버에서 내려오는 속성명이 "fileSize" 또는 "filesize"에 맞춰 사용)
+                    let size = file.fileSize || file.filesize;  // 속성명이 다를 수 있으므로 두 가지 모두 확인
+                    let fileSize = document.createElement("span");
+                    if (size) {
+                        // 예: 85309 bytes → "85 KB" (원하는 단위로 변환 가능)
+                        let kb = Math.round(size / 1024);
+                        fileSize.textContent = `(${kb} KB)`;
+                    } else {
+                        fileSize.textContent = "(파일 크기 알 수 없음)";
+                    }
+                    fileInfo.appendChild(fileSize);
+
+                    let deleteBtn = document.createElement("a");
+                    deleteBtn.href = "#";
+                    deleteBtn.title = "삭제";
+                    deleteBtn.classList.add("btn-file-delete2");
+
+                    let deleteIcon = document.createElement("img");
+                    deleteIcon.src = "/images/icon/ico-filedelete.svg";
+                    deleteIcon.alt = "삭제아이콘";
+
+                    deleteBtn.appendChild(deleteIcon);
+                    deleteBtn.onclick = function (event) {
+                        event.preventDefault();
+                        uploadedFiles2 = uploadedFiles2.filter(f => f.filesvnm !== file.filesvnm);
+                        listItem.remove();
+                        updateFileCount();
+                    };
+
+                    listItem.appendChild(fileInfo);
+                    listItem.appendChild(deleteBtn);
+                    fileList.appendChild(listItem);
+
+                    uploadedFiles2.push(file);
+                });
+
+                updateFileCount();
+            }
+        }
+
+        // 파일 개수 업데이트 함수
+        function updateFileCount() {
+            let fileCount = uploadedFiles2.length;
+            $(".upload-filelist2 h5").text(`Files (${fileCount})`);
+            $(".btn-file2 span").text(`(${fileCount})`);
+        }
+
+        // 다운로드
+        function downloadFile_order(fileList) {
+            if (!fileList || fileList.length === 0) {
+                console.warn("다운로드할 파일이 없습니다.");
+                return;
+            }
+
+            console.log("다운로드할 파일 목록:", fileList);
+
+            let downloadList = fileList.map(file => ({
+                filepath: file.filepath,
+                filesvnm: file.filesvnm,
+                fileornm: file.fileornm
+            }));
+
+            let downloadUrl = '/api/announcement/downloader';
+
+            // 파일 리스트를 서버에 전송하여 다운로드 실행
+            downloadFiles(downloadList, downloadUrl);
+        }
+
+        //저장
+        function SaveForm() {
+            const formData = {
+                makseq: $("#makseq").val(),
+                makcltnm: $("#makcltnm").val(),
+                maksubject: $("#title").val(),
+                makcondyul: $("#makcondyul").val(),
+                makuseyul: $("#makuseyul").val(),
+            };
+
+            let formDataObj = new FormData();
+            formDataObj.append("formData", new Blob([JSON.stringify(formData)], {type: "application/json"}));
+
+            console.log("저장할 데이터:", formData);
+
+            // 🔹 기존 filelist(업로드할 파일 목록)에서 파일 가져오기
+            if (uploadedFiles2 && uploadedFiles2.length > 0) {
+                console.log("파일 개수 (filelist):", uploadedFiles2.length);
+                uploadedFiles2.forEach((file, index) => {
+                    formDataObj.append("files", file);  // 여러 개의 파일을 개별적으로 추가해야 함
+                    console.log(`파일 추가됨 [${index + 1}/${uploadedFiles2.length}]:`, file.name);
+                });
+            } else {
+                console.log("추가할 파일이 없음.");
+            }
+
+            // AJAX 요청
+            $.ajax({
+                url: '/api/CardImg/save',
+                type: 'POST',
+                data: formDataObj,
+                contentType: false,
+                processData: false,
+                headers: {
+                    'X-CSRF-Token': $('[name=_csrf]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        Alert.alert("", "저장이 완료되었습니다!");
+                        NewClose();
+                        fetchListData();
+                    } else {
+                        console.error("저장 중 문제가 발생했습니다:", response.message);
+                        Alert.alert("", "저장 중 문제가 발생했습니다.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("저장 중 오류 발생:", status, error);
+                    Alert.alert("", "저장 중 오류가 발생했습니다. 관리자에게 문의하세요.");
+                }
+            });
+        }
+
+        // 삭제 함수
+        function deleteData() {
+            let selectedItem = theGrid.selection.row >= 0 ? theGrid.rows[theGrid.selection.row].dataItem : null;
+
+            console.log("선택된 아이템:", selectedItem); // 선택된 행의 데이터 확인
+
+            if (!selectedItem || !selectedItem.makseq) {
+                Alert.alert('', "삭제할 데이터를 선택해주세요.");
+                console.warn("삭제할 데이터가 선택되지 않음");
+                return;
+            }
+
+            const makseq = selectedItem.makseq; // 선택한 행의 makseq 값
+            console.log("삭제할 makseq:", makseq); // makseq 값 확인
+
+            Alert.confirm('', '삭제하시겠습니까?', function () {
+                $.ajax({
+                    url: '/api/Marketing/delete',  // API URL 확인
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({makseq: makseq}),  // JSON 데이터 확인
+                    headers: {
+                        'X-CSRF-Token': $('[name=_csrf]').val()
+                    },
+                    success: function (response) {
+                        console.log("서버 응답:", response); // 서버 응답 확인
+                        if (response.success) {
+                            Alert.alert('', "삭제가 완료되었습니다.");
+                            fetchListData(); // 데이터 새로고침
+                            clearForm(); // 폼 초기화
+                        } else {
+                            Alert.alert('', "삭제 중 문제가 발생했습니다: " + response.message);
+                            console.warn("삭제 중 오류:", response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        Alert.alert('', "삭제 요청 중 오류가 발생했습니다.");
+                        console.error("삭제 요청 실패:", status, error);
+                    }
+                });
+            });
+        }
+
+        /*팝업*/
+
+        function NewSave() {
+            let popup = document.getElementById('popup1');
+            let wrapper = document.getElementById('wrapper1');
+
+            popup.style.display = 'block';
+            wrapper.style.display = 'block';
+        }
+
+        function NewClose() {
+            // 팝업 닫기
+            let popup = document.getElementById('popup1');
+            let wrapper = document.getElementById('wrapper1');
+            clearForm();  // 폼 초기화
+            popup.style.display = 'none';
+            wrapper.style.display = 'none';
+        }
+
+        // 폼 초기화 함수
+        function clearForm() {
+            // 폼 요소 선택
+            const form = document.getElementById('MarketingForm');
+
+            if (form) {
+                form.reset(); // 모든 입력 필드 초기화
+            }
+
+            // 파일 입력 필드 초기화
+            let fileInput = document.getElementById('fileInput2');
+            if (fileInput) {
+                fileInput.value = "";
+            }
+
+            // 파일 목록 UI 초기화
+            let fileList = document.getElementById('filelist2');
+            if (fileList) {
+                fileList.innerHTML = "";
+            }
+
+            // 파일 리스트 배열 초기화
+            uploadedFiles2 = [];
+
+            // 파일 개수 텍스트 업데이트 (실시간 반영 확인)
+            let fileCountText = document.querySelector(".upload-filelist2 h5");
+            if (fileCountText) {
+                fileCountText.textContent = `Files (${uploadedFiles2.length})`;
+            }
+            let clearButton = document.querySelector(".btn-clear");
+            if (clearButton) {
+                clearButton.remove();  // 요소 자체를 삭제
+            }
+        }
+
+        // 발생비율(기호)
+        function addPercentageSign(input) {
+            const cursorPosition = input.selectionStart;
+            // 숫자만 추출
+            let value = input.value.replace(/[^0-9.]/g, '');
+            // 입력값이 숫자로 변환 가능하고, 최대값 100 이하인지 체크
+            if (value && parseInt(value, 10) > 100) {
+                value = '100'; // 100으로 강제 설정
+            }
+            // 입력 값이 비어 있지 않을 때만 % 추가
+            if (value) {
+                input.value = value + '%';
+            } else {
+                input.value = ''; // 빈 값 처리
+            }
+            // 커서 위치 조정
+            if (cursorPosition <= value.length) {
+                input.setSelectionRange(cursorPosition, cursorPosition); // 커서를 유지
+            }
+        }
+
+    </script>
+</th:block>
+</html>

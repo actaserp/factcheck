@@ -19,6 +19,7 @@
   "wm_auth_list" :{ "name": "사용자 권한 신청 조회", "templates": { "default": "system/auth_list.html" } },
   "login_log" : {"name":"사용자 로그인 현황", "templates": { "default": "system/login_log.html"}},
   "Marketing" : {"name":"마케팅관리", "templates": { "default": "CategoryManager/Marketing.html"}},
+  "card_img" : {"name":"이미지관리", "templates": { "default": "card_img/card_img.html"}},
 
 "아래부터 안씀": {},
   "wm_inspec_field_list":   { "name": "FieldService Report 현황", "templates": { "default": "inspec/list/inspec_field_main.html" }},
