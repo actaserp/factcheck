@@ -31,6 +31,14 @@
         position: relative;
         pointer-events: auto !important;
     }
+    .register-table thead tr.card-green th { background-color: #F4FDFD; border: 1px solid #119891; border-left: 10px solid #119891; !important; }
+    .register-table thead tr.card-blue th { background-color: #F7FBFF; border: 1px solid #3069B3; border-left: 10px solid #3069B3; !important; }
+    .register-table thead tr.card-black th { background-color: #F8F8F8; border: 1px solid #1D1D1D; border-left: 10px solid #1D1D1D; !important; }
+    .register-table thead tr.card-red th { background-color: #fffafb; border: 1px solid #EC193A; border-left: 10px solid #EC193A; !important; }
+    .register-table thead tr.card-white th { background-color: #FFFFFF; border: 1px solid #DADADA; border-left: 10px solid #DADADA; !important; }
+    .register-table thead tr.card-yellow th { background-color: #FFF9DB; border: 1px solid #FFC107; border-left: 10px solid #FFC107; !important; }
+    .register-table thead tr.card-orange th { background-color: #FFE8D5; border: 1px solid #FF8C00; border-left: 10px solid #FF8C00; !important; }
+
 
 </style>
 <head>
@@ -159,7 +167,7 @@
     </div>
   </div> <!-- //mobile-layout-popup end -->
 
-  <div class="mobile-layout-popup" >
+  <div class="mobile-layout-popup">
     <div class="popup-wrapper" id="popup-details">
       <div class="popup-title">
         <h3>이력 내역</h3>
@@ -174,11 +182,12 @@
             <dd></dd>
           </dl>
         </div>
-        <div class="list-card-wrap">
+        <div class="table-container">
+          <div class="list-table-wrap" style="overflow-x: auto;">
 
+          </div>
         </div>
         <div class="write-wrap">
-
         </div>
       </div>
       <div class="popup-button">
@@ -661,27 +670,26 @@
   function updatePopupContent(findnK, findnE, listData) {
     let popup = document.getElementById('popup-details');
     let overlay = document.querySelector('.popup-overlay');
-    let listContainer = document.querySelector('.list-card-wrap');
+    let listContainer = document.querySelector('.list-table-wrap');
     let addressField = document.querySelector('#popup-details .ticket-tit dd');
 
     addressField.textContent = listData?.SHORT_ADDR ?? '주소 정보 없음';
 
     listContainer.innerHTML = '';
 
-    let allData = [...findnK.map(item => ({ ...item, type: 'K' })),
-      ...findnE.map(item => ({ ...item, type: 'E' }))];
+    let allData = [...findnK.map(item => ({...item, type: 'K'})),
+      ...findnE.map(item => ({...item, type: 'E'}))];
 
     if (allData.length === 0) {
       console.warn("등기부등본 데이터 없음");
-      Alert.alert("", "해당 물건의 등기부등본 정보가 없습니다.");
+      Alert.alert('', "별도의 등기목적이 없습니다.");
       listContainer.innerHTML = '<p style="text-align: center; padding: 10px;">해당 물건의 등기부등본 정보가 없습니다.</p>';
       return;
     }
 
-    //`groupKey`에서 `realScore`를 제외 (같은 날짜 + REALID는 하나의 그룹)
     let groupedData = {};
     allData.forEach(item => {
-      let indateTime = formatDateTo12Hour(item.INDATEM);  //여기에서 12시간제로 변환
+      let indateTime = formatDateTo12Hour(item.INDATEM);
       let realId = item.REALID;
       let realScore = item.REALSCORE || '미확인';
 
@@ -690,11 +698,11 @@
       if (!groupedData[groupKey]) {
         groupedData[groupKey] = {
           items: [],
-          realScores: new Set() // 점수 여러 개가 있을 경우 저장
+          realScores: new Set()
         };
       }
       groupedData[groupKey].items.push(item);
-      groupedData[groupKey].realScores.add(realScore); // 점수 저장 (중복 제거)
+      groupedData[groupKey].realScores.add(realScore);
     });
 
     Object.keys(groupedData)
@@ -706,66 +714,52 @@
         let dateB = new Date(indateTimeB);
         return dateB - dateA;
       })
-
       .forEach(groupKey => {
-        let { items, realScores } = groupedData[groupKey];
-        let [indateTime, realId] = groupKey.split("_"); // 그룹 키에서 날짜와 REALID 분리
+        let {items, realScores} = groupedData[groupKey];
+        let [indateTime, realId] = groupKey.split("_");
 
-        //여러 개의 점수가 있을 경우, `,`로 구분하여 표시
         let realScoreText = Array.from(realScores).join(", ");
         let cardClass = getCardClassByScore(realScoreText);
-
-        let regHtml = `
-                <div class="card-box ${cardClass}" style="padding: 10px; margin-bottom: 10px;">
-                    <div class="card-title" style="margin-bottom: 8px">
-                        <h3> 발급일자: ${indateTime} / 점수: ${realScoreText}</h3>
-                    </div>
+        console.log("적용된 클래스:", cardClass);
+        let tableHtml = `
+                <table class="register-table" style="width: 100%; border-collapse: collapse; margin-bottom: 15px; overflow-x: auto;">
+                    <thead>
+                        <tr class="${cardClass}" style="background-color: #f2f2f2;">
+                            <th colspan="7" style="padding: 8px; text-align: left;">발급일자: ${indateTime} / 점수: ${realScoreText}</th>
+                        </tr>
+                        <tr>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:80px;">순위번호</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:150px;">등기 목적</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:200px;">대상 소유자</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:400px;">주요 등기사항</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:300px;">접수정보</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:50px;">구분</th>
+                        </tr>
+                    </thead>
+                    <tbody>
             `;
 
-        //해당 그룹에 속하는 "갑구" 및 "을구" 카드 추가
         items.forEach(item => {
-          let cardClass = item.type === 'K' ? 'card-red' : 'card-blue';
-          let statusClass = item.type === 'K' ? 'sta-red' : 'sta-blue';
           let sectionName = item.type === 'K' ? '갑구' : '을구';
 
-          regHtml += `
-                    <div class="card-box ${cardClass}" style="margin-bottom: 10px">
-                        <div class="card-cont">
-                            <dl>
-                                <dt>구분</dt>
-                                <dd><span class="${statusClass}">${sectionName}</span></dd>
-                            </dl>
-                            <dl>
-                                <dt>순위 번호</dt>
-                                <dd>${item?.RankNo || ''}</dd>
-                            </dl>
-                            <dl>
-                                <dt>등기목적</dt>
-                                <dd>${item?.Purpose || ''}</dd>
-                            </dl>
-                            <dl>
-                                <dt>접수정보</dt>
-                                <dd>${item?.ReceiptInfo || ''}</dd>
-                            </dl>
-                            <dl>
-                                <dt>대상소유자</dt>
-                                <dd>${item?.TargetOwner || ''}</dd>
-                            </dl>
-                            <dl>
-                                <dt colspan="2" style="width: 100%; text-align: left;">주요등기사항</dt>
-                            </dl>
-                            <dl>
-                                <dd colspan="2" style="width: 100%; text-align: left;">${item?.Information || ''}</dd>
-                            </dl>
-                        </div>
-                    </div>
+          tableHtml += `
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${item?.RankNo || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${item?.Purpose || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${item?.TargetOwner || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${item?.Information || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${item?.ReceiptInfo || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${sectionName}</td>
+                    </tr>
                 `;
         });
 
-        regHtml += `</div>`; // 블록 닫기
+        tableHtml += `
+                    </tbody>
+                </table>
+            `;
 
-        //생성된 HTML 추가
-        listContainer.innerHTML += regHtml;
+        listContainer.innerHTML += tableHtml;
       });
 
     popup.classList.add('active');
@@ -1139,11 +1133,13 @@
     }
   }
 
-  $('.btn-popup-close').on('click', function() {
+  $('.btn-popup-close').on('click', function () {
     $('.popup-overlay').fadeOut(200);
     $('.popup-wrapper').removeClass('active');
-  });
 
+    $('.popup-contents').scrollTop(0).scrollLeft(0);
+    $('.list-table-wrap').scrollTop(0).scrollLeft(0);
+  });
 
 </script>
 </body>
