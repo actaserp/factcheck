@@ -224,7 +224,7 @@ public class CardImgService {
 
     //삭제
     public void deleteRegisterById(Integer makseq) {
-        if (!marketingRepository.existsById(makseq)) {
+        if (!cardimgRepository.existsById(makseq)) {
             log.warn("삭제할 데이터가 존재하지 않습니다. ID: {}", makseq);
             throw new EntityNotFoundException("삭제할 데이터가 존재하지 않습니다. ID: " + makseq);
         }
@@ -263,7 +263,7 @@ public class CardImgService {
         }
 
         // 마케팅 데이터 삭제
-        marketingRepository.deleteById(makseq);
+        cardimgRepository.deleteById(makseq);
         //log.info("마케팅 데이터 삭제 완료: ID = {}", makseq);
     }
 
