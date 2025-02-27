@@ -28,4 +28,8 @@ public interface FILEINFORepository extends JpaRepository<TB_FILEINFO, Integer> 
     @Query("DELETE FROM TB_FILEINFO f WHERE f.bbsseq = :bbsseq AND f.CHECKSEQ = :checkseq")
     void deleteByBbsseqAndCheckseq(@Param("bbsseq") Integer bbsseq, @Param("checkseq") String checkseq);
 
+    @Query("SELECT f FROM TB_FILEINFO f WHERE f.bbsseq = :bbsseq AND f.CHECKSEQ = :CHECKSEQ")
+    List<TB_FILEINFO> findFilesByBbsseqAndCHECKSEQ(@Param("bbsseq") int bbsseq, @Param("CHECKSEQ") String CHECKSEQ);
+
+    Optional<TB_FILEINFO> findByCHECKSEQAndBbsseqAndFILESVNM(String checkSeq, Integer makseq, String fileName);
 }

@@ -643,7 +643,7 @@
           htmlContent += `
                     <div class="card-box ${cardColor}" data-realadd="${item.REALADD}" data-resido="${item.RESIDO}" data-realid="${item.REALID}"
                         data-regdate="${item.REGDATE}" data-regugun="${item.REGUGUN}" data-rejimok="${item.REJIMOK}" data-rearea="${item.REAREA}"
-                        data-PDFFILENAME="${item.PDFFILENAME}" data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}">
+                        data-PDFFILENAME="${item.PDFFILENAME}" data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}" style="margin-bottom:10px;">
                         <div class="card-cont">
                             <dl>
                                 <dt>집합건물</dt>
@@ -1174,7 +1174,7 @@
     allData.forEach(item => {
       let indateTime = formatDateTo12Hour(item.INDATEM);
       let realId = item.REALID;
-      let realScore = item.REALSCORE || '미확인';
+      let realScore = item.REALSCORE || '';
 
       let groupKey = `${indateTime}_${realId}`;
 
@@ -1212,7 +1212,7 @@
                         </tr>
                         <tr>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:80px;">순위번호</th>
-                            <th style="padding: 8px; border: 1px solid #ddd;min-width:150px;">등기 목적</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:200px;">등기 목적</th>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:200px;">대상 소유자</th>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:400px;">주요 등기사항</th>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:300px;">접수정보</th>

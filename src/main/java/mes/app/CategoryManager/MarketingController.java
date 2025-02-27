@@ -25,11 +25,12 @@ public class MarketingController {
   @Autowired
   private MarketingService marketingService;
 
-  //저장
+  //저장& 수정
   @PostMapping("/save")
   public ResponseEntity<Map<String, Object>> saveMarketing(
       @RequestPart("formData") String formDataJson,
       @RequestPart(value = "files", required = false) List<MultipartFile> files,
+      @RequestPart(value = "deletedFiles", required = false) String deletedFilesJson,
       Authentication auth
   ) {
     Map<String, Object> response = new HashMap<>();
@@ -39,9 +40,9 @@ public class MarketingController {
       ObjectMapper objectMapper = new ObjectMapper();
       Map<String, Object> formData = objectMapper.readValue(formDataJson, new TypeReference<>() {});
 
-      //log.info("✅ 저장에 들어온 데이터: {}", formData);
+      log.info("✅ 저장에 들어온 데이터: {}", formData);
 
-     /* // 기존 파일 확인
+      // 기존 파일 확인
       List<Map<String, Object>> fileList = (List<Map<String, Object>>) formData.get("filelist");
       if (fileList != null) {
         log.info("📂 기존 파일 개수: {}", fileList.size());
@@ -51,16 +52,27 @@ public class MarketingController {
 
       // 📂 업로드된 파일 개수 확인
       if (files != null) {
-        log.info("📂 서버에서 받은 파일 개수: {}", files.size());
+        //log.info("📂 서버에서 받은 파일 개수: {}", files.size());
         for (MultipartFile file : files) {
-          log.info("📁 서버에서 받은 파일: {}, 크기: {} 바이트", file.getOriginalFilename(), file.getSize());
+          //log.info("📁 서버에서 받은 파일: {}, 크기: {} 바이트", file.getOriginalFilename(), file.getSize());
         }
       } else {
         log.info("📁 새롭게 업로드된 파일 없음.");
-      }*/
+      }
+
+      // 🗑 삭제된 파일 목록 처리
+      List<String> deletedFiles = new ArrayList<>();
+      if (deletedFilesJson != null && !deletedFilesJson.isEmpty()) {
+        deletedFiles = objectMapper.readValue(deletedFilesJson, new TypeReference<List<String>>() {});
+        log.info("🗑 삭제할 파일 개수: {}", deletedFiles.size());
+        log.info("🗑 삭제할 파일 목록: {}", deletedFiles);
+      } else {
+        log.info("🗑 삭제할 파일 없음.");
+      }
 
       // **마케팅 데이터 저장 (서비스 호출)**
-      Integer makSave = marketingService.saveOrUpdateMarketingData(formData, userid, files);
+      Integer makSave = marketingService.saveOrUpdateMarketingData(formData, userid, files, deletedFiles);
+
 
       response.put("success", true);
       response.put("message", "마케팅 정보가 저장되었습니다.");

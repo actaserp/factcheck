@@ -204,8 +204,8 @@ public class IssueInquiryService {
            )
            ORDER BY tr.INDATEM DESC;
     """;
-//    log.info("고유번호SQL: {}", sql);
-//    log.info("SQL Parameters, 고유번호 : {}", params.getValues());
+    log.info("고유번호SQL: {}", sql);
+    log.info("SQL Parameters, 고유번호 : {}", params.getValues());
     return sqlRunner.getRows(sql, params);
   }
 
@@ -224,8 +224,8 @@ public class IssueInquiryService {
                                    CASE WHEN ISNUMERIC(RankNo) = 1 THEN 0 ELSE 1 END,
                                    RankNo ASC;
     """;
-//    log.info("이력 갑구 SQL: {}", sql);
-//    log.info("SQL Parameters, 이력 갑구 : {}", params.getValues());
+    log.info("이력 갑구 SQL: {}", sql);
+    log.info("SQL Parameters, 이력 갑구 : {}", params.getValues());
     return sqlRunner.getRows(sql, params);
 
   }
@@ -245,8 +245,8 @@ public class IssueInquiryService {
                              CASE WHEN ISNUMERIC(RankNo) = 1 THEN 0 ELSE 1 END,
                              RankNo ASC;
     """;
-//    log.info("이력 을구 SQL: {}", sql);
-//    log.info("SQL Parameters, 이력 을구 : {}", params.getValues());
+    log.info("이력 을구 SQL: {}", sql);
+    log.info("SQL Parameters, 이력 을구 : {}", params.getValues());
     return sqlRunner.getRows(sql, params);
 
   }

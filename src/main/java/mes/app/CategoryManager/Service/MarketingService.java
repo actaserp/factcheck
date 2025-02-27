@@ -20,10 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.io.Files.getFileExtension;
@@ -45,7 +42,7 @@ public class MarketingService {
   SqlRunner sqlRunner;
 
   @Transactional
-  public Integer saveOrUpdateMarketingData(Map<String, Object> formData, String userid, List<MultipartFile> files) {
+  public Integer saveOrUpdateMarketingData(Map<String, Object> formData, String userid, List<MultipartFile> files, List<String> deletedFiles) {
     // makseq가 빈 문자열이면 null로 처리
     Integer makseq = null;
     if (formData.get("makseq") != null && !formData.get("makseq").toString().trim().isEmpty()) {
@@ -59,6 +56,7 @@ public class MarketingService {
       // 기존 데이터가 있는 경우 (UPDATE)
       marketing = new TB_MARKETING();
       marketing.setMakseq(makseq);  // 기존 ID 유지
+      marketing.setMakdate(currentDate);
       //log.info("기존 마케팅 데이터 수정 (makseq: {})", makseq);
     } else {
       // 새로운 데이터 저장 (INSERT)
@@ -80,12 +78,19 @@ public class MarketingService {
     makseq = savedMarketing.getMakseq(); // 새롭게 저장된 마케팅 데이터의 ID
     //log.info("마케팅 데이터 저장 완료: {}", makseq);
 
+    // 📂 🗑 **파일 삭제 로직 추가 (여기 수정!)**
+    if (deletedFiles != null && !deletedFiles.isEmpty()) {
+      log.info("🗑 삭제할 파일 개수: {}", deletedFiles.size());
+      deleteMarketingFiles(makseq, deletedFiles);
+    } else {
+      log.info("🗑 삭제할 파일 없음.");
+    }
+
     // 파일 처리 (수정 시 기존 파일 삭제 후 재업로드)
     handleMarketingFiles(makseq, files, userid, currentDate);
 
     return makseq;  // 저장된 또는 수정된 마케팅 데이터의 ID 반환
   }
-
 
   private void handleMarketingFiles(Integer makseq, List<MultipartFile> files, String userid, String currentDate) {
     String fileUploadPath = settings.getProperty("file_upload_path") + "마케팅";
@@ -95,7 +100,8 @@ public class MarketingService {
     }
 
     // 기존 파일 목록 조회 (파일명 비교를 위해)
-    List<TB_FILEINFO> existingFiles = fileinfoRepository.findByBbsseq(makseq);
+//    List<TB_FILEINFO> existingFiles = fileinfoRepository.findByBbsseq(makseq);
+    List<TB_FILEINFO> existingFiles = fileinfoRepository.findFilesByBbsseqAndCHECKSEQ(makseq, "03");
     Set<String> existingFileNames = existingFiles.stream()
         .map(TB_FILEINFO::getFILESVNM)
         .collect(Collectors.toSet());
@@ -150,6 +156,44 @@ public class MarketingService {
 
       } catch (IOException e) {
         log.error("파일 저장 중 오류 발생: {}", file.getOriginalFilename(), e);
+      }
+    }
+  }
+
+  // 삭제된 파일 처리
+  private void deleteMarketingFiles(Integer makseq, List<String> deletedFiles) {
+    if (deletedFiles == null || deletedFiles.isEmpty()) {
+      log.info("🗑 삭제할 파일 없음.");
+      return;
+    }
+
+    log.info("🗑 삭제할 파일 개수: {}", deletedFiles.size());
+
+    for (String fileName : deletedFiles) {
+      try {
+        // 🔹 DB에서 해당 파일 조회 (makseq와 CHECKSEQ=03 필터링)
+        Optional<TB_FILEINFO> fileInfoOpt = fileinfoRepository.findByCHECKSEQAndBbsseqAndFILESVNM("03", makseq, fileName);
+
+        if (fileInfoOpt.isPresent()) {
+          TB_FILEINFO fileInfo = fileInfoOpt.get();
+          String filePath = fileInfo.getFILEPATH() + File.separator + fileInfo.getFILESVNM();
+
+          // 1️⃣ 실제 파일 삭제
+          File file = new File(filePath);
+          if (file.exists() && file.delete()) {
+            log.info("✅ 파일 삭제 성공: {}", filePath);
+          } else {
+            log.warn("⚠️ 파일 삭제 실패 또는 존재하지 않음: {}", filePath);
+          }
+
+          // 2️⃣ DB에서 파일 정보 삭제
+          fileinfoRepository.delete(fileInfo);
+          log.info("🗑 DB에서 파일 정보 삭제 완료 (makseq={}, FILESVNM={})", makseq, fileName);
+        } else {
+          log.warn("⚠️ 삭제하려는 파일이 DB에 존재하지 않음 (makseq={}, FILESVNM={})", makseq, fileName);
+        }
+      } catch (Exception e) {
+        log.error("🚨 파일 삭제 중 오류 발생 (파일명={}): {}", fileName, e.getMessage(), e);
       }
     }
   }
@@ -267,5 +311,6 @@ public class MarketingService {
     marketingRepository.deleteById(makseq);
     //log.info("마케팅 데이터 삭제 완료: ID = {}", makseq);
   }
+
 
 }

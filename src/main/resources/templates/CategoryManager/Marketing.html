@@ -368,8 +368,8 @@
       console.log("✔️ 더블클릭한 행의 데이터:", rowData);
       console.log("✔️ 파일 목록 데이터:", rowData.fileList || "🚨 fileList가 없습니다!");
 
-      document.getElementById('makseq').value = rowData.makseq || "",
-        document.getElementById('makcltnm').value = rowData.makcltnm || "";
+      document.getElementById('makseq').value = rowData.makseq || "";
+      document.getElementById('makcltnm').value = rowData.makcltnm || "";
       document.getElementById('title').value = rowData.maksubject || "";
       document.getElementById('makcondyul').value = rowData.makcondyul || "";
       document.getElementById('makuseyul').value = rowData.makuseyul || "";
@@ -377,6 +377,7 @@
       let fileList = document.getElementById('filelist2');
       fileList.innerHTML = "";
       uploadedFiles2 = [];
+      deletedFiles2 = [];
 
       if (rowData.fileList && Array.isArray(rowData.fileList)) {
         rowData.fileList.forEach(file => {
@@ -410,6 +411,12 @@
           deleteBtn.onclick = function (event) {
             event.preventDefault();
             uploadedFiles2 = uploadedFiles2.filter(f => f.filesvnm !== file.filesvnm);
+            listItem.remove();
+            updateFileCount();
+          };
+          deleteBtn.onclick = function (event) {
+            event.preventDefault();
+            deletedFiles2.push(file); // 🔹 삭제된 파일을 배열에 추가
             listItem.remove();
             updateFileCount();
           };
@@ -453,7 +460,7 @@
       downloadFiles(downloadList, downloadUrl);
     }
 
-    //저장
+    // 저장& 수정
     function SaveForm() {
       const formData = {
         makseq: $("#makseq").val(),
@@ -464,20 +471,28 @@
       };
 
       let formDataObj = new FormData();
-      formDataObj.append("formData", new Blob([JSON.stringify(formData)], {type: "application/json"}));
+      formDataObj.append("formData", new Blob([JSON.stringify(formData)], { type: "application/json" }));
 
-      console.log("저장할 데이터:", formData);
-
-      // 🔹 기존 filelist(업로드할 파일 목록)에서 파일 가져오기
+      console.log("✅ 저장할 데이터 :", formData);
+      // 기존 업로드된 파일 추가
       if (uploadedFiles2 && uploadedFiles2.length > 0) {
-        console.log("파일 개수 (filelist):", uploadedFiles2.length);
+        console.log(`📂 파일 개수: ${uploadedFiles2.length}`);
         uploadedFiles2.forEach((file, index) => {
-          formDataObj.append("files", file);  // 여러 개의 파일을 개별적으로 추가해야 함
-          console.log(`파일 추가됨 [${index + 1}/${uploadedFiles2.length}]:`, file.name);
+          formDataObj.append("files", file);
+          console.log(`✅ 파일 추가됨 [${index + 1}/${uploadedFiles2.length}]: ${file.name}`);
         });
       } else {
-        console.log("추가할 파일이 없음.");
+        console.log("📂 추가할 파일 없음.");
       }
+
+      // 🔹 삭제된 파일 리스트를 JSON 문자열이 아닌 "plain string"으로 전달 (🚀 수정!)
+      if (deletedFiles2.length > 0) {
+        const deletedFilesJson = JSON.stringify(deletedFiles2.map(file => file.filesvnm)); // 파일 식별자만 추출
+        formDataObj.append("deletedFiles", deletedFilesJson); // ❌ Blob이 아니라 그냥 문자열로 추가!
+      }
+
+      console.log("formData : ", formDataObj);
+      console.log("📂 최종 formDataObj 확인:", formDataObj);
 
       // AJAX 요청
       $.ajax({
@@ -495,12 +510,12 @@
             NewClose();
             fetchListData();
           } else {
-            console.error("저장 중 문제가 발생했습니다:", response.message);
+            console.error("❌ 저장 중 문제가 발생했습니다:", response.message);
             Alert.alert("", "저장 중 문제가 발생했습니다.");
           }
         },
         error: function (xhr, status, error) {
-          console.error("저장 중 오류 발생:", status, error);
+          console.error("🚨 저장 중 오류 발생:", status, error);
           Alert.alert("", "저장 중 오류가 발생했습니다. 관리자에게 문의하세요.");
         }
       });
