@@ -849,7 +849,7 @@ public class TilkoController {
             String pdfBase64 = responseJson.optString("PdfData", null);
 
             if (pdfBase64 == null) {
-                result.message = "pdf데이터가 존재하지 않습니다.";
+                result.message = "인터넷 등기소와의 연결이 원할치 않습니다.\n잠시후 다시 시도하여주세요";
             } else {
                 try {
                     if (pdfBase64 == null || pdfBase64.isEmpty()) {

@@ -140,6 +140,9 @@ public class TilkoParsing {
         if (matchesWord(input, "아파트")) {
             return "아파트";
         }
+        if (matchesWord(input, "주택")) {
+            return "주택";
+        }
 
         return "기타"; // 어떤 카테고리에도 해당하지 않는 경우
     }
