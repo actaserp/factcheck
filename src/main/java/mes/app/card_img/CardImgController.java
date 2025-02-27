@@ -114,32 +114,32 @@ public class CardImgController {
                 if (card.get("fileinfos") != null) {
                     try {
                         List<Map<String, Object>> fileitems = objectMapper.readValue(
-                                (String) user.get("fileinfos"),
+                                (String) card.get("fileinfos"),
                                 new TypeReference<List<Map<String, Object>>>() {}
                         );
 
                         boolean hasFiles = fileitems != null && !fileitems.isEmpty();
-                        user.put("isdownload", hasFiles);
-                        user.put("filelist", fileitems);
+                        card.put("isdownload", hasFiles);
+                        card.put("filelist", fileitems);
 
                     } catch (Exception e) {
                         log.error("파일 정보 파싱 중 오류 발생: {}", e.getMessage());
-                        user.put("filelist", Collections.emptyList());
-                        user.put("isdownload", false);
+                        card.put("filelist", Collections.emptyList());
+                        card.put("isdownload", false);
                     }
                 } else {
-                    user.put("filelist", Collections.emptyList());
-                    user.put("isdownload", false);
+                    card.put("filelist", Collections.emptyList());
+                    card.put("isdownload", false);
                 }
 
-                user.remove("fileinfos");
+                card.remove("fileinfos");
 
             }
 //      log.info("최종 데이터  :{}", MarketingList);
             // 데이터가 있을 경우 성공 메시지
             result.success = true;
             result.message = "데이터 조회 성공";
-            result.data = MarketingList;
+            result.data = CardImgList;
 
         } catch (Exception e) {
             // 예외 처리
