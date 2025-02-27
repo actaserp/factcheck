@@ -1084,13 +1084,15 @@ public class TilkoController {
                     result.data = resultMap;
                     result.message = "등기부등본 정상조회";
                 } catch (IllegalArgumentException e) {
-                    result.message = "오류발생";
+                    result.message = "등기부등본 조회중 오류가 발생하였습니다.";
                     return result;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         } catch (NoSuchAlgorithmException e) {
+            result.success = false;
+            result.message = "인터넷 등기소와의 연결이 원할치 않습니다.\n잠시후 다시 시도하여주세요";
             throw new RuntimeException(e);
         }
         return result;
