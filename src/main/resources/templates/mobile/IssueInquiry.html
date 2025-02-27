@@ -628,10 +628,10 @@
           colorIndex = (colorIndex + 1) % availableColors.length;
 
           let buttonsHtml = `
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기">상세보기</button>
-                        <button class="btn btn-popup-open" data-popup="popup-details" title="이력보기" style="margin-top: 5px;margin-bottom: 5px">이력보기</button>
-                        <button class="btn btn-register-view" data-realid="${item.REALID}">등기부 보기</button>
+                    <div style="display: flex; gap: 5px; align-items: center; max-width: 100%;">
+                        <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="padding: 4px 12px;">상세보기</button>
+                        <button class="btn btn-popup-open" data-popup="popup-details" title="이력보기" style="margin-top: 5px;margin-bottom: 5px; padding: 4px 12px;">이력보기</button>
+                        <button class="btn btn-register-view" data-realid="${item.REALID}" style="padding: 4px 12px;">등기부 보기</button>
                     </div>
                 `;
 
@@ -1203,7 +1203,7 @@
 
         let realScoreText = Array.from(realScores).join(", ");
         let cardClass = getCardClassByScore(realScoreText);
-        console.log("적용된 클래스:", cardClass);
+
         let tableHtml = `
                 <table class="register-table" style="width: 100%; border-collapse: collapse; margin-bottom: 15px; overflow-x: auto;">
                     <thead>
@@ -1216,7 +1216,7 @@
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:200px;">대상 소유자</th>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:400px;">주요 등기사항</th>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:300px;">접수정보</th>
-                            <th style="padding: 8px; border: 1px solid #ddd;min-width:50px;">구분</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:80px;">구분</th>
                         </tr>
                     </thead>
                     <tbody>
