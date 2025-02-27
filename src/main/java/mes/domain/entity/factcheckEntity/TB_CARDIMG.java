@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name="TB_CARDIMG")
@@ -15,14 +16,14 @@ public class TB_CARDIMG {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    Integer IMGSEQ;
+    Integer imgseq;
 
     @Column
-    String IMGFLAG;
+    String imgflag;
     @Column
-    String IMGFILENM;
+    String imgfilename;
     @Column
-    String INDATEM;
+    LocalDateTime indatem;
     @Column
-    String INUSERID;
+    String inuserid;
 }

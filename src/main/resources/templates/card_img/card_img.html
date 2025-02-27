@@ -131,7 +131,7 @@
                             <tr>
                                 <th><label for="imgflag"> 구분</label></th>
                                 <td colspan="3">
-                                    <select id="imgflag">
+                                    <select id="imgflag" style="width: 100%;">
                                         <option value="00">카드 이미지</option>
                                         <option value="01">기타 이미지</option>
                                     </select>
@@ -160,8 +160,9 @@
                                             <img src="/images/icon/ico-fileupload.svg" alt="업로드아이콘">
                                             <a class="btn" title="파일업로드">파일 업로드</a>
                                             <input type="file" id="fileInput2" class="fileInput2" multiple>
+
                                             <p>png 파일형식만 등록 가능합니다.</p>
-                                            <p>Maximun upload file size <span>1GiB</span></p>
+                                            <p>카드이미지일경우 파일명을 "CARD_001" 숫자는 3자리로 맞춰주세요</p>
                                         </div>
 
                                         <div class="upload-filelist2">
@@ -240,16 +241,18 @@
                 success: function (response) {
                     console.log("서버에서 받은 데이터 :", response);
                     // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
-                    response.data.forEach(item => {
-                        switch (item.imgflag){
-                            case '00' :
-                                item.imgflag = '카드';
-                                break;
-                            case '01' :
-                                item.imgflag = '기타이미지';
-                                break;
-                        }
-                    });
+                    if (response && Array.isArray(response.data)) {
+                        data = response.data.map((item, index) => ({
+                            rownum: index + 1,
+                            imgseq: item.imgseq || '',
+                            imgflag: item.imgflag || '',
+                            indatem: item.indatem || '',
+                            inuserid: item.inuserid || '',
+                            inuserid: item.inuserid || '',
+                            fileList: Array.isArray(item.filelist) ? item.filelist : [],
+                            isdownload: item.isdownload
+                        }));
+                    }
                 },
                 error: function () {
                     console.error("데이터를 가져오는 중 오류가 발생했습니다.");
@@ -260,7 +263,7 @@
                 data.push({
                     rownum: data.length + 1,
                     imgflag: '',
-                    fileList: '',
+                    fileList: [],
                     indatem: '',
                     inuserid: '',
                     isdownload: '',
@@ -277,10 +280,10 @@
                     columns: [
                         {binding: 'rownum', header: '순번', width: 70, align: 'center'},
                         {binding: 'imgseq', header: '일련번호', visible: false},
-                        {binding: 'imgflag', header: '구분', width: 100, align: 'center'},
-                        {binding: 'fileList', header: '첨부파일', width: 170, align: 'left'},
-                        {binding: 'indatem', header: '입력일시', width: '*', minWidth: 150, align: 'center'},
-                        {binding: 'inuserid', header: '입력자', width: '*', minWidth: 150, align: 'center'},
+                        {binding: 'imgflag', header: '구분', width: 220, align: 'center'},
+                        {binding: 'fileList', header: '첨부파일', width: 630, align: 'left'},
+                        {binding: 'indatem', header: '입력일시', width: '*', minWidth: 300, align: 'center'},
+                        {binding: 'inuserid', header: '입력자', width: '*', minWidth: 300, align: 'center'},
                         {binding: 'isdownload', visible: false},
                     ],
                     itemsSource: viewdata,
@@ -354,10 +357,9 @@
             console.log("✔️ 파일 목록 데이터:", rowData.fileList || "🚨 fileList가 없습니다!");
 
             document.getElementById('imgseq').value = rowData.imgseq || "";
-            document.getElementById('makcltnm').value = rowData.makcltnm || "";
-            document.getElementById('title').value = rowData.maksubject || "";
-            document.getElementById('makcondyul').value = rowData.makcondyul || "";
-            document.getElementById('makuseyul').value = rowData.makuseyul || "";
+            document.getElementById('imgflag').value = rowData.imgflag || "";
+            document.getElementById('indatem').value = rowData.indatem || "";
+            document.getElementById('inuserid').value = rowData.inuserid || "";
 
             let fileList = document.getElementById('filelist2');
             fileList.innerHTML = "";
@@ -441,11 +443,9 @@
         //저장
         function SaveForm() {
             const formData = {
-                makseq: $("#makseq").val(),
-                makcltnm: $("#makcltnm").val(),
-                maksubject: $("#title").val(),
-                makcondyul: $("#makcondyul").val(),
-                makuseyul: $("#makuseyul").val(),
+                imgseq: $("#imgseq").val(),
+                imgflag: $("#imgflag").val(),
+                inuserid: $("#inuserid").val(),
             };
 
             let formDataObj = new FormData();
@@ -455,7 +455,15 @@
 
             // 🔹 기존 filelist(업로드할 파일 목록)에서 파일 가져오기
             if (uploadedFiles2 && uploadedFiles2.length > 0) {
+                console.log("파일 확인",uploadedFiles2);
                 console.log("파일 개수 (filelist):", uploadedFiles2.length);
+                //  ️첫 번째 파일 이름 저장
+                imgfilenm = uploadedFiles2[0].name;
+
+                // 파일 개수가 2개 이상이면 '외 n건' 추가
+                if (uploadedFiles2.length > 1) {
+                    imgfilenm += ` 외 ${uploadedFiles2.length - 1}건`;
+                }
                 uploadedFiles2.forEach((file, index) => {
                     formDataObj.append("files", file);  // 여러 개의 파일을 개별적으로 추가해야 함
                     console.log(`파일 추가됨 [${index + 1}/${uploadedFiles2.length}]:`, file.name);
@@ -463,6 +471,8 @@
             } else {
                 console.log("추가할 파일이 없음.");
             }
+            // imgfilenm 추가
+            formDataObj.append("imgfilenm", imgfilenm);
 
             // AJAX 요청
             $.ajax({

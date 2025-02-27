@@ -47,8 +47,7 @@ public class CardImgService {
     SqlRunner sqlRunner;
 
     @Transactional
-    public Integer saveOrUpdateMarketingData(Map<String, Object> formData, String userid, List<MultipartFile> files) {
-        // makseq가 빈 문자열이면 null로 처리
+    public Integer saveOrUpdateMarketingData(Map<String, Object> formData, String userid, List<MultipartFile> files, String imgfilenm) {
         Integer imgseq = null;
         if (formData.get("imgseq") != null && !formData.get("imgseq").toString().trim().isEmpty()) {
             imgseq = Integer.parseInt(formData.get("imgseq").toString());
@@ -58,8 +57,7 @@ public class CardImgService {
         if (imgseq != null && cardimgRepository.existsById(imgseq)) {
             // 기존 데이터가 있는 경우 (UPDATE)
             cardimg = new TB_CARDIMG();
-            cardimg.setIMGSEQ(imgseq);  // 기존 ID 유지
-            //log.info("기존 마케팅 데이터 수정 (makseq: {})", makseq);
+            cardimg.setImgseq(imgseq);  // 기존 ID 유지
         } else {
             // 새로운 데이터 저장 (INSERT)
             cardimg = new TB_CARDIMG();
@@ -67,15 +65,19 @@ public class CardImgService {
         }
 
         // 공통 필드 값 설정
-        cardimg.setIMGFLAG((String) formData.get("imgflag"));
-        cardimg.setIMGFILENM((String) formData.get("imgfilenm"));
-        cardimg.setINUSERID(userid);
+        cardimg.setImgflag((String) formData.get("imgflag"));
+        cardimg.setImgfilename(imgfilenm);
+        cardimg.setInuserid(userid);
+        cardimg.setIndatem(LocalDateTime.now());
 
         // 저장 or 수정 실행
         TB_CARDIMG savedCardImg = cardimgRepository.save(cardimg);
-        imgseq = savedCardImg.getIMGSEQ(); // 새롭게 저장된 마케팅 데이터의 ID
-        String currentDate = savedCardImg.getINDATEM().toString();
-        //log.info("마케팅 데이터 저장 완료: {}", makseq);
+        imgseq = savedCardImg.getImgseq(); // 새롭게 저장된 이미지 데이터의 ID
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String formattedDate = savedCardImg.getIndatem().format(formatter);
+
+        String currentDate = formattedDate;
 
         // 파일 처리 (수정 시 기존 파일 삭제 후 재업로드)
         handleMarketingFiles(imgseq, files, userid, currentDate);
@@ -97,27 +99,28 @@ public class CardImgService {
         }
 
         // 기존 파일 목록 조회 (파일명 비교를 위해)
-        List<TB_FILEINFO> existingFiles = fileinfoRepository.findByBbsseq(imgseq);
+        List<TB_FILEINFO> existingFiles = fileinfoRepository.findAllByCheckseqAndBbsseq("04",imgseq);
         Set<String> existingFileNames = existingFiles.stream()
                 .map(TB_FILEINFO::getFILESVNM)
                 .collect(Collectors.toSet());
 
-        //log.info("기존 파일 {}개 삭제 시작 (makseq: {})", existingFiles.size(), makseq);
+        Set<String> newFileNames = files.stream()
+                .map(MultipartFile::getOriginalFilename)
+                .collect(Collectors.toSet());
+
         for (TB_FILEINFO fileInfo : existingFiles) {
             String filePath = fileInfo.getFILEPATH() + File.separator + fileInfo.getFILESVNM();
             File file = new File(filePath);
 
-            if (!existingFileNames.contains(fileInfo.getFILESVNM())) {
-                // 파일이 기존에 저장되지 않은 경우만 삭제
+            if (!newFileNames.contains(fileInfo.getFILEORNM())) { // 새로운 파일에 포함되지 않으면 삭제
                 if (file.exists() && file.delete()) {
-                    //log.info("파일 삭제 성공: {}", filePath);
+                    log.info("📁 기존 파일 삭제 성공: {}", filePath);
                 } else {
-                    log.warn("파일 삭제 실패 또는 존재하지 않음: {}", filePath);
+                    log.warn("⚠ 기존 파일 삭제 실패 또는 존재하지 않음: {}", filePath);
                 }
+                fileinfoRepository.delete(fileInfo); // DB에서도 삭제
             }
         }
-
-
 
         for (MultipartFile file : files) {
             try {
@@ -184,37 +187,38 @@ public class CardImgService {
         MapSqlParameterSource params = new MapSqlParameterSource();
         StringBuilder sql = new StringBuilder("""
         SELECT
-             tm.*,
+             CI.*,
              COALESCE((
                  SELECT JSON_QUERY((
                      SELECT
-                         tf.fileseq AS fileseq,
-                         tf.FILESIZE AS fileSize,
-                         tf.fileornm AS fileornm,
-                         tf.filesvnm AS filesvnm,
-                         tf.filepath AS filepath,
-                         tf.fileextns AS fileextns
-                     FROM TB_FILEINFO tf
-                     WHERE tf.bbsseq = tm.makseq
-                     AND tf.CHECKSEQ = '04'
+                         FI.fileseq AS fileseq,
+                         FI.FILESIZE AS fileSize,
+                         FI.fileornm AS fileornm,
+                         FI.filesvnm AS filesvnm,
+                         FI.filepath AS filepath,
+                         FI.fileextns AS fileextns
+                     FROM TB_FILEINFO FI
+                     WHERE FI.bbsseq = CI.imgseq
+                     AND FI.CHECKSEQ = '04'
                      FOR JSON PATH
                  ))
              ), '[]') AS fileinfos
-         FROM TB_MARKETING tm
+         FROM TB_CARDIMG CI
          WHERE 1=1
         """);
         if (startDate != null && !startDate.isEmpty()) {
-            sql.append("  AND tm.indatem >= :startDate ");
+            sql.append("  AND CI.indatem >= :startDate ");
             params.addValue("startDate", startDate);
         }
         if (endDate != null && !endDate.isEmpty()) {
-            sql.append(" AND tm.indatem <= :endDate ");
+            sql.append(" AND CI.indatem <= :endDate ");
             params.addValue("endDate", endDate);
         }
         if (searchUserNm != null && !searchUserNm.isEmpty()) {
-            sql.append(" AND tm.makcltnm LIKE :searchUserNm ");
+            sql.append(" AND CI.makcltnm LIKE :searchUserNm ");
             params.addValue("searchUserNm", "%" + searchUserNm + "%");
         }
+        sql.append(" ORDER BY CI.indatem DESC");
 
 //      log.info("마케팅관리 List SQL: {}", sql);
 //      log.info("SQL Parameters: {}", params.getValues());
@@ -223,14 +227,13 @@ public class CardImgService {
     }
 
     //삭제
-    public void deleteRegisterById(Integer makseq) {
-        if (!cardimgRepository.existsById(makseq)) {
-            log.warn("삭제할 데이터가 존재하지 않습니다. ID: {}", makseq);
-            throw new EntityNotFoundException("삭제할 데이터가 존재하지 않습니다. ID: " + makseq);
+    public void deleteRegisterById(Integer imgseq) {
+        if (!cardimgRepository.existsById(imgseq)) {
+            throw new EntityNotFoundException("삭제할 데이터가 존재하지 않습니다. ID: " + imgseq);
         }
 
         // 마케팅 관련 파일만 조회
-        List<TB_FILEINFO> fileList = fileinfoRepository.findAllByCheckseqAndBbsseq("03", makseq);
+        List<TB_FILEINFO> fileList = fileinfoRepository.findAllByCheckseqAndBbsseq("03", imgseq);
 
         if (!fileList.isEmpty()) {
             log.info("마케팅 파일 삭제 시작 (총 {} 개)", fileList.size());
@@ -256,15 +259,13 @@ public class CardImgService {
             }
 
             // CHECKSEQ = '03'인 파일만 DB에서 삭제
-            fileinfoRepository.deleteByBbsseqAndCheckseq(makseq, "03");
-            //log.info("마케팅 파일 정보 DB 삭제 완료 (bbsseq = {}, checkseq = '03')", makseq);
+            fileinfoRepository.deleteByBbsseqAndCheckseq(imgseq, "04");
         } else {
-            log.warn("해당 마케팅 데이터에 파일이 없습니다. (ID: {})", makseq);
+            log.warn("해당 마케팅 데이터에 파일이 없습니다. (ID: {})", imgseq);
         }
 
         // 마케팅 데이터 삭제
-        cardimgRepository.deleteById(makseq);
-        //log.info("마케팅 데이터 삭제 완료: ID = {}", makseq);
+        cardimgRepository.deleteById(imgseq);
     }
 
 }

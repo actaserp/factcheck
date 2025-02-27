@@ -31,6 +31,7 @@ public class CardImgController {
     public ResponseEntity<Map<String, Object>> saveMarketing(
             @RequestPart("formData") String formDataJson,
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
+            @RequestPart("imgfilenm") String imgFilenm,
             Authentication auth
     ) {
         Map<String, Object> response = new HashMap<>();
@@ -61,7 +62,7 @@ public class CardImgController {
       }*/
 
             // **마케팅 데이터 저장 (서비스 호출)**
-            Integer makSave = cardImgService.saveOrUpdateMarketingData(formData, userid, files);
+            Integer makSave = cardImgService.saveOrUpdateMarketingData(formData, userid, files, imgFilenm);
 
             response.put("success", true);
             response.put("message", "마케팅 정보가 저장되었습니다.");
@@ -96,6 +97,7 @@ public class CardImgController {
             SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
             ObjectMapper objectMapper = new ObjectMapper();
 
+            int rownum = 1;
             for (Map<String, Object> card : CardImgList) {
                 //날짜 포맷
                 Object indatemValue = card.get("indatem");
@@ -131,9 +133,19 @@ public class CardImgController {
                     card.put("filelist", Collections.emptyList());
                     card.put("isdownload", false);
                 }
-
+                // imgflag 포맷팅
+                Object imgflag = card.get("imgflag");
+                if (imgflag != null) {
+                    if (imgflag.equals("00")) {
+                        imgflag = "카드이미지";
+                    } else if (imgflag.equals("01")) {
+                        imgflag = "기타이미지";
+                    }
+                    card.put("imgflag", imgflag);
+                }
+                card.put("rownum", rownum);
                 card.remove("fileinfos");
-
+                rownum += 1;
             }
 //      log.info("최종 데이터  :{}", MarketingList);
             // 데이터가 있을 경우 성공 메시지
@@ -153,25 +165,21 @@ public class CardImgController {
     @PostMapping("/delete")
     public AjaxResult deleteCategory(@RequestBody Map<String, Object> requestData) {
         AjaxResult result = new AjaxResult();
-        log.info("마케팅 관리 삭제 들어옴: {}", requestData);
-
         try {
-            if (!requestData.containsKey("makseq")) {
-                throw new IllegalArgumentException("삭제할 데이터의 makseq가 누락되었습니다.");
+            if (!requestData.containsKey("imgseq")) {
+                throw new IllegalArgumentException("삭제할 데이터의 imgseq가 누락되었습니다.");
             }
 
             // 🔹 Integer로 직접 변환
-            Integer makseq;
-            if (requestData.get("makseq") instanceof Integer) {
-                makseq = (Integer) requestData.get("makseq"); // 이미 Integer일 경우
+            Integer imgseq;
+            if (requestData.get("imgseq") instanceof Integer) {
+                imgseq = (Integer) requestData.get("imgseq"); // 이미 Integer일 경우
             } else {
-                makseq = Integer.parseInt(requestData.get("makseq").toString()); // String인 경우 변환
+                imgseq = Integer.parseInt(requestData.get("imgseq").toString()); // String인 경우 변환
             }
 
-            log.info("삭제 요청 makseq: {}", makseq);
-
             // 서비스 단 호출
-            cardImgService.deleteRegisterById(makseq);
+            cardImgService.deleteRegisterById(imgseq);
 
             result.success = true;
             result.message = "삭제가 완료되었습니다.";
