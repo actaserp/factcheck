@@ -248,7 +248,7 @@
                             imgflag: item.imgflag || '',
                             indatem: item.indatem || '',
                             inuserid: item.inuserid || '',
-                            inuserid: item.inuserid || '',
+                            imgfilename: item.imgfilename || '',
                             fileList: Array.isArray(item.filelist) ? item.filelist : [],
                             isdownload: item.isdownload
                         }));
@@ -299,7 +299,7 @@
                                     downloadBtn.href = "#";
                                     downloadBtn.classList.add("btn-filedown");
                                     downloadBtn.title = "다운로드";
-                                    downloadBtn.textContent = "다운로드";
+                                    downloadBtn.textContent = item.imgfilename;
 
                                     // 클릭 시, 해당 행의 `fileList` 전달
                                     downloadBtn.onclick = function (event) {
@@ -471,14 +471,21 @@
             let formDataObj = new FormData();
             formDataObj.append("formData", new Blob([JSON.stringify(formData)], {type: "application/json"}));
 
-            console.log("저장할 데이터:", formData);
+            let imgfilenm = "";
 
             // 🔹 기존 filelist(업로드할 파일 목록)에서 파일 가져오기
             if (uploadedFiles2 && uploadedFiles2.length > 0) {
-                console.log("파일 확인",uploadedFiles2);
-                console.log("파일 개수 (filelist):", uploadedFiles2.length);
-                //  ️첫 번째 파일 이름 저장
-                imgfilenm = uploadedFiles2[0].name;
+
+                uploadedFiles2 = uploadedFiles2.filter(file =>
+                    !deletedFiles2.some(deleted => deleted.filesvnm === file.filesvnm)
+                );
+
+                // 등록 vs 수정: 파일명 선택 로직
+                if (uploadedFiles2[0] instanceof File) {
+                    imgfilenm = uploadedFiles2[0].name;
+                } else {
+                    imgfilenm = uploadedFiles2[0].fileornm;
+                }
 
                 // 파일 개수가 2개 이상이면 '외 n건' 추가
                 if (uploadedFiles2.length > 1) {
@@ -486,7 +493,6 @@
                 }
                 uploadedFiles2.forEach((file, index) => {
                     formDataObj.append("files", file);  // 여러 개의 파일을 개별적으로 추가해야 함
-                    console.log(`파일 추가됨 [${index + 1}/${uploadedFiles2.length}]:`, file.name);
                 });
             } else {
                 console.log("추가할 파일이 없음.");
@@ -495,7 +501,7 @@
             // 🔹 삭제된 파일 리스트를 JSON 문자열이 아닌 "plain string"으로 전달 (🚀 수정!)
             if (deletedFiles2.length > 0) {
                 const deletedFilesJson = JSON.stringify(deletedFiles2.map(file => file.filesvnm)); // 파일 식별자만 추출
-                formDataObj.append("deletedFiles", deletedFilesJson); // ❌ Blob이 아니라 그냥 문자열로 추가!
+                formDataObj.append("deletedFiles", deletedFilesJson); // Blob이 아니라 그냥 문자열로 추가!
             }
             // imgfilenm 추가
             formDataObj.append("imgfilenm", imgfilenm);
@@ -531,8 +537,6 @@
         // 삭제 함수
         function deleteData() {
             let selectedItem = theGrid.selection.row >= 0 ? theGrid.rows[theGrid.selection.row].dataItem : null;
-
-            console.log("선택된 아이템:", selectedItem); // 선택된 행의 데이터 확인
 
             if (!selectedItem || !selectedItem.imgseq) {
                 Alert.alert('', "삭제할 데이터를 선택해주세요.");
