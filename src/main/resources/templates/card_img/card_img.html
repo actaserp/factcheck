@@ -132,7 +132,7 @@
                                 <th><label for="imgflag"> 구분</label></th>
                                 <td colspan="3">
                                     <select id="imgflag" style="width: 100%;">
-                                        <option value="00">카드 이미지</option>
+                                        <option value="00" selected>카드 이미지</option>
                                         <option value="01">기타 이미지</option>
                                     </select>
                                     <input id="imgseq" type="hidden">
@@ -357,13 +357,15 @@
             console.log("✔️ 파일 목록 데이터:", rowData.fileList || "🚨 fileList가 없습니다!");
 
             document.getElementById('imgseq').value = rowData.imgseq || "";
-            document.getElementById('imgflag').value = rowData.imgflag || "";
+            const selectimgflag = document.getElementById('imgflag');   // 문의구분(공통코드)
+            setSelectedIndex(selectimgflag, rowData.imgflag);
             document.getElementById('indatem').value = rowData.indatem || "";
             document.getElementById('inuserid').value = rowData.inuserid || "";
 
             let fileList = document.getElementById('filelist2');
             fileList.innerHTML = "";
             uploadedFiles2 = [];
+            deletedFiles2 = [];
 
             if (rowData.fileList && Array.isArray(rowData.fileList)) {
                 rowData.fileList.forEach(file => {
@@ -400,6 +402,12 @@
                         listItem.remove();
                         updateFileCount();
                     };
+                    deleteBtn.onclick = function (event) {
+                        event.preventDefault();
+                        deletedFiles2.push(file); // 🔹 삭제된 파일을 배열에 추가
+                        listItem.remove();
+                        updateFileCount();
+                    };
 
                     listItem.appendChild(fileInfo);
                     listItem.appendChild(deleteBtn);
@@ -409,6 +417,16 @@
                 });
 
                 updateFileCount();
+            }
+        }
+        // select 바인드 메서드
+        function setSelectedIndex(selectElement, selectedValue) {
+            for (let i = 1; i < selectElement.options.length; i++) {
+                // 트림(공백 제거), 대소문자 무시, 타입 일치시키기
+                if (selectElement.options[i].text === String(selectedValue).trim().toLowerCase()) {
+                    selectElement.selectedIndex = i;
+                    break;
+                }
             }
         }
 
@@ -471,6 +489,12 @@
             } else {
                 console.log("추가할 파일이 없음.");
             }
+
+            // 🔹 삭제된 파일 리스트를 JSON 문자열이 아닌 "plain string"으로 전달 (🚀 수정!)
+            if (deletedFiles2.length > 0) {
+                const deletedFilesJson = JSON.stringify(deletedFiles2.map(file => file.filesvnm)); // 파일 식별자만 추출
+                formDataObj.append("deletedFiles", deletedFilesJson); // ❌ Blob이 아니라 그냥 문자열로 추가!
+            }
             // imgfilenm 추가
             formDataObj.append("imgfilenm", imgfilenm);
 
@@ -499,6 +523,7 @@
                     Alert.alert("", "저장 중 오류가 발생했습니다. 관리자에게 문의하세요.");
                 }
             });
+            fetchListData();
         }
 
         // 삭제 함수
@@ -507,21 +532,20 @@
 
             console.log("선택된 아이템:", selectedItem); // 선택된 행의 데이터 확인
 
-            if (!selectedItem || !selectedItem.makseq) {
+            if (!selectedItem || !selectedItem.imgseq) {
                 Alert.alert('', "삭제할 데이터를 선택해주세요.");
-                console.warn("삭제할 데이터가 선택되지 않음");
                 return;
             }
 
-            const makseq = selectedItem.makseq; // 선택한 행의 makseq 값
-            console.log("삭제할 makseq:", makseq); // makseq 값 확인
+            const imgseq = selectedItem.imgseq; // 선택한 행의 imgseq 값
+            console.log("삭제할 imgseq:", imgseq); // imgseq 값 확인
 
             Alert.confirm('', '삭제하시겠습니까?', function () {
                 $.ajax({
-                    url: '/api/Marketing/delete',  // API URL 확인
+                    url: '/api/CardImg/delete',  // API URL 확인
                     type: 'POST',
                     contentType: 'application/json',
-                    data: JSON.stringify({makseq: makseq}),  // JSON 데이터 확인
+                    data: JSON.stringify({imgseq: imgseq}),  // JSON 데이터 확인
                     headers: {
                         'X-CSRF-Token': $('[name=_csrf]').val()
                     },
@@ -570,6 +594,7 @@
 
             if (form) {
                 form.reset(); // 모든 입력 필드 초기화
+                document.getElementById('imgseq').value = '';
             }
 
             // 파일 입력 필드 초기화

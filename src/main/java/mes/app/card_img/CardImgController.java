@@ -16,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
@@ -32,6 +34,7 @@ public class CardImgController {
             @RequestPart("formData") String formDataJson,
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @RequestPart("imgfilenm") String imgFilenm,
+            @RequestPart(value = "deletedFiles", required = false) String deletedFilesJson,
             Authentication auth
     ) {
         Map<String, Object> response = new HashMap<>();
@@ -41,31 +44,20 @@ public class CardImgController {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> formData = objectMapper.readValue(formDataJson, new TypeReference<>() {});
 
-            //log.info("✅ 저장에 들어온 데이터: {}", formData);
+            // 🗑 삭제된 파일 목록 처리
+            List<String> deletedFiles = new ArrayList<>();
+            if (deletedFilesJson != null && !deletedFilesJson.isEmpty()) {
+                deletedFiles = objectMapper.readValue(deletedFilesJson, new TypeReference<List<String>>() {});
+                log.info("🗑 삭제할 파일 개수: {}", deletedFiles.size());
+                log.info("🗑 삭제할 파일 목록: {}", deletedFiles);
+            } else {
+                log.info("🗑 삭제할 파일 없음.");
+            }
 
-     /* // 기존 파일 확인
-      List<Map<String, Object>> fileList = (List<Map<String, Object>>) formData.get("filelist");
-      if (fileList != null) {
-        log.info("📂 기존 파일 개수: {}", fileList.size());
-      } else {
-        log.info("📁 기존 파일 없음.");
-      }
-
-      // 📂 업로드된 파일 개수 확인
-      if (files != null) {
-        log.info("📂 서버에서 받은 파일 개수: {}", files.size());
-        for (MultipartFile file : files) {
-          log.info("📁 서버에서 받은 파일: {}, 크기: {} 바이트", file.getOriginalFilename(), file.getSize());
-        }
-      } else {
-        log.info("📁 새롭게 업로드된 파일 없음.");
-      }*/
-
-            // **마케팅 데이터 저장 (서비스 호출)**
-            Integer makSave = cardImgService.saveOrUpdateMarketingData(formData, userid, files, imgFilenm);
+            Integer makSave = cardImgService.saveOrUpdateimgData(formData, userid, files, imgFilenm, deletedFiles);
 
             response.put("success", true);
-            response.put("message", "마케팅 정보가 저장되었습니다.");
+            response.put("message", "이미지 정보가 저장되었습니다.");
             response.put("makseq", makSave);
             return ResponseEntity.ok(response);
 
@@ -89,12 +81,15 @@ public class CardImgController {
                                     @RequestParam(value = "searchUserNm", required = false, defaultValue = "") String searchUserNm) {
         AjaxResult result = new AjaxResult();
         //log.info("들어온 데이터: startDate={}, endDate={}, searchUserNm={}", startDate, endDate, searchUserNm);
-
+        if (!endDate.isEmpty()) {
+            LocalDate parsedEndDate = LocalDate.parse(endDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            endDate = parsedEndDate.plusDays(1).toString(); // 하루 추가
+        }
         try {
             // 데이터 조회
             List<Map<String, Object>> CardImgList = cardImgService.getList(startDate, endDate, searchUserNm);
 
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH시 mm분 ss초");
             ObjectMapper objectMapper = new ObjectMapper();
 
             int rownum = 1;
@@ -137,9 +132,9 @@ public class CardImgController {
                 Object imgflag = card.get("imgflag");
                 if (imgflag != null) {
                     if (imgflag.equals("00")) {
-                        imgflag = "카드이미지";
+                        imgflag = "카드 이미지";
                     } else if (imgflag.equals("01")) {
-                        imgflag = "기타이미지";
+                        imgflag = "기타 이미지";
                     }
                     card.put("imgflag", imgflag);
                 }

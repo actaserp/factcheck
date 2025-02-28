@@ -22,10 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.io.Files.getFileExtension;
@@ -47,20 +44,24 @@ public class CardImgService {
     SqlRunner sqlRunner;
 
     @Transactional
-    public Integer saveOrUpdateMarketingData(Map<String, Object> formData, String userid, List<MultipartFile> files, String imgfilenm) {
+    public Integer saveOrUpdateimgData(Map<String, Object> formData, String userid, List<MultipartFile> files, String imgfilenm, List<String> deletedFiles) {
         Integer imgseq = null;
         if (formData.get("imgseq") != null && !formData.get("imgseq").toString().trim().isEmpty()) {
             imgseq = Integer.parseInt(formData.get("imgseq").toString());
         }
         TB_CARDIMG cardimg;
+        TB_CARDIMG existingCardImg = cardimgRepository.findById(imgseq)
+                .orElseThrow(() -> new RuntimeException("해당 이미지가 존재하지 않습니다."));
 
-        if (imgseq != null && cardimgRepository.existsById(imgseq)) {
+        if (imgseq != null && existingCardImg != null) {
             // 기존 데이터가 있는 경우 (UPDATE)
             cardimg = new TB_CARDIMG();
             cardimg.setImgseq(imgseq);  // 기존 ID 유지
+            cardimg.setIndatem(existingCardImg.getIndatem());
         } else {
             // 새로운 데이터 저장 (INSERT)
             cardimg = new TB_CARDIMG();
+            cardimg.setIndatem(LocalDateTime.now());
             //log.info("🆕 새로운 마케팅 데이터 저장 시작");
         }
 
@@ -68,7 +69,6 @@ public class CardImgService {
         cardimg.setImgflag((String) formData.get("imgflag"));
         cardimg.setImgfilename(imgfilenm);
         cardimg.setInuserid(userid);
-        cardimg.setIndatem(LocalDateTime.now());
 
         // 저장 or 수정 실행
         TB_CARDIMG savedCardImg = cardimgRepository.save(cardimg);
@@ -79,12 +79,18 @@ public class CardImgService {
 
         String currentDate = formattedDate;
 
+        if (deletedFiles != null && !deletedFiles.isEmpty()) {
+            log.info("🗑 삭제할 파일 개수: {}", deletedFiles.size());
+            deleteimgFiles(imgseq, deletedFiles);
+        } else {
+            log.info("🗑 삭제할 파일 없음.");
+        }
+
         // 파일 처리 (수정 시 기존 파일 삭제 후 재업로드)
         handleMarketingFiles(imgseq, files, userid, currentDate);
 
         return imgseq;  // 저장된 또는 수정된 마케팅 데이터의 ID 반환
     }
-
 
     private void handleMarketingFiles(Integer imgseq, List<MultipartFile> files, String userid, String currentDate) {
         String fileUploadPath = settings.getProperty("file_upload_path") + "이미지관리";
@@ -99,26 +105,24 @@ public class CardImgService {
         }
 
         // 기존 파일 목록 조회 (파일명 비교를 위해)
-        List<TB_FILEINFO> existingFiles = fileinfoRepository.findAllByCheckseqAndBbsseq("04",imgseq);
+        //    List<TB_FILEINFO> existingFiles = fileinfoRepository.findByBbsseq(makseq);
+        List<TB_FILEINFO> existingFiles = fileinfoRepository.findFilesByBbsseqAndCHECKSEQ(imgseq, "04");
         Set<String> existingFileNames = existingFiles.stream()
                 .map(TB_FILEINFO::getFILESVNM)
                 .collect(Collectors.toSet());
 
-        Set<String> newFileNames = files.stream()
-                .map(MultipartFile::getOriginalFilename)
-                .collect(Collectors.toSet());
-
+        //log.info("기존 파일 {}개 삭제 시작 (makseq: {})", existingFiles.size(), makseq);
         for (TB_FILEINFO fileInfo : existingFiles) {
             String filePath = fileInfo.getFILEPATH() + File.separator + fileInfo.getFILESVNM();
             File file = new File(filePath);
 
-            if (!newFileNames.contains(fileInfo.getFILEORNM())) { // 새로운 파일에 포함되지 않으면 삭제
+            if (!existingFileNames.contains(fileInfo.getFILESVNM())) {
+                // 파일이 기존에 저장되지 않은 경우만 삭제
                 if (file.exists() && file.delete()) {
-                    log.info("📁 기존 파일 삭제 성공: {}", filePath);
+                    //log.info("파일 삭제 성공: {}", filePath);
                 } else {
-                    log.warn("⚠ 기존 파일 삭제 실패 또는 존재하지 않음: {}", filePath);
+                    log.warn("파일 삭제 실패 또는 존재하지 않음: {}", filePath);
                 }
-                fileinfoRepository.delete(fileInfo); // DB에서도 삭제
             }
         }
 
@@ -154,7 +158,6 @@ public class CardImgService {
             }
         }
     }
-
 
     // parseNumericField 메서드 추가
     private BigDecimal parseNumericField(String value, String... suffixesToRemove) {
@@ -215,7 +218,7 @@ public class CardImgService {
             params.addValue("endDate", endDate);
         }
         if (searchUserNm != null && !searchUserNm.isEmpty()) {
-            sql.append(" AND CI.makcltnm LIKE :searchUserNm ");
+            sql.append(" AND CI.inuserid LIKE :searchUserNm ");
             params.addValue("searchUserNm", "%" + searchUserNm + "%");
         }
         sql.append(" ORDER BY CI.indatem DESC");
@@ -233,7 +236,7 @@ public class CardImgService {
         }
 
         // 마케팅 관련 파일만 조회
-        List<TB_FILEINFO> fileList = fileinfoRepository.findAllByCheckseqAndBbsseq("03", imgseq);
+        List<TB_FILEINFO> fileList = fileinfoRepository.findAllByCheckseqAndBbsseq("04", imgseq);
 
         if (!fileList.isEmpty()) {
             log.info("마케팅 파일 삭제 시작 (총 {} 개)", fileList.size());
@@ -266,6 +269,40 @@ public class CardImgService {
 
         // 마케팅 데이터 삭제
         cardimgRepository.deleteById(imgseq);
+    }
+
+    // 삭제된 파일 처리
+    private void deleteimgFiles(Integer imgseq, List<String> deletedFiles) {
+        if (deletedFiles == null || deletedFiles.isEmpty()) {
+            log.info("🗑 삭제할 파일 없음.");
+            return;
+        }
+
+        log.info("🗑 삭제할 파일 개수: {}", deletedFiles.size());
+
+        for (String fileName : deletedFiles) {
+            try {
+                // 🔹 DB에서 해당 파일 조회 (imgseq와 CHECKSEQ=04 필터링)
+                Optional<TB_FILEINFO> fileInfoOpt = fileinfoRepository.findByCHECKSEQAndBbsseqAndFILESVNM("04", imgseq, fileName);
+
+                if (fileInfoOpt.isPresent()) {
+                    TB_FILEINFO fileInfo = fileInfoOpt.get();
+                    String filePath = fileInfo.getFILEPATH() + File.separator + fileInfo.getFILESVNM();
+
+                    // 1️⃣ 실제 파일 삭제
+                    File file = new File(filePath);
+                    if (file.exists() && file.delete()) {
+                        log.info("✅ 파일 삭제 성공: {}", filePath);
+                    } else {
+                        log.warn("⚠️ 파일 삭제 실패 또는 존재하지 않음: {}", filePath);
+                    }
+                    fileinfoRepository.delete(fileInfo);
+                } else {
+                }
+            } catch (Exception e) {
+                log.error("🚨 파일 삭제 중 오류 발생 (파일명={}): {}", fileName, e.getMessage(), e);
+            }
+        }
     }
 
 }
