@@ -534,7 +534,6 @@
       <div class="popup-contents">
         <div class="ticket-tit">
           <dl>
-            <dt>주소</dt>
             <dd></dd>
           </dl>
         </div>
@@ -1208,13 +1207,13 @@
                 <table class="register-table" style="width: 100%; border-collapse: collapse; margin-bottom: 15px; overflow-x: auto;">
                     <thead>
                         <tr class="${cardClass}" style="background-color: #f2f2f2;">
-                            <th colspan="7" style="padding: 8px; text-align: left;">발급일자: ${indateTime} / 점수: ${realScoreText}</th>
+                            <th colspan="7" style="padding: 8px; text-align: left;">발급일자: ${indateTime} &nbsp;&nbsp;&nbsp;&nbsp; 점수: ${realScoreText}</th>
                         </tr>
                         <tr>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:80px;">순위번호</th>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:200px;">등기 목적</th>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:200px;">대상 소유자</th>
-                            <th style="padding: 8px; border: 1px solid #ddd;min-width:400px;">주요 등기사항</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:400px;text-align: left;">주요 등기사항</th>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:300px;">접수정보</th>
                             <th style="padding: 8px; border: 1px solid #ddd;min-width:80px;">구분</th>
                         </tr>
@@ -1230,7 +1229,7 @@
                         <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${item?.RankNo || ''}</td>
                         <td style="padding: 8px; border: 1px solid #ddd;">${item?.Purpose || ''}</td>
                         <td style="padding: 8px; border: 1px solid #ddd;">${item?.TargetOwner || ''}</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${item?.Information || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;text-align: left;">${item?.Information || ''}</td>
                         <td style="padding: 8px; border: 1px solid #ddd;">${item?.ReceiptInfo || ''}</td>
                         <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${sectionName}</td>
                     </tr>

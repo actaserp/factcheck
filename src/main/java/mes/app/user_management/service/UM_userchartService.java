@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -142,8 +143,8 @@ public class UM_userchartService {
         .addValue("sexYn", sexYn)
         .addValue("district", district);
 
-    log.info("그리드 리스트 SQL: {}", sql.toString());
-    log.info("SQL 매개변수: {}", params.getValues());
+//    log.info("그리드 리스트 SQL: {}", sql.toString());
+//    log.info("SQL 매개변수: {}", params.getValues());
 
     return jdbcTemplate.queryForList(sql.toString(), params);
   }
@@ -214,7 +215,7 @@ public class UM_userchartService {
     subQueryColumns.add("CONVERT(DATE, RI.RELASTDATE) AS inDatem");
     subQueryColumns.add("RI.RESIDO AS region");
     subQueryColumns.add("RI.REGUGUN AS district");
-    subQueryColumns.add("UI.SEXYN AS sexYn");
+    subQueryColumns.add("TU.SEXYN AS sexYn");
 
     // REALGUBUN을 "기타"로 변환
     subQueryColumns.add(
@@ -252,9 +253,14 @@ public class UM_userchartService {
     sql.append("    LEFT JOIN auth_user au ON au.username = RI.USERID ");
     sql.append("    WHERE RI.RELASTDATE >= :startDate AND RI.RELASTDATE <= :endDate \n");
 
+    // endDate +1 처리
+    LocalDate parsedEndDate = LocalDate.parse(endDate);
+    LocalDate nextDay = parsedEndDate.plusDays(1);
+    String newEndDate = nextDay.toString();
+
     MapSqlParameterSource params = new MapSqlParameterSource();
     params.addValue("startDate", startDate);
-    params.addValue("endDate", endDate);
+    params.addValue("endDate", newEndDate);
 
     if (inDatem != null && !inDatem.isEmpty()) {
       sql.append("       AND RI.RELASTDATE <= :inDatem  \n");
