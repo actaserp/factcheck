@@ -253,8 +253,11 @@ public class MarketingService {
       params.addValue("startDate", startDate);
     }
     if (endDate != null && !endDate.isEmpty()) {
-      sql.append(" AND tm.indatem <= :endDate ");
-      params.addValue("endDate", endDate);
+      LocalDate parsedEndDate = LocalDate.parse(endDate);
+      LocalDate nextDay = parsedEndDate.plusDays(1);
+
+      sql.append(" AND tm.indatem < :endDate ");
+      params.addValue("endDate", nextDay.toString());
     }
     if (searchUserNm != null && !searchUserNm.isEmpty()) {
       sql.append(" AND tm.makcltnm LIKE :searchUserNm ");
