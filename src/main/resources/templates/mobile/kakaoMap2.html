@@ -953,6 +953,7 @@
             "E": "/img/Map/E등급_marker.png",
             "F": "/img/Map/F등급_marker.png"
           };
+
           response.markers.forEach(markerData => {
             markerData.floor = extractFloorFromAddress(markerData.address) || 1; // 기본값 1층
           });
@@ -977,7 +978,7 @@
             var angleOffset = 0.000005; // 층별로 회전하면서 퍼지는 효과
 
             var floor = markerData.floor || 0; // 기본값 0층
-            var angle = (floor * 45) * (Math.PI / 180); // 층별로 회전하도록 설정
+            var angle = (floor * 45) * (Math.PI / 180); // 45도씩 회전하며 배치// 층별로 회전하도록 설정
 
             // X, Y 축으로 마커 분산
             var newLat = parseFloat(markerData.lat) + (floorOffset * floor);
