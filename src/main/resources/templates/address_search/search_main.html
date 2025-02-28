@@ -122,7 +122,6 @@
                         <div id="searcharea">
                             <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
                             <input type="text" id="address1" placeholder="검색할 부동산 주소 입력" onfocus="openModal()">
-                            <input type="hidden" id="placeAddress">
                             <span class="search-icon" id="searchIcon" onclick="openModal()">🔍</span>
                         </div>
                     </div>
@@ -199,7 +198,6 @@
 
                 document.getElementById('postno').value = data.zonecode;
                 document.getElementById('address1').value = roadAddr;
-                document.getElementById("placeAddress").value = data.jibunAddress;
 
                 closeModal();
             },
@@ -263,7 +261,7 @@
             url: '/api/tilko/searchGoyuList',
             type: 'GET',
             data: {
-                'address1': $('#placeAddress').val() + " " + $('#address2').val()
+                'address1': $('#address1').val() + " " + $('#address2').val()
             },
             async: false,
             success: function (data) {

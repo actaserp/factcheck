@@ -46,12 +46,13 @@ public class CardImgService {
     @Transactional
     public Integer saveOrUpdateimgData(Map<String, Object> formData, String userid, List<MultipartFile> files, String imgfilenm, List<String> deletedFiles) {
         Integer imgseq = null;
+        TB_CARDIMG existingCardImg = null;
         if (formData.get("imgseq") != null && !formData.get("imgseq").toString().trim().isEmpty()) {
             imgseq = Integer.parseInt(formData.get("imgseq").toString());
+            existingCardImg = cardimgRepository.findById(imgseq)
+                    .orElseThrow(() -> new RuntimeException("해당 이미지가 존재하지 않습니다."));
         }
         TB_CARDIMG cardimg;
-        TB_CARDIMG existingCardImg = cardimgRepository.findById(imgseq)
-                .orElseThrow(() -> new RuntimeException("해당 이미지가 존재하지 않습니다."));
 
         if (imgseq != null && existingCardImg != null) {
             // 기존 데이터가 있는 경우 (UPDATE)
