@@ -117,13 +117,13 @@
                             </tr>
                             <tr>
                                 <th>
-                                    <label for="pernm">
+                                    <label for="last_name">
                                         이&nbsp;&nbsp;&nbsp;&nbsp;름
                                     </label>
                                 </th>
                                 <td>
                                     <div class="input-clear">
-                                        <input type="text" id="pernm" name="pernm" placeholder="이름" style="width: 400px !important;">
+                                        <input type="text" id="last_name" name="last_name" placeholder="이름" style="width: 400px !important;">
                                     </div>
                                 </td>
                                 <th>
@@ -356,7 +356,7 @@
                             data2.push({
                                 id: '',
                                 userid: '',
-                                pernm: '',
+                                last_name: '',
                                 group_name: '',
                                 group_id: '',
                                 Phone: '',
@@ -425,7 +425,7 @@
 
         function showUserInfo(rowData) {
             // 필드 중 하나라도 비어있는지 확인하여 추가 데이터를 가져올지 결정
-            const hasMissingFields = !rowData || !rowData.userid || !rowData.email;
+            const hasMissingFields = !rowData || !rowData.userid || !rowData.email || !rowData.last_name ;
 
             if (hasMissingFields) {
                 // 데이터가 불완전하거나 비어 있을 때
@@ -461,7 +461,7 @@
         function populateFields(data) {
             // 각 필드에 데이터를 채움
             document.getElementById("id").value = data.id || '';
-            document.getElementById("pernm").value = data.pernm || '';
+            document.getElementById("last_name").value = data.last_name || '';
             document.getElementById("userid").value = data.userid || '';
             document.getElementById("Phone").value = data.Phone || '';
             document.getElementById("is_active").value = data.is_active || '';
@@ -546,7 +546,7 @@
         })
 
         function clearForm(){
-            ['id', 'userid', 'pernm', 'password','passwordchk','cltnm', 'authType', 'email','Phone', 'tel','username'].forEach(id => {
+            ['id', 'userid', 'last_name', 'password','passwordchk','cltnm', 'authType', 'email','Phone', 'tel','username'].forEach(id => {
                 const element = document.getElementById(id);
                 if (element) { // 요소가 존재하는 경우에만 실행
                     element.value = '';
@@ -622,7 +622,7 @@
                 let formData = {
                     id: $('#id').val().trim(),
                     login_id: $('#userid').val(),
-                    pernm: $('#pernm').val(),
+                    last_name: $('#last_name').val(),
                     UserGroup_id: $('#authType').val(),
                     password: pwd,
                     email: emailValue,

@@ -232,7 +232,7 @@ public class IssueInquiryController {
     try {
       // Step 1: realid를 이용해 PinNo 찾기
       List<Map<String, Object>> findPinNo = issueInquiryService.getFindPinNo(realid);
-      log.info("[Step 1] 조회된 PinNo 리스트: {}", findPinNo);
+     // log.info("[Step 1] 조회된 PinNo 리스트: {}", findPinNo);
 
       // Step 2: PinNo에서 REALID 추출
       Set<Integer> realIds = new TreeSet<>(Collections.reverseOrder()); // 큰 값이 먼저 오도록 정렬
@@ -241,17 +241,17 @@ public class IssueInquiryController {
         if (realIdObj != null) {
           int extractedRealId = Integer.parseInt(realIdObj.toString());
           realIds.add(extractedRealId);
-          log.info(" [Step 2] 추출된 REALID: {}", extractedRealId);
+         // log.info(" [Step 2] 추출된 REALID: {}", extractedRealId);
         }
       }
-      log.info("[Step 2] 총 {}개의 REALID 추출됨: {}", realIds.size(), realIds);
+     // log.info("[Step 2] 총 {}개의 REALID 추출됨: {}", realIds.size(), realIds);
 
       // Step 3: 추출한 REALID 리스트를 이용해 데이터 조회
       List<Map<String, Object>> findnK = new ArrayList<>();
       List<Map<String, Object>> findE = new ArrayList<>();
 
       for (int rid : realIds) { // 큰 REALID부터 조회
-        log.info(" [Step 3] REALID={}에 대한 findnK, findE 조회 시작", rid);
+        //log.info(" [Step 3] REALID={}에 대한 findnK, findE 조회 시작", rid);
         findnK.addAll(issueInquiryService.getFindnK(rid));
         findE.addAll(issueInquiryService.getFindE(rid));
       }
@@ -262,7 +262,7 @@ public class IssueInquiryController {
         response.put("findPinNO", findPinNo);
         response.put("findnK", findnK);
         response.put("findnE", findE);
-        log.info(" [Step 4] 최종 응답 데이터 구성 완료 - 데이터 있음");
+       // log.info(" [Step 4] 최종 응답 데이터 구성 완료 - 데이터 있음");
       } else {
         response.put("success", false);
         response.put("message", "데이터를 찾을 수 없습니다.");
