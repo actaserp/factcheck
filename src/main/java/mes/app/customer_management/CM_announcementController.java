@@ -264,7 +264,7 @@ public class CM_announcementController {
         try {
             // Repository를 통해 데이터 저장
             cmAnnouncementService.deleteBBS(BBSSEQ);
-            cmAnnouncementService.deleteFile(BBSSEQ);
+
             bbsinfoRepository.findById(BBSSEQ).ifPresent(bbsinfo -> {
                 List<String> deleteImages = extractImageUrlsFromHtml(bbsinfo.getBBSTEXT());
                 // 서버 디렉토리에서 삭제
@@ -282,6 +282,7 @@ public class CM_announcementController {
                     file.delete();
                 }
             }
+            cmAnnouncementService.deleteFile(BBSSEQ);
             result.message = "삭제되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();

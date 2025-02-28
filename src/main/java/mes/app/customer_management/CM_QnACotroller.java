@@ -254,7 +254,6 @@ public class CM_QnACotroller {
 
         try {
             qnaService.deleteQnA(qnaseq);
-            qnaService.deleteFile(qnaseq);
             // 파일 서버에서 삭제
             List<TB_FILEINFO> filelist = fileinfoRepository.findAllByCheckseqAndBbsseq("02", qnaseq);
             for (TB_FILEINFO fileinfo : filelist) {
@@ -265,6 +264,7 @@ public class CM_QnACotroller {
                     file.delete();
                 }
             }
+            qnaService.deleteFile(qnaseq);
             result.message = "답변내용이 성공적으로 삭제되었습니다.";
         } catch (Exception e) {
             e.printStackTrace();
