@@ -355,7 +355,7 @@
 
             if (rowData) {
               modifyData(rowData); // 데이터 입력 필드 채우기
-              NewSave(); // 팝업 열기
+              NewSave2(); // 팝업 열기
             }
           }
         }
@@ -570,6 +570,13 @@
       let popup = document.getElementById('popup1');
       let wrapper = document.getElementById('wrapper1');
       clearForm();  // 폼 초기화
+      popup.style.display = 'block';
+      wrapper.style.display = 'block';
+    }
+    function NewSave2() {
+      let popup = document.getElementById('popup1');
+      let wrapper = document.getElementById('wrapper1');
+
       popup.style.display = 'block';
       wrapper.style.display = 'block';
     }
