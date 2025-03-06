@@ -39,19 +39,25 @@
         border: 1px solid #ccc;
         border-radius: 5px;
         width: 100%;
-        max-width: 400px; /* 원하는 크기로 조정 */
+        max-width: 1200px; /* 원하는 크기로 조정 */
     }
     #searcharea input {
-        flex-grow: 1;        /* 남은 공간을 모두 차지 */
+        flex-grow: 1;
         border: none;
         outline: none;
         font-size: 16px;
+        padding: 10px;
+        padding-right: 40px; /* 아이콘과 겹치지 않도록 여백 추가 */
     }
 
     .search-icon {
+        position: absolute;
+        right: 15%; /* 오른쪽 끝에 위치 */
         font-size: 20px;
         cursor: pointer;
-        padding-left: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
 </style>
@@ -107,7 +113,7 @@
     <!-- [모바일] 컨덴츠  -->
     <div class="mobile-layout-contents">
         <!--- (레이아웃) Contents 영역 -->
-        <div class="layout-contents">
+        <div class="layout-contents" >
             <!-- 검색 영역  -->
             <div class="search-wrap">
 
@@ -119,17 +125,17 @@
                     <div class="search-container">
                         <input type="hidden" id="postno">
                         <h2>주소 검색</h2>
-                        <div id="searcharea">
+                        <div id="searcharea" style="margin-top: 10px;">
                             <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
                             <input type="text" id="address1" placeholder="검색할 부동산 주소 입력" onfocus="openModal()">
-                            <span class="search-icon" id="searchIcon" onclick="openModal()">🔍</span>
+                            <span class="search-icon" id="searchIcon" onclick="openModal()" >🔍</span>
                         </div>
                     </div>
                     <div id="postcodeModal" class="modal" style="display: none">
                         <div class="modal-content">
                             <div style="display: flex">
                                 <div class="modal-header"></div>
-                                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto">×</button>
+                                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto; margin-top: 5px;">×</button>
                             </div>
                             <div id="postcodeContainer" style="width: 100%;"></div>
                         </div>
@@ -147,10 +153,10 @@
 
                     <button onclick="searchGoyuList()" style="margin-top: 10px">물건 선택</button>
                 </dl>
-            </div> <!--// contents-wrap end-->
+            </div> <!--// contents-wrap end--></div>
             <div id="addressWrap" class="contents-wrap">
 
-            </div>
+
             <!-- 로딩 화면 -->
             <div id="loadingSpinner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 9999;">
                 <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">
@@ -289,7 +295,7 @@
 
                         let cleanAddress = preprocessAddress(data.rd_addr_detail);
                         htmlContent += `
-                        <div class="card-box ${cardColor}" data-Goyu="${data.pin}">
+                        <div class="card-box ${cardColor}" data-Goyu="${data.pin}" style="margin-bottom:10px;">
                             <div class="card-cont">
                                 <dl>
                                     <dt>고유번호</dt>
@@ -308,7 +314,7 @@
                                     <dd>${data.use_cls_cd}</dd>
                                 </dl>
                             </div>
-                            <button class="btn btn-popup-open" data-popup="popup-history" title="등기부">
+                            <button class="btn btn-popup-open" data-popup="popup-history" style="margin-bottom: 10px;" title="등기부">
                                 등기부 조회
                             </button>
                         </div>`;

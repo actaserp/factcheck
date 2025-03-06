@@ -653,7 +653,7 @@
                     const cardColor = availableColors[colorIndex];
                     colorIndex = (colorIndex + 1) % availableColors.length;
 
-                    let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="상세보기">
+                    let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="margin-bottom: 10px;">
                             상세보기
                         </button>`;
 
@@ -678,7 +678,7 @@
                     htmlContent += `
                         <div class="card-box ${cardColor}" data-realadd="${item.REALADD}" data-resido="${item.RESIDO}" data-realid="${item.REALID}"
                     data-regdate="${item.REGDATE}" data-regugun="${item.REGUGUN}" data-rejimok="${item.REJIMOK}" data-rearea="${item.REAREA}"
-                    data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}">
+                    data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}" style="margin-bottom: 10px;">
 
                             <div class="card-cont">
                                  ${selectedValue !== "most_viewed_property" ? `

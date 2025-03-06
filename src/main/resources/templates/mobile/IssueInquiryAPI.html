@@ -562,7 +562,7 @@
           colorIndex = (colorIndex + 1) % availableColors.length;
 
           let buttonsHtml = `
-                    <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기">상세보기 </button>
+                    <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="margin-bottom: 10px;">상세보기 </button>
                     `;
 
           const formattedDate = item.RELASTDATE.substring(0, 4) + '-' + item.RELASTDATE.substring(4, 6) + '-' + item.RELASTDATE.substring(6, 8);
@@ -573,7 +573,7 @@
           htmlContent += `
                     <div class="card-box ${cardColor}" data-realadd="${item.REALADD}" data-resido="${item.RESIDO}" data-realid="${item.REALID}"
                         data-regdate="${item.REGDATE}" data-regugun="${item.REGUGUN}" data-rejimok="${item.REJIMOK}" data-rearea="${item.REAREA}"
-                        data-PDFFILENAME="${item.PDFFILENAME}" data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}">
+                        data-PDFFILENAME="${item.PDFFILENAME}" data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}" style="margin-bottom: 10px;">
                         <div class="card-cont">
                             <dl>
                                 <dt>집합건물</dt>

@@ -57,42 +57,7 @@ public class UserCodeController {
         result.data = item;
         return result;
     }
-
-    /*@PostMapping("/save")
-    public AjaxResult saveCode(
-            @RequestParam(value = "id", required = false) Integer id,
-            @RequestParam("name") String value,
-            @RequestParam("code") String code,
-            @RequestParam(value = "parent_id", required = false) Integer parent_id,
-            @RequestParam("description") String description,
-            @RequestParam("status") String status,
-            HttpServletRequest request,
-            Authentication auth) {
-        User user = (User) auth.getPrincipal();
-
-        UserCode c = null;
-
-        if (id == null) {
-            c = new UserCode();
-        } else {
-            c = this.userCodeRepository.getUserCodeById(id);
-        }
-        c.setValue(value);
-        c.setCode(code);
-        c.setDescription(description);
-        c.setParentId(parent_id);
-        c.set_audit(user);
-        c.set_status(status);
-
-        c = this.userCodeRepository.save(c);
-        log.info("Saving UserCode - id: {}, code: {}, name: {}, parent_id: {}, description: {}, status: {}",
-                id, code, value, parent_id, description, status);
-
-        AjaxResult result = new AjaxResult();
-        result.data = c;
-
-        return result;
-    }*/
+    
     @PostMapping("/save")
     public AjaxResult saveCode(
             @RequestParam(value = "id", required = false) Integer id,

@@ -39,19 +39,25 @@
         border: 1px solid #ccc;
         border-radius: 5px;
         width: 100%;
-        max-width: 400px; /* 원하는 크기로 조정 */
+        max-width: 1200px; /* 원하는 크기로 조정 */
     }
     #searcharea input {
-        flex-grow: 1;        /* 남은 공간을 모두 차지 */
+        flex-grow: 1;
         border: none;
         outline: none;
         font-size: 16px;
+        padding: 10px;
+        padding-right: 40px; /* 아이콘과 겹치지 않도록 여백 추가 */
     }
 
     .search-icon {
+        position: absolute;
+        right: 15%; /* 오른쪽 끝에 위치 */
         font-size: 20px;
         cursor: pointer;
-        padding-left: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
 </style>
@@ -119,7 +125,7 @@
             <div class="modal-content">
               <div style="display: flex">
                 <div class="modal-header"></div>
-                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto">×</button>
+                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto; margin-top: 5px;">×</button>
               </div>
               <div id="postcodeContainer" style="width: 100%;"></div>
             </div>
