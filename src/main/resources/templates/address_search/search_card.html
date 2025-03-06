@@ -131,9 +131,11 @@
             </div>
         </div> <!--//layout-contents end -->
     </div> <!-- //mobile-layout-contents end-->
-    <button onclick="cardDetail()" style="margin-top: 10px; width: 100px; margin-left: auto">상세보기</button>
-    <button onclick="deductionDetail()" style="margin-top: 10px; width: 100px;">점수이력</button>
-    <button onclick="window.location.href = '/'" style="margin-top: 10px; width: 100px;">다시조회</button>
+    <div style="text-align: center">
+        <button onclick="cardDetail()" style="margin-top: 10px; width: 100px; margin-left: auto">상세보기</button>
+        <button onclick="deductionDetail()" style="margin-top: 10px; width: 100px;">점수이력</button>
+        <button onclick="window.location.href = '/'" style="margin-top: 10px; width: 100px;">다시조회</button>
+    </div>
     </div> <!-- //mobile-layout-contents end-->
     <!-- 팝업 배경 (클릭 차단 + 어둡게) -->
     <div class="popup-overlay" id="popupOverlay"></div>
@@ -283,15 +285,15 @@
 
         const cardTitle = document.createElement('div');
         cardTitle.className = 'card-title';
-        cardTitle.textContent = `주소: ${parsedData.ADDRESS}`;
+        cardTitle.textContent = `${parsedData.ADDRESS}`;
 
         const cardContent = document.createElement('div');
         cardContent.className = 'card-content';
-        cardContent.textContent = `등급: ${parsedData.GRADE}`;
+        cardContent.textContent = `${parsedData.GRADE}등급`;
 
         const cardContent2 = document.createElement('div');
         cardContent2.className = 'card-content';
-        cardContent2.textContent = `점수: ${parsedData.REALSCORE}`;
+        cardContent2.textContent = `${parsedData.REALSCORE}`;
 
         const cardContent3 = document.createElement('div');
         cardContent3.className = 'card-content';
