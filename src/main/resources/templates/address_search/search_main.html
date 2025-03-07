@@ -68,11 +68,13 @@
         top: 50%;
         transform: translate(-50%, -50%);
         width: 400px;
+        height: 650px;
         max-width: 90%;
         background-color: white;
         border-radius: 10px;
         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         padding: 20px;
+        border: none;
         z-index: 9999;
     }
 
@@ -187,7 +189,7 @@
                         <div class="modal-overlay" id="modalOverlay"></div>
                         <!-- 모달 -->
                         <div id="postcodeModal" class="modal">
-                            <div class="modal-content">
+                            <div class="modal-content" style="margin-top: 15px">
                                 <div style="display: flex">
                                     <div class="modal-header"></div>
                                     <button class="modal-close" onclick="closeModal()">
@@ -273,15 +275,25 @@
                 closeModal();
             },
             onresize: function(size) {
-                // 동적 스타일 적용
+                // 모달 내부 iframe 크기 자동 조정
                 const layers = document.querySelectorAll('[id^="__daum__layer_"]');
                 layers.forEach(layer => {
                     layer.style.width = '100%';
-                    layer.style.height = '500px';
+                    layer.style.height = window.innerHeight * 0.6 + 'px'; // 화면 높이의 60%로 조정
                     layer.style.overflow = 'hidden';
                     layer.style.backgroundColor = '#fff';
                 });
+
+                // 모달 크기 조정
+                const modal = document.getElementById('postcodeModal');
+                if (modal) {
+                    modal.style.width = '90%'; // 작은 화면에서는 너비를 90%로 설정
+                    modal.style.maxWidth = '500px'; // 최대 너비 제한
+                    modal.style.height = 'auto';
+                    modal.style.maxHeight = window.innerHeight * 0.8 + 'px'; // 화면의 80%까지만 커지도록 설정
+                }
             }
+
 
         }).embed(document.getElementById('postcodeContainer'));
     }

@@ -320,7 +320,7 @@ header .right a {display: block;}
 .login-wrap .login-form {width: 100%;}
 .login-wrap .login-form dl {margin-bottom: 24px;}
 .login-wrap .login-form dl dt {font-size: 14px; font-weight: 500; color: #77849C; margin-bottom: 6px;}
-.login-wrap .login-form dl dd input {width: 100%; height: 48px; background-color: #F4F7FA;}
+.login-wrap .login-form dl dd input {width: 100%; height: 48px;}
 .login-wrap .login-form .check-save {display: flex; align-items: center; margin-bottom: 24px;}
 .login-wrap .login-form .check-save label {margin-left: 10px;}
 .login-wrap .login-form .btn-login {display: flex; justify-content: center; align-items: center; width: 100%; height: 56px; background-color: #03428e; color: #fff; border-radius: 5px; margin-bottom: 24px; font-size: 18px; font-weight: 700;}

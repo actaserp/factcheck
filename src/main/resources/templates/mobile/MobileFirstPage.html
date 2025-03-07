@@ -279,14 +279,23 @@
         closeModal();
       },
       onresize: function(size) {
-        // 동적 스타일 적용
+        // 모달 내부 iframe 크기 자동 조정
         const layers = document.querySelectorAll('[id^="__daum__layer_"]');
         layers.forEach(layer => {
           layer.style.width = '100%';
-          layer.style.height = '500px';
+          layer.style.height = window.innerHeight * 0.6 + 'px'; // 화면 높이의 60%로 조정
           layer.style.overflow = 'hidden';
           layer.style.backgroundColor = '#fff';
         });
+
+        // 모달 크기 조정
+        const modal = document.getElementById('postcodeModal');
+        if (modal) {
+          modal.style.width = '90%'; // 작은 화면에서는 너비를 90%로 설정
+          modal.style.maxWidth = '500px'; // 최대 너비 제한
+          modal.style.height = 'auto';
+          modal.style.maxHeight = window.innerHeight * 0.8 + 'px'; // 화면의 80%까지만 커지도록 설정
+        }
       }
 
     }).embed(document.getElementById('postcodeContainer'));

@@ -538,7 +538,7 @@ input[type=text].input-date {
  =================================================================================*/
 .btn-wrap {display: flex; justify-content: center; align-items: center; gap: 6px;}
 button, .btn {display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 36px; padding: 4px 18px; line-height: 36px; background-color: #fff; font-weight: 500; color: #4D4D4D; border: 1px solid #B3B3B3; border-radius: 5px; font-weight: 600; white-space: nowrap; transition: all .3s; opacity: 1;}
-button:hover, .btn:hover {background-color: #F5F6FA; border: 1px solid #4D4D4D;}
+button:hover, .btn:hover { border: 1px solid #4D4D4D;}
 button:disabled, .btn:disabled {background-color: #fff; border: 1px solid #B3B3B3; color: #B3B3B3;}
 button img, .btn img {margin-right: 10px;}
 .btn-dark {background-color: #022D60; color: #fff; border: none; border-radius: 10px;}
