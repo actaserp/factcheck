@@ -1,65 +1,116 @@
 <!DOCTYPE html>
 <html lang="ko">
 <style>
+    .mobile-layout-header header {
+        display: flex;
+        justify-content: center; /* 가운데 정렬 */
+        align-items: center; /* 수직 정렬 */
+        height: 60px; /* 높이 조절 */
+    }
+
+    .left {
+        margin-left: 0; /* 기존 여백 제거 */
+    }
+
+    .left h2 {
+        font-size: 25px; /* 글자 크기 설정 */
+    }
     .btn-clear {
         display: none !important; /* 강제로 숨김 */
     }
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
-    .search-container {
-        align-items: center;
-        padding: 10px;
-        border-bottom: 1px solid #ccc;
+    /* 전체 컨테이너 스타일 */
+    .contents-wrap {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
     }
 
-    .search-container input {
-        flex: 1;
-        padding: 10px;
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+    /* 검색 영역 스타일 */
+    #searcharea, #detailarea {
+        position: relative;
+        width: 100%;
+        margin-top: 10px;
     }
 
-    .search-container button {
-        background: none;
+    #searcharea input, #detailarea input {
+        width: 100%;
         border: none;
-        font-size: 20px;
+        outline: none;
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    /* 검색 아이콘 (SVG) */
+    .search-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
         cursor: pointer;
     }
 
+    /* 검색 가이드 스타일 */
     .search-guide {
         padding: 10px;
         font-size: 14px;
         color: #666;
     }
-    #searcharea {
-        display: flex;         /* 한 줄 정렬 */
-        align-items: center;   /* 세로 중앙 정렬 */
-        border: 1px solid #ccc;
-        border-radius: 5px;
+
+    /* 버튼 스타일 */
+    .btn-select, .btn-login {
         width: 100%;
-        max-width: 1200px; /* 원하는 크기로 조정 */
-    }
-    #searcharea input {
-        flex-grow: 1;
-        border: none;
-        outline: none;
-        font-size: 16px;
         padding: 10px;
-        padding-right: 40px; /* 아이콘과 겹치지 않도록 여백 추가 */
-    }
-
-    .search-icon {
-        position: absolute;
-        right: 15%; /* 오른쪽 끝에 위치 */
-        font-size: 20px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 5px;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 
+    /* 모달 오버레이 (배경 흐리게) */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5); /* 반투명한 검은색 배경 */
+        z-index: 999; /* 모달보다 한 단계 아래 */
+    }
+
+    /* 모달 스타일 */
+    .modal {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 400px;
+        max-width: 90%;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+
+    }
+
+    /* 모달 닫기 버튼 스타일 */
+    .modal-close {
+        position: absolute;
+        top: 10px;
+        right: 5px;
+        width: 30px; /* 버튼 크기 */
+        height: 25px;
+        border: none;
+        border-radius: 3px;
+        background: none; !important; /* 배경 제거 */
+        background-color: transparent; !important; /* 배경을 투명하게 */
+        z-index: 1000;
+        cursor: pointer; /* 클릭 가능한 버튼 스타일 */
+    }
 </style>
 <head>
   <meta charset="UTF-8">
@@ -80,11 +131,11 @@
 
 
   <script type="text/javascript" src="/resource/ax5ui/ax5ui.all.min.js?v=1000"></script>
-
   <script type="text/javascript" src="/js/ax5commUtil.js?v=1070"></script>
-
   <script src="/js/common.js?v=1060"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+  <link rel="stylesheet" href="/assets_mobile/css/FactCheck/address.csss"/>
+
 </head>
 
 <body>
@@ -92,12 +143,11 @@
   <!-- [모바일] 헤더  -->
   <div class="mobile-layout-header">
     <header>
-      <div class="left" style="margin-left:35px;">
+      <div class="left">
         <h2>FACT CHECK</h2>
       </div>
     </header>
   </div> <!-- //mobile-layout-header end-->
-
   <!-- [모바일] 메뉴  -->
   <div th:insert="~{mobile/mobile_menu :: mobile_menu}"></div>
   <!-- [모바일] 컨덴츠  -->
@@ -111,43 +161,58 @@
       <!-- 컨텐츠 영역  -->
       <div class="contents-wrap">
         <dl style="margin-bottom: 10px">
-          <!--                    <button onclick="openModal()" style="margin-bottom: 10px">주소 검색</button>-->
           <div class="search-container">
             <input type="hidden" id="postno">
-            <h2>주소 검색</h2>
+            <h2>주소</h2>
+
+            <!-- 주소 검색 입력창 -->
             <div id="searcharea">
-              <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
-              <input type="text" id="address1" placeholder="검색할 부동산 주소 입력" onfocus="openModal()">
-              <span class="search-icon" id="searchIcon" onclick="openModal()">🔍</span>
+              <input type="text" id="address1" placeholder="검색 할 부동산 주소를 입력 해주세요" onfocus="openModal()">
+              <span class="search-icon" id="searchIcon" onclick="openModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="11" cy="11" r="7" stroke="black" stroke-width="2"/>
+                        <line x1="16" y1="16" x2="22" y2="22" stroke="black" stroke-width="2"/>
+                    </svg>
+                </span>
             </div>
-          </div>
-          <div id="postcodeModal" class="modal" style="display: none">
-            <div class="modal-content">
-              <div style="display: flex">
-                <div class="modal-header"></div>
-                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto; margin-top: 5px;">×</button>
+            <div class="modal-overlay" id="modalOverlay"></div>
+            <!-- 모달 -->
+            <div id="postcodeModal" class="modal">
+              <div class="modal-content">
+                <div style="display: flex">
+                  <div class="modal-header"></div>
+                  <button class="modal-close" onclick="closeModal()">
+                    <img src="../img/icon/factcheck/x-lg.svg" alt="닫기" class="close-icon">
+                  </button>
+                </div>
+                <div id="postcodeContainer"></div>
               </div>
-              <div id="postcodeContainer" style="width: 100%;"></div>
+            </div>
+
+
+            <!-- 상세 주소 입력 -->
+            <div id="detailarea">
+              <input type="text" id="address2" placeholder="상세주소를 입력 하세요">
             </div>
           </div>
-          <div>
-            <label for="address2"></label>
-            <input type="text" id="address2" placeholder="상세주소 입력"><br>
-          </div>
+
           <!-- 검색 가이드 -->
           <div class="search-guide">
             <p>* 부동산 소재지번 또는 도로명, 동/호로 검색하면 정확한 결과를 얻을 수 있습니다.</p>
             <p>* 미등기인 경우 주소 조회 및 등록이 되지 않습니다.</p>
           </div>
 
-
-          <button onclick="searchGoyuList()" style="margin-top: 10px">물건 선택</button>
-          <button type="button" class="btn-login" id="login" style="margin-top: 10px">로그인 하러 가기</button>
+          <!-- 버튼 -->
+          <div style="display: flex; gap: 5px; align-items: center; max-width: 100%;">
+          <button onclick="searchGoyuList()" style="margin-top: 10px;border: none; margin-bottom: 10px;">물건 선택</button>
+          <button id="login" style="padding-top: 0px;border: none;">로그인 하러 가기</button>
+          </div>
         </dl>
-      </div> <!--// contents-wrap end-->
-      <div id="addressWrap" class="contents-wrap">
-
       </div>
+
+
+      <div id="addressWrap" class="contents-wrap"></div>
+
       <!-- 로딩 화면 -->
       <div id="loadingSpinner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 9999;">
         <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">

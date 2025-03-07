@@ -7,57 +7,106 @@
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
-     .search-container {
-         align-items: center;
-         padding: 10px;
-         border-bottom: 1px solid #ccc;
-     }
-
-    .search-container input {
-        flex: 1;
-        padding: 10px;
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+    /* 검색 영역 스타일 */
+    #searcharea, #detailarea {
+        position: relative;
+        width: 100%;
+        margin-top: 10px;
     }
 
-    .search-container button {
-        background: none;
+    #searcharea input, #detailarea input {
+        width: 100%;
         border: none;
-        font-size: 20px;
+        outline: none;
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    /* 검색 아이콘 (SVG) */
+    .search-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
         cursor: pointer;
     }
 
+    /* 검색 가이드 스타일 */
     .search-guide {
         padding: 10px;
         font-size: 14px;
         color: #666;
     }
-    #searcharea {
-        display: flex;         /* 한 줄 정렬 */
-        align-items: center;   /* 세로 중앙 정렬 */
-        border: 1px solid #ccc;
-        border-radius: 5px;
+
+    /* 버튼 스타일 */
+    .btn-select, .btn-login {
         width: 100%;
-        max-width: 1200px; /* 원하는 크기로 조정 */
-    }
-    #searcharea input {
-        flex-grow: 1;
-        border: none;
-        outline: none;
-        font-size: 16px;
         padding: 10px;
-        padding-right: 40px; /* 아이콘과 겹치지 않도록 여백 추가 */
+        margin-top: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
     }
 
-    .search-icon {
+    /* 모달 오버레이 (배경 흐리게) */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5); /* 반투명한 검은색 배경 */
+        z-index: 999; /* 모달보다 한 단계 아래 */
+    }
+
+    /* 모달 스타일 */
+    .modal {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 400px;
+        max-width: 90%;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+
+    }
+
+    /* 모달 닫기 버튼 스타일 */
+    .modal-close {
         position: absolute;
-        right: 15%; /* 오른쪽 끝에 위치 */
-        font-size: 20px;
-        cursor: pointer;
+        top: 10px;
+        right: 5px;
+        width: 30px; /* 버튼 크기 */
+        height: 25px;
+        border: none;
+        border-radius: 3px;
+        background: none; !important; /* 배경 제거 */
+        background-color: transparent; !important; /* 배경을 투명하게 */
+        z-index: 1000;
+        cursor: pointer; /* 클릭 가능한 버튼 스타일 */
+    }
+
+    #loadingSpinner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8); /* 배경 어둡게 */
         display: flex;
-        align-items: center;
         justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    #loadingImage {
+        width: 90%; /* 전체 화면의 80% 크기 */
+        max-width: 700px; /* 최대 크기 제한 */
     }
 
 </style>
@@ -97,7 +146,7 @@
                 <a href="#" title="전체메뉴" class="logo">
                 </a>
             </div>
-            <div class="left" style="margin-left:35px;">
+            <div class="left" style="margin-left:35px; font-size: 25px;">
                 <h2>FACT CHECK</h2>
             </div>
             <div class="right">
@@ -121,48 +170,64 @@
             <!-- 컨텐츠 영역  -->
             <div class="contents-wrap">
                 <dl style="margin-bottom: 10px">
-<!--                    <button onclick="openModal()" style="margin-bottom: 10px">주소 검색</button>-->
                     <div class="search-container">
                         <input type="hidden" id="postno">
-                        <h2>주소 검색</h2>
-                        <div id="searcharea" style="margin-top: 10px;">
-                            <div id="guide" style="display:none; color: #888; font-size: 14px;"></div>
-                            <input type="text" id="address1" placeholder="검색할 부동산 주소 입력" onfocus="openModal()">
-                            <span class="search-icon" id="searchIcon" onclick="openModal()" >🔍</span>
+                        <h2>주소</h2>
+
+                        <!-- 주소 검색 입력창 -->
+                        <div id="searcharea">
+                            <input type="text" id="address1" placeholder="검색 할 부동산 주소를 입력 해주세요" onfocus="openModal()">
+                            <span class="search-icon" id="searchIcon" onclick="openModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="11" cy="11" r="7" stroke="black" stroke-width="2"/>
+                        <line x1="16" y1="16" x2="22" y2="22" stroke="black" stroke-width="2"/>
+                    </svg>
+                </span>
                         </div>
-                    </div>
-                    <div id="postcodeModal" class="modal" style="display: none">
-                        <div class="modal-content">
-                            <div style="display: flex">
-                                <div class="modal-header"></div>
-                                <button class="modal-close" onclick="closeModal()" style="width: 30px; margin-left: auto; margin-top: 5px;">×</button>
+                        <div class="modal-overlay" id="modalOverlay"></div>
+                        <!-- 모달 -->
+                        <div id="postcodeModal" class="modal">
+                            <div class="modal-content">
+                                <div style="display: flex">
+                                    <div class="modal-header"></div>
+                                    <button class="modal-close" onclick="closeModal()">
+                                        <img src="../img/icon/factcheck/x-lg.svg" alt="닫기" class="close-icon">
+                                    </button>
+                                </div>
+                                <div id="postcodeContainer"></div>
                             </div>
-                            <div id="postcodeContainer" style="width: 100%;"></div>
+                        </div>
+
+
+                        <!-- 상세 주소 입력 -->
+                        <div id="detailarea">
+                            <input type="text" id="address2" placeholder="상세주소를 입력 하세요">
                         </div>
                     </div>
-                    <div>
-                        <label for="address2"></label>
-                        <input type="text" id="address2" placeholder="상세주소 입력"><br>
-                    </div>
+
                     <!-- 검색 가이드 -->
                     <div class="search-guide">
                         <p>* 부동산 소재지번 또는 도로명, 동/호로 검색하면 정확한 결과를 얻을 수 있습니다.</p>
                         <p>* 미등기인 경우 주소 조회 및 등록이 되지 않습니다.</p>
                     </div>
 
-
-                    <button onclick="searchGoyuList()" style="margin-top: 10px">물건 선택</button>
+                    <!-- 버튼 -->
+                        <button onclick="searchGoyuList()" style="margin-top: 10px; margin-bottom: 10px; border: none;">물건 선택</button>
                 </dl>
-            </div> <!--// contents-wrap end--></div>
+            </div><!--// contents-wrap end-->
             <div id="addressWrap" class="contents-wrap">
 
-
+            </div>
             <!-- 로딩 화면 -->
-            <div id="loadingSpinner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 9999;">
+            <div id="loadingSpinner" style="display: none;">
+                <img src="/images/gif/CardLoading.gif" alt="로딩 중" id="loadingImage">
+            </div>
+
+            <!--<div id="loadingSpinner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 9999;">
                 <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">
                     <span>🔄 등기부등본 발급중입니다...</span>
                 </div>
-            </div>
+            </div>-->
 <!--            <button onclick="searchdatatest()" style="margin-top: 10px">test</button>-->
         </div> <!--//layout-contents end -->
 
@@ -366,14 +431,17 @@
     // pdf 데이터 조회 및 파싱 저장 메서드 호출(등기부등본 조회 메서드)
     let isSearchInProgress = false;  // 중복 호출 방지 플래그
 
+
     function searchaddress(data, cleanAddress) {
-        if (isSearchInProgress) return;  // 진행 중이면 함수 종료
-        isSearchInProgress = true;  // 플래그 설정
+        if (isSearchInProgress) return; // 진행 중이면 함수 종료
+        isSearchInProgress = true; // 플래그 설정
 
         console.log("data : ", data);
 
         // 로딩 화면 표시
         document.getElementById('loadingSpinner').style.display = 'flex';
+
+        let startTime = Date.now(); // 요청 시작 시간 기록
 
         $.ajax({
             url: '/api/tilko/downloadPDF',
@@ -384,43 +452,50 @@
             },
             async: true,
             success: function (response) {
-                // 응답 값 검증
-                if (!response.success || response.data === null) {
-                    // 로딩 스피너 숨기기
+                let elapsedTime = Date.now() - startTime; // 경과 시간 계산
+                let minLoadingTime = 4500; // 최소 로딩 시간 (2초)
+
+                // 최소 로딩 시간 보장 후 실행
+                setTimeout(() => {
+                    if (!response.success || response.data === null) {
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                        isSearchInProgress = false;
+
+                        Alert.alert("", response.message);
+                        return;
+                    }
+
+                    let data2 = response.data;
+                    console.log("data2", data2);
+
+                    let resultMap = {
+                        "REALID": data2.REALID,
+                        "REALSCORE": data2.REALSCORE,
+                        "GRADE": data2.GRADE,
+                        "COMMENT": data2.COMMENT,
+                        "ADDRESS": data2.ADDRESS
+                    };
+                    sessionStorage.setItem("resultMap", JSON.stringify(resultMap));
+
                     document.getElementById('loadingSpinner').style.display = 'none';
-                    isSearchInProgress = false;  // 플래그 해제
+                    isSearchInProgress = false;
 
-                    // 사용자에게 메시지 표시
-                    Alert.alert("",response.message);
-                    return;  // 함수 종료
-                }
-                let data2 = response.data;
-                console.log("data2", data2);
-
-                // API 응답에서 필요한 값 추출 후 sessionStorage에 저장
-                let resultMap = {
-                    "REALID" : data2.REALID,
-                    "REALSCORE": data2.REALSCORE,
-                    "GRADE": data2.GRADE,
-                    "COMMENT": data2.COMMENT,
-                    "ADDRESS": data2.ADDRESS
-                };
-                sessionStorage.setItem("resultMap", JSON.stringify(resultMap));
-
-                document.getElementById('loadingSpinner').style.display = 'none';
-                isSearchInProgress = false;  // 플래그 해제
-
-                // search_card 페이지로 이동
-                window.location.href = "mobile/search_card";
+                    // search_card 페이지로 이동
+                    window.location.href = "mobile/search_card";
+                }, Math.max(0, minLoadingTime - elapsedTime)); // 최소 로딩 시간 보장
             },
             error: function (error) {
-                document.getElementById('loadingSpinner').style.display = 'none';
-                isSearchInProgress = false;  // 에러 발생 시 플래그 해제
-                console.error("Error in API call:", error);
+                let elapsedTime = Date.now() - startTime;
+                let minLoadingTime = 4500;
+
+                setTimeout(() => {
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    isSearchInProgress = false;
+                    console.error("Error in API call:", error);
+                }, Math.max(0, minLoadingTime - elapsedTime)); // 최소 로딩 시간 보장
             }
         });
     }
-
 
 </script>
 </body>
