@@ -1,6 +1,34 @@
 <!DOCTYPE html>
 <html lang="ko">
 <style>
+
+    /*.layout-contents {*/
+    /*    position: relative; !* 내부 요소가 배경 위에 배치될 수 있도록 설정 *!*/
+    /*    background-image: url('/img/cardBackImg.png'); !* 배경 이미지 경로 *!*/
+    /*    background-size: cover; !* 전체를 덮도록 설정 *!*/
+    /*    background-position: center; !* 이미지를 중앙 정렬 *!*/
+    /*    background-repeat: no-repeat; !* 반복 방지 *!*/
+    /*    width: 100%;*/
+    /*    min-height: 100vh; !* 화면 전체 높이 차지 *!*/
+    /*    display: flex;*/
+    /*    flex-direction: column;*/
+    /*    justify-content: center;*/
+    /*    align-items: center;*/
+    /*}*/
+
+    /*!* 하위 요소 스타일 *!*/
+    /*.layout-contents .contents-wrap,*/
+    /*.layout-contents #addressWrap {*/
+    /*    position: relative; !* 배경 위에 표시되도록 설정 *!*/
+    /*    !*background: rgba(255, 255, 255, 0.8); !* 반투명 배경 추가 (가독성) *!*!*/
+    /*    padding: 20px;*/
+    /*    border-radius: 10px;*/
+    /*    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
+    /*    width: 90%;*/
+    /*    max-width: 600px;*/
+    /*    text-align: center;*/
+    /*}*/
+
     .btn-clear {
         display: none !important; /* 강제로 숨김 */
     }
@@ -64,6 +92,136 @@
     }
     .card-content {
         white-space: pre-line; /* ✅ 줄바꿈 반영 */
+    }
+/*    카드 css 부분*/
+    body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(to bottom, #ffebf1, #e6b9d4);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    /* 카드 컨테이너 */
+    .card-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    /*  !* 카드 스타일 *!
+      .card {
+          background: white;
+          border-radius: 15px;
+          padding: 20px;
+          width: 320px;
+          text-align: center;
+          box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+          border: 2px solid #dca3c3;
+          outline: 3px solid #dca3c3; !* 분홍색 테두리 추가 *!
+          outline-offset: -5px; !* 테두리를 안쪽으로 *!
+          position: relative;
+      }*/
+
+
+    .card {
+        position: relative;
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        width: 350px;
+        text-align: center;
+        outline: 3px solid #dca3c3;
+        outline-offset: -10px;
+    }
+
+    .card::before {
+        content: "";
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        /*border: 3px solid #dca3c3;*/
+        border-radius: 18px;
+        z-index: -2; /* 배경 뒤로 */
+    }
+
+    /* 상단 제목 */
+    .card-header h3 {
+        font-size: 14px;
+        color: gray;
+        margin-bottom: 5px;
+    }
+
+    .card-header h2 {
+        font-size: 18px;
+        font-weight: bold;
+        color: black;
+        margin-bottom: 10px;
+    }
+
+    /* "안심" 배지 */
+    .safety-badge {
+        background: #e8b4c9;
+        color: white;
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 15px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    /* 점수 */
+    .score {
+        font-size: 48px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .score-value {
+        color: black;
+    }
+
+    /* 설명 목록 */
+    .card-info {
+        list-style: none;
+        padding: 0;
+    }
+
+    .card-info li {
+        text-align: left;
+        font-size: 14px;
+        color: black;
+        margin-bottom: 5px;
+    }
+
+    /* 날짜 */
+    .date {
+        font-size: 12px;
+        color: gray;
+        margin-top: 10px;
+    }
+
+    /* 버튼 컨테이너 */
+    .btn-container {
+        margin-top: 20px;
+    }
+
+    button {
+        background-color: #d679a1;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #b65b84;
     }
 </style>
 <head>
@@ -129,13 +287,12 @@
             <div id="addressWrap" class="contents-wrap">
 
             </div>
+            <div style="text-align: center">
+                <button onclick="cardDetail()" style="margin-top: 10px; width: 100px; margin-left: auto">상세보기</button>
+                <button onclick="deductionDetail()" style="margin-top: 10px; width: 100px;">점수이력</button>
+                <button onclick="window.location.href = '/'" style="margin-top: 10px; width: 100px;">다시조회</button>
+            </div>
         </div> <!--//layout-contents end -->
-    </div> <!-- //mobile-layout-contents end-->
-    <div style="text-align: center">
-        <button onclick="cardDetail()" style="margin-top: 10px; width: 100px; margin-left: auto">상세보기</button>
-        <button onclick="deductionDetail()" style="margin-top: 10px; width: 100px;">점수이력</button>
-        <button onclick="window.location.href = '/'" style="margin-top: 10px; width: 100px;">다시조회</button>
-    </div>
     </div> <!-- //mobile-layout-contents end-->
     <!-- 팝업 배경 (클릭 차단 + 어둡게) -->
     <div class="popup-overlay" id="popupOverlay"></div>
@@ -282,23 +439,20 @@
 
         let htmlContent = `
         <div class="card">
-            <div class="card-title">${parsedData.ADDRESS}</div>
-            <div class="card-content">${parsedData.GRADE}등급</div>
-            <div class="card-content">${parsedData.REALSCORE}</div>
+            <div class="card-header">
+                <h3>${parsedData.ADDRESS}</h3>
+                <div class="safety-badge">${parsedData.GRADE}등급</div>
+            </div>
+            <div class="score">
+                <span class="score-value">${parsedData.REALSCORE}</span>점
+            </div>
     `;
 
         if (scoreData === "S") {
             htmlContent += `<div class="card-content">안전합니다.</div>`;
         } else {
             htmlContent += `
-            <table class="comment-table" style="margin-top: 10px; border-collapse: collapse; width: 100%;">
-                <thead>
-                    <tr>
-                        <th style="border: 1px solid #ddd; padding: 8px;">날짜</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">코멘트</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <ul class="card-info">
         `;
 
             let uniqueComments = new Set();
@@ -313,10 +467,7 @@
                     if (!uniqueComments.has(commentText)) {
                         uniqueComments.add(commentText);
                         htmlContent += `
-                        <tr>
-                            <td style="border: 1px solid #ddd; padding: 8px;">${formattedDate}</td>
-                            <td style="border: 1px solid #ddd; padding: 8px;">${commentText}</td>
-                        </tr>
+                        <li>✔️ ${commentText}</li>
                     `;
                     }
                 });
@@ -329,15 +480,12 @@
                 if (!uniqueComments.has(commentText)) {
                     uniqueComments.add(commentText);
                     htmlContent += `
-                    <tr>
-                        <td style="border: 1px solid #ddd; padding: 8px;">${formattedDate}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px;">${commentText}</td>
-                    </tr>
+                    <li>✔️ ${commentText}</li>
                 `;
                 }
             }
 
-            htmlContent += `</tbody></table>`;
+            htmlContent += `</ul>`;
         }
 
         htmlContent += `</div>`; // 카드 닫기
