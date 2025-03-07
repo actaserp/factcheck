@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ko">
+<style>
+    .btn-clear {
+        display: none !important; /* 강제로 숨김 */
+    }
+    .btn-close {
+        display: none !important; /* 강제로 숨김 */
+    }
+    .card {
+        margin-top: 20px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 400px;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .card-content {
+        font-size: 14px;
+        color: #555;
+    }
+    /* 팝업 활성화 시 */
+    .popup-wrapper.active {
+        transform: translateX(-50%) translateY(0); /* 📌 화면 아래에서 올라오도록 설정 */
+        opacity: 1; /* 보이도록 설정 */
+    }
+    .popup-wrapper2.active {
+        transform: translateX(-50%) translateY(0); /* 📌 화면 아래에서 올라오도록 설정 */
+        opacity: 1; /* 보이도록 설정 */
+    }
+    /* 팝업 배경 (어둡게 처리) */
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5); /* 📌 반투명 검은색 배경 */
+        z-index: 59; /* 팝업보다 한 단계 낮게 설정 */
+        display: none; /* 기본적으로 숨김 */
+    }
+
+    /* 팝업이 활성화될 때 배경 표시 */
+    .popup-overlay.active {
+        display: block;
+    }
+    .card-content {
+        white-space: pre-line; /* ✅ 줄바꿈 반영 */
+    }
+    /*테스트*/
+
+    body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(to bottom, #ffebf1, #e6b9d4);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    /* 카드 컨테이너 */
+    .card-container {
+        display: flex;
+        justify-content: center;
+    }
+
+  /*  !* 카드 스타일 *!
+    .card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        width: 320px;
+        text-align: center;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        border: 2px solid #dca3c3;
+        outline: 3px solid #dca3c3; !* 분홍색 테두리 추가 *!
+        outline-offset: -5px; !* 테두리를 안쪽으로 *!
+        position: relative;
+    }*/
+
+
+    .card {
+        position: relative;
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        width: 350px;
+        text-align: center;
+        outline: 3px solid #dca3c3;
+        outline-offset: -10px;
+    }
+
+    .card::before {
+        content: "";
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        border: 3px solid #dca3c3;
+        border-radius: 18px;
+        z-index: -2; /* 배경 뒤로 */
+    }
+
+    /* 상단 제목 */
+    .card-header h3 {
+        font-size: 14px;
+        color: gray;
+        margin-bottom: 5px;
+    }
+
+    .card-header h2 {
+        font-size: 18px;
+        font-weight: bold;
+        color: black;
+        margin-bottom: 10px;
+    }
+
+    /* "안심" 배지 */
+    .safety-badge {
+        background: #e8b4c9;
+        color: white;
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 15px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    /* 점수 */
+    .score {
+        font-size: 48px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .score-value {
+        color: black;
+    }
+
+    /* 설명 목록 */
+    .card-info {
+        list-style: none;
+        padding: 0;
+    }
+
+    .card-info li {
+        text-align: left;
+        font-size: 14px;
+        color: black;
+        margin-bottom: 5px;
+    }
+
+    /* 날짜 */
+    .date {
+        font-size: 12px;
+        color: gray;
+        margin-top: 10px;
+    }
+
+    /* 버튼 컨테이너 */
+    .btn-container {
+        margin-top: 20px;
+    }
+
+    button {
+        background-color: #d679a1;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #b65b84;
+    }
+
+
+
+</style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FACT CHECK</title>
+  <link rel="icon" type="image/png" href="/images/logo/icon_FACT%20CHECK.png">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/> <!-- Slide css -->
+  <link rel="stylesheet" href="/resource/ax5ui/ax5ui.all.css">
+  <link rel="stylesheet" type="text/css" href="/assets_mobile/css/import.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+  <script src="/assets_mobile/js/ui.js"></script> <!-- Common js -->
+  <script th:inline="javascript">
+    var sandanData = /*[[${session.sandanList}]]*/ [];
+  </script>
+
+
+  <script type="text/javascript" src="/resource/ax5ui/ax5ui.all.min.js?v=1000"></script>
+
+  <script type="text/javascript" src="/js/ax5commUtil.js?v=1070"></script>
+
+  <script src="/js/common.js?v=1060"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+  <script src="/js/Mobile.js"></script>
+</head>
+
+<body>
+<div class="mobile-wrapper page-ticket-list"><!-- ★페이지 Class명 -->
+  <!-- [모바일] 헤더  -->
+  <div class="mobile-layout-header">
+    <header>
+      <div class="left">
+        <a href="#" title="전체메뉴" class="logo">
+        </a>
+      </div>
+      <div class="left" style="margin-left:35px;">
+        <h2>FACT CHECK</h2>
+      </div>
+      <div class="right">
+        <a href="#" title="전체메뉴" class="btn-menu">
+          <img src="/assets_mobile/images/icon/btn-menu.svg" alt="전체메뉴 아이콘">
+        </a>
+      </div>
+    </header>
+  </div> <!-- //mobile-layout-header end-->
+
+  <!-- [모바일] 메뉴  -->
+  <div th:insert="~{mobile/mobile_menu :: mobile_menu}"></div>
+  <!-- [모바일] 컨덴츠  -->
+  <div class="mobile-layout-contents">
+    <input type="hidden" id="REALID">
+    <!--- (레이아웃) Contents 영역 -->
+    <div class="layout-contents">
+      <!-- 검색 영역  -->
+      <!--            <div class="search-wrap">-->
+      <!--            </div>-->
+      <!-- 컨텐츠 영역  -->
+      <div class="contents-wrap">
+      </div> <!--// contents-wrap end-->
+
+      <div class="card-container" id="captureCard">
+        <div class="card">
+          <div class="card-header">
+            <h3>서울시 강남구 일원동 646-7</h3>
+            <h2>하이펠리스 오피스텔 <b>303호</b></h2>
+            <div class="safety-badge">안심</div>
+          </div>
+          <div class="score">
+            <span class="score-value">100</span>점
+          </div>
+          <ul class="card-info">
+            <li>✔️ 집을 담보로 대출 받았어요</li>
+            <li>✔️ 대출금 4억 이상이에요</li>
+            <li>✔️ 세입자가 전월세를 법원에 등록했어요</li>
+            <li>✔️ 전세금 3억이에요</li>
+          </ul>
+          <p class="date">소유권보존 2017년 5월 8일 접수</p>
+        </div>
+      </div>
+
+      <div id="addressWrap" class="contents-wrap">
+
+      </div>
+    </div> <!--//layout-contents end -->
+  </div> <!-- //mobile-layout-contents end-->
+  <div style="text-align: center">
+    <button onclick="cardDetail()" style="margin-top: 10px; width: 100px; margin-left: auto">상세보기</button>
+    <button onclick="deductionDetail()" style="margin-top: 10px; width: 100px;">점수이력</button>
+    <button onclick="window.location.href = '/'" style="margin-top: 10px; width: 100px;">다시조회</button>
+  </div>
+</div> <!-- //mobile-layout-contents end-->
+<!-- 팝업 배경 (클릭 차단 + 어둡게) -->
+<div class="popup-overlay" id="popupOverlay"></div>
+<div class="mobile-layout-popup" id="popup-history">
+  <!--<div class="popup-overlay"></div>-->
+  <div class="popup-wrapper" id="deductionWrap">
+    <div class="popup-title">
+      <h3>점수이력</h3>
+    </div>
+    <div class="popup-contents">
+      <div class="table-wrap" style="width: 600px">
+        <div class="write-wrap">
+          <section>
+            <div class="tab-wrap" style="width: 100%;">
+              <ul class="tab-links" style="margin-bottom: 10px;">
+              </ul>
+
+              <section class="tab-item">
+                <table>
+                  <thead>
+                  <tr>
+                    <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                      <label>등기목적</label>
+                    </th>
+                    <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                      <label>금액</label>
+                    </th>
+                    <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                      <label>점수</label>
+                    </th>
+                    <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                      <label>기준</label>
+                    </th>
+                    <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                      <label>선순위</label>
+                    </th>
+                    <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                      <label>날짜</label>
+                    </th>
+                  </tr>
+                  </thead>
+                  <tbody id="scoreItems">
+
+                  </tbody>
+                </table>
+              </section>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <div class="popup-button">
+      <button class="btn-popup-close btn-navy" id="closePopup">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="mobile-layout-popup" id="popup-history2">
+  <!--<div class="popup-overlay"></div>-->
+  <div class="popup-wrapper" id="scoreWrapper">
+    <div class="popup-title">
+      <h3>상세보기</h3>
+    </div>
+    <div class="popup-contents">
+      <div class="table-wrap" style="width: 600px">
+        <div class="write-wrap">
+          <section class="tab-item">
+            <div class="tab-wrap" style="width: 100%;">
+              <ul class="tab-links" style="margin-bottom: 10px;">
+              </ul>
+
+              <section class="tab-item">
+                <table>
+                  <thead>
+                  <tr>
+                    <th style="text-align: center; width: 20%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                      <label>등기목적</label>
+                    </th>
+                    <th style="text-align: center; width: 37%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                      <label>COMMENT</label>
+                    </th>
+                    <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                      <label>날짜</label>
+                    </th>
+                  </tr>
+                  </thead>
+                  <tbody id="scoreItems2">
+
+                  </tbody>
+                </table>
+              </section>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <div class="popup-button">
+      <button class="btn-popup-close btn-navy" id="closePopup2">확인</button>
+    </div>
+  </div>
+</div>
+</div> <!-- //page-wrapper end-->
+
+<script th:inline="javascript">
+  // // Thymeleaf에서 값 설정: Null 체크와 기본값 처리
+  // var groupid = [[${session.groupid != null ? session.groupid : 'null'}]];
+  // var id = /*[[${id != null ? id : 'null'}]]*/;
+  // var groupname = /*[[${groupname != null ? groupname : 'null'}]]*/;
+  // var username = /*[[${username != null ? username : 'null'}]]*/;
+  //
+  // // 로컬스토리지에 값 유지 (null 또는 빈 문자열은 저장하지 않음)
+  // if (groupid && groupid !== 'null') localStorage.setItem('groupid', groupid);
+  // if (id && id !== 'null') localStorage.setItem('id', id);
+  // if (username && username !== 'null') localStorage.setItem('username', username);
+  // if (groupname && groupname !== 'null') localStorage.setItem('groupname', groupname);
+</script>
+
+
+<script type="text/javascript">
+  document.readyState === 'complete' ? init() : window.onload = init;
+  function init() {
+    searchGoyuList();
+  }
+  // 세션값 가져와 카드 출력
+  function searchGoyuList() {
+    let storedData = sessionStorage.getItem("resultMap");
+
+    if (!storedData) {
+      console.log("세션 데이터 없음.");
+      return;
+    }
+
+    let parsedData = JSON.parse(storedData);
+    console.log("세션에서 불러온 데이터:", parsedData);
+
+    const contentsWrap = document.querySelector('.contents-wrap');
+    contentsWrap.innerHTML = "";
+
+    let scoreData = parsedData.GRADE;
+    const idDocument = document.getElementById('REALID');
+    if (idDocument) {
+      idDocument.value = parsedData.REALID;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const cardTitle = document.createElement('div');
+    cardTitle.className = 'card-title';
+    cardTitle.textContent = `${parsedData.ADDRESS}`;
+
+    const cardContent = document.createElement('div');
+    cardContent.className = 'card-content';
+    cardContent.textContent = `${parsedData.GRADE}등급`;
+
+    const cardContent2 = document.createElement('div');
+    cardContent2.className = 'card-content';
+    cardContent2.textContent = `${parsedData.REALSCORE}`;
+
+    const cardContent3 = document.createElement('div');
+    cardContent3.className = 'card-content';
+
+    if (scoreData === "S") {
+      cardContent3.textContent = `안전합니다.`;
+    } else {
+      // 테이블 생성
+      const table = document.createElement('table');
+      table.className = 'comment-table';
+      table.style.marginTop = "10px"; // margin-top 10px 추가
+
+      // 테이블 헤더 추가
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+
+      const thDate = document.createElement('th');
+      thDate.textContent = '날짜';
+      const thComment = document.createElement('th');
+      thComment.textContent = '코멘트';
+
+      headerRow.appendChild(thDate);
+      headerRow.appendChild(thComment);
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      // 테이블 바디 생성
+      const tbody = document.createElement('tbody');
+
+      let uniqueComments = new Set(); // 중복 체크용 Set
+
+
+
+      if (Array.isArray(parsedData.COMMENT)) {
+        for (let comment of parsedData.COMMENT) {
+          const commentText = comment.REGREMARK || '코멘트 없음';
+
+          // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
+          let formattedDate = comment.DATE
+            ? `${comment.DATE.slice(0, 4)}.${comment.DATE.slice(4, 6)}.${comment.DATE.slice(6, 8)}`
+            : '날짜 없음';
+
+          // 중복되지 않은 경우에만 추가
+          if (!uniqueComments.has(commentText)) {
+            uniqueComments.add(commentText);
+
+            const row = document.createElement('tr');
+
+            const tdDate = document.createElement('td');
+            tdDate.textContent = formattedDate;
+
+            const tdComment = document.createElement('td');
+            tdComment.textContent = commentText;
+
+            row.appendChild(tdDate);
+            row.appendChild(tdComment);
+            tbody.appendChild(row);
+          }
+        }
+      } else if (parsedData.COMMENT) {
+        // 단일 객체인 경우
+        const commentText = parsedData.COMMENT.REGREMARK || '코멘트 없음';
+
+        if (!uniqueComments.has(commentText)) {
+          uniqueComments.add(commentText);
+
+          const row = document.createElement('tr');
+
+          const tdDate = document.createElement('td');
+          tdDate.textContent = parsedData.COMMENT.DATE || '날짜 없음';
+
+          const tdComment = document.createElement('td');
+          tdComment.textContent = commentText;
+
+          row.appendChild(tdDate);
+          row.appendChild(tdComment);
+          tbody.appendChild(row);
+        }
+      }
+
+      table.appendChild(tbody);
+      cardContent3.appendChild(table);
+    }
+    card.appendChild(cardTitle);
+    card.appendChild(cardContent);
+    card.appendChild(cardContent2);
+    card.appendChild(cardContent3);
+    contentsWrap.appendChild(card);
+  }
+
+  // 상세보기
+  function cardDetail() {
+    $.ajax({
+      url: '/api/register/deductionDetail',
+      type: 'GET',
+      data: {
+        "REALID": document.getElementById('REALID').value
+      },
+      async: false,
+      success: function (response) {
+        data2 = response.data;
+        console.log("data2", data2);
+
+        const scoreWrap = document.getElementById('scoreItems2');
+        if (!scoreWrap) {
+          console.error("❌ 오류: 'scoreItems' 요소를 찾을 수 없습니다.");
+          return;
+        }
+
+        // "항목차감"이 아닌 데이터만 필터링
+        let filteredData = data2.filter(data => data.HISNM !== "항목차감");
+
+        let htmlContent = '';
+        filteredData.forEach(data => {
+
+          // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
+          let formattedDate = data.HISDATE
+            ? `${data.HISDATE.slice(0, 4)}.${data.HISDATE.slice(4, 6)}.${data.HISDATE.slice(6, 8)}`
+            : '';
+
+          htmlContent += `
+                    <tr>
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                            ${data.HISNM}
+                        </td>
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd; text-align: left;">
+                            ${data.REMARK}
+                        </td>
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                            ${formattedDate}
+                        </td>
+                    </tr>`;
+        });
+
+        // 기존 내용을 초기화 후 새로운 데이터 추가
+        scoreWrap.innerHTML = htmlContent;
+
+
+      },
+      error: function (error) {
+        console.error("❌ API 호출 중 오류 발생:", error);
+      }
+    });
+  }
+
+  // 점수이력 조회 및 팝업 열기
+  function deductionDetail() {
+    let data2 = [];
+    $.ajax({
+      url: '/api/register/deductionDetail',
+      type: 'GET',
+      data: {
+        "REALID": document.getElementById('REALID').value
+      },
+      async: false,
+      success: function (response) {
+        data2 = response.data;
+        console.log("data2", data2);
+
+        const scoreWrap = document.getElementById('scoreItems');
+        if (!scoreWrap) {
+          console.error("❌ 오류: 'scoreItems' 요소를 찾을 수 없습니다.");
+          return;
+        }
+
+        let htmlContent = '';
+        data2.forEach(data => {
+          // REGSTAND 값 변환
+          let regStandText = "";
+          switch (data.REGSTAND) {
+            case "A1": regStandText = "금액"; break;
+            case "A2": regStandText = "점수"; break;
+            case "A3": regStandText = "복합"; break;
+            default: regStandText = ""; // 변환되지 않은 값 그대로 사용
+          }
+
+          // HISAMT 값 숫자 포맷팅 (천 단위 콤마 추가, null 값 공백 처리)
+          let formattedAmt = data.HISAMT ? Number(data.HISAMT).toLocaleString() : "";
+
+          // HISFLAG 값 변환
+          let flagText = data.HISFLAG === "1" ? "O" : "";
+
+          // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
+          let formattedDate = data.HISDATE
+            ? `${data.HISDATE.slice(0, 4)}.${data.HISDATE.slice(4, 6)}.${data.HISDATE.slice(6, 8)}`
+            : '';
+
+          htmlContent += `
+                <tr>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${data.HISNM}
+                    </td>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${formattedAmt}
+                    </td>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${data.HISPOINT}
+                    </td>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${regStandText}
+                    </td>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${flagText}
+                    </td>
+                    <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                        ${formattedDate}
+                    </td>
+                </tr>`;
+        });
+
+        // 기존 내용을 초기화 후 새로운 데이터 추가
+        scoreWrap.innerHTML = htmlContent;
+
+      },
+      error: function (error) {
+        console.error("❌ API 호출 중 오류 발생:", error);
+      }
+    });
+  }
+
+  // ✅ 팝업 열기 (popup-history 요소에 'open' 클래스 추가)
+  document.addEventListener("DOMContentLoaded", function () {
+    const popup = document.getElementById("deductionWrap");
+    const popup2 = document.getElementById("scoreWrapper");
+    const overlay = document.getElementById("popupOverlay");
+
+    const openButton = document.querySelector("button[onclick='deductionDetail()']"); // 팝업 열기 버튼
+    const closeButton = document.getElementById("closePopup");
+    const openButton2 = document.querySelector("button[onclick='cardDetail()']"); // 팝업 열기 버튼
+    const closeButton2 = document.getElementById("closePopup2");
+
+    // 팝업 열기
+    openButton.addEventListener("click", function () {
+      console.log("✅ 팝업 열기");
+      popup.classList.add("active");
+      overlay.classList.add("active"); // 배경 어둡게 설정
+    });
+
+    // 팝업 닫기
+    closeButton.addEventListener("click", function () {
+      console.log("✅ 팝업 닫기");
+      popup.classList.remove("active");
+      overlay.classList.remove("active"); // 배경 원래대로
+    });
+
+    // 팝업 열기
+    openButton2.addEventListener("click", function () {
+      console.log("✅ 팝업 열기");
+      popup2.classList.add("active");
+      overlay.classList.add("active"); // 배경 어둡게 설정
+    });
+
+    // 팝업 닫기
+    closeButton2.addEventListener("click", function () {
+      console.log("✅ 팝업 닫기");
+      popup2.classList.remove("active");
+      overlay.classList.remove("active"); // 배경 원래대로
+    });
+    // 배경 클릭 시 팝업 닫기
+    overlay.addEventListener("click", function () {
+      popup.classList.remove("active");
+      popup2.classList.remove("active");
+      overlay.classList.remove("active"); // 배경 원래대로
+    });
+  });
+
+  // ✅ 뒤로 가기 시 세션 데이터 삭제
+  window.addEventListener("popstate", function () {
+    sessionStorage.removeItem("resultMap");
+  });
+
+  // ✅ 다른 페이지 이동 시 세션 삭제 (새로고침은 유지)
+  window.addEventListener("beforeunload", function (event) {
+    // ✅ 최신 API를 사용하여 새로고침 여부 감지 (안전한 방식)
+    let navEntries = window.performance.getEntriesByType("navigation");
+    let isPageReload = (navEntries.length > 0 && navEntries[0].type === "reload")
+      || event.persisted
+      || performance.getEntriesByType("navigation")[0]?.type === "reload";
+
+    if (!isPageReload) {
+      sessionStorage.removeItem("resultMap"); // ✅ 새로고침이 아닐 때만 삭제
+    }
+  });
+</script>
+</body>
+</html>

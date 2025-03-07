@@ -72,7 +72,11 @@ public class MobileController {
         model.addAttribute("currentPage", "IssueInquiryAPI");
         return "mobile/IssueInquiryAPI";
     }
-
+    @GetMapping("/cardtest")
+    public String cardtest(Model model) {
+        model.addAttribute("currentPage", "cardtest");
+        return "mobile/cardtest";
+    }
     @GetMapping("/UserInfo")
     public String UserInfo(Model model) {
         model.addAttribute("currentPage", "UserInfo");
