@@ -280,109 +280,70 @@
             idDocument.value = parsedData.REALID;
         }
 
-        const card = document.createElement('div');
-        card.className = 'card';
-
-        const cardTitle = document.createElement('div');
-        cardTitle.className = 'card-title';
-        cardTitle.textContent = `${parsedData.ADDRESS}`;
-
-        const cardContent = document.createElement('div');
-        cardContent.className = 'card-content';
-        cardContent.textContent = `${parsedData.GRADE}등급`;
-
-        const cardContent2 = document.createElement('div');
-        cardContent2.className = 'card-content';
-        cardContent2.textContent = `${parsedData.REALSCORE}`;
-
-        const cardContent3 = document.createElement('div');
-        cardContent3.className = 'card-content';
+        let htmlContent = `
+        <div class="card">
+            <div class="card-title">${parsedData.ADDRESS}</div>
+            <div class="card-content">${parsedData.GRADE}등급</div>
+            <div class="card-content">${parsedData.REALSCORE}</div>
+    `;
 
         if (scoreData === "S") {
-            cardContent3.textContent = `안전합니다.`;
+            htmlContent += `<div class="card-content">안전합니다.</div>`;
         } else {
-            // 테이블 생성
-            const table = document.createElement('table');
-            table.className = 'comment-table';
-            table.style.marginTop = "10px"; // margin-top 10px 추가
+            htmlContent += `
+            <table class="comment-table" style="margin-top: 10px; border-collapse: collapse; width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px;">날짜</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">코멘트</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
 
-            // 테이블 헤더 추가
-            const thead = document.createElement('thead');
-            const headerRow = document.createElement('tr');
-
-            const thDate = document.createElement('th');
-            thDate.textContent = '날짜';
-            const thComment = document.createElement('th');
-            thComment.textContent = '코멘트';
-
-            headerRow.appendChild(thDate);
-            headerRow.appendChild(thComment);
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-
-            // 테이블 바디 생성
-            const tbody = document.createElement('tbody');
-
-            let uniqueComments = new Set(); // 중복 체크용 Set
-
-
+            let uniqueComments = new Set();
 
             if (Array.isArray(parsedData.COMMENT)) {
-                for (let comment of parsedData.COMMENT) {
+                parsedData.COMMENT.forEach(comment => {
                     const commentText = comment.REGREMARK || '코멘트 없음';
-
-                    // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
                     let formattedDate = comment.DATE
                         ? `${comment.DATE.slice(0, 4)}.${comment.DATE.slice(4, 6)}.${comment.DATE.slice(6, 8)}`
                         : '날짜 없음';
 
-                    // 중복되지 않은 경우에만 추가
                     if (!uniqueComments.has(commentText)) {
                         uniqueComments.add(commentText);
-
-                        const row = document.createElement('tr');
-
-                        const tdDate = document.createElement('td');
-                        tdDate.textContent = formattedDate;
-
-                        const tdComment = document.createElement('td');
-                        tdComment.textContent = commentText;
-
-                        row.appendChild(tdDate);
-                        row.appendChild(tdComment);
-                        tbody.appendChild(row);
+                        htmlContent += `
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${formattedDate}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${commentText}</td>
+                        </tr>
+                    `;
                     }
-                }
+                });
             } else if (parsedData.COMMENT) {
-                // 단일 객체인 경우
                 const commentText = parsedData.COMMENT.REGREMARK || '코멘트 없음';
+                let formattedDate = parsedData.COMMENT.DATE
+                    ? `${parsedData.COMMENT.DATE.slice(0, 4)}.${parsedData.COMMENT.DATE.slice(4, 6)}.${parsedData.COMMENT.DATE.slice(6, 8)}`
+                    : '날짜 없음';
 
                 if (!uniqueComments.has(commentText)) {
                     uniqueComments.add(commentText);
-
-                    const row = document.createElement('tr');
-
-                    const tdDate = document.createElement('td');
-                    tdDate.textContent = parsedData.COMMENT.DATE || '날짜 없음';
-
-                    const tdComment = document.createElement('td');
-                    tdComment.textContent = commentText;
-
-                    row.appendChild(tdDate);
-                    row.appendChild(tdComment);
-                    tbody.appendChild(row);
+                    htmlContent += `
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${formattedDate}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${commentText}</td>
+                    </tr>
+                `;
                 }
             }
 
-            table.appendChild(tbody);
-            cardContent3.appendChild(table);
+            htmlContent += `</tbody></table>`;
         }
-        card.appendChild(cardTitle);
-        card.appendChild(cardContent);
-        card.appendChild(cardContent2);
-        card.appendChild(cardContent3);
-        contentsWrap.appendChild(card);
+
+        htmlContent += `</div>`; // 카드 닫기
+        contentsWrap.innerHTML = htmlContent;
     }
+
 
     // 상세보기
     function cardDetail() {
