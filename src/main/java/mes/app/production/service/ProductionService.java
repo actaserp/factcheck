@@ -630,6 +630,7 @@ public class ProductionService {
                 SELECT *
                 FROM CTE
                 WHERE row_num = 1
+                ORDER BY INDATEM DESC
                 """;
 
         List<Map<String, Object>> items = this.sqlRunner.getRows(sql.toString(), dicParam);
@@ -641,18 +642,21 @@ public class ProductionService {
 
         String sql = """
                 SELECT
-                    HISSEQ,
-                    REALID,
-                    HISNM,
-                    HISAMT,
-                    HISPOINT,
-                    REGSTAND,
-                    HISFLAG,
-                    REMARK,
-                    HISDATE,
-                    ROUND(HISPOINT * 100.0 / NULLIF(SUM(HISPOINT) OVER (PARTITION BY REALID), 0), 2) AS HISPOINT_PERCENT
-                FROM TB_REALHIS
-                WHERE REALID = :REALID;
+                    H.HISSEQ,
+                    H.REALID,
+                    H.HISNM,
+                    H.HISAMT,
+                    H.HISPOINT,
+                    H.REGSTAND,
+                    H.HISFLAG,
+                    H.REMARK,
+                    H.HISDATE,
+                    ROUND(H.HISPOINT * 100.0 / NULLIF(SUM(H.HISPOINT) OVER (PARTITION BY H.REALID), 0), 2) AS HISPOINT_PERCENT,
+                    R.REALADD
+                FROM TB_REALHIS H
+                LEFT JOIN TB_REALINFO R
+                ON H.REALID = R.REALID
+                WHERE H.REALID = :REALID;
                 
                 """;
 

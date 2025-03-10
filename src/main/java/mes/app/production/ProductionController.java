@@ -103,6 +103,31 @@ public class ProductionController {
         String userid = String.valueOf(user.getUsername());
 
         List<Map<String, Object>> items = productionService.getSeachList(userid,keyword);
+        // 점수 등급 계산 로직
+        // 등급 관련 데이터(S등급 등) 데이터 불러오기
+        List<Map<String, Object>> gradeData = tilkoService.getGradeData();
+        String Grade = "";
+        String GrColor = "";
+        for (Map<String, Object> item : items) {
+            // 점수
+            int realScore = (int) item.get("REALSCORE");
+            // **등급 설정**
+            for (Map<String, Object> grade : gradeData) {
+                int maxScore = (Integer) grade.get("GRSCORE01");
+                int minScore = (Integer) grade.get("GRSCORE02");
+
+                if (minScore <= realScore && maxScore >= realScore) {
+                    Grade = grade.get("GRID").toString();
+                    GrColor = grade.get("GRCOLOR").toString();
+                    break;
+                }
+            }
+            if (Grade.isEmpty()) {
+                Grade = "F";
+            }
+            item.put("GRADE", Grade);
+            item.put("GRCOLOR", GrColor);
+        }
 
         result.data = items;
 

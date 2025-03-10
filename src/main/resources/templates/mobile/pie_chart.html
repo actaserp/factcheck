@@ -122,14 +122,15 @@
             <!-- 컨텐츠 영역  -->
             <div class="contents-wrap" style="display: none">
                 <div>
-                    <div style="justify-items: center;">
-                        <span>
-                            <H3>등급 : /점수 : </H3>
-                        </span>
-                        <H3>차감요인(%)</H3>
-                    </div>
+                    <H4>주소 : </H4>
+                    <H4>차감요인(%)</H4>
                     <div class="chart-wrap">
                         <canvas id="SignupOfWeek" style="width: 740px; height: 550px;"></canvas>
+                    </div>
+                    <div style="justify-items: center;">
+                        <span>
+                            <H3>등급 : /점수 : /</H3>
+                        </span>
                     </div>
                 </div>
             </div> <!--// contents-wrap end-->
@@ -203,19 +204,25 @@
                     response.data.forEach(item => {
                         let realAdd = item.REALADD || "주소 없음";
                         let realScore = item.REALSCORE !== undefined ? item.REALSCORE : "점수 없음";
-                        let sReqDate = item.Sreqdate ? item.Sreqdate.split("T")[0] : "날짜 없음";
+                        let ReqDate = item.INDATEM ? item.INDATEM.split("T")[0] : "날짜 없음";
                         let realId = item.REALID || "";
+                        let Grade = item.GRADE || "등급 없음";
+                        let GrColor = item.GRCOLOR || "";
 
                         let entry = document.createElement("div");
                         entry.classList.add("address-item");
                         entry.setAttribute("data-realadd", realAdd);
                         entry.setAttribute("data-realscore", realScore);
-                        entry.setAttribute("data-sreqdate", sReqDate);
+                        entry.setAttribute("data-sreqdate", ReqDate);
 
-                        entry.innerHTML = `<p>주소: ${realAdd}</p>
-                                       <p>점수: ${realScore}</p>
-                                       <p>조회날짜: ${sReqDate}</p>
-                                       <hr>`;
+                        entry.innerHTML = `<p style="font-weight: bold">주소: </p><p>${realAdd}</p>
+                           <span style="display: flex; gap: 10px;">
+                                <p style="margin: 0; font-weight: bold;">점수: </p><p style="font-weight: bold; color: ${GrColor}; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);">${realScore}</p>
+                                <p style="margin: 0; font-weight: bold;">등급: </p><p style="font-weight: bold; color: ${GrColor}; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);">${Grade}</p>
+                                <p style="margin: 0; font-weight: bold;">조회날짜: </p><p>${ReqDate}</p>
+                           </span>
+                           <hr>`;
+
 
                         // 클릭 이벤트 추가
                         entry.addEventListener("click", function () {
@@ -246,11 +253,16 @@
             }
         });
     }
-    // 랜덤 색상 생성 함수
-    function getRandomColor() {
-        return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-    }
+    // 가독성이 좋은 파스텔톤 색상 리스트
+    const colorPalette = [
+        "#FFB6C1", "#87CEFA", "#98FB98", "#FFD700", "#FF69B4",
+        "#20B2AA", "#FF8C00", "#BA55D3", "#32CD32", "#4682B4"
+    ];
 
+    // 랜덤 색상 선택 함수
+    function getRandomColor() {
+        return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+    }
     // REALID 값으로 차감 내역 조회 후 차트 업데이트
     function searchDeductionData(REALID, REALSCORE) {
         $.ajax({
@@ -284,7 +296,7 @@
                     if (response.success && Array.isArray(response.data.data)) {
                         data2 = response.data.data;
                         // 데이터 변환
-                        let labels = data2.map(item => item.HISNM);
+                        let labels = data2.map(item => `${item.HISNM} (${item.HISPOINT_PERCENT}%)`);
                         let data = data2.map(item => item.HISPOINT_PERCENT);
                         let backgroundColors = labels.map(() => getRandomColor()); // 각 항목별 랜덤 색상
 
@@ -306,7 +318,7 @@
                                     data: data,
                                     backgroundColor: backgroundColors,
                                     borderColor: '#ffffff',
-                                    borderWidth: 1
+                                    borderWidth: 2
                                 }]
                             },
                             options: {
@@ -333,6 +345,7 @@
                 }
                 // 등급, 점수 바인드
                 document.querySelector(".contents-wrap h3").innerText = `등급 : ${response.data.grade} / 점수 : ${response.data.score}`;
+                document.querySelector(".contents-wrap h4").innerText = `검색주소 : ${response.data.data[0].REALADD}`;
 
                 // 차트 보여주기
                 let contentsWrap = document.querySelector('.contents-wrap');
