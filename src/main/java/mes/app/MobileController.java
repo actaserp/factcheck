@@ -54,6 +54,16 @@ public class MobileController {
         model.addAttribute("currentPage", "mlogin");
         return "/mobile/mlogin";
     }
+    @GetMapping("/Pay")
+    public String Pay(Model model) {
+        model.addAttribute("currentPage", "Pay");
+        return "/mobile/Pay";
+    }
+    @GetMapping("/chatbotAI")
+    public String chatbotAI(Model model) {
+        model.addAttribute("currentPage", "chatbotAI");
+        return "/mobile/chatbotAI";
+    }
 
     @GetMapping("/view-list")
     public String viewList(Model model) {
