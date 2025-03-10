@@ -2,6 +2,7 @@ package mes.app.production;
 
 
 import mes.app.production.service.ProductionService;
+import mes.app.tilko.service.TilkoService;
 import mes.domain.entity.User;
 import mes.domain.model.AjaxResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,15 +16,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/api/mobile_production")
 public class ProductionController {
-    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(ProductionController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ProductionController.class.getName());
     @Autowired
     ProductionService productionService;
+    @Autowired
+    TilkoService tilkoService;
 
     @GetMapping("/read_all")
     public ResponseEntity<?> getList(@RequestParam(value = "search_startDate", required = false) String startDate,
@@ -90,7 +95,7 @@ public class ProductionController {
     }
 
     @GetMapping("/pie_chart")
-    public AjaxResult getList( @RequestParam(value = "keyword", required = false) String keyword,
+    public AjaxResult getList( @RequestParam(value = "SearchKeywords", required = false) String keyword,
             Authentication auth){
         AjaxResult result = new AjaxResult();
 
@@ -100,6 +105,43 @@ public class ProductionController {
         List<Map<String, Object>> items = productionService.getSeachList(userid,keyword);
 
         result.data = items;
+
+        return result;
+    }
+    // pie chart 요소 조회(차감요인)
+    @GetMapping("/pie_chart_data")
+    public AjaxResult getDeductionData(@RequestParam(value = "REALID", required = false) String REALID,
+                                       @RequestParam(value = "REALSCORE", required = false) int REALSCORE,
+                               Authentication auth){
+        AjaxResult result = new AjaxResult();
+
+        User user = (User) auth.getPrincipal();
+        String userid = String.valueOf(user.getUsername());
+
+        List<Map<String, Object>> items = productionService.getDeductionData(REALID);
+        // 점수 등급 계산 로직
+        // 등급 관련 데이터(S등급 등) 데이터 불러오기
+        List<Map<String, Object>> gradeData = tilkoService.getGradeData();
+        // **등급 설정**
+        String Grade = "";
+        for (Map<String, Object> grade : gradeData) {
+            int maxScore = (Integer) grade.get("GRSCORE01");
+            int minScore = (Integer) grade.get("GRSCORE02");
+
+            if (minScore <= REALSCORE && maxScore >= REALSCORE) {
+                Grade = grade.get("GRID").toString();
+                break;
+            }
+        }
+
+        if (Grade.isEmpty()) {
+            Grade = "F";
+        }
+        Map<String, Object> resultdata = new HashMap<>();
+        resultdata.put("data", items);
+        resultdata.put("grade", Grade);
+        resultdata.put("score", REALSCORE);
+        result.data = resultdata;
 
         return result;
     }

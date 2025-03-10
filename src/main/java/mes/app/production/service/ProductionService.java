@@ -611,29 +611,49 @@ public class ProductionService {
 
     public List<Map<String,Object>> getSeachList(String userid, String keyword){
         MapSqlParameterSource dicParam = new MapSqlParameterSource();
+        System.out.println("keyword : " + keyword);
         dicParam.addValue("userid", userid);
         if (keyword !=null && !keyword.trim().isEmpty()){
             dicParam.addValue("keyword","%"+keyword+"%");
         } else {
-            dicParam.addValue("keyword",null);
+            dicParam.addValue("keyword","%");
         }
 
         String sql = """
                 WITH CTE AS (
                     SELECT R.*,
-                           S.USERID as Suserid,
-                           S.REQDATE as Sreqdate,
-                           S.REALID as Srealid,
-                           ROW_NUMBER() OVER (PARTITION BY R.REALID ORDER BY S.REQDATE) AS row_num
+                           ROW_NUMBER() OVER (PARTITION BY R.REALID ORDER BY R.REQDATE) AS row_num
                     FROM TB_REALINFO R
-                    LEFT JOIN TB_SEARCHINFO S
-                    ON R.REALID = S.REALID
-                    WHERE S.USERID = :userid
-                    AND (:keyword IS NULL OR R.REALADD LIKE '%' + :keyword + '%')
+                    WHERE R.USERID = :userid
+                    AND R.REALADD LIKE :keyword
                 )
                 SELECT *
                 FROM CTE
                 WHERE row_num = 1
+                """;
+
+        List<Map<String, Object>> items = this.sqlRunner.getRows(sql.toString(), dicParam);
+        return items;
+    }
+    public List<Map<String,Object>> getDeductionData(String REALID){
+        MapSqlParameterSource dicParam = new MapSqlParameterSource();
+            dicParam.addValue("REALID",REALID);
+
+        String sql = """
+                SELECT
+                    HISSEQ,
+                    REALID,
+                    HISNM,
+                    HISAMT,
+                    HISPOINT,
+                    REGSTAND,
+                    HISFLAG,
+                    REMARK,
+                    HISDATE,
+                    ROUND(HISPOINT * 100.0 / NULLIF(SUM(HISPOINT) OVER (PARTITION BY REALID), 0), 2) AS HISPOINT_PERCENT
+                FROM TB_REALHIS
+                WHERE REALID = :REALID;
+                
                 """;
 
         List<Map<String, Object>> items = this.sqlRunner.getRows(sql.toString(), dicParam);

@@ -96,26 +96,38 @@
         <div class="layout-contents">
             <!-- 검색 영역  -->
             <div class="search-wrap">
-                <div style="margin-top: 10px;">
+                <div class="srch-tit aco-hd">
+                    <p>기본검색</p>
+                    <a href="#" title="열기/닫기" class="btn-aco">
+                        <img src="/assets_mobile/images/icon/ico-down.svg" alt="열기/닫기">
+                    </a>
+                </div>
+                <div class="srch-cont aco-cont">
                     <dl>
-                        <dt>주소 검색</dt>
+                        <dt>검색</dt>
                         <dd>
-                            <input type="text" id="keyword" name="keyword" placeholder="검색할 부동산 주소 입력">
+                            <div style="display: flex; gap: 10px">
+                                <div style="width: 100%">
+                                    <input type="text" id="SearchKeywords" placeholder="조회할 주소를 입력해주세요">
+                                </div>
+                            </div>
                         </dd>
                     </dl>
-
                     <div class="srch-btn">
-                        <button class="btn-dark" onclick="searchdata()">내가 조회한 물건 가져오기</button>
+                        <button class="btn-dark" onclick="searchdata()">조회</button>
                     </div>
-                </div>
-                <div id="addressWrap" class="contents-wrap">
-
                 </div>
             </div>
 
             <!-- 컨텐츠 영역  -->
-            <div class="contents-wrap">
+            <div class="contents-wrap" style="display: none">
                 <div>
+                    <div style="justify-items: center;">
+                        <span>
+                            <H3>등급 : /점수 : </H3>
+                        </span>
+                        <H3>차감요인(%)</H3>
+                    </div>
                     <div class="chart-wrap">
                         <canvas id="SignupOfWeek" style="width: 740px; height: 550px;"></canvas>
                     </div>
@@ -123,6 +135,29 @@
             </div> <!--// contents-wrap end-->
         </div> <!--//layout-contents end -->
     </div> <!-- //mobile-layout-contents end-->
+    <!--주소검색 팝업-->
+    <div class="mobile-layout-popup" id="popup-history">
+        <div class="popup-wrapper" id="popup-details">
+            <div class="popup-title">
+                <h3>주소검색</h3>
+                <a title="팝업닫기" class="btn-popup-close">
+                    <img src="/assets_mobile/images/icon/btn-popup-close.svg" alt="닫기">
+                </a>
+            </div>
+            <div class="popup-contents">
+                <div class="table-container">
+                    <div class="list-table-wrap" style="overflow-x: auto;" id="addressWrap">
+
+                    </div>
+                </div>
+                <div class="write-wrap">
+                </div>
+            </div>
+            <div class="popup-button">
+                <button class="btn-popup-close btn-navy">확인</button>
+            </div>
+        </div>
+    </div>
 </div> <!-- //page-wrapper end-->
 
 
@@ -141,41 +176,6 @@
     // if (groupname && groupname !== 'null') localStorage.setItem('groupname', groupname);
 </script>
 <script>
-    // 차트가 그려질 캔버스 요소를 가져옵니다.
-    var ctx = document.getElementById('SignupOfWeek').getContext('2d');
-
-    // Chart.js로 원형 차트를 생성합니다.
-    var chart = new Chart(ctx, {
-        type: 'pie', // 'pie' 타입을 사용하여 원형 차트를 생성
-        data: {
-            labels: ['근저당권', '압류', '신탁', '전세권', '기타'], // 차트에 표시될 레이블
-            datasets: [{
-                label: '일주일 간의 가입자 수', // 데이터셋 레이블
-                data: [10, 20, 30, 15, 25], // 각 항목에 해당하는 데이터
-                backgroundColor: [
-                    '#F27983', '#BDD9A0', '#F2CA80', '#F2A35E', '#F28F6B' // 각 항목에 대한 배경 색상
-                ],
-                borderColor: '#ffffff', // 테두리 색상
-                borderWidth: 1 // 테두리 두께
-            }]
-        },
-        options: {
-            responsive: true, // 반응형 설정
-            plugins: {
-                legend: {
-                    position: 'bottom', // 범례 위치
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (tooltipItem) {
-                            return tooltipItem.label + ': ' + tooltipItem.raw + '%'; // 툴팁에 표시될 값 포맷
-                        }
-                    }
-                }
-            }
-        }
-    });
-
     document.readyState === 'complete' ? init() : window.onload = init;
 
     function init() {
@@ -186,12 +186,12 @@
     }
 
     function searchdata() {
-        let keyword = $('#keyword').val();
+        let SearchKeywords = $('#SearchKeywords').val();
         $.ajax({
             url: '/api/mobile_production/pie_chart',
             type: 'GET',
             data: {
-                'keyword': keyword
+                'SearchKeywords': SearchKeywords
             },
             success: function (response) {
                 console.log(response);
@@ -204,6 +204,7 @@
                         let realAdd = item.REALADD || "주소 없음";
                         let realScore = item.REALSCORE !== undefined ? item.REALSCORE : "점수 없음";
                         let sReqDate = item.Sreqdate ? item.Sreqdate.split("T")[0] : "날짜 없음";
+                        let realId = item.REALID || "";
 
                         let entry = document.createElement("div");
                         entry.classList.add("address-item");
@@ -223,27 +224,21 @@
                             let selectedDate = this.getAttribute("data-sreqdate");
 
                             console.log(`선택한 주소: ${selectedAddress}\n점수: ${selectedScore}\n조회날짜: ${selectedDate}`);
+                            console.log(`선택한 조회 id : ${realId}`);
+                            searchDeductionData(realId, realScore);
                         });
 
                         addressWrap.appendChild(entry);
                     });
-
-                    // 데이터 개수가 3개 이상이면 스크롤 활성화
-                    if (response.data.length >= 3) {
-                        addressWrap.style.maxHeight = "180px";
-                        addressWrap.style.overflowY = "auto";
-                        addressWrap.style.border = "1px solid #ddd";
-                        addressWrap.style.padding = "10px";
-                    } else {
-                        // 데이터가 3개 미만이면 스타일 초기화
-                        addressWrap.style.maxHeight = "";
-                        addressWrap.style.overflowY = "";
-                        addressWrap.style.border = "";
-                        addressWrap.style.padding = "";
-                    }
                 } else {
                     addressWrap.innerHTML = "<p>데이터가 없습니다.</p>";
                 }
+                // 팝업 열기
+                const popupHistory = document.getElementById("popup-history");
+                popupHistory.classList.add("open");
+                const popupHistory2 = document.getElementById("popup-details");
+                popupHistory2.classList.add("active");
+
             },
             error: function (error) {
                 console.error("데이터 불러오기 실패:", error);
@@ -251,6 +246,126 @@
             }
         });
     }
+    // 랜덤 색상 생성 함수
+    function getRandomColor() {
+        return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    }
+
+    // REALID 값으로 차감 내역 조회 후 차트 업데이트
+    function searchDeductionData(REALID, REALSCORE) {
+        $.ajax({
+            url: '/api/mobile_production/pie_chart_data',
+            type: 'GET',
+            data: {
+                'REALID': REALID,
+                'REALSCORE': REALSCORE
+            },
+            success: function (response) {
+                console.log(response); // 응답 데이터 확인
+
+                if(response.data.score === 100){
+                    let chartWrap = document.querySelector(".chart-wrap");
+                    let canvas = document.getElementById("SignupOfWeek");
+                    // 기존 차트를 숨기고, 100점 이미지를 추가
+                    if (window.myPieChart) {
+                        window.myPieChart.destroy();
+                    }
+                    chartWrap.innerHTML = `
+                        <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                            <img src="/images/sample/100score_pie_chart.png"
+                                 alt="100점"
+                                 style="width: 90%; height: 90%; object-fit: contain;">
+                        </div>`;
+                }else {
+                    // 기존 차트가 다시 표시될 경우, 캔버스를 다시 추가
+                    let chartWrap = document.querySelector(".chart-wrap");
+                    chartWrap.innerHTML = `<canvas id="SignupOfWeek" style="width: 740px; height: 550px;"></canvas>`;
+
+                    if (response.success && Array.isArray(response.data.data)) {
+                        data2 = response.data.data;
+                        // 데이터 변환
+                        let labels = data2.map(item => item.HISNM);
+                        let data = data2.map(item => item.HISPOINT_PERCENT);
+                        let backgroundColors = labels.map(() => getRandomColor()); // 각 항목별 랜덤 색상
+
+                        // 기존 차트 제거 (이미 생성된 경우)
+                        if (window.myPieChart) {
+                            window.myPieChart.destroy();
+                        }
+
+                        // 캔버스 요소 가져오기
+                        let ctx = document.getElementById('SignupOfWeek').getContext('2d');
+
+                        // 새로운 차트 생성
+                        window.myPieChart = new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: '차감 내역',
+                                    data: data,
+                                    backgroundColor: backgroundColors,
+                                    borderColor: '#ffffff',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom'
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function (tooltipItem) {
+                                                let label = tooltipItem.label || '';
+                                                let value = tooltipItem.raw || 0;
+                                                return `${label}: ${value}`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        console.error("데이터가 올바르지 않습니다.");
+                    }
+                }
+                // 등급, 점수 바인드
+                document.querySelector(".contents-wrap h3").innerText = `등급 : ${response.data.grade} / 점수 : ${response.data.score}`;
+
+                // 차트 보여주기
+                let contentsWrap = document.querySelector('.contents-wrap');
+                if (contentsWrap) {
+                    contentsWrap.style.display = 'block';
+                }
+                let canvas = document.getElementById("SignupOfWeek");
+                if (canvas) {
+                    canvas.style.display = 'block';
+                } else {
+                    console.error("SignupOfWeek 요소를 찾을 수 없습니다.");
+                }
+                // 팝업 닫기
+                const popupHistory = document.getElementById("popup-history");
+                popupHistory.classList.remove("open");
+
+                const popupHistory2 = document.getElementById("popup-details");
+                popupHistory2.classList.remove("active");
+
+                // 검색창 닫기
+                closeSearch()
+
+                // 조회버튼 클릭시 검색창 close
+                function closeSearch() {
+                    document.querySelector('.btn-aco').click();
+                }
+            },
+            error: function (error) {
+                console.error("데이터 불러오기 실패:", error);
+            }
+        });
+    }
+
 
 
 
