@@ -92,8 +92,11 @@ header .right a {display: block;}
 
 /* 선택된 메뉴 */
 .menu-wrapper nav .dep2 .on {
-    color: #3069B3; font-weight: bold;
+    color: #e8b4c9; font-weight: bold;
 }
+/*.menu-wrapper nav .dep2 .on {
+    color: #3069B3; font-weight: bold;
+}*/
 
 
 
