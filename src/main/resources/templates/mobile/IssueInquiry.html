@@ -176,15 +176,63 @@
         min-width: 900px;
     }
 
-    .register-table thead tr.card-green th { background-color: #F4FDFD; border: 1px solid #119891; border-left: 10px solid #119891; !important; }
-    .register-table thead tr.card-blue th { background-color: #F7FBFF; border: 1px solid #3069B3; border-left: 10px solid #3069B3; !important; }
-    .register-table thead tr.card-black th { background-color: #F8F8F8; border: 1px solid #1D1D1D; border-left: 10px solid #1D1D1D; !important; }
-    .register-table thead tr.card-red th { background-color: #fffafb; border: 1px solid #EC193A; border-left: 10px solid #EC193A; !important; }
-    .register-table thead tr.card-white th { background-color: #FFFFFF; border: 1px solid #DADADA; border-left: 10px solid #DADADA; !important; }
-    .register-table thead tr.card-yellow th { background-color: #FFF9DB; border: 1px solid #FFC107; border-left: 10px solid #FFC107; !important; }
-    .register-table thead tr.card-orange th { background-color: #FFE8D5; border: 1px solid #FF8C00; border-left: 10px solid #FF8C00; !important; }
+    .register-table thead tr.card-green th {
+        background-color: #F4FDFD;
+        border: 1px solid #119891;
+        border-left: 10px solid #119891;
+    !important;
+    }
 
+    .register-table thead tr.card-blue th {
+        background-color: #F7FBFF;
+        border: 1px solid #3069B3;
+        border-left: 10px solid #3069B3;
+    !important;
+    }
 
+    .register-table thead tr.card-black th {
+        background-color: #F8F8F8;
+        border: 1px solid #1D1D1D;
+        border-left: 10px solid #1D1D1D;
+    !important;
+    }
+
+    .register-table thead tr.card-red th {
+        background-color: #fffafb;
+        border: 1px solid #EC193A;
+        border-left: 10px solid #EC193A;
+    !important;
+    }
+
+    .register-table thead tr.card-white th {
+        background-color: #FFFFFF;
+        border: 1px solid #DADADA;
+        border-left: 10px solid #DADADA;
+    !important;
+    }
+
+    .register-table thead tr.card-yellow th {
+        background-color: #FFF9DB;
+        border: 1px solid #FFC107;
+        border-left: 10px solid #FFC107;
+    !important;
+    }
+
+    .register-table thead tr.card-orange th {
+        background-color: #FFE8D5;
+        border: 1px solid #FF8C00;
+        border-left: 10px solid #FF8C00;
+    !important;
+    }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: bold;
+        display: inline-block;
+        color: white; /* 글씨 색상 */
+    }
 </style>
 <head>
   <meta charset="UTF-8">
@@ -212,7 +260,6 @@
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script><!-- PDF.js 라이브러리 추가 -->
   <script src="/js/Mobile.js"></script>
-  <link rel="stylesheet" href="/assets_mobile/css/chatboot.css">
 </head>
 
 <body>
@@ -220,9 +267,6 @@
   <!-- [모바일] 헤더  -->
   <div class="mobile-layout-header">
     <header>
-      <div class="button-container" style="text-align: center; padding: 20px;">
-        <button onclick="window.open('https://chat.openai.com/', '_blank')" class="icon-button"></button>
-      </div>
       <div class="left">
         <a href="#" title="전체메뉴" class="logo">
         </a>
@@ -620,7 +664,7 @@
         }
 
         listAddressWrap.innerHTML = ''; // 기존 내용 초기화
-        const availableColors = ['card-blue', 'card-green', 'card-black', 'card-red', 'card-yellow', 'card-purple'];
+        const availableColors = ['card-purple'];
         let colorIndex = 0;
         let htmlContent = '';
 
@@ -628,13 +672,16 @@
 
         data.data.forEach(item => {
           const cardColor = availableColors[colorIndex];
+          const badgeClass = getBadgeClass(item.REALSCORE); // 등급별 CSS 클래스 적용
+          const {bgColor, textColor} = getBadgeColorByScore(item.REALSCORE); // 배경색 가져오기
+          const badgeGrade = getBadgeClass(item.REALSCORE); // 등급 가져오기
           colorIndex = (colorIndex + 1) % availableColors.length;
 
           let buttonsHtml = `
-                    <div style="display: flex; gap: 5px; align-items: center; max-width: 100%;">
-                        <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="padding: 4px 12px;">상세보기</button>
-                        <button class="btn btn-popup-open" data-popup="popup-details" title="이력보기" style="margin-top: 5px;margin-bottom: 5px; padding: 4px 12px;">이력보기</button>
-                        <button class="btn btn-register-view" data-realid="${item.REALID}" style="padding: 4px 12px;">등기부 보기</button>
+                    <div style="display: flex; gap: 5px; align-items: center; max-width: 100%; ">
+                        <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;  ">상세보기</button>
+                        <button class="btn btn-popup-open" data-popup="popup-details" title="이력보기" style="margin-top: 5px;margin-bottom: 5px; padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;  ">변경된 이력보기</button>
+                        <button class="btn btn-register-view" data-realid="${item.REALID}" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;">등기부 보기</button>
                     </div>
                 `;
 
@@ -648,13 +695,13 @@
                         data-regdate="${item.REGDATE}" data-regugun="${item.REGUGUN}" data-rejimok="${item.REJIMOK}" data-rearea="${item.REAREA}"
                         data-PDFFILENAME="${item.PDFFILENAME}" data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}" style="margin-bottom:10px;">
                         <div class="card-cont">
+                            <dl class ="">
+
+                                <dd style="font-size: 18px; font-weight: bold; width: 100%;text-align: left; white-space: normal; overflow-wrap: break-word; word-break: keep-all;">${item.REALADD}</dd>
+                            </dl>
                             <dl>
                                 <dt>집합건물</dt>
                                 <dd>${item.REALGUBUN}</dd>
-                            </dl>
-                            <dl>
-                                <dt>주소</dt>
-                                <dd>${item.REALADD}</dd>
                             </dl>
                             ${
             (selectedValue === "most_viewed_property" || selectedValue === "popular_property")
@@ -667,10 +714,20 @@
                                     <dd>${formattedDate}</dd>
                                   </dl>`
           }
-                            <dl>
-                                <dt>판정점수</dt>
-                                <dd>${item.REALSCORE}</dd>
-                            </dl>
+                          <dl>
+                              <dt>
+                                  판정점수
+                              </dt>
+                              <dd>${item.REALSCORE} 점 </dd>
+                          </dl>
+                             <dl>
+                              <dt>등급</dt>
+                              <dd>
+                                  <div class="badge" style="background: ${bgColor}; color: ${textColor}; font-size: 15px;">
+                                      ${badgeGrade} 등급
+                                  </div>
+                              </dd>
+                          </dl>
                             ${
             (selectedValue === "most_viewed_property" || selectedValue === "popular_property")
               ? `<dl>
@@ -917,6 +974,31 @@
       }
     });
   }
+
+
+  function getBadgeColorByScore(score) {
+    if (score === "미확인") return {bgColor: "#DADADA", textColor: "black"}; // 점수 없음 (회색)
+    let numericScore = parseFloat(score);
+
+    if (numericScore >= 90) return {bgColor: "#F4F4F4", textColor: "black"}; // S 등급 (안심) → 연한 회색 (검은 글씨)
+    if (numericScore >= 80) return {bgColor: "#4CAF50", textColor: "white"}; // A 등급 (관심) → 녹색
+    if (numericScore >= 70) return {bgColor: "#3069B3", textColor: "white"}; // B 등급 (주의) → 파란색
+    if (numericScore >= 60) return {bgColor: "#FFC107", textColor: "black"}; // C 등급 (경계) → 노란색
+    if (numericScore >= 50) return {bgColor: "#FF8C00", textColor: "white"}; // D 등급 (불안) → 주황색
+    if (numericScore >= 40) return {bgColor: "#EC193A", textColor: "white"}; // E 등급 (심각) → 빨간색
+    return {bgColor: "#1D1D1D", textColor: "white"}; // F 등급 (위험) → 검은색 (흰 글씨)
+  }
+
+  function getBadgeClass(score) {
+    if (score >= 90) return "S"; // S 등급 (안심)
+    if (score >= 80) return "A"; // A 등급 (관심)
+    if (score >= 70) return "B"; // B 등급 (주의)
+    if (score >= 60) return "C"; // C 등급 (경계)
+    if (score >= 50) return "D"; // D 등급 (불안)
+    if (score >= 40) return "E"; // E 등급 (심각)
+    return "F"; // F 등급 (위험)
+  }
+
 
   let currentRealId = null;
 
