@@ -134,6 +134,8 @@ public class CardImgController {
                     if (imgflag.equals("00")) {
                         imgflag = "카드 이미지";
                     } else if (imgflag.equals("01")) {
+                        imgflag = "배경 이미지";
+                    } else if (imgflag.equals("02")) {
                         imgflag = "기타 이미지";
                     }
                     card.put("imgflag", imgflag);
