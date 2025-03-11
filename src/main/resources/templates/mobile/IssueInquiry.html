@@ -678,8 +678,8 @@
           colorIndex = (colorIndex + 1) % availableColors.length;
 
           let buttonsHtml = `
-                    <div style="display: flex; gap: 5px; align-items: center; max-width: 100%; ">
-                        <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;  ">상세보기</button>
+                    <div style="display: flex; gap: 5px; align-items: center; max-width: 100%;">
+                        <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;">상세보기</button>
                         <button class="btn btn-popup-open" data-popup="popup-details" title="이력보기" style="margin-top: 5px;margin-bottom: 5px; padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;  ">변경된 이력보기</button>
                         <button class="btn btn-register-view" data-realid="${item.REALID}" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;">등기부 보기</button>
                     </div>
@@ -695,9 +695,8 @@
                         data-regdate="${item.REGDATE}" data-regugun="${item.REGUGUN}" data-rejimok="${item.REJIMOK}" data-rearea="${item.REAREA}"
                         data-PDFFILENAME="${item.PDFFILENAME}" data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}" style="margin-bottom:10px;">
                         <div class="card-cont">
-                            <dl class ="">
-
-                                <dd style="font-size: 18px; font-weight: bold; width: 100%;text-align: left; white-space: normal; overflow-wrap: break-word; word-break: keep-all;">${item.REALADD}</dd>
+                            <dl class ="card-address">
+                                <dd>${item.REALADD}</dd>
                             </dl>
                             <dl>
                                 <dt>집합건물</dt>

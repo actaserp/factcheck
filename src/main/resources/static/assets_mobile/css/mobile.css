@@ -137,52 +137,57 @@ header .right a {display: block;}
 .card-black .card-btn button, .card-black .card-btn .btn {background-color: #1D1D1D !important;}
 .card-red .card-btn button, .card-red .card-btn .btn {background-color: #EC193A !important;}
 
+.card-box .card-cont .card-address dd {width: 100%; /* 원래 100% 유지 */font-size: 18px; /* 기존 크기 유지 */font-weight: bold; /* 기존 굵기 유지 */text-align: left; /* 왼쪽 정렬 유지 */word-break: keep-all; /* 한글 줄바꿈 개선 */overflow-wrap: break-word;}
 
-
-.card-box2 {
-    background: white;
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 12px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    border: 1px solid #E0E0E0;
+.register-table thead tr.card-green th {
+    background-color: #F4FDFD;
+    border: 1px solid #119891;
+    border-left: 10px solid #119891;
+!important;
 }
 
-/* 기존 card-box의 정렬 스타일 적용 */
-.card-box2 .card-cont dl {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #f4f4f4;
+.register-table thead tr.card-blue th {
+    background-color: #F7FBFF;
+    border: 1px solid #3069B3;
+    border-left: 10px solid #3069B3;
+!important;
 }
 
-.card-box2 .card-cont dt {
-    width: 90px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #777;
+.register-table thead tr.card-black th {
+    background-color: #F8F8F8;
+    border: 1px solid #1D1D1D;
+    border-left: 10px solid #1D1D1D;
+!important;
 }
 
-.card-box2 .card-cont dd {
-    width: calc(100% - 90px);
-    font-size: 14px;
-    font-weight: 500;
-    text-align: right;
+.register-table thead tr.card-red th {
+    background-color: #fffafb;
+    border: 1px solid #EC193A;
+    border-left: 10px solid #EC193A;
+!important;
 }
 
-/* 배지 스타일 적용 */
-.card-box2 .badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: bold;
-    display: inline-block;
-    color: white; /* 글씨 색상 */
+.register-table thead tr.card-white th {
+    background-color: #FFFFFF;
+    border: 1px solid #DADADA;
+    border-left: 10px solid #DADADA;
+!important;
 }
+
+.register-table thead tr.card-yellow th {
+    background-color: #FFF9DB;
+    border: 1px solid #FFC107;
+    border-left: 10px solid #FFC107;
+!important;
+}
+
+.register-table thead tr.card-orange th {
+    background-color: #FFE8D5;
+    border: 1px solid #FF8C00;
+    border-left: 10px solid #FF8C00;
+!important;
+}
+
 
 /* status */
 .status-tag {display: flex; align-items: center; gap: 8px;}

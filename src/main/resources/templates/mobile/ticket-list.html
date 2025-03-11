@@ -523,6 +523,34 @@
         </div>
     </div>
 
+    <!--이력보기 팝업-->
+    <div class="mobile-layout-popup">
+        <div class="popup-wrapper" id="popup-details">
+            <div class="popup-title">
+                <h3>이력 내역</h3>
+                <a title="팝업닫기" class="btn-popup-close">
+                    <img src="/assets_mobile/images/icon/btn-popup-close.svg" alt="닫기">
+                </a>
+            </div>
+            <div class="popup-contents">
+                <div class="ticket-tit">
+                    <dl>
+                        <dd></dd>
+                    </dl>
+                </div>
+                <div class="table-container">
+                    <div class="list-table-wrap" style="overflow-x: auto;">
+
+                    </div>
+                </div>
+                <div class="write-wrap">
+                </div>
+            </div>
+            <div class="popup-button">
+                <button class="btn-popup-close btn-navy">확인</button>
+            </div>
+        </div>
+    </div>
 
 </div> <!-- //page-wrapper end-->
 
@@ -642,7 +670,7 @@
                     return;
                 }
 
-                const availableColors = ['card-blue', 'card-green', 'card-black', 'card-red', 'card-yellow', 'card-purple'];
+                const availableColors = ['card-purple'];
                 let colorIndex = 0;
                 let htmlContent = '';
 
@@ -651,11 +679,15 @@
 
                 propertyData.forEach(item => {
                     const cardColor = availableColors[colorIndex];
+                    const {bgColor, textColor} = getBadgeColorByScore(item.REALSCORE); // 배경색 가져오기
+                    const badgeGrade = getBadgeClass(item.REALSCORE); // 등급 가져오기
                     colorIndex = (colorIndex + 1) % availableColors.length;
 
-                    let buttonsHtml = `<button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="margin-bottom: 10px;">
-                            상세보기
-                        </button>`;
+                    let buttonsHtml = `
+                  <div style="display: flex; gap: 5px; align-items: center; max-width: 100%;">
+                    <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="margin-bottom: 0px;  border-radius: 20px; transition: background-color 0.3s ease;">상세보기 </button>
+                     <button class="btn btn-popup-open" data-popup="popup-details" title="이력보기" style="margin-top: 5px;margin-bottom: 5px; padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;  ">변경된 이력보기</button>
+                  </div>`;
 
                     // 날짜 포맷 변경
                     const date = new Date(item.Sreqdate);
@@ -682,14 +714,14 @@
 
                             <div class="card-cont">
                                  ${selectedValue !== "most_viewed_property" ? `
+
+                                 <dl class="card-address">
+                                    <dd>${item.REALADD}</dd>
+                                </dl>
                                     <dl>
                                         <dt>회원명</dt>
                                         <dd>${maskedUserName}</dd>
                                     </dl>` : ''}
-                                <dl>
-                                    <dt>주소</dt>
-                                    <dd>${item.REALADD && item.REALADD !== 'null' ? item.REALADD : ''}</dd>
-                                </dl>
                                  ${
                                         (selectedValue === "recent_property" || selectedValue === "popular_property")
                                             ? `<dl>
@@ -713,7 +745,14 @@
                                     <dt>판정점수</dt>
                                     <dd>${item.REALSCORE}</dd>
                                 </dl>
-
+                            <dl>
+                              <dt>등급</dt>
+                              <dd>
+                                  <div class="badge" style="background: ${bgColor}; color: ${textColor}; font-size: 15px;">
+                                      ${badgeGrade} 등급
+                                  </div>
+                              </dd>
+                            </dl>
                               ${(selectedValue === "recent_property" || selectedValue === "popular_property") ? `
                                 <dl>
                                     <dt>조회수</dt>
@@ -759,6 +798,24 @@
 
                 listAddressWrap.addEventListener('click', (event) => {
                     const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+                    const delButton = event.target.closest('.btn-popup-open[data-popup="popup-details"]');
+                    if (delButton) {
+                        const cardBox = delButton.closest('.card-box');
+                        if (!cardBox) return;
+
+                        const realid = cardBox.getAttribute("data-realid");
+                        const address = cardBox.getAttribute('data-realadd') || "주소 정보 없음";
+
+                        if (!realid) {
+                            console.warn("REALID 없음!");
+                            return;
+                        }
+
+                        console.log("이력보기 버튼 클릭됨! REALID, address:", realid, address);
+
+                        handleClick(realid, address);
+                    }
+
                     if (!button) return; // 클릭된 요소가 버튼이 아닌 경우 무시
 
                     const cardBox = button.closest('.card-box');
@@ -976,6 +1033,223 @@
     function closeSearch() {
         document.querySelector('.btn-aco').click();
     }
+
+    function getBadgeColorByScore(score) {
+        if (score === "미확인") return {bgColor: "#DADADA", textColor: "black"}; // 점수 없음 (회색)
+        let numericScore = parseFloat(score);
+
+        if (numericScore >= 90) return {bgColor: "#F4F4F4", textColor: "black"}; // S 등급 (안심) → 연한 회색 (검은 글씨)
+        if (numericScore >= 80) return {bgColor: "#4CAF50", textColor: "white"}; // A 등급 (관심) → 녹색
+        if (numericScore >= 70) return {bgColor: "#3069B3", textColor: "white"}; // B 등급 (주의) → 파란색
+        if (numericScore >= 60) return {bgColor: "#FFC107", textColor: "black"}; // C 등급 (경계) → 노란색
+        if (numericScore >= 50) return {bgColor: "#FF8C00", textColor: "white"}; // D 등급 (불안) → 주황색
+        if (numericScore >= 40) return {bgColor: "#EC193A", textColor: "white"}; // E 등급 (심각) → 빨간색
+        return {bgColor: "#1D1D1D", textColor: "white"}; // F 등급 (위험) → 검은색 (흰 글씨)
+    }
+    function getBadgeClass(score) {
+        if (score >= 90) return "S"; // S 등급 (안심)
+        if (score >= 80) return "A"; // A 등급 (관심)
+        if (score >= 70) return "B"; // B 등급 (주의)
+        if (score >= 60) return "C"; // C 등급 (경계)
+        if (score >= 50) return "D"; // D 등급 (불안)
+        if (score >= 40) return "E"; // E 등급 (심각)
+        return "F"; // F 등급 (위험)
+    }
+
+    function handleClick(realid, address) {
+        $.ajax({
+            url: "/api/IssueInquiry/popupDetails",
+            type: "GET",
+            data: {realid: realid},
+            headers: {
+                'X-CSRF-Token': $('[name=_csrf]').val()
+            },
+            success: function (response) {
+                console.log("서버에서 받은 데이터(이력 보기):", response);
+
+                if (response.success) {
+                    let regDateMap = {};
+                    let regScoreMap = {};
+
+                    if (response.findPinNO && response.findPinNO.length > 0) {
+                        response.findPinNO.forEach(item => {
+                            if (item.REALID) {
+                                regDateMap[item.REALID] = item.INDATEM || '';
+                                regScoreMap[item.REALID] = item.REALSCORE || '';
+                            }
+                        });
+                    }
+
+                    let listData = {
+                        REALID: realid,
+                        SHORT_ADDR: address // 받아온 주소값 사용
+                    };
+
+                    let transformedDataA = response.findnK ? response.findnK.map(item => ({
+                        ...item,
+                        INDATEM: regDateMap[item.REALID] || '미확인',
+                        REALSCORE: regScoreMap[item.REALID] || '미확인',
+                        displayText: `[갑구] ${item.RgsAimCont}`
+                    })) : [];
+
+                    let transformedDataB = response.findnE ? response.findnE.map(item => ({
+                        ...item,
+                        INDATEM: regDateMap[item.REALID] || '미확인',
+                        REALSCORE: regScoreMap[item.REALID] || '미확인',
+                        displayText: `[을구] ${item.RgsAimCont}`
+                    })) : [];
+
+                    updatePopupContent(transformedDataA, transformedDataB, listData);
+                    $('.list-card-wrap').scrollTop(0);
+                } else {
+                    console.warn("데이터 없음:", response.message);
+                    Alert.alert('', "해당 물건에 대한 정보를 찾을 수 없습니다.");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX 요청 실패:", status, error);
+                Alert.alert("서버와의 통신 중 오류가 발생했습니다.");
+            }
+        });
+    }
+
+    function formatDateTo12Hour(indatem) {
+        if (!indatem) return "미확인";
+
+        let dateObj = new Date(indatem);
+        let year = dateObj.getFullYear();
+        let month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        let day = String(dateObj.getDate()).padStart(2, '0');
+        let hours = dateObj.getHours();
+        let minutes = String(dateObj.getMinutes()).padStart(2, '0');
+        let period = hours >= 12 ? "PM" : "AM";
+
+        hours = hours % 12 || 12; // 12시간제 변환
+
+        return `${year}-${month}-${day} ${hours}:${minutes} ${period}`;
+    }
+
+    function updatePopupContent(findnK, findnE, listData) {
+        let popup = document.getElementById('popup-details');
+        let overlay = document.querySelector('.popup-overlay');
+        let listContainer = document.querySelector('.list-table-wrap');
+        let addressField = document.querySelector('#popup-details .ticket-tit dd');
+
+        addressField.textContent = listData?.SHORT_ADDR ?? '주소 정보 없음';
+
+        listContainer.innerHTML = '';
+
+        let allData = [...findnK.map(item => ({...item, type: 'K'})),
+            ...findnE.map(item => ({...item, type: 'E'}))];
+
+        if (allData.length === 0) {
+            console.warn("등기부등본 데이터 없음");
+            Alert.alert('', "별도의 등기목적이 없습니다.");
+            listContainer.innerHTML = '<p style="text-align: center; padding: 10px;">해당 물건의 등기부등본 정보가 없습니다.</p>';
+            return;
+        }
+
+        let groupedData = {};
+        allData.forEach(item => {
+            let indateTime = formatDateTo12Hour(item.INDATEM);
+            let realId = item.REALID;
+            let realScore = item.REALSCORE || '';
+
+            let groupKey = `${indateTime}_${realId}`;
+
+            if (!groupedData[groupKey]) {
+                groupedData[groupKey] = {
+                    items: [],
+                    realScores: new Set()
+                };
+            }
+            groupedData[groupKey].items.push(item);
+            groupedData[groupKey].realScores.add(realScore);
+        });
+
+        Object.keys(groupedData)
+            .sort((a, b) => {
+                let [indateTimeA] = a.split("_");
+                let [indateTimeB] = b.split("_");
+
+                let dateA = new Date(indateTimeA);
+                let dateB = new Date(indateTimeB);
+                return dateB - dateA;
+            })
+            .forEach(groupKey => {
+                let {items, realScores} = groupedData[groupKey];
+                let [indateTime, realId] = groupKey.split("_");
+
+                let realScoreText = Array.from(realScores).join(", ");
+                let cardClass = getCardClassByScore(realScoreText);
+
+                let tableHtml = `
+                <table class="register-table" style="width: 100%; border-collapse: collapse; margin-bottom: 15px; overflow-x: auto;">
+                    <thead>
+                        <tr class="${cardClass}" style="background-color: #f2f2f2;">
+                            <th colspan="7" style="padding: 8px; text-align: left;">발급일자: ${indateTime} &nbsp;&nbsp;&nbsp;&nbsp; 점수: ${realScoreText}</th>
+                        </tr>
+                        <tr>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:80px;">순위번호</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:200px;">등기 목적</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:200px;">대상 소유자</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:400px;text-align: left;">주요 등기사항</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:300px;">접수정보</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;min-width:80px;">구분</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+                items.forEach(item => {
+                    let sectionName = item.type === 'K' ? '갑구' : '을구';
+
+                    tableHtml += `
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${item?.RankNo || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${item?.Purpose || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${item?.TargetOwner || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;text-align: left;">${item?.Information || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${item?.ReceiptInfo || ''}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${sectionName}</td>
+                    </tr>
+                `;
+                });
+
+                tableHtml += `
+                    </tbody>
+                </table>
+            `;
+
+                listContainer.innerHTML += tableHtml;
+            });
+
+        popup.classList.add('active');
+        overlay.style.display = 'block';
+        popup.scrollTop = 0;
+    }
+
+    //점수별 카드 색
+    function getCardClassByScore(score) {
+        if (score === "미확인") return "card-white"; // 점수 없음 (S 등급: 안심)
+        let numericScore = parseFloat(score); // 점수를 숫자로 변환
+
+        if (numericScore >= 90) return "card-white"; // S 등급 (안심)
+        if (numericScore >= 80) return "card-green"; // A 등급 (관심)
+        if (numericScore >= 70) return "card-blue";  // B 등급 (주의)
+        if (numericScore >= 60) return "card-yellow"; // C 등급 (경계)
+        if (numericScore >= 50) return "card-orange"; // D 등급 (불안)
+        if (numericScore >= 40) return "card-red";   // E 등급 (심각)
+        return "card-black"; // F 등급 (위험)
+    }
+
+    $('.btn-popup-close').on('click', function () {
+        $('.popup-overlay').fadeOut(200);
+        $('.popup-wrapper').removeClass('active');
+
+        $('.popup-contents').scrollTop(0).scrollLeft(0);
+        $('.list-table-wrap').scrollTop(0).scrollLeft(0);
+    });
 
 </script>
 </body>
