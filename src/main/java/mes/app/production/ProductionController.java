@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -168,6 +169,60 @@ public class ProductionController {
         resultdata.put("score", REALSCORE);
         result.data = resultdata;
 
+        return result;
+    }
+    // 카드정보 조회
+    @GetMapping("/getCard")
+    public AjaxResult getCard(@RequestParam(value = "REALID", required = false) String REALID,
+                              Authentication auth){
+        AjaxResult result = new AjaxResult();
+        Map<String, Object> resultMap = new HashMap<>();
+
+        User user = (User) auth.getPrincipal();
+
+        // 기존 유저 조회정보에서 동일한 고유번호가 있는지 확인후 없다면 통신 있다면 자료 가져오기
+        String Grade = "";
+        // 등급 관련 데이터(S등급 등) 데이터 불러오기
+        List<Map<String, Object>> gradeData = tilkoService.getGradeData();
+        // 저장되어있는 REALID 기반 COMMENT및 차감요소 불러오기
+        List<Map<String, Object>> savedDeduction = tilkoService.getDeduction(REALID);
+        Map<String, Object> savedGoyu = tilkoService.getRealinfo(REALID);
+
+        int realScore = (int) savedGoyu.get("REALSCORE");
+
+        List<Map<String, Object>> comments = new ArrayList<>();
+        if (savedDeduction != null && !savedDeduction.isEmpty()) {  // ✅ null 체크 및 빈 리스트 방지
+            for (Map<String, Object> item : savedDeduction) {
+                if (item.get("REMARK") != null) {
+                    Map<String, Object> cardData = new HashMap<>();
+                    cardData.put("DATE", item.get("HISDATE"));
+                    cardData.put("REGREMARK", item.get("REMARK"));
+                    comments.add(cardData);
+                }
+            }
+        }
+        // **등급 설정**
+        for (Map<String, Object> grade : gradeData) {
+            int maxScore = (Integer) grade.get("GRSCORE01");
+            int minScore = (Integer) grade.get("GRSCORE02");
+
+            if (minScore <= realScore && maxScore >= realScore) {
+                Grade = grade.get("GRID").toString();
+                break;
+            }
+        }
+
+        if (Grade.isEmpty()) {
+            Grade = "F";
+        }
+        result.message = "기존 조회데이터가 존재합니다.";
+        resultMap.put("REALID", savedGoyu.get("REALID"));
+        resultMap.put("REALSCORE", savedGoyu.get("REALSCORE"));
+        resultMap.put("GRADE", Grade);
+        resultMap.put("COMMENT", comments);
+        resultMap.put("REGASNAME", savedGoyu.get("REGASNAME"));
+        resultMap.put("ADDRESS", savedGoyu.get("REALADD"));
+        result.data = resultMap;
         return result;
     }
 

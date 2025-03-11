@@ -133,6 +133,10 @@
                             <H3>등급 : /점수 : /</H3>
                         </span>
                     </div>
+                    <div>
+                        <input id="cardRealId" type="hidden" value="">
+                        <button id="cardBtn" onclick="getCard()" style="margin-top: 10px; margin-bottom: 10px; border: none; box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2); display: none;">카드로 보기</button>
+                    </div>
                 </div>
             </div> <!--// contents-wrap end-->
         </div> <!--//layout-contents end -->
@@ -367,6 +371,11 @@
                 const popupHistory2 = document.getElementById("popup-details");
                 popupHistory2.classList.remove("active");
 
+                // 카드조회 버튼, 조회시 필요 id 바인드
+                document.getElementById("cardRealId").value = REALID;
+                let cardBtnWrap = document.getElementById('cardBtn');
+                cardBtnWrap.style.display = 'block';
+
                 // 검색창 닫기
                 closeSearch()
 
@@ -380,8 +389,35 @@
             }
         });
     }
+    // 카드보기 (세션값으로 카드정보 등록)
+    function getCard(){
+        $.ajax({
+            url: '/api/mobile_production/getCard',
+            type: 'GET',
+            data: {
+                'REALID': document.getElementById("cardRealId").value,
+            },
+            success: function (response) {
+                let data2 = response.data;
+                console.log("data2", data2);
 
+                let resultMap = {
+                    "REALID": data2.REALID,
+                    "REALSCORE": data2.REALSCORE,
+                    "GRADE": data2.GRADE,
+                    "COMMENT": data2.COMMENT,
+                    "ADDRESS": data2.ADDRESS
+                };
+                sessionStorage.setItem("resultMap", JSON.stringify(resultMap));
 
+                // search_card 페이지로 이동
+                window.location.href = "/search_card";
+            },
+            error: function (error) {
+                console.error("데이터 불러오기 실패:", error);
+            }
+        });
+    }
 
 
 </script>

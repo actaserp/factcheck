@@ -589,18 +589,6 @@ public class TilkoService {
     }
 
 
-
-    // api 사용 로그 쌓기
-    public void saveTilkoApiLog() {
-        MapSqlParameterSource params = new MapSqlParameterSource();
-
-        String sql = """
-                
-                """;
-
-        List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
-    }
-
     public Map<String, Object> isGoyuNumMatched(String id, String address, String GoyuNum) {
         // SQL 실행을 위한 파라미터 설정
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -725,7 +713,7 @@ public class TilkoService {
         return resultRows;
     }
     // 점수이력
-    public List<Map<String, Object>> getDeduction(int REALID) {
+    public List<Map<String, Object>> getDeduction(String REALID) {
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         String sql = """
@@ -735,5 +723,17 @@ public class TilkoService {
         params.addValue("REALID", REALID);
         List<Map<String,Object>> items = this.sqlRunner.getRows(sql,params);
         return items;
+    }
+    // realinfo 조회
+    public Map<String, Object> getRealinfo(String REALID) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+        String sql = """
+                SELECT * FROM TB_REALINFO WHERE REALID = :REALID
+                """;
+
+        params.addValue("REALID", REALID);
+        Map<String,Object> item = this.sqlRunner.getRow(sql,params);
+        return item;
     }
 }
