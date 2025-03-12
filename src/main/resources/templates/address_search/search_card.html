@@ -35,24 +35,6 @@
     .btn-close {
         display: none !important; /* 강제로 숨김 */
     }
-    .card {
-        margin-top: 20px;
-        background-color: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        transition: transform 0.3s, box-shadow 0.3s;
-        height: 400px;
-    }
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    }
 
     .card-title {
         font-size: 18px;
@@ -127,6 +109,16 @@
 
 
     .card {
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 400px;
         position: relative;
         background: white;
         border-radius: 15px;
@@ -135,18 +127,6 @@
         text-align: center;
         outline: 3px solid #dca3c3;
         outline-offset: -10px;
-    }
-
-    .card::before {
-        content: "";
-        position: absolute;
-        top: -8px;
-        left: -8px;
-        right: -8px;
-        bottom: -8px;
-        /*border: 3px solid #dca3c3;*/
-        border-radius: 18px;
-        z-index: -2; /* 배경 뒤로 */
     }
 
     /* 상단 제목 */
@@ -183,6 +163,8 @@
 
     .score-value {
         color: black;
+        position: relative;
+        top: -2px;
     }
 
     /* 설명 목록 */
@@ -196,6 +178,14 @@
         font-size: 14px;
         color: black;
         margin-bottom: 5px;
+        white-space: normal;
+        line-height: 1.5;
+        display: block;
+        overflow-wrap: break-word;
+        word-break: keep-all;
+        align-items: flex-start;
+        text-indent: -20px;
+        padding-left: 25px;
     }
 
     /* 날짜 */
@@ -221,8 +211,18 @@
     }
 
     button:hover {
-        background-color: #b65b84;
+        background-color: #f0c2d3;
     }
+
+    .card-header h3 {
+        font-size: 18px;  /* 폰트 크기 키우기 */
+        font-weight: bold; /* 글자를 더 두껍게 */
+        color: #333; /* 가독성을 높이기 위한 색상 조정 */
+        word-break: keep-all; /* 단어 단위로 줄바꿈 */
+        text-align: center; /* 가운데 정렬 */
+        line-height: 1.4; /* 줄 간격 조정 */
+    }
+
 </style>
 <head>
     <meta charset="UTF-8">
@@ -245,9 +245,9 @@
     <script type="text/javascript" src="/resource/ax5ui/ax5ui.all.min.js?v=1000"></script>
 
     <script type="text/javascript" src="/js/ax5commUtil.js?v=1070"></script>
-
     <script src="/js/common.js?v=1060"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> <!-- Slide js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><!--공유 라이브러리-->
     <script src="/js/Mobile.js"></script>
 </head>
 
@@ -290,7 +290,8 @@
             <div style="text-align: center">
                 <button onclick="cardDetail()" style="margin-top: 10px; width: 100px; margin-left: auto">상세보기</button>
                 <button onclick="deductionDetail()" style="margin-top: 10px; width: 100px;">점수이력</button>
-                <button onclick="window.location.href = '/'" style="margin-top: 10px; width: 100px;">다시조회</button>
+                <button id="retryButton" onclick="window.location.href = '/'" style="margin-top: 10px; width: 100px;">다시조회</button>
+                <button id="shareButton" onclick="shareCardAsImage()" style="padding-top: 0px; margin-top: 10px; width: 100px; display: none;">공유하기</button>
             </div>
         </div> <!--//layout-contents end -->
     </div> <!-- //mobile-layout-contents end-->
@@ -423,6 +424,19 @@
         if (!storedData) {
             console.log("세션 데이터 없음.");
             return;
+        }
+
+        // JSON으로 변환
+        let resultMap = JSON.parse(storedData);
+
+        // 버튼 요소 가져오기
+        let retryButton = document.getElementById("retryButton");
+        let shareButton = document.getElementById("shareButton");
+
+        // resultMap 값이 있으면 다시조회 버튼 숨기고 공유하기 버튼 보이게 하기
+        if (resultMap) {
+            retryButton.style.display = "none";
+            shareButton.style.display = "inline-block";
         }
 
         let parsedData = JSON.parse(storedData);
@@ -686,6 +700,60 @@
             sessionStorage.removeItem("resultMap"); // ✅ 새로고침이 아닐 때만 삭제
         }
     });
+
+    // 카드 공유
+     function shareCardAsImage() {
+        let cardElement = document.querySelector(".card"); // 캡처할 요소 선택
+
+        if (!cardElement) {
+            alert("공유할 카드가 없습니다.");
+            return;
+        }
+
+        html2canvas(cardElement, {
+            scale: 2, // 고해상도로 캡처
+            useCORS: true, // 외부 폰트 및 이미지 로딩 허용
+            backgroundColor: null, // 배경색 유지
+            logging: false, // 디버깅 로그 비활성화
+            letterRendering: true, // 텍스트 렌더링 개선
+            width: cardElement.scrollWidth + 20, // 카드의 실제 너비 반영
+            height: cardElement.scrollHeight + 20, // 카드의 실제 높이 반영
+            x: cardElement.offsetLeft,
+            y: cardElement.offsetTop,
+            windowWidth: cardElement.offsetWidth + 40,
+            windowHeight: cardElement.offsetHeight + 40
+        }).then(canvas => {
+            canvas.toBlob(blob => {
+                let file = new File([blob], "card.png", { type: "image/png" });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    // 모바일 환경: 네이티브 공유 기능 사용
+                    navigator.share({
+                        files: [file],
+                        title: "카드 정보 공유",
+                    }).then(() => {
+                        console.log("공유 성공!");
+                    }).catch(error => {
+                        console.error("공유 실패:", error);
+                    });
+                } else {
+                    // PC 환경: 자동 다운로드
+                    let link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "card.png";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    alert("이 브라우저는 직접 공유를 지원하지 않습니다. 이미지를 다운로드했습니다.");
+                }
+            });
+        }).catch(error => {
+            console.error("이미지 변환 실패:", error);
+            alert("이미지를 변환하는 데 실패했습니다.");
+        });
+    }
+
 </script>
 </body>
 </html>

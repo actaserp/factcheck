@@ -224,15 +224,47 @@
         border-left: 10px solid #FF8C00;
     !important;
     }
-
-    .badge {
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: bold;
-        display: inline-block;
-        color: white; /* 글씨 색상 */
+    .button-container {
+        display: flex;
+        flex-wrap: nowrap; /* 줄 바꿈 방지 */
+        gap: 5px;
+        align-items: center;
+        justify-content: center; /* 가운데 정렬 */
     }
+/*    @media (max-width: 360px) {
+        .button-container {
+            flex-wrap: wrap; !* 특정 크기 이하에서는 자동 줄 바꿈 *!
+        }
+    }*/
+
+    /* 기본 버튼 스타일 */
+    .btn {
+        padding: 8px 16px; /* 기본 크기 */
+        font-size: 16px; /* 기본 폰트 크기 */
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
+    }
+    @media (max-width: 500px) {
+        .btn {
+            padding: 6px 12px; /* 버튼 크기 줄이기 */
+            font-size: 14px; /* 폰트 크기 줄이기 */
+        }
+    }
+
+    @media (max-width: 400px) {
+        .btn {
+            padding: 4px 10px; /* 더 작은 화면에서는 버튼 더 작게 */
+            font-size: 12px; /* 폰트 크기도 더 줄이기 */
+        }
+    }
+    @media (max-width: 360px) {
+        .btn {
+            padding: 3px 8px; /* 최소 크기 설정 */
+            font-size: 10px;
+        }
+    }
+
 </style>
 <head>
   <meta charset="UTF-8">
@@ -672,13 +704,12 @@
 
         data.data.forEach(item => {
           const cardColor = availableColors[colorIndex];
-          const badgeClass = getBadgeClass(item.REALSCORE); // 등급별 CSS 클래스 적용
           const {bgColor, textColor} = getBadgeColorByScore(item.REALSCORE); // 배경색 가져오기
           const badgeGrade = getBadgeClass(item.REALSCORE); // 등급 가져오기
           colorIndex = (colorIndex + 1) % availableColors.length;
 
           let buttonsHtml = `
-                    <div style="display: flex; gap: 5px; align-items: center; max-width: 100%;">
+                    <div class = "button-container">
                         <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;">상세보기</button>
                         <button class="btn btn-popup-open" data-popup="popup-details" title="이력보기" style="margin-top: 5px;margin-bottom: 5px; padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;  ">변경된 이력보기</button>
                         <button class="btn btn-register-view" data-realid="${item.REALID}" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;">등기부 보기</button>

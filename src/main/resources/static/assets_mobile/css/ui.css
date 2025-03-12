@@ -541,8 +541,10 @@ button, .btn {display: inline-flex; align-items: center; justify-content: center
 button:hover, .btn:hover { border: 1px solid #4D4D4D;}
 button:disabled, .btn:disabled {background-color: #fff; border: 1px solid #B3B3B3; color: #B3B3B3;}
 button img, .btn img {margin-right: 10px;}
-.btn-dark {background-color: #022D60; color: #fff; border: none; border-radius: 10px;}
-.btn-dark:hover {background-color: #022D60; border:none;}
+/*.btn-dark {background-color: #022D60; color: #fff; border: none; border-radius: 10px;}*/
+.btn-dark {background-color: #e8b4c9; color: #fff; border: none; border-radius: 10px;}
+/*.btn-dark:hover {background-color: #022D60; border:none;}*/
+.btn-dark:hover {background-color: #f0c2d3; border:none;}
 .btn-navy {background-color: #03428E; color: #fff; border: none;}
 .btn-navy:hover {background-color: #033777; border:none;}
 .btn-navy:disabled {background-color: #E6E6E6; border: none; color: #B3B3B3;}
