@@ -137,6 +137,71 @@ public class ClientRegistryService {
         // SQL 실행
         return sqlRunner.getRows(sql.toString(), params);
     }
+    // 탈퇴 계정 조회
+    public List<Map<String, Object>> unactiveUser(String startDate, String endDate, String searchUserNm) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        StringBuilder sql = new StringBuilder("""
+        SELECT
+            tu.USERID,
+            tu.USERGU AS userGU,
+            tu.USERSIDO AS usersido,
+            tu.USERNM AS userNm,
+            tu.SEXYN AS sexYN,
+            tu.USERHP AS userHP,
+            tu.POSTCD,
+            tu.USERADDR AS userAddr,
+            tu.USERMAIL AS userEmail,
+            tu.INDATEM AS indatem, -- 등록일자
+            tu.WDRAWDATE
+         FROM
+             TB_USERINFO tu
+         WHERE 1=1
+             AND tu.USEYN = 0
+       """);
 
+        // WHERE 절 동적 조건 추가
+        if (startDate != null && !startDate.isEmpty()) {
+            sql.append(" AND tu.INDATEM >= :startDate "); // 공백 추가
+            params.addValue("startDate", startDate);
+        }
+        if (endDate != null && !endDate.isEmpty()) {
+            LocalDate parsedEndDate = LocalDate.parse(endDate);
+            LocalDate nextDay = parsedEndDate.plusDays(1);
+
+            sql.append(" AND tu.INDATEM <= :endDate "); // 공백 추가
+            params.addValue("endDate", nextDay.toString());
+        }
+        if (searchUserNm != null && !searchUserNm.isEmpty()) {
+            sql.append(" AND tu.USERNM LIKE :searchUserNm "); // 공백 추가
+            params.addValue("searchUserNm", "%" + searchUserNm + "%");
+        }
+
+
+        // GROUP BY 및 ORDER BY 추가
+        sql.append("""
+        GROUP BY
+         tu.USERID,
+         tu.USERGU,
+         tu.USERSIDO,
+         tu.USERNM,
+         tu.SEXYN,
+         tu.USERHP,
+         tu.POSTCD,
+         tu.USERADDR,
+         tu.USERMAIL,
+         tu.INDATEM,
+         tu.WDRAWDATE
+        """);
+
+        sql.append("""
+        ORDER BY
+           tu.INDATEM DESC
+        """);
+
+//      log.info("회원관리List SQL: {}", sql);
+//      log.info("SQL Parameters: {}", params.getValues());
+
+        return sqlRunner.getRows(sql.toString(), params);
+    }
 
 }

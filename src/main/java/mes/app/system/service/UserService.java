@@ -1,5 +1,7 @@
 package mes.app.system.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -407,11 +409,12 @@ public class UserService {
     //회원 탈퇴
     @Transactional
     public Boolean withdrawUser(User user, TB_USERINFO userinfo){
-
+        String todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         try{
             user.setActive(false);
 
             userinfo.setUseYn("0");
+            userinfo.setWDrawDate(todayDate);
 
             return true;
         }catch(Exception e){

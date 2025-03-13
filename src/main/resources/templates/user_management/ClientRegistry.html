@@ -49,63 +49,127 @@
       </ul>
     </div>
     <!-- Select -->
-    <div class="tab-contents">
-      <section class="tab-item" id="tab2" style="height: 750px; overflow: hidden;">
-        <div class="section-top">
-          <div class="search-wrap">
-            <dl>
-              <dt>
-                <label for="searchUserNm">
-                  등록일자<span class="eq">*</span>
-                </label>
-              </dt>
-              <dd>
-                <ul class="date-box">
+    <div class="tab-wrap">
+      <ul class="tab-links">
+        <li>
+          <a href="#tab1" title="회원 현황" class="tab-button">회원 현황</a>
+        </li>
+        <li>
+          <a href="#tab2" title="탈퇴 현황" class="tab-button">탈퇴 현황</a>
+        </li>
+      </ul>
+      <div class="tab-contents">
+        <section class="tab-item" id="tab1" style="height: 750px; overflow: hidden;">
+          <div class="section-top">
+            <div class="search-wrap">
+              <dl>
+                <dt>
+                  <label for="searchUserNm">
+                    등록일자<span class="eq">*</span>
+                  </label>
+                </dt>
+                <dd>
+                  <ul class="date-box">
+                    <li>
+                      <input type="date" id="startDate" name="startDate">
+                      <label for="startDate" class="hide">시작일</label>
+                    </li>
+                    <li>
+                      <input type="date" id="endDate" name="endDate">
+                      <label for="endDate" class="hide">종료일</label>
+                    </li>
+                  </ul>
+                </dd>
+              </dl>
+              <dl>
+                <dt>
+                  <label for="searchUserNm">
+                    회원명<span class="eq">*</span>
+                  </label>
+                </dt>
+                <dd>
+                  <div class="srch-box">
+                    <input type="text" id="searchUserNm" name="searchUserNm" class="input-srch"
+                           placeholder="회원명" style="border-radius: 5px;">
+                  </div>
+                </dd>
+              </dl>
+              <dl>
+                <dt>&nbsp;</dt>
+                <dd>
                   <li>
-                    <input type="date" id="startDate" name="startDate">
-                    <label for="startDate" class="hide">시작일</label>
+                    <a class="btn btn-delete" title="검색" id="searchButton1" onclick="fetchListData()">
+                      <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
+                      <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                      검색
+                    </a>
                   </li>
-                  <li>
-                    <input type="date" id="endDate" name="endDate">
-                    <label for="endDate" class="hide">종료일</label>
-                  </li>
-                </ul>
-              </dd>
-            </dl>
-            <dl>
-              <dt>
-                <label for="searchUserNm">
-                  회원명<span class="eq">*</span>
-                </label>
-              </dt>
-              <dd>
-                <div class="srch-box">
-                  <input type="text" id="searchUserNm" name="searchUserNm" class="input-srch"
-                         placeholder="회원명" style="border-radius: 5px;">
-                </div>
-              </dd>
-            </dl>
-            <dl>
-              <dt>&nbsp;</dt>
-              <dd>
-                <li>
-                  <a class="btn btn-delete" title="검색" id="searchButton1" onclick="fetchListData()">
-                    <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
-                    <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
-                    검색
-                  </a>
-                </li>
-              </dd>
-            </dl>
+                </dd>
+              </dl>
+            </div>
           </div>
-        </div>
-        <div class="container-fluid">
-          <p id="selectedItem"></p>
-          <div id="theGrid" style="max-height: 630px"></div>
-        </div>
-      </section>
-    </div> <!--//tab-wrap end-->
-  </div> <!--//layout-contents end -->
+          <div class="container-fluid">
+            <p id="selectedItem"></p>
+            <div id="theGrid" style="max-height: 630px"></div>
+          </div>
+        </section>
+        <section class="tab-item" id="tab2" style="height: 750px; overflow: hidden;">
+          <div class="section-top">
+            <div class="search-wrap">
+              <dl>
+                <dt>
+                  <label for="searchUserNm">
+                    등록일자<span class="eq">*</span>
+                  </label>
+                </dt>
+                <dd>
+                  <ul class="date-box">
+                    <li>
+                      <input type="date" id="startDate2" name="startDate">
+                      <label for="startDate" class="hide">시작일</label>
+                    </li>
+                    <li>
+                      <input type="date" id="endDate2" name="endDate">
+                      <label for="endDate" class="hide">종료일</label>
+                    </li>
+                  </ul>
+                </dd>
+              </dl>
+              <dl>
+                <dt>
+                  <label for="searchUserNm">
+                    회원명<span class="eq">*</span>
+                  </label>
+                </dt>
+                <dd>
+                  <div class="srch-box">
+                    <input type="text" id="searchUserNm2" name="searchUserNm" class="input-srch"
+                           placeholder="회원명" style="border-radius: 5px;">
+                  </div>
+                </dd>
+              </dl>
+              <dl>
+                <dt>&nbsp;</dt>
+                <dd>
+                  <li>
+                    <a class="btn btn-delete" title="검색" id="searchButton2" onclick="fetchListData2()">
+                      <!--                                        class 쓰이는 곳 찾고 없으면 클래스명 수정하기-->
+                      <img src="/images/icon/btn-srch.svg" alt="검색 아이콘">
+                      검색
+                    </a>
+                  </li>
+                </dd>
+              </dl>
+            </div>
+          </div>
+          <div class="container-fluid">
+            <p id="selectedItem2"></p>
+            <div id="theGrid3" style="max-height: 630px"></div>
+          </div>
+        </section>
+      </div> <!--//tab-wrap end-->
+    </div> <!--//layout-contents end -->
+  </div>
   <footer>
     <p>Copyrightⓒ factCheck corp. All rights reserved.</p>
   </footer>
@@ -141,17 +205,20 @@
       const startOfYear = new Date(year, 0, 1);
       const startYearFormatted = `${startOfYear.getFullYear()}-${String(startOfYear.getMonth() + 1).padStart(2, '0')}-${String(startOfYear.getDate()).padStart(2, '0')}`;
       $('#startDate').val(startYearFormatted);
+      $('#startDate2').val(startYearFormatted);
 
       // 종료일
       const endOfMonth = new Date(year, month + 1, 0);
       const endMonthFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
       $('#endDate').val(endMonthFormatted);
-
+      $('#endDate2').val(endMonthFormatted);
       init();
     });
 
     let theGrid;
     let viewdata;
+    let theGrid3;
+    let viewdata3;
 
     document.getElementById('searchUserNm').addEventListener('keydown', function(event) {
       if (event.key === 'Enter') {
@@ -162,6 +229,7 @@
 
     function init() {
       fetchListData();
+      fetchListData2();
     }
 
     function fetchListData() {
@@ -388,6 +456,109 @@
             console.error("theGrid2는 FlexGrid 객체가 아닙니다. 현재 상태:", theGrid2);
           }
         }
+      }
+    }
+
+    function fetchListData2() {
+      let data = [ ];
+      const params = {
+        startDate: $('#startDate2').val(),
+        endDate: $('#endDate2').val(),
+        searchUserNm: $('#searchUserNm2').val()
+      };
+
+      // 서버에서 데이터 가져오기
+      $.ajax({
+        url: '/api/MUserInfo/unactiveUser',
+        type: 'GET',
+        data: params,
+        async: false,
+        success: function (response) {
+          // 응답이 올바르게 도착했고, data 속성이 배열인지 확인
+          if (response && Array.isArray(response.data)) {
+            data = response.data.map((item, index) => ({
+              rownum: index + 1,
+              WDRAWDATE: item.WDRAWDATE ||'',
+              USERID: item.USERID ||'',
+              userNm: item.userNm ||'',
+              inDateTm:item.inDateTm || '',
+              sexYN: item.sexYN ||'',
+              indatem:item.indatem || '',
+              userAddr: item.userAddr ||'',
+              userHP: item.userHP || '',
+              userEmail: item.userEmail || '',
+              usersido:item.usersido || '',
+              userGU:item.userGU || '',
+            }));
+          }
+        },
+        error: function () {
+          console.error("데이터를 가져오는 중 오류가 발생했습니다.");
+        }
+      });
+
+      while (data.length < 15) {
+        data.push({
+          rownum: data.length + 1,
+          WDRAWDATE: '',
+          USERID:'',
+          userNm: '',
+          indatem: '',
+          sexYN: '',
+          userAddr: '',
+          userHP: '',
+          userEmail: '',
+          usersido: '',
+          userGU: '',
+        });
+      }
+
+      viewdata3 = new wijmo.collections.CollectionView(data);
+
+      if (!theGrid3) {
+        theGrid3 = new wijmo.grid.FlexGrid('#theGrid3', {
+          autoGenerateColumns: false,
+          showMarquee: true,
+          isReadOnly: true,
+          columns: [
+            { binding: 'rownum', header: 'NO', width: 70, align: 'center' },
+            { binding: 'WDRAWDATE', header: '탈퇴일자', width: 150, minWidth: 100, align: 'center'},
+            { binding: 'userNm', header: '사용자명', width: 130, minWidth: 150, align: 'center' },
+            { binding: 'USERID', header:'유저아이디', width: 180, minWidth: 100, align: 'center'},
+            { binding: 'sexYN', header: '성별', width:70, minWidth: 70, align: 'center' },
+            { binding: 'usersido', header: '시', width: 80, align: 'center', minWidth: 80 },
+            { binding: 'userGU', header: '구군', width: 80, align: 'center', minWidth: 80 },
+            { binding: 'userAddr', header: '주소', width: '*', minWidth: 230, align: 'left' },
+            { binding: 'userHP', header: '연락처', width: 230, minWidth: 110, align: 'center' },
+            //{ binding: 'userEmail', header: '이메일', width: 180, minWidth: 100, align: 'center' },
+
+          ],
+          itemsSource: viewdata3,
+        });
+
+        theGrid3.hostElement.addEventListener('click', (e) => {
+          const ht = theGrid3.hitTest(e);
+
+          // 셀이 클릭된 경우만 처리
+          if (ht.cellType === wijmo.grid.CellType.Cell) {
+            const item = theGrid3.rows[ht.row].dataItem; // 선택한 행 데이터
+            const columnName = theGrid3.columns[ht.col].binding; // 클릭한 열의 바인딩 이름
+            console.log(`클릭된 열: ${columnName}, 클릭된 데이터:`, item);
+            // 'InquiryCount' 열 클릭 시 모달 열기
+            if (columnName === 'InquiryCount') {
+              const USERID = item.USERID || '';
+              console.log("선택한 사용자 이름:", USERID);
+              showPopupById('InquiryCountModal', USERID)
+            }
+          }
+        });
+
+        theGrid3.rowHeaders.columns.splice(0, 1);
+        // ContextMenu 추가
+        new FlexGridContextMenu(theGrid3);
+        window.downloadFileName = '회원관리';
+      } else {
+        theGrid3.itemsSource = viewdata3;
       }
     }
   </script>
