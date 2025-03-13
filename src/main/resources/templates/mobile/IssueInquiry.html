@@ -9,16 +9,6 @@
         display: none !important; /* 강제로 숨김 */
     }
 
-
-    .tab-item {
-        display: none; /* 기본적으로 모든 탭 내용을 숨깁니다 */
-    }
-
-    .tab-item.active {
-        display: block; /* 'active' 클래스가 있을 때만 해당 탭 내용을 표시 */
-    }
-
-
     .tab-links {
         display: flex;
         margin-left: 1px;
@@ -231,12 +221,6 @@
         align-items: center;
         justify-content: center; /* 가운데 정렬 */
     }
-/*    @media (max-width: 360px) {
-        .button-container {
-            flex-wrap: wrap; !* 특정 크기 이하에서는 자동 줄 바꿈 *!
-        }
-    }*/
-
     /* 기본 버튼 스타일 */
     .btn {
         padding: 8px 16px; /* 기본 크기 */
@@ -631,6 +615,51 @@
     </div>
   </div>
 
+  <div class="mobile-layout-popup" id="popup-history2">
+    <!--<div class="popup-overlay"></div>-->
+    <div class="popup-wrapper" id="scoreWrapper">
+      <div class="popup-title">
+        <h3>상세보기</h3>
+      </div>
+      <div class="popup-contents">
+        <div class="table-wrap" style="width: 600px">
+          <div class="write-wrap">
+            <section class="tab-item">
+              <div class="tab-wrap" style="width: 100%;">
+                <ul class="tab-links" style="margin-bottom: 10px;">
+                </ul>
+
+                <section class="tab-item">
+                  <table>
+                    <thead>
+                    <tr>
+                      <th style="text-align: center; width: 20%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                        <label>등기목적</label>
+                      </th>
+                      <th style="text-align: center; width: 37%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                        <label>COMMENT</label>
+                      </th>
+                      <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                        <label>날짜</label>
+                      </th>
+                    </tr>
+                    </thead>
+                    <tbody id="scoreItems2">
+
+                    </tbody>
+                  </table>
+                </section>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <div class="popup-button">
+        <button class="btn-popup-close btn-navy" id="closePopup2">확인</button>
+      </div>
+    </div>
+  </div>
+
 </div> <!-- //page-wrapper end-->
 
 <script th:inline="javascript">
@@ -710,7 +739,7 @@
 
           let buttonsHtml = `
                     <div class = "button-container">
-                        <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;">상세보기</button>
+                        <button class="btn btn-popup-open" data-popup="popup-history2" title="상세보기" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;">상세보기</button>
                         <button class="btn btn-popup-open" data-popup="popup-details" title="이력보기" style="margin-top: 5px;margin-bottom: 5px; padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;  ">변경된 이력보기</button>
                         <button class="btn btn-register-view" data-realid="${item.REALID}" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;">등기부 보기</button>
                     </div>
@@ -726,9 +755,11 @@
                         data-regdate="${item.REGDATE}" data-regugun="${item.REGUGUN}" data-rejimok="${item.REJIMOK}" data-rearea="${item.REAREA}"
                         data-PDFFILENAME="${item.PDFFILENAME}" data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}" style="margin-bottom:10px;">
                         <div class="card-cont">
-                            <dl class ="card-address">
-                                <dd>${item.REALADD}</dd>
-                            </dl>
+                             <dl class="card-address">
+                                <dd class="realadd-click" data-popup="popup-history" data-address="${item.REALADD}">
+                                  ${item.REALADD}
+                                </dd>
+                             </dl>
                             <dl>
                                 <dt>집합건물</dt>
                                 <dd>${item.REALGUBUN}</dd>
@@ -776,18 +807,21 @@
 
         //  이벤트 위임을 사용하여 버튼 클릭 처리
         listAddressWrap.addEventListener('click', (event) => {
-          const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+          const button = event.target.closest('.btn-popup-open[data-popup="popup-history2"]');
           const pdfButton = event.target.closest('.btn-register-view');
           const delButton = event.target.closest('.btn-popup-open[data-popup="popup-details"]');
+          const address = event.target.closest('.realadd-click[data-popup="popup-history"]'); // 주소 클릭 이벤트 추가
 
-          if (button) {
-            const cardBox = button.closest('.card-box');
-            const realId = cardBox.getAttribute('data-realid');
+          if (address) {
+            event.preventDefault();
+
+            const cardBox = address.closest('.card-box');
             if (!cardBox) return;
 
-            console.log(" 상세보기 클릭됨! REALID:", realId);
+            const realId = cardBox.getAttribute('data-realid');
+            console.log("주소 클릭됨! REALID:", realId);
 
-            //AJAX 요청을 통해 상세 데이터 불러오기
+            // AJAX 요청 실행
             $.ajax({
               url: `/api/IssueInquiry/DetailsList?realId=${realId}`,
               data: {
@@ -797,11 +831,12 @@
               type: 'GET',
               success: function (data) {
                 console.log("서버에서 가져온 상세 데이터:", data);
+                console.log("서버에서 가져온 상세 데이터:", data.REALADD);
 
                 // 팝업 제목 업데이트
                 document.querySelector("#popup-history .popup-title h3").textContent = data.REALADD + " 상세내용";
 
-                const cardBox = button.closest('.card-box');
+                const cardBox = address.closest('.card-box');
 
                 const realAdd = cardBox.getAttribute('data-realadd');
                 const resido = cardBox.getAttribute('data-resido') || '';
@@ -965,13 +1000,27 @@
                 }
 
                 // 팝업 열기
-                document.getElementById("popup-history").classList.add("open");
+                document.querySelector('.popup-wrapper').classList.add('active');
               },
               error: function (xhr, status, error) {
                 console.error("상세 데이터 불러오기 실패:", error);
               }
             });
           }
+
+          if (button) {
+            const cardBox = button.closest('.card-box');
+            if (!cardBox) return;
+
+            const realId = cardBox.getAttribute('data-realid');
+            if (!realId) return;
+
+            console.log("📌 상세보기 버튼 클릭됨! REALID:", realId);
+
+            //cardDetail()` 함수 실행
+            cardDetail(realId);
+          }
+
           if (pdfButton) {  // PDF 보기 버튼이 클릭된 경우
             const realId = pdfButton.getAttribute("data-realid");
             if (!realId) return;
@@ -1005,6 +1054,55 @@
     });
   }
 
+  //상세보기
+  function cardDetail(realId) {
+    $.ajax({
+      url: '/api/register/deductionDetail',
+      type: 'GET',
+      data: { "REALID": realId },
+      success: function (response) {
+        data2 = response.data;
+        console.log("상세보기 데이터: ", data2);
+
+        const scoreWrap = document.getElementById('scoreItems2');
+        if (!scoreWrap) {
+          console.error("❌ 오류: 'scoreItems' 요소를 찾을 수 없습니다.");
+          return;
+        }
+
+        // "항목차감"이 아닌 데이터만 필터링
+        let filteredData = data2.filter(data => data.HISNM !== "항목차감");
+
+        let htmlContent = '';
+        filteredData.forEach(data => {
+
+          // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
+          let formattedDate = data.HISDATE
+            ? `${data.HISDATE.slice(0, 4)}.${data.HISDATE.slice(4, 6)}.${data.HISDATE.slice(6, 8)}`
+            : '';
+
+          htmlContent += `
+                    <tr>
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                            ${data.HISNM}
+                        </td>
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd; text-align: left;">
+                            ${data.REMARK}
+                        </td>
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                            ${formattedDate}
+                        </td>
+                    </tr>`;
+        });
+
+        // 기존 내용을 초기화 후 새로운 데이터 추가
+        scoreWrap.innerHTML = htmlContent;
+      },
+      error: function (error) {
+        console.error("🚨 API 호출 중 오류 발생:", error);
+      }
+    });
+  }
 
   function getBadgeColorByScore(score) {
     if (score === "미확인") return {bgColor: "#DADADA", textColor: "black"}; // 점수 없음 (회색)

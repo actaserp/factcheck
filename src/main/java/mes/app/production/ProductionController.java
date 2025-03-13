@@ -33,9 +33,9 @@ public class ProductionController {
 
     @GetMapping("/read_all")
     public ResponseEntity<?> getList(@RequestParam(value = "search_startDate", required = false) String startDate,
-                                                             @RequestParam(value = "search_endDate", required = false) String endDate,
-                                                             @RequestParam(value = "search_property", required = false) String property,
-                                     @RequestParam(value = "keyword", required = false) String keyword,
+                                     @RequestParam(value = "search_endDate", required = false) String endDate,
+                                     @RequestParam(value = "search_property", required = false) String property,    // 검색 조건
+                                     @RequestParam(value = "keyword", required = false) String keyword,             //주소 검색
                                      Authentication auth) {
 
         AjaxResult result = new AjaxResult();
@@ -43,11 +43,8 @@ public class ProductionController {
        /* String userid = String.valueOf(user.getId());*/
         String username = String.valueOf(user.getUsername());
 
-
         /*System.out.println("userid확인 "+userid);*/
         System.out.println("username확인 "+username);
-
-
 
      /*   DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");

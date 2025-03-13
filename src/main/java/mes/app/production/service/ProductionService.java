@@ -1,6 +1,7 @@
 package mes.app.production.service;
 
 import com.google.gson.Gson;
+import lombok.extern.slf4j.Slf4j;
 import mes.domain.entity.factcheckEntity.TB_REALINFO;
 import mes.domain.services.SqlRunner;
 import org.apache.xmlbeans.impl.xb.xsdschema.impl.PublicImpl;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Service
 public class ProductionService {
 
@@ -25,11 +27,20 @@ public class ProductionService {
         dicParam.addValue("userid", username);
         Map<String, Object> result = new HashMap<>();
 
-        result.put("my_property", searchDataList(startDate, endDate, "my_property", username,keyword));
-        result.put("recent_property", searchDataList(startDate, endDate, "recent_property", username,keyword));
-        result.put("most_viewed_property", searchDataList(startDate, endDate, "most_viewed_property", username,keyword));
-        result.put("popular_property", searchDataList(startDate, endDate, "popular_property", username,keyword));
-
+        switch (property){
+            case "my_property":
+                result.put("my_property", searchDataList(startDate, endDate, "my_property", username,keyword));
+                break;
+            case "recent_property":
+                result.put("recent_property", searchDataList(startDate, endDate, "recent_property", username,keyword));
+                break;
+            case "most_viewed_property":
+                result.put("most_viewed_property", searchDataList(startDate, endDate, "most_viewed_property", username,keyword));
+                break;
+            case "popular_property":
+                result.put("popular_property", searchDataList(startDate, endDate, "popular_property", username,keyword));
+                break;
+        }
         return result;
     }
 
@@ -48,7 +59,6 @@ public class ProductionService {
                 return Collections.emptyList();
         }
     }
-
 
     public List<Map<String, Object>> getmyData(String startDate, String endDate, String property, String username, String keyword) {
         MapSqlParameterSource dicParam = new MapSqlParameterSource();

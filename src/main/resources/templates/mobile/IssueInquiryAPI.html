@@ -10,13 +10,6 @@
     }
 
 
-    .tab-item {
-        display: none; /* 기본적으로 모든 탭 내용을 숨깁니다 */
-    }
-
-    .tab-item.active {
-        display: block; /* 'active' 클래스가 있을 때만 해당 탭 내용을 표시 */
-    }
 
     .tab-links {
         display: flex;
@@ -504,6 +497,51 @@
     </div>
   </div>
 
+  <div class="mobile-layout-popup" id="popup-history2">
+    <!--<div class="popup-overlay"></div>-->
+    <div class="popup-wrapper" id="scoreWrapper">
+      <div class="popup-title">
+        <h3>상세보기</h3>
+      </div>
+      <div class="popup-contents">
+        <div class="table-wrap" style="width: 600px">
+          <div class="write-wrap">
+            <section class="tab-item">
+              <div class="tab-wrap" style="width: 100%;">
+                <ul class="tab-links" style="margin-bottom: 10px;">
+                </ul>
+
+                <section class="tab-item">
+                  <table>
+                    <thead>
+                    <tr>
+                      <th style="text-align: center; width: 20%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                        <label>등기목적</label>
+                      </th>
+                      <th style="text-align: center; width: 37%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                        <label>COMMENT</label>
+                      </th>
+                      <th style="text-align: center; width: 7%; padding: 5px; border: 1px solid #ddd; font-size: 13px;">
+                        <label>날짜</label>
+                      </th>
+                    </tr>
+                    </thead>
+                    <tbody id="scoreItems2">
+
+                    </tbody>
+                  </table>
+                </section>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <div class="popup-button">
+        <button class="btn-popup-close btn-navy" id="closePopup2">확인</button>
+      </div>
+    </div>
+  </div>
+
 </div> <!-- //page-wrapper end-->
 
 <script th:inline="javascript">
@@ -593,7 +631,7 @@
 
           let buttonsHtml = `
                   <div style="display: flex; gap: 5px; align-items: center; max-width: 100%;">
-                    <button class="btn btn-popup-open" data-popup="popup-history" title="상세보기" style="margin-bottom: 0px;  border-radius: 20px; transition: background-color 0.3s ease;">상세보기 </button>
+                     <button class="btn btn-popup-open" data-popup="popup-history2" title="상세보기" style="padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;">상세보기</button>
                      <button class="btn btn-popup-open" data-popup="popup-details" title="이력보기" style="margin-top: 5px;margin-bottom: 5px; padding: 4px 12px; border-radius: 20px; transition: background-color 0.3s ease;  ">변경된 이력보기</button>
                   </div>
                     `;
@@ -609,8 +647,10 @@
                         data-PDFFILENAME="${item.PDFFILENAME}" data-remaxamt="${item.REMAXAMT}" data-uniqueNo="${item.UniqueNo}" style="margin-bottom:10px;">
                         <div class="card-cont">
                          <dl class="card-address">
-                                <dd>${item.REALADD}</dd>
-                            </dl>
+                                <dd class="realadd-click" data-popup="popup-history" data-address="${item.REALADD}">
+                                  ${item.REALADD}
+                                </dd>
+                             </dl>
                             <dl>
                                 <dt>집합건물</dt>
                                 <dd>${item.REALGUBUN}</dd>
@@ -658,11 +698,25 @@
 
         // 이벤트 위임을 사용하여 버튼 클릭 처리
         listAddressWrap.addEventListener('click', (event) => {
-          const button = event.target.closest('.btn-popup-open[data-popup="popup-history"]');
+          const button = event.target.closest('.btn-popup-open[data-popup="popup-history2"]');
           const delButton = event.target.closest('.btn-popup-open[data-popup="popup-details"]');
+          const address = event.target.closest('.realadd-click[data-popup="popup-history"]'); // 주소 클릭 이벤트 추가
 
           if (button) {
             const cardBox = button.closest('.card-box');
+            if (!cardBox) return;
+
+            const realId = cardBox.getAttribute('data-realid');
+            if (!realId) return;
+
+            console.log("📌 상세보기 버튼 클릭됨! REALID:", realId);
+
+            //cardDetail()` 함수 실행
+            cardDetail(realId);
+          }
+
+          if (address) {
+            const cardBox = address.closest('.card-box');
             const realId = cardBox.getAttribute('data-realid');
             if (!cardBox) return;
 
@@ -701,7 +755,7 @@
                 // 팝업 제목 업데이트
                 document.querySelector("#popup-history .popup-title h3").textContent = data.REALADD + " 상세내용";
 
-                const cardBox = button.closest('.card-box');
+                const cardBox = address.closest('.card-box');
 
                 const realAdd = cardBox.getAttribute('data-realadd');
                 const resido = cardBox.getAttribute('data-resido') || '';
@@ -901,12 +955,14 @@
 
                 // 팝업 열기
                 document.getElementById("popup-history").classList.add("open");
+                document.querySelector('.popup-wrapper').classList.add('active');
               },
               error: function (xhr, status, error) {
                 console.error("상세 데이터 불러오기 실패:", error);
               }
             });
           }
+
           if (delButton) {
             const cardBox = delButton.closest('.card-box');
             if (!cardBox) return;
@@ -1171,6 +1227,57 @@
     if (numericScore >= 40) return "card-red";   // E 등급 (심각)
     return "card-black"; // F 등급 (위험)
   }
+
+  //상세보기
+  function cardDetail(realId) {
+    $.ajax({
+      url: '/api/register/deductionDetail',
+      type: 'GET',
+      data: { "REALID": realId },
+      success: function (response) {
+        data2 = response.data;
+        console.log("상세보기 데이터: ", data2);
+
+        const scoreWrap = document.getElementById('scoreItems2');
+        if (!scoreWrap) {
+          console.error("❌ 오류: 'scoreItems' 요소를 찾을 수 없습니다.");
+          return;
+        }
+
+        // "항목차감"이 아닌 데이터만 필터링
+        let filteredData = data2.filter(data => data.HISNM !== "항목차감");
+
+        let htmlContent = '';
+        filteredData.forEach(data => {
+
+          // 날짜 변환 (YYYYMMDD → YYYY.MM.DD)
+          let formattedDate = data.HISDATE
+            ? `${data.HISDATE.slice(0, 4)}.${data.HISDATE.slice(4, 6)}.${data.HISDATE.slice(6, 8)}`
+            : '';
+
+          htmlContent += `
+                    <tr>
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                            ${data.HISNM}
+                        </td>
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd; text-align: left;">
+                            ${data.REMARK}
+                        </td>
+                        <td style="width: 15%; padding: 5px; border: 1px solid #ddd;">
+                            ${formattedDate}
+                        </td>
+                    </tr>`;
+        });
+
+        // 기존 내용을 초기화 후 새로운 데이터 추가
+        scoreWrap.innerHTML = htmlContent;
+      },
+      error: function (error) {
+        console.error("🚨 API 호출 중 오류 발생:", error);
+      }
+    });
+  }
+
 
   $('.btn-popup-close').on('click', function () {
     $('.popup-overlay').fadeOut(200);
