@@ -75,21 +75,8 @@ public class UtilClass {
     }
 
     public static File saveFileToTempAsFile(File file) throws IOException {
-        // 임시파일을 저장할 명시적 디렉토리
-        File tempDir = new File("C:\\temp");
-
-        // 디렉토리 존재하지 않으면 생성
-        if (!tempDir.exists()) {
-            tempDir.mkdirs();
-        }
-
-        // 해당 디렉토리에 임시파일 생성
-        File tempFile = File.createTempFile("uploaded-", ".pdf", tempDir);
-
-        // 원본 파일 내용을 복사
+        File tempFile = File.createTempFile("uploaded-", ".pdf");
         Files.copy(file.toPath(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
         return tempFile;
     }
-
 }
