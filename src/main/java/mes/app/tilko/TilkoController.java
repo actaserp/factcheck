@@ -950,7 +950,7 @@ public class TilkoController {
                     TB_PDFSEQ pdfRecord = new TB_PDFSEQ();
                     pdfRecord.setPdfFilename(pdfMidNM);
                     TB_PDFSEQ savedRecord = pdfseqRepository.save(pdfRecord);
-                    saveFileNM = savedRecord.getSeq() + "." + user.getUsername() + "_" + pdfMidNM;
+                    saveFileNM = savedRecord.getSeq() + "." + user.getUsername() + "_register.pdf";
                     outputFilePath = uploadDir + saveFileNM;
 
                     try (OutputStream os = new FileOutputStream(outputFilePath)) {
