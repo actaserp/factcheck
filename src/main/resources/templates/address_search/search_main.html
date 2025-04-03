@@ -434,12 +434,12 @@
         processed = processed.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
         return processed;
     }
-    // HTML 태그 제거 함수
-    function stripHtmlTags(html) {
-        let tempDiv = document.createElement("div");
-        tempDiv.innerHTML = html;
-        return tempDiv.textContent || tempDiv.innerText || "";
-    }
+    // // HTML 태그 제거 함수
+    // function stripHtmlTags(html) {
+    //     let tempDiv = document.createElement("div");
+    //     tempDiv.innerHTML = html;
+    //     return tempDiv.textContent || tempDiv.innerText || "";
+    // }
     // pdf 데이터 조회 및 파싱 저장 메서드 호출(등기부등본 조회 메서드)
     let isSearchInProgress = false;  // 중복 호출 방지 플래그
 
