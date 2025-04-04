@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 public class TilkoController {
 
     private static final String apiHost	= "https://api.tilko.net/";
-    private static final String apiKey	= "7162361c3e6d4250b7bab98373377537";
+    private static final String apiKey	= "6c380e5dd28545ca968d35ff65003d50";
     TilkoParsing tilkoParsing = new TilkoParsing();
 
     @Autowired
@@ -903,10 +903,18 @@ public class TilkoController {
             System.out.println("responseJson : " + responseJson);
             // "PdfData" 섹션 가져오기 (PdfData의 길이가 너무 길어 String 선언 없이 저장)
             String pdfBase64 = responseJson.optString("PdfData", null);
+            String ErrorCode = responseJson.optString("ErrorCode", null);
 
             if (pdfBase64 == null) {
                 result.message = "인터넷 등기소와의 연결이 원할치 않습니다.\n잠시후 다시 시도하여주세요";
-            } else {
+            }
+            else if (Objects.equals(ErrorCode, "8801005")) {
+                result.message = "인터넷 등기소와의 연결이 원할치 않습니다.\n잠시후 다시 시도하여주세요";
+            }
+            else if (Objects.equals(ErrorCode, "8801004")) {
+                result.message = "인터넷 등기소와의 연결이 원할치 않습니다.\n잠시후 다시 시도하여주세요";
+            }
+            else {
                 try {
                     if (pdfBase64 == null || pdfBase64.isEmpty()) {
                         System.out.println("PDF 데이터가 존재하지 않습니다.");
